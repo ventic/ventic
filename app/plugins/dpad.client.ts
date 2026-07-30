@@ -44,8 +44,12 @@ export default defineNuxtPlugin(() => {
   // few hundred, which measures in single-digit ms — bucket them by row if a
   // long infinite-scrolled grid ever gets sluggish.
   function focusables(root: ParentNode) {
-    return [...root.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(el => {
-      if (el.tabIndex < 0)
+    const list = [...root.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(el => {
+      // Only the documented -1 means "not a target" (see the card overlays).
+      // Vuetify's lists rove the tabindex across their items and park -2 on the
+      // ones that aren't current — which is every drawer link, all of which are
+      // perfectly good places for a remote to land.
+      if (el.getAttribute('tabindex') === '-1')
         return false
       // A closed temporary drawer (narrow windows only) is slid off screen
       // rather than hidden, so its links would otherwise still be targets.
@@ -53,6 +57,19 @@ export default defineNuxtPlugin(() => {
         return false
       const r = el.getBoundingClientRect()
       return r.width > 0 && r.height > 0
+    })
+
+    // A wrapper that exists to hold other targets is not one itself: Vuetify's
+    // list is focusable *and* encloses every item in it, so a d-pad leaving the
+    // grid landed on the list rather than a link, and the list handed focus to
+    // its own idea of "first" — which is why coming back from the posters always
+    // arrived at Home. Anything actionable in its own right stays, even when it
+    // contains a control (an episode row owns its Play button; both are targets).
+    // Descendants follow their container in document order, so the candidate
+    // right after this one is the only one that can be inside it.
+    return list.filter((el, i) => {
+      const next = list[i + 1]
+      return !next || !el.contains(next) || el.matches('a[href], button, input, select, textarea')
     })
   }
 
@@ -138,6 +155,35 @@ export default defineNuxtPlugin(() => {
     return false
   }
 
+  /**
+   * Controls that answer the arrows themselves and never let go.
+   *
+   * A slider spends all four on its value, so up and down don't leave it — they
+   * resize the posters on the way out and you're still on the slider; Back was
+   * the only exit. A Vuetify list walks its items with up and down, which is
+   * right, but wraps from the last back to the first, so a remote in the drawer
+   * cycles Home → History → Home for ever and never reaches the page.
+   *
+   * Both keep the axis they need and give up the one that leads out: a slider's
+   * value is left/right, a list's cursor is up/down until it runs out of items.
+   * This has to be decided before the component sees the key, so it runs in the
+   * capture phase — by the bubble phase the value has already moved.
+   */
+  function trapped(el: Element | null, dir: Dir) {
+    if (!(el instanceof HTMLElement))
+      return false
+
+    const vertical = dir === 'up' || dir === 'down'
+    if (el.getAttribute('role') === 'slider')
+      return vertical
+
+    const list = vertical ? el.closest('.v-list') : null
+    if (!list)
+      return false
+    const items = focusables(list)
+    return el === items[dir === 'up' ? 0 : items.length - 1]
+  }
+
   /** Fires Escape and reports whether anything claimed it. */
   function escapeConsumed() {
     const escape = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
@@ -174,6 +220,24 @@ export default defineNuxtPlugin(() => {
     html.classList.add('dpad')
   }
 
+  function handle(dir: Dir, e: KeyboardEvent) {
+    markDpad()
+    if (move(dir) || nudge(dir))
+      e.preventDefault()
+  }
+
+  // Ahead of the components, for the keys they'd otherwise swallow whole.
+  document.addEventListener('keydown', e => {
+    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey)
+      return
+    const dir = DIRS[e.key]
+    if (!dir || !trapped(document.activeElement, dir))
+      return
+    // The control never gets the key, so it can't spend it on itself.
+    e.stopPropagation()
+    handle(dir, e)
+  }, true)
+
   document.addEventListener('keydown', e => {
     // Whoever handled it first wanted the key: sliders, list menus, mpv's seek.
     if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey)
@@ -197,9 +261,7 @@ export default defineNuxtPlugin(() => {
     if (typing && (dir === 'left' || dir === 'right'))
       return
 
-    markDpad()
-    if (move(dir) || nudge(dir))
-      e.preventDefault()
+    handle(dir, e)
   })
 
   // Focus rings are for people driving with a d-pad; a mouse puts them away again.

@@ -17,9 +17,22 @@ pages get remote support for free as long as they follow the rules below.
 - **Arrows** move focus to the nearest focusable element in that direction,
   scored by `pickDirection()` in `app/utils/dpad.ts` (nearest edge gap, with
   sideways drift weighted double so a grid walks straight down its column).
+  Sideways drift is measured between the boxes' **edges**, not their centres —
+  boxes that face each other at all count as level, or a 44px nav link never
+  reaches the 361px poster beside it.
 - The handler sits on `document` in the **bubble** phase and bails on
   `e.defaultPrevented`, so any component that already handles arrows keeps them:
   Vuetify sliders, lists, selects, and the player's seek keys.
+- A component may own an axis but never the one that leads *out* of it, or the
+  d-pad has no exit but Back. A second handler in the **capture** phase takes
+  the key back for the two that would: up/down off a `[role="slider"]` (whose
+  value is left/right, and which otherwise changes as you try to leave), and
+  up/down off the first/last item of a `.v-list` (which otherwise wraps, so the
+  drawer cycles for ever instead of letting go).
+- **Only `tabindex="-1"` opts out.** Vuetify's lists rove the tabindex across
+  their items and park `-2` on the ones that aren't current — every drawer link
+  carries it, and they are all real targets. A wrapper that merely *contains*
+  other targets (the `.v-list` div is focusable itself) is not one.
 - **Nothing that way?** The page scrolls by 80% of a screen instead (`nudge()`),
   then focus is dropped so the next press lands on the freshly revealed row.
   This is what makes lazily-mounted content (`v-lazy` rows) reachable at all.

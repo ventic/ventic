@@ -55,4 +55,22 @@ const link = box(-236, 120, 220, 44)
 assert.strictEqual(pickDirection(grid[0]!, [link, ...grid.slice(1)], 'left'), 0, 'left off the grid reaches the nav')
 assert.strictEqual(pickDirection(grid[1]!, [link, ...grid.filter(b => b !== grid[1])], 'left'), 1, 'the nearer card wins over the nav')
 
+// Out of the sidebar and into the posters, which is the move the drawer exists
+// for. The filter bar above the grid is a short box and a poster is a tall one,
+// so by centre distance the dropdown won every time and the grid was
+// unreachable from the nav — measured on the TV at 960x540.
+const navMovies = box(8, 124, 220, 44)
+const sortMenu = box(260, 81, 168, 24)
+const poster = box(260, 130, 211, 361)
+assert.strictEqual(pickDirection(navMovies, [sortMenu, poster], 'right'), 1, 'right off the nav reaches the poster, not the filter bar')
+
+// And back: the item level with the card, rather than whatever the list calls
+// first. Ties go to the earliest in document order, which reads top-down.
+const navLinks = [box(8, 76, 220, 44), navMovies, box(8, 172, 220, 44)]
+assert.strictEqual(pickDirection(poster, navLinks, 'left'), 1, 'left off a poster reaches the nav item beside it')
+
+// The seek rail spans the window and the buttons sit under it, so every button
+// overlaps it: the one directly above must not become "every direction".
+assert.strictEqual(pickDirection(seek, bar, 'down'), 0, 'down off the rail takes the first button')
+
 console.info('d-pad picker: ok')

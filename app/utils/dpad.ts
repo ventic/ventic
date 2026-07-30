@@ -3,8 +3,19 @@ export type Dir = 'up' | 'down' | 'left' | 'right'
 /** The only parts of a DOMRect the picker reads, so it can be checked without a DOM. */
 export interface Box { left: number, top: number, right: number, bottom: number }
 
-function centre(box: Box, axis: 'x' | 'y') {
-  return axis === 'x' ? (box.left + box.right) / 2 : (box.top + box.bottom) / 2
+/**
+ * How far apart two boxes are on one axis, counting any overlap as level.
+ *
+ * Centres would be the obvious measure and are the wrong one: a 361px poster
+ * and a 44px nav link sitting side by side are 160px apart by centre even when
+ * the link is squarely inside the poster's span, which is enough to lose to a
+ * short dropdown well above both. What "off to the side" should mean is that
+ * the boxes don't face each other at all.
+ */
+function apart(a: Box, b: Box, axis: 'x' | 'y') {
+  const [aMin, aMax] = axis === 'x' ? [a.left, a.right] : [a.top, a.bottom]
+  const [bMin, bMax] = axis === 'x' ? [b.left, b.right] : [b.top, b.bottom]
+  return Math.max(0, Math.max(aMin, bMin) - Math.min(aMax, bMax))
 }
 
 /**
@@ -32,9 +43,7 @@ export function pickDirection(from: Box, boxes: Box[], dir: Dir): number {
     if (gap < -2)
       return
 
-    const off = horizontal
-      ? Math.abs(centre(box, 'y') - centre(from, 'y'))
-      : Math.abs(centre(box, 'x') - centre(from, 'x'))
+    const off = apart(from, box, horizontal ? 'y' : 'x')
 
     // Sideways drift costs double, so a neighbour in line always beats a closer
     // one in the next column.
