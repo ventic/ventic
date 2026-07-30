@@ -28,11 +28,18 @@ export function isTv(): boolean | null {
   return bridge()?.tv?.() ?? null
 }
 
-/** One drive Android will let the app write to. `free` is bytes. */
+/** One drive Android knows about. `free` is bytes. */
 export interface StorageVolume {
   name: string
   path: string
   free: number
+  /**
+   * False for a drive that is plugged in and mounted but that Android refuses
+   * to give this app a folder on — an NTFS stick in a TV, mounted read-only.
+   * It has no `path` and nothing can be written to it; it is in the list so the
+   * screen can say why, rather than showing nothing at all.
+   */
+  writable: boolean
 }
 
 /**

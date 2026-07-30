@@ -86,10 +86,24 @@ assert.ok(activity.includes('"VenticScreen"'), 'under that name')
 // leaves the storage screen with nothing to pick and no error either.
 assert.ok(activity.includes('fun volumes()'), 'MainActivity answers volumes()')
 assert.ok(platform.includes('volumes?.()'), 'and storageVolumes() is what calls it')
-for (const field of ['name', 'path', 'free']) {
+for (const field of ['name', 'path', 'free', 'writable']) {
   assert.ok(activity.includes(`"${field}"`), `each drive carries ${field}`)
   assert.ok(platform.includes(field), `and StorageVolume still reads it as ${field}`)
 }
+
+// A drive Android mounted but won't create a folder on is dropped from
+// getExternalFilesDirs without a word — an NTFS stick in a TV, which is the
+// common case and reads as "the app can't see my USB". The second pass over
+// getStorageVolumes is the only thing that finds it, and the storage screen
+// only knows to explain it because that pass marks it unwritable.
+assert.ok(activity.includes('storageVolumes'), 'MainActivity also asks StorageManager for every volume')
+assert.ok(activity.includes('isRemovable'), 'to catch the removable ones it got no folder on')
+const storageScreen = readFileSync(
+  new URL('../app/components/settings/Storage.vue', import.meta.url),
+  'utf8',
+)
+assert.ok(storageScreen.includes('v.writable'), 'and the storage screen splits the list on it')
+assert.ok(/FAT32/.test(storageScreen), 'telling the user what to reformat it as')
 
 // onPause is the last moment a service may promote itself to the foreground
 // (API 31+), and onResume the only thing that brings it back after Android

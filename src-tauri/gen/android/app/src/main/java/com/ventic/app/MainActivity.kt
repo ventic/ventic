@@ -156,20 +156,56 @@ class MainActivity : TauriActivity() {
      * `content://` URI, and the torrent engine writes through a file path; these
      * also need no permission. The catch is the usual one for app-specific
      * storage: uninstalling takes the downloads with it.
+     *
+     * A drive we cannot write to is listed too, with `writable` false and no
+     * path. `getExternalFilesDirs` drops a volume whose folder it failed to
+     * create and says nothing about it, which is exactly what an NTFS stick in a
+     * TV is: mounted read-only, because these kernels can only read NTFS. Left
+     * out, a stick the box itself lists everywhere is missing here for no
+     * visible reason; listed, the storage screen can say "format it as exFAT".
      */
     @JavascriptInterface
     fun volumes(): String {
       val storage = getSystemService(StorageManager::class.java)
       val out = JSONArray()
+      val usable = HashSet<String?>()
       for (dir in getExternalFilesDirs(null).filterNotNull()) {
         // A card slot with nothing in it still gets an entry, pointing at a path
         // that isn't there.
         if (Environment.getExternalStorageState(dir) != Environment.MEDIA_MOUNTED) continue
-        val name = runCatching {
-          storage?.getStorageVolume(dir)?.getDescription(this@MainActivity)
-        }.getOrNull() ?: dir.path
+        val volume = runCatching { storage?.getStorageVolume(dir) }.getOrNull()
+        // Built-in storage is the one volume with no UUID, and never removable,
+        // so it can't be mistaken for a stick below.
+        usable.add(volume?.uuid)
+        val name = runCatching { volume?.getDescription(this@MainActivity) }.getOrNull() ?: dir.path
         val free = runCatching { StatFs(dir.path).availableBytes }.getOrDefault(0L)
-        out.put(JSONObject().put("name", name).put("path", dir.path).put("free", free))
+        out.put(
+          JSONObject().put("name", name).put("path", dir.path).put("free", free)
+            .put("writable", true),
+        )
+      }
+
+      for (volume in runCatching { storage?.storageVolumes }.getOrNull().orEmpty()) {
+        if (!volume.isRemovable || volume.uuid in usable) continue
+        // Every way a drive can be plugged in and useless, because each one
+        // looks identical from the sofa — nothing appears. `mounted` is here
+        // because a read-only mount often reports itself as plain mounted and
+        // only fails at the mkdir, and `unmountable` because a TV that has no
+        // driver for the filesystem never gets as far as a mount at all.
+        if (volume.state !in setOf(
+            Environment.MEDIA_MOUNTED,
+            Environment.MEDIA_MOUNTED_READ_ONLY,
+            Environment.MEDIA_UNMOUNTABLE,
+            Environment.MEDIA_NOFS,
+          )
+        ) {
+          continue
+        }
+        val name = runCatching { volume.getDescription(this@MainActivity) }.getOrNull()
+        out.put(
+          JSONObject().put("name", name ?: "USB drive").put("path", "").put("free", 0)
+            .put("writable", false),
+        )
       }
       return out.toString()
     }

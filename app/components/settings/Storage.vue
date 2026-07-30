@@ -11,6 +11,18 @@ const canReveal = canOpenFolder()
 // there the folder is picked from a list. Read on mount: plug a stick in and
 // come back to this screen and it's there.
 const volumes = storageVolumes()
+const drives = volumes?.filter(v => v.writable)
+// Plugged in, mounted, and unwritable — almost always NTFS. Naming it is the
+// only way the user learns the stick has to be reformatted; Android fails the
+// folder silently and every app on the box is equally stuck.
+const blocked = volumes?.filter(v => !v.writable) ?? []
+
+// Room for one film. Under it a TV box can't finish a download at all, which is
+// the state a 2 GB set-top arrives in — worth saying out loud rather than
+// leaving the user to discover it as a stalled download.
+const FILM_BYTES = 8 * 1024 ** 3
+const cramped = isTv() === true && !!drives?.length && drives.every(d => d.free < FILM_BYTES)
+
 const confirmClear = ref(false)
 const confirmPrune = ref(false)
 
@@ -73,9 +85,9 @@ async function openFolder() {
       <!-- One button per drive rather than a radio group: it is the shape a
            remote already knows, and the free space is the whole reason to pick
            one over the other. -->
-      <div v-if="volumes?.length" class="flex flex-col gap-2">
+      <div v-if="drives?.length" class="flex flex-col gap-2">
         <v-btn
-          v-for="volume in volumes"
+          v-for="volume in drives"
           :key="volume.path"
           :prepend-icon="settings.downloadDir === volume.path ? mdiCheckCircle : mdiUsbFlashDrive"
           :variant="settings.downloadDir === volume.path ? 'tonal' : 'outlined'"
@@ -85,6 +97,29 @@ async function openFolder() {
           {{ volume.name }} · {{ bytesText(volume.free) }} free
         </v-btn>
       </div>
+
+      <!-- Nothing to press: the fix is on a computer, with the stick out. -->
+      <v-alert
+        v-for="volume in blocked"
+        :key="volume.name"
+        type="warning"
+        variant="tonal"
+        density="compact"
+        :text="`${volume.name} is plugged in, but this device won't let anything be written to it —
+          it can't handle the format the drive is in. Reformat it as FAT32, which every Android box
+          accepts, and it turns up here as somewhere downloads can go.`"
+      />
+
+      <!-- Not while a drive is sitting there unreadable: "plug one in" is the
+           wrong advice when one is plugged in. -->
+      <v-alert
+        v-if="cramped && !blocked.length"
+        type="info"
+        variant="tonal"
+        density="compact"
+        text="There is barely room for one film here. Plug a USB drive into the box — formatted
+          FAT32, which every Android box accepts — and it appears above to download onto instead."
+      />
 
       <div class="flex flex-wrap items-center gap-2">
         <v-btn v-if="!volumes" :prepend-icon="mdiFolderSearchOutline" variant="tonal" @click="browse">
