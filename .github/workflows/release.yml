@@ -1,0 +1,106 @@
+# Builds every bundle for a tagged version and attaches them to a draft release.
+#
+#   bun run bump   → pick a version; it commits, tags vX.Y.Z and pushes
+#   the tag push   → this
+#
+# The release is left as a *draft*: check the artifacts, write the notes, then
+# publish. Nothing here signs anything, so macOS and Windows both warn on first
+# launch — the alternative is a paid certificate on each.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+# Baked into the frontend bundle at build time (nuxt.config runtimeConfig).
+env:
+  TMDB_API: ${{ secrets.TMDB_API }}
+  TRAKT_ID: ${{ secrets.TRAKT_ID }}
+  TRAKT_SECRET: ${{ secrets.TRAKT_SECRET }}
+
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # 22.04 rather than latest: the .deb and .AppImage link against the
+          # runner's glibc, so building on the oldest supported one is what
+          # makes them run anywhere else.
+          - os: ubuntu-22.04
+            args: ''
+            targets: ''
+          # Native, so NSIS *and* the .msi come out — neither cross-compiles.
+          - os: windows-latest
+            args: ''
+            targets: ''
+          # One .dmg for both Apple architectures.
+          - os: macos-latest
+            args: --target universal-apple-darwin
+            targets: aarch64-apple-darwin,x86_64-apple-darwin
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.targets }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+
+      - run: bun install --frozen-lockfile
+
+      # Windows ships no mpv, so the bundle carries one (tauri.windows.conf.json).
+      - if: runner.os == 'Windows'
+        run: bun scripts/mpv.ts
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # linuxdeploy's own ancient `strip` fails on .relr.dyn — see scripts/build.ts.
+          NO_STRIP: 1
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: Ventic ${{ github.ref_name }}
+          releaseDraft: true
+          args: ${{ matrix.args }}
+
+  android:
+    # The draft release has to exist before there is anything to upload to.
+    needs: desktop
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,x86_64-linux-android
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - run: bun install --frozen-lockfile
+
+      # NDK comes from the runner image's ANDROID_NDK_HOME, which scripts/build.ts picks up.
+      - run: bun run build:android
+
+      - name: Attach the APK
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          apk=$(ls src-tauri/gen/android/app/build/outputs/apk/universal/debug/*.apk)
+          mv "$apk" "Ventic_${GITHUB_REF_NAME#v}.apk"
+          gh release upload "$GITHUB_REF_NAME" "Ventic_${GITHUB_REF_NAME#v}.apk" --clobber

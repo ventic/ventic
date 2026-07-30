@@ -188,7 +188,7 @@ async function buildWindows(extra: string[]) {
   const out = `src-tauri/target/${WIN_TARGET}/release/`
   console.log(`\n✓ ${out}ventic.exe — copy it over together with the mpv/ folder beside it.\n`)
   if (nsis)
-    console.log(`✓ ${out}bundle/nsis/Ventic_1.6.0_x64-setup.exe\n`)
+    console.log(`✓ ${out}bundle/nsis/ — the installer, named for the version in tauri.conf.json\n`)
   else
     console.log('For a real installer, install NSIS (Arch: yay -S nsis) and run this again.\n')
 

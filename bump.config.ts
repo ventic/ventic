@@ -2,9 +2,10 @@ import { defineConfig } from 'bumpp'
 
 export default defineConfig({
   release: 'prompt',
-  commit: false,
-  tag: false,
-  push: false,
+  // The pushed tag is what starts .github/workflows/release.yml.
+  commit: true,
+  tag: true,
+  push: true,
   files: [
     'package.json',
     'src-tauri/tauri.conf.json',
