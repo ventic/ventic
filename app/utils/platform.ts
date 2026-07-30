@@ -1,14 +1,6 @@
 import { platform } from '@tauri-apps/plugin-os'
 
 /**
- * Can this OS show a folder in a file manager?
- *
- * Android can't, twice over: downloads land in the app's private cache, which
- * no other app is allowed to read, and the shell plugin's `open` shells out to
- * `xdg-open`/`gio` — binaries that don't exist there, so every call fails with
- * ENOENT. The buttons are hidden rather than left to error.
- */
-/**
  * Does the network we're on charge for bytes — mobile data, or a metered
  * hotspot?
  *
@@ -20,10 +12,53 @@ import { platform } from '@tauri-apps/plugin-os'
  * stays out of the way there rather than guessing.
  */
 export function meteredNetwork(): boolean | null {
-  const bridge = (globalThis as { VenticScreen?: { metered?: () => boolean } }).VenticScreen
-  return bridge?.metered?.() ?? null
+  return bridge()?.metered?.() ?? null
 }
 
+/** One drive Android will let the app write to. `free` is bytes. */
+export interface StorageVolume {
+  name: string
+  path: string
+  free: number
+}
+
+/**
+ * The drives downloads can be sent to, built-in storage first and a plugged-in
+ * USB stick or card after it. `null` everywhere else, where the platform has a
+ * folder chooser and any path at all will do — Android has neither: it offers
+ * no directory picker, and the only paths it will let us write are the app's
+ * own folder on each volume (see MainActivity).
+ *
+ * Read once when asked, not watched: a drive plugged in later shows up the next
+ * time the Storage screen is opened.
+ */
+export function storageVolumes(): StorageVolume[] | null {
+  const json = bridge()?.volumes?.()
+  if (!json)
+    return null
+  try {
+    return JSON.parse(json) as StorageVolume[]
+  }
+  catch {
+    return null
+  }
+}
+
+/** MainActivity's `Screen`, present only inside the Android app. */
+function bridge() {
+  return (globalThis as {
+    VenticScreen?: { metered?: () => boolean, volumes?: () => string }
+  }).VenticScreen
+}
+
+/**
+ * Can this OS show a folder in a file manager?
+ *
+ * Android can't, twice over: downloads land in a folder only this app is
+ * allowed to read, and the shell plugin's `open` shells out to `xdg-open`/`gio`
+ * — binaries that don't exist there, so every call fails with ENOENT. The
+ * buttons are hidden rather than left to error.
+ */
 export function canOpenFolder() {
   try {
     return platform() === 'linux' || platform() === 'windows' || platform() === 'macos'

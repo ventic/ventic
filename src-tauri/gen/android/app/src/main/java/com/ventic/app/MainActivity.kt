@@ -8,6 +8,9 @@ import android.net.ConnectivityManager
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.os.StatFs
+import android.os.storage.StorageManager
 import android.view.KeyEvent
 import android.view.WindowManager
 import android.webkit.JavascriptInterface
@@ -16,6 +19,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import org.json.JSONArray
+import org.json.JSONObject
 
 class MainActivity : TauriActivity() {
   private var web: WebView? = null
@@ -110,6 +115,35 @@ class MainActivity : TauriActivity() {
     @JavascriptInterface
     fun metered(): Boolean =
       getSystemService(ConnectivityManager::class.java)?.isActiveNetworkMetered ?: false
+
+    /**
+     * Every drive this app may write a film to, as JSON — the built-in storage
+     * and whatever is plugged into the USB port. A TV box ships with a couple of
+     * gigabytes to its name, so a stick is often the only thing on it that can
+     * hold one at all, and there is no folder chooser on Android to find it with.
+     *
+     * Only the app's own directory on each volume qualifies. Everything else on
+     * a removable drive is reachable through SAF alone, which hands back a
+     * `content://` URI, and the torrent engine writes through a file path; these
+     * also need no permission. The catch is the usual one for app-specific
+     * storage: uninstalling takes the downloads with it.
+     */
+    @JavascriptInterface
+    fun volumes(): String {
+      val storage = getSystemService(StorageManager::class.java)
+      val out = JSONArray()
+      for (dir in getExternalFilesDirs(null).filterNotNull()) {
+        // A card slot with nothing in it still gets an entry, pointing at a path
+        // that isn't there.
+        if (Environment.getExternalStorageState(dir) != Environment.MEDIA_MOUNTED) continue
+        val name = runCatching {
+          storage?.getStorageVolume(dir)?.getDescription(this@MainActivity)
+        }.getOrNull() ?: dir.path
+        val free = runCatching { StatFs(dir.path).availableBytes }.getOrDefault(0L)
+        out.put(JSONObject().put("name", name).put("path", dir.path).put("free", free))
+      }
+      return out.toString()
+    }
 
     @JavascriptInterface
     fun setPlayerMode(on: Boolean) {

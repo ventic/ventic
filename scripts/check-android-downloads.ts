@@ -81,6 +81,16 @@ assert.ok(platform.includes('metered?.()'), 'and meteredNetwork() is what calls 
 assert.ok(platform.includes('VenticScreen'), 'through the interface MainActivity registers')
 assert.ok(activity.includes('"VenticScreen"'), 'under that name')
 
+// And the same again for the drive list, which is the only way to send downloads
+// to a USB stick on a TV — Android offers no folder chooser, so a rename here
+// leaves the storage screen with nothing to pick and no error either.
+assert.ok(activity.includes('fun volumes()'), 'MainActivity answers volumes()')
+assert.ok(platform.includes('volumes?.()'), 'and storageVolumes() is what calls it')
+for (const field of ['name', 'path', 'free']) {
+  assert.ok(activity.includes(`"${field}"`), `each drive carries ${field}`)
+  assert.ok(platform.includes(field), `and StorageVolume still reads it as ${field}`)
+}
+
 // onPause is the last moment a service may promote itself to the foreground
 // (API 31+), and onResume the only thing that brings it back after Android
 // stopped it while idle. Losing either leaves the notification to luck.

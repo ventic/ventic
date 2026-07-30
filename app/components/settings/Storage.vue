@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { mdiDeleteOutline, mdiDeleteSweepOutline, mdiFolderOpenOutline, mdiFolderSearchOutline, mdiRestore } from '@mdi/js'
+import { mdiCheckCircle, mdiDeleteOutline, mdiDeleteSweepOutline, mdiFolderOpenOutline, mdiFolderSearchOutline, mdiRestore, mdiUsbFlashDrive } from '@mdi/js'
 
 const settings = useSettingsStore()
 const downloads = useDownloadsStore()
@@ -7,6 +7,10 @@ const library = useLibraryStore()
 
 const error = ref('')
 const canReveal = canOpenFolder()
+// Android names the drives it will accept instead of offering a chooser, so
+// there the folder is picked from a list. Read on mount: plug a stick in and
+// come back to this screen and it's there.
+const volumes = storageVolumes()
 const confirmClear = ref(false)
 const confirmPrune = ref(false)
 
@@ -35,8 +39,8 @@ async function browse() {
       settings.downloadDir = picked
   }
   catch (e) {
-    // Android has no directory chooser, and a browser-only dev session has no
-    // Tauri at all — the path field beside the button still works.
+    // A browser-only dev session has no Tauri at all — the path field beside the
+    // button still works. (Android never gets here: it lists its drives instead.)
     error.value = `${e}`
   }
 }
@@ -50,8 +54,12 @@ async function openFolder() {
 <template>
   <div class="flex flex-col gap-8">
     <settings-section
-      title="Download folder"
-      hint="Where films and episodes are written. Torrents already downloaded stay where they are."
+      :title="volumes ? 'Where downloads go' : 'Download folder'"
+      :hint="volumes
+        ? `Which drive films and episodes are written to — a plugged-in stick usually holds far more
+          than the box itself. Uninstalling the app still removes them. Torrents already downloaded
+          stay where they are.`
+        : 'Where films and episodes are written. Torrents already downloaded stay where they are.'"
     >
       <v-text-field
         v-model="settings.downloadDir"
@@ -59,10 +67,27 @@ async function openFolder() {
         placeholder="Default: the app's own cache folder"
         persistent-placeholder
         hide-details
+        :readonly="!!volumes"
       />
 
+      <!-- One button per drive rather than a radio group: it is the shape a
+           remote already knows, and the free space is the whole reason to pick
+           one over the other. -->
+      <div v-if="volumes?.length" class="flex flex-col gap-2">
+        <v-btn
+          v-for="volume in volumes"
+          :key="volume.path"
+          :prepend-icon="settings.downloadDir === volume.path ? mdiCheckCircle : mdiUsbFlashDrive"
+          :variant="settings.downloadDir === volume.path ? 'tonal' : 'outlined'"
+          class="justify-start"
+          @click="settings.downloadDir = volume.path"
+        >
+          {{ volume.name }} · {{ bytesText(volume.free) }} free
+        </v-btn>
+      </div>
+
       <div class="flex flex-wrap items-center gap-2">
-        <v-btn :prepend-icon="mdiFolderSearchOutline" variant="tonal" @click="browse">
+        <v-btn v-if="!volumes" :prepend-icon="mdiFolderSearchOutline" variant="tonal" @click="browse">
           Browse…
         </v-btn>
         <v-btn
