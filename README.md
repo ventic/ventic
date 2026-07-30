@@ -528,7 +528,7 @@ Needs a few things the desktop build doesn't, and both Android scripts refuse wi
 if any are missing:
 
 - `rustup` (a distro-packaged rust can't add the Android targets) plus
-  `rustup target add aarch64-linux-android x86_64-linux-android`
+  `rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android`
 - Android SDK + NDK, with `ANDROID_HOME` exported
 - JDK 17–21 — Gradle's Android plugin rejects anything newer
 
@@ -544,7 +544,7 @@ export ANDROID_HOME="$HOME/Android/Sdk"
 sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;29.0.14206865"
 
 # 3. Rust targets.
-rustup target add aarch64-linux-android x86_64-linux-android
+rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
 ```
 
 Put `JAVA_HOME` and `ANDROID_HOME` in your shell profile — every command needs them, and the

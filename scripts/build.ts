@@ -263,13 +263,16 @@ function androidEnv(): Record<string, string> {
     )
   }
 
-  // aarch64 covers every TV box and modern phone; x86_64 covers the emulator.
-  // The 32-bit ABIs only matter for hardware old enough not to be worth testing.
-  checkRustTargets(['aarch64-linux-android', 'x86_64-linux-android'])
+  // aarch64 covers modern phones and TV boxes; x86_64 covers the emulator.
+  // armv7 is not optional despite the CPUs being 64-bit: a lot of TVs (Philips
+  // and the other MediaTek sets) ship a 32-bit userspace, so `ro.product.cpu.
+  // abilist` is armeabi-v7a only and an APK without it fails to install with
+  // nothing but "app isn't compatible with your device" on screen.
+  checkRustTargets(['aarch64-linux-android', 'armv7-linux-androideabi', 'x86_64-linux-android'])
   return { NDK_HOME: ndk }
 }
 
-const ANDROID_ABIS = ['aarch64', 'x86_64']
+const ANDROID_ABIS = ['aarch64', 'armv7', 'x86_64']
 
 function buildAndroid(extra: string[]) {
   // The APK is a debug build only so it comes out signed; it does not also need
