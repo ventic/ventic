@@ -1,0 +1,99 @@
+[package]
+name = "ventic"
+version = "1.6.0"
+description = "A media library and BitTorrent player, on desktop and Android TV"
+authors = [ "Tilen Pirih" ]
+license = "MIT"
+edition = "2021"
+
+[lib]
+name = "ventic_lib"
+crate-type = [
+  "staticlib",
+  "cdylib",
+  "rlib"
+]
+
+[build-dependencies.tauri-build]
+version = "2.5.3"
+features = [ ]
+
+[dependencies]
+tauri-plugin-shell = "2.3.4"
+# The storage folder picker. Only the desktop backends open a real chooser;
+# Android falls back to the path field next to the button.
+tauri-plugin-dialog = "2"
+tauri-plugin-notification = "2.3.3"
+tauri-plugin-os = "2.3.2"
+tauri-plugin-fs = "2.5.1"
+tauri-plugin-store = "2.4.2"
+serde_json = "1"
+anyhow = "1"
+librqbit-dualstack-sockets = "0.7"
+tauri-plugin-deep-link = "2.4.9"
+
+# Embedding mpv means creating an X11 child window and shaping it (see
+# src/player.rs). x11-dl's build script needs libX11 present, so it can only be
+# a dependency where that is true.
+[target.'cfg(target_os = "linux")'.dependencies]
+raw-window-handle = "0.6"
+x11-dl = "2"
+
+# The same job on Windows: a child HWND, a window region for the cutouts and a
+# named pipe for mpv's IPC (see src/player_windows.rs).
+[target.'cfg(target_os = "windows")'.dependencies]
+raw-window-handle = "0.6"
+
+[target.'cfg(target_os = "windows")'.dependencies.windows-sys]
+version = "0.61"
+features = [
+  "Win32_Foundation",
+  "Win32_Graphics_Gdi",
+  "Win32_System_LibraryLoader",
+  "Win32_System_Pipes",
+  "Win32_System_Threading",
+  "Win32_UI_WindowsAndMessaging"
+]
+
+# statvfs for the storage budget, dlopen for libXext. Windows takes neither path.
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+# Cargo resolves `[target.'cfg(…)']` against the target triple only, and Tauri's
+# `desktop` cfg is not one of its predicates — spelled that way the crate is
+# never linked and `#[cfg(desktop)]` code fails to find it. The triples have to
+# be named. `deep-link` is what makes a second launch forward its URL to the
+# running app instead of dying silently.
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-single-instance = { version = "2.4.3", features = ["deep-link"] }
+
+# rustls, not the default native-tls: openssl-sys can't cross-compile to
+# aarch64-linux-android without a sysroot, and it comes in twice — via reqwest
+# and via the crypto-hash SHA-1 backend. `rust-tls` swaps both for ring.
+[dependencies.librqbit]
+version = "9.0.0-rc.0"
+default-features = false
+features = [ "rust-tls", "http-api", "http-api-client", "tracing-subscriber-utils" ]
+
+[dependencies.tokio]
+version = "1"
+features = [ "rt-multi-thread" ]
+
+[features]
+default = ["desktop"]
+desktop = ["tauri/tray-icon"]
+
+# Debug builds are what `tauri dev` and the test APK use, and an unoptimised
+# librqbit hashes pieces slowly enough to starve playback on a TV box. Optimise
+# the dependencies (which we never step through) and leave our own crate alone
+# so rebuilds stay quick.
+[profile.dev.package."*"]
+opt-level = 2
+
+[dependencies.tauri]
+version = "2.9.5"
+features = ["unstable"]
+
+[dependencies.serde]
+version = "1"
+features = [ "derive" ]

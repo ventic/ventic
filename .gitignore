@@ -1,0 +1,17 @@
+node_modules
+.DS_Store
+*.log*
+.data
+.nuxt
+.nitro
+.cache
+.output
+.env
+.cargo
+dist
+src-tauri/target
+# Downloaded by scripts/mpv.ts and bundled into Windows builds.
+src-tauri/mpv
+
+# Local editor/agent state.
+.claude/settings.local.json

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The torrent engine serves the stream over plain http on the loopback
+     interface. The webview was allowed to open that by its own rules; ExoPlayer
+     (Player.kt) opens the same URL with an ordinary http stack, which is not,
+     so say it here.
+
+     Loopback only, and only because those bytes never leave the device — there
+     is nothing on that path to encrypt them against. Everything else stays
+     https, which is the part `android:usesCleartextTraffic` could not express:
+     it is one flag for the whole app. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
+</network-security-config>

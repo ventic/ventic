@@ -1,0 +1,8 @@
+{
+	"bundle": {
+		"resources": [
+			"mpv/mpv.exe",
+			"mpv/LICENSE.txt"
+		]
+	}
+}

@@ -1,0 +1,146 @@
+/* Cascade order. Later layers win, regardless of specificity.
+   `app` sits first on purpose: it holds bare element defaults, and `a { color }`
+   must lose to `.v-btn` for links wrapped in a button. UnoCSS utilities sit
+   after Vuetify's component styles so a utility class can override them. */
+@layer app;
+
+@layer uno-base, uno-theme;
+
+@layer vuetify-core, vuetify-components, vuetify-overrides, vuetify-utilities;
+
+@layer uno-shortcuts, uno-default;
+
+@layer vuetify-final;
+
+@layer app {
+  /* The only place a font is named. Vuetify's $heading-font-family and
+     $body-font-family already default to these vars, and uno.config.ts points
+     `font-heading` / `font-body` at them, so the MD3 type shortcuts and
+     Vuetify's own components resolve to the same faces. */
+  :root {
+    --v-font-heading: 'Roboto', sans-serif;
+    --v-font-body: 'Roboto', sans-serif;
+
+    /* How much of each edge the OS has already spoken for: Android's status bar
+       and gesture pill, a phone's notch in landscape. Everywhere else these are
+       0, so the same rule is a no-op on desktop and on a TV. Named once here
+       because `env()` only resolves against the viewport meta — see nuxt.config
+       — and a plain `env(...)` inside a UnoCSS arbitrary value is unreadable. */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+  }
+
+  body {
+    margin: 0;
+    overflow: hidden;
+    /* .v-application is transparent (see the last layer) so the art shows
+       through, which leaves body holding the base colour. */
+    background-color: rgb(var(--v-theme-background));
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* Headings are here for semantics/screen readers; the look comes from the
+     .text-h* class on them, which sits in a later layer and so wins. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 0;
+    font-size: inherit;
+    font-weight: inherit;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  /* A finger scrolls by dragging the content, so the bar is a 10px strip of
+     nothing — and on a phone that strip is a real fraction of the width. */
+  @media (pointer: coarse) {
+    * {
+      scrollbar-width: none;
+    }
+
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: 10px;
+    background-color: color-mix(in srgb, rgb(var(--v-theme-on-surface)) 22%, transparent);
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in srgb, rgb(var(--v-theme-on-surface)) 40%, transparent);
+  }
+
+  /* Sliders and cast rows scroll horizontally; a visible bar would sit on the
+     art. No utility for this in wind4, hence the two lines here. */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Last layer wins, so this is where app-wide overrides of Vuetify's own
+   component styles go. `.panel` is the frosted surface the chrome floats on:
+   sidebar, toolbars, and every menu/select popup. */
+@layer vuetify-final {
+  .panel,
+  .v-overlay__content > .v-list,
+  .v-overlay__content > .v-card,
+  .v-overlay__content > .v-sheet {
+    background-color: color-mix(in srgb, rgb(var(--v-theme-surface-container)) 78%, transparent) !important;
+    backdrop-filter: blur(24px) saturate(140%);
+  }
+
+  /* Vuetify's color props compile to bg-* utility classes, which this app
+     doesn't ship ($color-pack: false), so panels clear their children here. */
+  .panel .v-list,
+  .panel .v-toolbar__content {
+    background: transparent;
+  }
+
+  /* The layouts inset their own content, but a drawer is `position: fixed` and
+     so sits outside all of it — it has to clear the system bars itself. */
+  .v-navigation-drawer {
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+  }
+
+  /* v-main hard-codes a solid background that would hide the backdrop art. */
+  .v-application,
+  .v-application__wrap,
+  .v-main {
+    background: transparent;
+  }
+
+  /* A remote has no cursor, so focus has to be as loud as hover is. `.dpad` goes
+     on <html> the first time an arrow key arrives and comes off again when a
+     mouse moves (plugins/dpad.client.ts), so desktop never sees this.
+
+     `:focus`, not `:focus-visible`: focus moved by script doesn't reliably count
+     as visible, and in d-pad mode every focus is. It has to sit in the last
+     layer because `.v-btn` sets `outline: none` in Vuetify's own; the exclusions
+     are the components that draw their own ring, which `outline-none` marks.
+     The inset offset matters — a scroller clips anything drawn outside a card. */
+  html.dpad :focus:not([tabindex='-1'], .outline-none) {
+    outline: 2px solid rgb(var(--v-theme-primary));
+    outline-offset: -2px;
+  }
+}
