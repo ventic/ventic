@@ -55,6 +55,18 @@ features = [
   "Win32_UI_WindowsAndMessaging"
 ]
 
+# macOS can embed no other process's window, so mpv is not a process there: it
+# is libmpv in this one, rendering into an NSOpenGLView (see
+# src/player_render_mac.rs). libmpv2-sys ships pregenerated bindings, so this
+# needs no bindgen and no libclang — only a libmpv to link against, which
+# `brew install mpv` provides and build.rs points the linker at.
+[target.'cfg(target_os = "macos")'.dependencies]
+libmpv2 = "4"
+libmpv2-sys = "4"
+objc2 = "0.6"
+objc2-foundation = { version = "0.3", features = ["NSGeometry", "NSString", "NSValue"] }
+objc2-app-kit = { version = "0.3", features = ["NSWindow", "NSView", "NSOpenGL", "NSOpenGLView", "NSResponder"] }
+
 # statvfs for the storage budget, dlopen for libXext. Windows takes neither path.
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"

@@ -1,5 +1,7 @@
 import { spawn } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import { createServer } from 'node:net'
+import { join } from 'node:path'
 import process from 'node:process'
 import { ensureMpv } from './mpv'
 
@@ -30,6 +32,14 @@ async function main(): Promise<void> {
   // fails the dev build the same way it fails a release one.
   if (process.platform === 'win32')
     await ensureMpv()
+
+  // macOS links libmpv instead of launching mpv, so without it nothing compiles
+  // — and the reason is a linker error a long way down the output.
+  if (process.platform === 'darwin' && !['/opt/homebrew/lib', '/usr/local/lib', '/opt/local/lib']
+    .some(dir => ['libmpv.dylib', 'libmpv.2.dylib'].some(lib => existsSync(join(dir, lib))))) {
+    console.error('\n✗ libmpv is missing — the player links it. Install it with:\n    brew install mpv\n')
+    process.exit(1)
+  }
 
   const port = await findAvailablePort(DEFAULT_PORT)
 

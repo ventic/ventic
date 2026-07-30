@@ -11,11 +11,34 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
 - `bun run build` makes native bundles, `bun run build:windows` a cross-compiled
   `.exe`, `bun run build:android` an APK. `.msi` and macOS need their own OS.
   There is no CI — builds are local. See the README for what plays where.
-- The embedded mpv backend has one file per windowing system: X11 in
-  `src-tauri/src/player.rs`, Win32 in `player_windows.rs`, and stubs in
-  `player_unsupported.rs` for macOS/Android. Keep all three in sync when you add
-  or change a `player_*` command, or the other targets stop compiling.
-- Where mpv can't be embedded (Android, macOS, a plain browser) the player falls
+- The mpv backend has one file per windowing system: X11 in
+  `src-tauri/src/player.rs`, Win32 in `player_windows.rs`, macOS in
+  `player_macos.rs` (+ `player_render_mac.rs`), and stubs in
+  `player_unsupported.rs` for Android. Keep all four in sync when you add or
+  change a `player_*` command, or the other targets stop compiling. The IPC
+  socket the two unix backends share is `player_socket.rs`.
+- **macOS is not a child window, it is libmpv in-process.** The platform embeds
+  no other process's window and mpv's Cocoa output takes no `--wid`, so there is
+  no process to parent: the app links libmpv, sets `vo=libmpv`, and renders the
+  frames itself into an `NSOpenGLView` (`player_render_mac.rs`). Two rules follow.
+  The view goes **under** the WKWebView, whose background is switched off while a
+  film is up — so macOS uses Android's compositing (`behind`, the `ventic-video`
+  class, DOM input) with mpv's protocol, and punches no cutouts. And AppKit, the
+  GL context and `mpv_render_context` are all the **main thread's**: hop with
+  `run_on_main_thread`, and never hold the `PlayerState` lock across a hop that
+  needs it back.
+- Control is still the IPC socket even there — libmpv honours
+  `input-ipc-server`, so `player_socket.rs` and every command the frontend sends
+  work unchanged. The C API is used only to create the handle, load the file and
+  tear it down. `player_status` has no process to watch, so it asks
+  `idle-active` instead.
+- You can type-check the macOS build from Linux, which is worth doing before
+  claiming it works: `rustup target add aarch64-apple-darwin` then
+  `cargo check --target aarch64-apple-darwin`. It gets as far as
+  `objc2-exception-helper`, which compiles a `.m` file — point
+  `CC_aarch64_apple_darwin` at any stub that writes an object file (nothing is
+  linked during a check).
+- Where mpv can't be run at all (Android, a plain browser) the player falls
   back to the webview's `<video>`. `app/utils/htmlvideo.ts` answers the *same*
   mpv command/property protocol, so `MpvPlayer.vue` is one component with one
   `native` flag rather than two players — a new control needs no second
@@ -24,7 +47,11 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
 - Linux uses the system mpv; Windows has none, so `scripts/mpv.ts` downloads one
   into `src-tauri/mpv/` and `tauri.windows.conf.json` bundles it as a resource.
   The build scripts call that before invoking tauri — a missing resource fails
-  the build.
+  the build. macOS is neither: it *links* libmpv, so `brew install mpv` is a
+  build dependency as much as a runtime one, and `build.rs` adds the Homebrew and
+  MacPorts lib directories to the linker's search path because neither is on it.
+  Bundling that dylib into the .app (so it runs on a Mac without Homebrew) is
+  still to do.
 - Playback starts through `downloads.start(key, …)`, never `startTorrent`
   directly: the store files the info hash under the title's progress key
   (`ventic.cached`), and that map is what lets an already-downloaded film play

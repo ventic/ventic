@@ -6,7 +6,7 @@
 // stick shows up as a silent film or missing subtitles, neither of which says
 // which side got it wrong.
 import assert from 'node:assert'
-import { deviceCodecs, exoEngine, hasNativePlayer, videoEngine } from '../app/utils/htmlvideo'
+import { deviceCodecs, exoEngine, hasNativePlayer, hasVideoOverlay, videoEngine } from '../app/utils/htmlvideo'
 import { nearestFrame, walkOrder } from '../app/utils/thumbs'
 
 /** Just the surface `videoEngine` touches — a DOM would be a dependency for six properties. */
@@ -53,6 +53,9 @@ const player = videoEngine(video as any)
 // and the reason `bun run dev` gets a working player.
 assert.equal(hasNativePlayer(), false)
 assert.equal(exoEngine(), null, 'and no Android bridge, so no ExoPlayer either')
+// Nor a surface in front of the page: both platform questions have to answer no
+// off Tauri, or the browser build punches holes for a window that isn't there.
+assert.equal(hasVideoOverlay(), false)
 
 // Nothing has been started, so nothing is running and nothing has failed.
 assert.deepEqual(player.status(), { running: false, log_tail: null })

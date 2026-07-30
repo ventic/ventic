@@ -33,16 +33,19 @@ import {
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 
-// Player for the embedded native mpv engine. mpv renders into an X11 child
-// window that the Rust backend keeps glued to `boxEl` below (see `player_start`
-// / `player_set_geometry`).
+// Player for the embedded native mpv engine. mpv renders into a surface that
+// the Rust backend keeps glued to `boxEl` below (see `player_start` /
+// `player_set_geometry`) — an X11 child window, a child HWND, or on macOS an
+// NSOpenGLView libmpv hands its frames to.
 //
-// The native surface paints ABOVE the webview, so the controls cannot simply be
-// stacked over it in CSS. Instead every overlay marks itself `data-cut`: each
-// frame their rectangles are measured and handed to the backend, which subtracts
-// them from mpv's window with the X Shape extension. The page then shows through
+// On the first two that surface paints ABOVE the webview, so the controls
+// cannot simply be stacked over it in CSS. Instead every overlay marks itself
+// `data-cut`: each frame their rectangles are measured and handed to the
+// backend, which subtracts them from mpv's window. The page then shows through
 // those holes — clicks included — while the video window itself never resizes,
-// so nothing rescales when a bar slides in.
+// so nothing rescales when a bar slides in. macOS is the other way round (the
+// view is *under* WebKit, as ExoPlayer's surface is under it on Android), and
+// there the bars are ordinary DOM over a transparent page — see `overlay`.
 //
 // The native window knows nothing about page layout, so geometry is pushed every
 // time the box moves *or* resizes. Position changes (window fullscreen,
@@ -85,6 +88,13 @@ const props = defineProps<{
 const native = hasNativePlayer()
 
 /**
+ * Does mpv's picture paint over this page (X11, Win32) or behind it (macOS)?
+ * See `hasVideoOverlay`. Only where it is over does the page have holes to
+ * punch, a pointer it cannot see, and bars that have to be opaque.
+ */
+const overlay = hasVideoOverlay()
+
+/**
  * Android's backend: ExoPlayer on the device's own decoders, behind the same
  * protocol (see utils/htmlvideo.ts and Player.kt). Not `native` — it draws
  * nothing but the picture, so the OSD, the cues and every control below are the
@@ -93,6 +103,14 @@ const native = hasNativePlayer()
  * the box for any of it to be visible.
  */
 const exo = hasExoPlayer()
+
+/**
+ * Is the picture painted behind the webview? ExoPlayer's surface and macOS's
+ * mpv view both are, and the page's side of that is identical for the two: it
+ * has to stop painting over the box (`ventic-video` below), and the taps land
+ * on the page because there is no picture element under the finger.
+ */
+const behind = exo || (native && !overlay)
 
 /**
  * A finger, not a pointer. Controls get thumb-sized, the volume slider goes
@@ -108,7 +126,7 @@ const touch = useMediaQuery('(pointer: coarse)')
 // With no hole there is no edge to be sliced at, so the bars can sit over the
 // picture the way every other player's do. No blur: a full-width backdrop
 // filter over live video is exactly the frame budget a TV box hasn't got.
-const SURFACE = computed(() => native ? 'bg-[#0e0f11] border-white/9' : 'bg-[#0e0f11]/85 border-white/9')
+const SURFACE = computed(() => overlay ? 'bg-[#0e0f11] border-white/9' : 'bg-[#0e0f11]/85 border-white/9')
 
 /** Square icon button in the bars and the menu head. */
 const ICO = computed(() => `inline-flex items-center justify-center border-0 bg-transparent text-white opacity-86 transition-colors transition-opacity duration-120 hover:bg-white/12 hover:opacity-100 disabled:pointer-events-none disabled:opacity-30 rounded-lg ${touch.value ? 'h-11 min-w-11' : 'h-9.5 min-w-9.5'}`)
@@ -189,9 +207,10 @@ async function readProps<T = Record<string, any>>(names: string[]): Promise<T | 
 interface Pointer { x: number, y: number, over: boolean }
 
 async function readPointer(): Promise<Pointer | null> {
-  // Only a native surface can swallow the cursor; a <video> is a DOM element
-  // and its pointer events arrive here like any other.
-  if (!native)
+  // Only a surface in front of the page can swallow the cursor. A <video>, and
+  // a picture painted behind the webview, both leave the pointer events to the
+  // DOM, where they arrive here like any other.
+  if (!overlay)
     return null
   try {
     return await invoke<Pointer | null>('player_pointer')
@@ -634,6 +653,20 @@ function pxRatio(el: HTMLElement, r: DOMRect) {
   return (window.devicePixelRatio || 1) * zoom / inRect
 }
 
+/**
+ * The webview viewport, in the same physical pixels the box is measured in.
+ *
+ * Sent alongside every geometry push for the backend that places its surface by
+ * ratio rather than by scale factor (macOS — see `player_render_mac.rs`). The
+ * X11 and Win32 backends are already in the units they need and ignore it.
+ */
+function viewport(dpr: number) {
+  return {
+    viewW: Math.max(1, Math.round(window.innerWidth * dpr)),
+    viewH: Math.max(1, Math.round(window.innerHeight * dpr)),
+  }
+}
+
 /** Every overlay's rectangle, clipped to the video box and in physical pixels. */
 function cutouts(box: DOMRect, dpr: number): Rect[] {
   const out: Rect[] = []
@@ -687,7 +720,8 @@ function frame(now: number) {
     position.value = Math.min(duration.value, position.value + dt * speed.value)
   }
 
-  // Neither shim has a window to chase or holes to punch: the bars stack in CSS.
+  // Neither shim has a surface to chase: the bars stack in CSS and the picture
+  // is laid out by the page like anything else.
   if (!native)
     return
 
@@ -703,12 +737,14 @@ function frame(now: number) {
     && r.right > 0 && r.left < window.innerWidth
 
   const geom = {
+    ...viewport(dpr),
     x: Math.round(r.left * dpr),
     y: Math.round(r.top * dpr),
     width: Math.max(1, Math.round(r.width * dpr)),
     height: Math.max(1, Math.round(r.height * dpr)),
     visible,
-    cutouts: visible ? cutouts(r, dpr) : [],
+    // Only a surface in front of the page needs holes cutting in it.
+    cutouts: visible && overlay ? cutouts(r, dpr) : [],
   }
   const key = JSON.stringify(geom)
   if (key === lastKey)
@@ -839,6 +875,7 @@ async function startPlayer() {
       const dpr = pxRatio(boxEl.value!, b)
       await invoke('player_start', {
         url: props.src,
+        ...viewport(dpr),
         x: Math.round(b.left * dpr),
         y: Math.round(b.top * dpr),
         width: Math.max(1, Math.round(b.width * dpr)),
@@ -866,11 +903,13 @@ async function startPlayer() {
     syncNote.value = ''
     lastKey = '' // force a geometry + shape push on the next frame
 
-    // Clicks and the wheel land on the native video window, never on the
-    // webview. On X11 that window is mpv's own, so it can answer them itself
-    // and the poll notices what changed; on Windows mpv is handed a disabled
-    // one and never sees them, and `nativeMouse` below takes over instead.
-    if (native) {
+    // Clicks and the wheel land on the video window in front of the page, never
+    // on the webview. On X11 that window is mpv's own, so it can answer them
+    // itself and the poll notices what changed; on Windows mpv is handed a
+    // disabled one and never sees them, and `nativeMouse` below takes over
+    // instead. Where the picture is *behind* the page there is nothing to
+    // arrange: the events were the document's all along.
+    if (overlay) {
       ipc(['keybind', 'MBTN_LEFT', 'cycle pause'])
       ipc(['keybind', 'WHEEL_UP', 'add volume 5'])
       ipc(['keybind', 'WHEEL_DOWN', 'add volume -5'])
@@ -1527,9 +1566,9 @@ function onNativeWheel(notches: number) {
 }
 
 async function listenToNativeMouse() {
-  // No native surface, so the picture's own pointer events already arrive in
-  // the DOM — see `tapVideo`.
-  if (!native)
+  // Nothing in front of the page, so the picture's own pointer events already
+  // arrive in the DOM — see `tapVideo`.
+  if (!overlay)
     return
   try {
     const off = await Promise.all([
@@ -1557,12 +1596,12 @@ watch(() => props.src, src => {
 })
 
 /**
- * ExoPlayer paints below the webview, so while a film is up the page has to stop
- * painting over it — the whole chain from <html> down to the box, which is why
- * this is a class on the document and not something scoped to this component.
- * Every other screen keeps its own background.
+ * ExoPlayer and macOS's mpv both paint below the webview, so while a film is up
+ * the page has to stop painting over it — the whole chain from <html> down to
+ * the box, which is why this is a class on the document and not something
+ * scoped to this component. Every other screen keeps its own background.
  */
-watch(() => exo && started.value, on => {
+watch(() => behind && started.value, on => {
   document.documentElement.classList.toggle('ventic-video', on)
 })
 
@@ -1639,10 +1678,10 @@ defineExpose({ osd })
         playsinline
         @pointerdown.stop="tapVideo"
       />
-      <!-- ExoPlayer's picture is a surface behind the whole webview, so there is
-           no element under the finger. This is what the taps land on instead —
-           transparent, or it would be the thing covering the picture. -->
-      <div v-else-if="exo" class="h-full w-full" @pointerdown.stop="tapVideo" />
+      <!-- A picture painted behind the whole webview (ExoPlayer, and mpv on
+           macOS) leaves no element under the finger. This is what the taps land
+           on instead — transparent, or it would be the thing covering it. -->
+      <div v-else-if="behind" class="h-full w-full" @pointerdown.stop="tapVideo" />
     </div>
 
     <!-- Subtitles, where the page draws them itself. Pinned to `sub-pos` the

@@ -56,6 +56,16 @@ function exists(cmd: string) {
   return spawnSync('sh', ['-c', `command -v ${cmd}`], { stdio: 'ignore' }).status === 0
 }
 
+/**
+ * Is there a libmpv for the macOS player to link against? The same directories
+ * `src-tauri/build.rs` hands the linker, since neither Homebrew's nor MacPorts'
+ * is on its default search path.
+ */
+function haveLibmpv() {
+  return ['/opt/homebrew/lib', '/usr/local/lib', '/opt/local/lib']
+    .some(dir => ['libmpv.dylib', 'libmpv.2.dylib'].some(lib => existsSync(join(dir, lib))))
+}
+
 function die(msg: string): never {
   console.error(`\n✗ ${msg}\n`)
   process.exit(1)
@@ -120,6 +130,15 @@ async function buildDesktop(extra: string[]) {
     )
   }
 
+  if (process.platform === 'darwin' && !haveLibmpv()) {
+    die(
+      'libmpv is missing, and the macOS player links it rather than launching mpv\n'
+      + '  (see src-tauri/src/player_macos.rs). Without it the build ends in\n'
+      + '  "ld: library \'mpv\' not found", hundreds of lines down.\n'
+      + '    brew install mpv',
+    )
+  }
+
   if (process.platform === 'win32')
     await bundleMpv()
 
@@ -131,13 +150,7 @@ async function buildDesktop(extra: string[]) {
   run(['tauri', 'build', ...extra], process.platform === 'linux' ? { NO_STRIP: '1' } : {})
   console.log('\n✓ Bundles are in src-tauri/target/release/bundle/\n')
 
-  if (process.platform === 'darwin') {
-    console.log(
-      'Note: playback needs the native mpv backend, which macOS does not have yet.\n'
-      + 'This build browses, downloads and seeds; pressing play reports that.\n',
-    )
-  }
-  else if (process.platform === 'linux' && !have('mpv')) {
+  if (process.platform === 'linux' && !have('mpv')) {
     console.log('Note: mpv is not on PATH, so the built app will not be able to play anything.\n')
   }
 }

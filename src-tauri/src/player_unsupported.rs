@@ -1,23 +1,21 @@
-// Stand-in for the embedded mpv player on macOS and Android.
+// Stand-in for the mpv player on the targets that can't run one: Android, and
+// iOS if it is ever built.
 //
-// The real backends parent an mpv process into a child window of the app window
-// — X11 on Linux (player.rs), an HWND on Windows (player_windows.rs). Neither
-// ports to what is left:
-//   - macOS: mpv's `--wid` takes an NSView, but a bundled mpv has to be signed
-//     and notarised with the app, and the window has to be handed over on the
-//     main thread.
-//   - Android: no arbitrary child processes at all. It plays through ExoPlayer
-//     instead, which needs no Rust — the frontend talks to it over the same
-//     JavascriptInterface bridge the activity already had (`Player.kt`).
+// Every other backend runs a real mpv process — parented into a child window of
+// the app window on Linux (player.rs) and Windows (player_windows.rs), in a
+// window of its own on macOS (player_macos.rs). Android has no arbitrary child
+// processes at all, so it plays through ExoPlayer instead, which needs no Rust:
+// the frontend talks to it over the same JavascriptInterface bridge the
+// activity already had (`Player.kt`).
 //
 // The commands still have to compile and be registered, because the frontend
-// invokes them unconditionally on the path that expects a native window. They
+// invokes them unconditionally on the path that expects a native player. They
 // fail with a message the player's error card can show, rather than a black
 // rectangle — though on Android nothing asks, since `hasExoPlayer()` picks the
 // shim before it gets that far.
 
-const UNSUPPORTED: &str = "The video player is available on Linux and Windows right now. \
-This build can browse and download, but playback needs the native mpv backend.";
+const UNSUPPORTED: &str = "There is no mpv on this platform. \
+This build can browse and download, but playback needs the native player.";
 
 /// Nothing to guard: no display connection is opened on these targets.
 #[derive(Default)]

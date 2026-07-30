@@ -15,13 +15,23 @@ use librqbit::{
 use librqbit_dualstack_sockets::TcpListener;
 
 // The embedded player is an mpv process parented into a child window of the app
-// window, which is X11 on Linux and an HWND on Windows. macOS and Android have
-// neither, so there the same commands compile as stubs that report why playback
-// is unavailable.
+// window, which is X11 on Linux and an HWND on Windows. macOS embeds no other
+// process's window, so there mpv is a library in this one, rendering into a
+// view of ours; Android has no child processes at all and the same commands
+// compile as stubs that report why.
 #[cfg_attr(target_os = "linux", path = "player.rs")]
 #[cfg_attr(target_os = "windows", path = "player_windows.rs")]
-#[cfg_attr(not(any(target_os = "linux", target_os = "windows")), path = "player_unsupported.rs")]
+#[cfg_attr(target_os = "macos", path = "player_macos.rs")]
+#[cfg_attr(not(any(target_os = "linux", target_os = "windows", target_os = "macos")), path = "player_unsupported.rs")]
 mod player;
+
+/// mpv's IPC socket, shared by the two backends that have one.
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+mod player_socket;
+
+/// The NSOpenGLView libmpv renders into, which is macOS's answer to embedding.
+#[cfg(target_os = "macos")]
+mod player_render_mac;
 
 /// Drops the quotes `tauri-plugin-deep-link` puts around the binary path in the
 /// `Exec=` line it writes.

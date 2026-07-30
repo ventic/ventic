@@ -1,19 +1,19 @@
 /**
  * The player protocol, spoken by the two backends that aren't mpv.
  *
- * Neither target can embed mpv: an app gets no arbitrary child process to parent
- * into the way `player.rs` (X11) and `player_windows.rs` (Win32) do. What both
- * have is a torrent engine already serving byte ranges over http on 127.0.0.1,
- * so they can open the very URL mpv would have.
+ * Neither target can run mpv: an app gets no child process to hand a stream to
+ * the way `player.rs` (X11), `player_windows.rs` (Win32) and `player_macos.rs`
+ * do. What both have is a torrent engine already serving byte ranges over http
+ * on 127.0.0.1, so they can open the very URL mpv would have.
  *
  *   - `exoEngine` — Android. ExoPlayer behind a `@JavascriptInterface`, on the
  *     device's own MediaCodec decoders (see `Player.kt`). The one to use where
  *     it exists: Chromium ships with Dolby and DTS disabled whatever the
  *     hardware can do, and it hides the file's own audio and subtitle tracks.
- *   - `videoEngine` — macOS, and a plain browser during `bun run dev`. The
- *     webview's `<video>`, with the limitations that implies: no muxed tracks
- *     (Chromium's demuxer keeps them to itself) and no codec the webview was
- *     not built with. See the README's codec table.
+ *   - `videoEngine` — a plain browser, which is `bun run dev`. The webview's
+ *     `<video>`, with the limitations that implies: no muxed tracks (Chromium's
+ *     demuxer keeps them to itself) and no codec the webview was not built
+ *     with. See the README's codec table.
  *
  * Rather than a player component each, both answer the same JSON commands and
  * property reads the native backends do (`player_ipc` / `player_props`), so
@@ -24,18 +24,42 @@
 import { platform } from '@tauri-apps/plugin-os'
 
 /**
- * Is a real mpv window available? True on exactly the two targets `lib.rs`
- * compiles a native backend for — keep this in step with the `cfg_attr` there.
- * Android, macOS and a plain browser during `bun run dev` all fall through to
- * the `<video>` element below.
+ * Is mpv behind the controls? True on exactly the three targets `lib.rs`
+ * compiles a real backend for — keep this in step with the `cfg_attr` there.
+ * Android and a plain browser during `bun run dev` fall through to the
+ * `<video>` element below.
  */
 export function hasNativePlayer() {
+  try {
+    const os = platform()
+    return os === 'linux' || os === 'windows' || os === 'macos'
+  }
+  catch {
+    // Not running under Tauri at all, so there is no native player either.
+    return false
+  }
+}
+
+/**
+ * Does the picture paint *over* the page, or behind it?
+ *
+ * Over, on X11 and Win32: mpv gets a child window of the app window, which
+ * nothing in the document can be drawn on top of. That is what the cutouts are
+ * for — the bars are subtracted from mpv's window so the page shows through —
+ * and it is also why mpv, not the webview, is the one that sees the pointer.
+ *
+ * Behind, on macOS: mpv is libmpv rendering into a view *under* the WKWebView
+ * (`player_render_mac.rs`), because that is what the platform allows. The page
+ * is then simply in front, so the controls stack in CSS and every click and
+ * keystroke is an ordinary DOM event — Android's arrangement exactly, which is
+ * why `MpvPlayer.vue` treats the two together.
+ */
+export function hasVideoOverlay() {
   try {
     const os = platform()
     return os === 'linux' || os === 'windows'
   }
   catch {
-    // Not running under Tauri at all, so there is no native surface either.
     return false
   }
 }

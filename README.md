@@ -184,7 +184,7 @@ One component, one set of controls, three backends underneath.
 
 | Capability | Detail |
 | --- | --- |
-| **Backends** | Embedded mpv (Linux, Windows), ExoPlayer (Android), webview `<video>` (macOS, browser) — all answering the same command/property protocol |
+| **Backends** | Embedded mpv (Linux, Windows, macOS), ExoPlayer (Android), webview `<video>` (browser) — all answering the same command/property protocol |
 | **Start early** | Playback begins on the first bytes; the engine is polled for a real byte before mpv launches, so a fresh torrent never opens a black box |
 | **Seek preview** | Frames pulled with ffmpeg and cached, warmed only while the control bar is up |
 | **Tracks** | The file's own audio and subtitle tracks, the release's subtitle files, and OpenSubtitles — in one menu |
@@ -207,10 +207,15 @@ clicks included, while the video window itself never resizes.
 | Linux | mpv | Needs `mpv` and `ffmpeg` on PATH |
 | Windows | mpv | Ships its own `mpv.exe`; subtitle auto-sync additionally wants `ffmpeg` on PATH |
 | Android phone / TV | ExoPlayer | The device's own decoders; landscape and immersive while playing |
-| macOS | `<video>` | No NSView backend yet, so it takes the fallback |
+| macOS | mpv | Needs `brew install mpv` — libmpv is linked, not launched; see below |
 | `bun run dev` in a browser | `<video>` | Which is what makes the mobile player testable without a device |
 
 - **mpv plays everything**, and needs none of the rest of this section.
+- **macOS gets there a different way.** The platform embeds no other process's window, and mpv's
+  Cocoa output takes no `--wid` — the manual offers it for X11, win32 and Android only. So mpv is
+  not a process there: the app links libmpv, asks for `vo=libmpv`, and draws the frames itself
+  into an OpenGL view *under* the webview, with the page made see-through down to the video box.
+  Same picture in the same place, same controls, same IPC protocol underneath.
 - **ExoPlayer plays what the device has.** A TV box: Dolby (AC-3, E-AC-3/DDP), HEVC, usually AV1.
   A mid-range phone: often none of those, because Dolby is licensed per device. DTS and TrueHD
   are rare on both — they need Media3's FFmpeg extension, an NDK build that isn't bundled here.
@@ -409,7 +414,7 @@ Grab the latest build from the [Releases page][releases].
 | **Linux** | `.deb`, `.rpm`, `.AppImage` | Needs `mpv` and `ffmpeg` from your package manager |
 | **Windows** | `.msi`, `.exe` (NSIS) | Ships its own mpv; WebView2 comes with Windows 11 and updated Windows 10 |
 | **Android / Android TV** | `.apk` | Sideload; also the phone build |
-| **macOS** | `.app`, `.dmg` | Falls back to the webview player — see the [codec table](#playback-and-codecs) |
+| **macOS** | `.app`, `.dmg` | Needs `brew install mpv` — the player links libmpv, so it is required to build as well as to play |
 
 First run has no sources and searches nothing. Add one under *Settings → Sources*, or skip that
 entirely and use it as a torrent client — paste a magnet on the Downloads page and it plays.
@@ -439,7 +444,8 @@ at [trakt.tv/oauth/applications][trakt-app] with `urn:ietf:wg:oauth:2.0:oob` as 
 - [Bun](https://bun.sh) — enforced by `preinstall`, npm and pnpm are rejected
 - The [Rust toolchain](https://rustup.rs/) (stable), via rustup rather than a distro package
 - The [Tauri 2 system prerequisites](https://v2.tauri.app/start/prerequisites/) for your OS
-- `mpv` and `ffmpeg` on PATH for the Linux desktop build
+- `mpv` and `ffmpeg` on PATH for the Linux desktop build; on macOS, `brew install mpv` —
+  the player links libmpv, so it has to be there before anything will compile
 
 ```bash
 bun install
@@ -484,7 +490,20 @@ Two limits, both measured rather than assumed:
   because WiX is Windows-only tooling. Run `bun run build` on the Windows machine for one.
 
 macOS is different again: no redistributable SDK and local codesigning, so it has to be built on
-a Mac.
+a Mac, with `brew install mpv` first — libmpv is linked into the binary rather than launched, so
+the build fails without it and the `.app` currently expects to find it at Homebrew's path.
+
+The Rust half can still be *type-checked* from Linux, which catches most of what a Mac would:
+
+```bash
+rustup target add aarch64-apple-darwin
+cargo check --manifest-path src-tauri/Cargo.toml --target aarch64-apple-darwin
+```
+
+`objc2-exception-helper` compiles one Objective-C file on the way through and needs a compiler
+that understands `-arch`; nothing is linked during a check, so pointing
+`CC_aarch64_apple_darwin` at a script that just writes an empty object file is enough to get past
+it.
 
 </details>
 

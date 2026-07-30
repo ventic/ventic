@@ -218,8 +218,8 @@ export function isBloated(t: Release) {
  *     an Android TV box, which nearly always has Dolby and HEVC in hardware, and
  *     silent on a mid-range phone, which often has neither.
  *   - `mime` is what MediaSource is asked where the player is the webview's
- *     `<video>` — macOS, or a browser. TrueHD has none because there is no MSE
- *     string for it, and no webview has ever decoded one.
+ *     `<video>` — a browser, i.e. `bun run dev`. TrueHD has none because there
+ *     is no MSE string for it, and no webview has ever decoded one.
  */
 const CODECS = [
   { re: /\be-?ac-?3\b|\bdd[p+]/i, android: 'audio/eac3', mime: 'audio/mp4; codecs="ec-3"' },
