@@ -239,7 +239,7 @@ const playLabel = computed(() => [
           :key="id"
           :show-id="id"
           :seasons="media.seasons"
-          :show="media"
+          :poster="media.poster"
         />
 
         <media-slider

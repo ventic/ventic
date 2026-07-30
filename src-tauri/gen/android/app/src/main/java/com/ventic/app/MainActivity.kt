@@ -81,9 +81,30 @@ class MainActivity : TauriActivity() {
     // background as before, so nothing else changes.
     webView.setBackgroundColor(Color.TRANSPARENT)
 
+    // A TV reports a 960dp-wide display (1080p at density 2), so the page lays
+    // itself out as if on a small laptop and every card, control and line of
+    // text arrives at twice the size it wants to be on a screen across the room.
+    // Widening the viewport is what un-zooms it: the layout gets 1280px to work
+    // with, which is also the width the desktop layout is designed around. The
+    // page asks for that width itself (see isTv in utils/platform.ts) — the meta
+    // tag it sets is ignored unless the wide viewport is enabled here.
+    if (isTv()) {
+      webView.settings.useWideViewPort = true
+      // Both, or the width does nothing useful: the first lets the page ask for
+      // a viewport wider than the display, the second scales that viewport down
+      // to fit. With only the first, the layout is 1280 wide and the right 320
+      // of it is simply off the side of the screen.
+      webView.settings.loadWithOverviewMode = true
+    }
+
     webView.addJavascriptInterface(Screen(), "VenticScreen")
     player = VenticPlayer(this).also { webView.addJavascriptInterface(it, "VenticPlayer") }
   }
+
+  /** Is this a television rather than a phone? Android's own answer, not a guess. */
+  private fun isTv(): Boolean =
+    getSystemService(android.app.UiModeManager::class.java)?.currentModeType ==
+      android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
 
   override fun onDestroy() {
     player?.release()
@@ -115,6 +136,14 @@ class MainActivity : TauriActivity() {
     @JavascriptInterface
     fun metered(): Boolean =
       getSystemService(ConnectivityManager::class.java)?.isActiveNetworkMetered ?: false
+
+    /**
+     * Is this a television? The page can't tell — a TV webview's user agent says
+     * Android like any phone's — and the difference decides how wide the layout
+     * should be and which controls are worth showing at all.
+     */
+    @JavascriptInterface
+    fun tv(): Boolean = isTv()
 
     /**
      * Every drive this app may write a film to, as JSON — the built-in storage
@@ -183,6 +212,25 @@ class MainActivity : TauriActivity() {
   // key on a TV remote. The page decides what back means there (close a dialog,
   // leave the player, go back a page) and answers "true" when it handled it;
   // anything else means we're at the root and quitting is right.
+  /**
+   * OK is the other key the page can't see for itself. The WebView turns
+   * DPAD_CENTER into a click on a link or a button, and drops it entirely for
+   * the readonly `<input>` Vuetify builds a select out of — so on a TV, OK on a
+   * dropdown did nothing at all and down was the only way to open one.
+   *
+   * It has to be caught here rather than in `onKeyDown`: the WebView has focus
+   * and claims the key, so the activity's own key handling never runs. The page
+   * opens what it can and answers false for everything else, and the key is
+   * passed on either way — the WebView's handling is what makes OK work
+   * everywhere it already does.
+   */
+  override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+    if (event.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+      web?.evaluateJavascript("window.__tvOk ? window.__tvOk() : false", null)
+    }
+    return super.dispatchKeyEvent(event)
+  }
+
   override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
     val webView = web
     if (keyCode != KeyEvent.KEYCODE_BACK || webView == null) {

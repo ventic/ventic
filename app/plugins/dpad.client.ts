@@ -93,7 +93,12 @@ export default defineNuxtPlugin(() => {
    */
   function focusFirst() {
     const root = scope()
-    const start = root === document ? document.querySelector('[data-dpad-start]') : null
+    // The last marker, not the first: the layout wraps the whole page in one so
+    // focus starts below the toolbar, and a page that knows better (the browse
+    // grid) marks the content itself. A nested marker comes after its wrapper in
+    // document order, so the innermost one wins and a page with none falls back
+    // to the layout's.
+    const start = root === document ? [...document.querySelectorAll('[data-dpad-start]')].pop() : null
     const from = (parent: ParentNode) => {
       const list = focusables(parent).filter(onScreen)
       return list.find(el => {
@@ -177,6 +182,14 @@ export default defineNuxtPlugin(() => {
     if (el.getAttribute('role') === 'slider')
       return vertical
 
+    // A shut dropdown has nothing to navigate, yet it answers every arrow:
+    // down opens it (a remote needs down to get past it to the page) and
+    // left/right are swallowed to stop a caret that a readonly field hasn't
+    // got — which left the d-pad unable to move sideways off it at all. Once
+    // open, the arrows are the menu's.
+    if (el.getAttribute('role') === 'combobox')
+      return el.getAttribute('aria-expanded') !== 'true'
+
     const list = vertical ? el.closest('.v-list') : null
     if (!list)
       return false
@@ -213,6 +226,27 @@ export default defineNuxtPlugin(() => {
 
   window.__tvBack = back
 
+  /**
+   * OK, for the one control the key never reaches. A TV's DPAD_CENTER becomes a
+   * click on a link or a button, but the readonly `<input>` behind a Vuetify
+   * select gets nothing — so a shut dropdown ignored OK entirely and only down
+   * would open it, which is the key needed for getting past it to the page.
+   * MainActivity calls this first and passes the key on either way, so `false`
+   * leaves every other control working exactly as it did.
+   */
+  window.__tvOk = () => {
+    const el = document.activeElement
+    if (el?.getAttribute('role') !== 'combobox' || el.getAttribute('aria-expanded') === 'true')
+      return false
+    markDpad()
+    // The whole pointer sequence, because Vuetify opens a select on mousedown —
+    // a bare click() on the field does nothing at all.
+    const field = el.closest<HTMLElement>('.v-field')
+    for (const type of ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click'])
+      field?.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true }))
+    return true
+  }
+
   function markDpad() {
     if (dpad)
       return
@@ -222,8 +256,13 @@ export default defineNuxtPlugin(() => {
 
   function handle(dir: Dir, e: KeyboardEvent) {
     markDpad()
-    if (move(dir) || nudge(dir))
-      e.preventDefault()
+    move(dir) || nudge(dir)
+    // Ours either way. Android's WebView does its own d-pad navigation with a
+    // focus model looser than the DOM's, so a key we move nothing for and leave
+    // unclaimed lands focus on things that aren't targets at all — an
+    // aria-hidden icon beside the poster slider, in the case that found this.
+    // Nothing that way should mean nothing happens.
+    e.preventDefault()
   }
 
   // Ahead of the components, for the keys they'd otherwise swallow whole.
@@ -231,7 +270,14 @@ export default defineNuxtPlugin(() => {
     if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey)
       return
     const dir = DIRS[e.key]
-    if (!dir || !trapped(document.activeElement, dir))
+    if (!dir)
+      return
+    // An arrow means a remote is in use whoever ends up acting on it. Leaving
+    // this to the mover missed every key a component claimed first, so walking
+    // the drawer drew no focus ring and arriving on a page left focus where it
+    // was instead of on the first card.
+    markDpad()
+    if (!trapped(document.activeElement, dir))
       return
     // The control never gets the key, so it can't spend it on itself.
     e.stopPropagation()
@@ -255,9 +301,13 @@ export default defineNuxtPlugin(() => {
       return
 
     // A text field keeps left/right for the caret; up/down is how you leave it.
+    // A readonly one has no caret to keep — Vuetify builds its selects out of an
+    // `<input readonly>`, and treating that as typing is what left a remote
+    // unable to move sideways off a dropdown at all.
     const el = document.activeElement
     const typing = el instanceof HTMLElement
-      && (el.isContentEditable || el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')
+      && (el.isContentEditable
+        || ((el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && !(el as HTMLInputElement).readOnly))
     if (typing && (dir === 'left' || dir === 'right'))
       return
 
@@ -275,8 +325,24 @@ export default defineNuxtPlugin(() => {
   // A new page starts with focus on nothing, which leaves a remote with no
   // origin to move from. Only once a d-pad is in use — it would steal the
   // caret from the search box otherwise.
+  //
+  // The route arrives before the page's content does: a browse grid is still
+  // fetching for a few hundred ms, and landing during that window finds the
+  // marked region empty and settles for the toolbar above it — which is how
+  // opening Movies used to leave focus on the sort dropdown. Give the content a
+  // moment to show up, then take the first card; a page that stays empty (an
+  // empty watchlist) just keeps the focus it had.
   router.afterEach(() => {
-    if (dpad)
-      nextTick(focusFirst)
+    if (!dpad)
+      return
+    let tries = 12
+    const land = () => {
+      const start = [...document.querySelectorAll('[data-dpad-start]')].pop()
+      if (start && !focusables(start).length && tries-- > 0)
+        setTimeout(land, 50)
+      else
+        focusFirst()
+    }
+    nextTick(land)
   })
 })

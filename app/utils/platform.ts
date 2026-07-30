@@ -15,6 +15,19 @@ export function meteredNetwork(): boolean | null {
   return bridge()?.metered?.() ?? null
 }
 
+/**
+ * Is this running on a television?
+ *
+ * Only Android can say: a TV webview's user agent claims Android like any
+ * phone's, and the display gives it away no better — this set reports 960dp
+ * wide, which is a small laptop as far as any breakpoint is concerned. It comes
+ * from `UiModeManager` through the `VenticScreen` bridge. `null` is every other
+ * build, where "is it a TV" isn't a question worth guessing at.
+ */
+export function isTv(): boolean | null {
+  return bridge()?.tv?.() ?? null
+}
+
 /** One drive Android will let the app write to. `free` is bytes. */
 export interface StorageVolume {
   name: string
@@ -47,7 +60,7 @@ export function storageVolumes(): StorageVolume[] | null {
 /** MainActivity's `Screen`, present only inside the Android app. */
 function bridge() {
   return (globalThis as {
-    VenticScreen?: { metered?: () => boolean, volumes?: () => string }
+    VenticScreen?: { metered?: () => boolean, volumes?: () => string, tv?: () => boolean }
   }).VenticScreen
 }
 

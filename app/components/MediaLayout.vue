@@ -51,7 +51,7 @@ const loadingFirstPage = computed(() => props.pending && !props.items.length)
   <!-- pt-1: the scroller clips at its own edge, and the top row's highlight
        needs somewhere to sit. scroll-py: keeps the row the d-pad just moved to
        clear of the top and bottom edges. -->
-  <div ref="scroller" class="h-full scroll-py-6 overflow-y-auto px-4 pb-10 pt-1 md:px-6">
+  <div ref="scroller" data-dpad-start class="h-full scroll-py-6 overflow-y-auto px-4 pb-10 pt-1 md:px-6">
     <div v-if="ui.isGrid" class="grid gap-x-4 gap-y-5" :style="gridStyle">
       <media-card
         v-for="media in items"

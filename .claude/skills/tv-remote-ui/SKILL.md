@@ -81,12 +81,29 @@ Run `bun run check:dpad` after touching the geometry.
   category, and `android:banner` — a TV launcher shows a blank tile without one
   (`res/drawable-xhdpi/tv_banner.png`, 320×180).
 - `gen/android` is committed, so edits there survive; regenerating the project
-  will clobber them, so re-apply the BACK override, the `VenticScreen` JS
-  interface (fullscreen, orientation, metered network),
-  `mediaPlaybackRequiresUserGesture = false`, `Downloads.kt` with its
+  will clobber them, so re-apply the BACK override, the **OK forward**
+  (`dispatchKeyEvent` → `window.__tvOk`), the `VenticScreen` JS interface
+  (fullscreen, orientation, metered network, `tv()`), the **wide viewport**
+  settings, `mediaPlaybackRequiresUserGesture = false`, `Downloads.kt` with its
   `onResume`/`onPause`/`onDestroy` hooks, and the manifest lines — the leanback
   ones, the service and its permissions — if that ever happens.
   `bun run check:android-downloads` fails loudly when the download half is gone.
+- **A TV is 960dp wide**, which is a small laptop as far as any breakpoint is
+  concerned: below every `lg:` rule the desktop layout is built on, and at twice
+  the size anything wants to be across a room. `plugins/tv.client.ts` asks for a
+  1280 viewport when `isTv()` (`UiModeManager`, through the bridge — a TV's user
+  agent is a phone's), which needs `useWideViewPort` **and**
+  `loadWithOverviewMode` in MainActivity: the first lets the page ask for more
+  width than the screen has, the second scales it down to fit. With only the
+  first, the right quarter of the layout is off the side of the screen. It also
+  puts `.tv` on `<html>` for anything that follows from being a TV rather than
+  from a width.
+- **OK is not a key the page always sees.** The WebView turns DPAD_CENTER into a
+  click on a link or a button, and drops it for the readonly `<input>` behind a
+  Vuetify select — and it claims the key before the activity's `onKeyDown` runs,
+  so the forward has to sit in `dispatchKeyEvent`. `window.__tvOk` opens what it
+  can and answers `false` for everything else, and the key is passed on either
+  way. Vuetify opens a select on **mousedown**, not on `click()`.
 - Volume is the TV's own remote, not the app's — and the phone's own buttons.
   The player hides its volume slider on any coarse pointer for that reason.
 - Playback there is the webview's `<video>`, not mpv (`app/utils/htmlvideo.ts`),
