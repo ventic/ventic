@@ -139,6 +139,17 @@ async function buildDesktop(extra: string[]) {
     )
   }
 
+  // The .app carries that libmpv rather than expecting it on the target Mac —
+  // scripts/macdylibs.ts, run by beforeBundleCommand. Check for its one tool
+  // here rather than after a full release compile.
+  if (process.platform === 'darwin' && !exists('dylibbundler')) {
+    die(
+      'dylibbundler is missing — it is what puts libmpv and the ffmpeg tree behind\n'
+      + '  it inside the .app, so it runs on a Mac without Homebrew.\n'
+      + '    brew install dylibbundler',
+    )
+  }
+
   if (process.platform === 'win32')
     await bundleMpv()
 
@@ -149,6 +160,16 @@ async function buildDesktop(extra: string[]) {
   // it. Skipping the strip costs a few MB and nothing else.
   run(['tauri', 'build', ...extra], process.platform === 'linux' ? { NO_STRIP: '1' } : {})
   console.log('\n✓ Bundles are in src-tauri/target/release/bundle/\n')
+
+  // Whether the .app is actually self-contained is invisible here, where the
+  // Homebrew paths it was built against still exist — so ask before shipping it.
+  if (process.platform === 'darwin') {
+    const i = extra.indexOf('--target')
+    const dir = join('src-tauri/target', i === -1 ? '' : extra[i + 1]!, 'release/bundle/macos')
+    const app = existsSync(dir) ? readdirSync(dir).find(f => f.endsWith('.app')) : undefined
+    if (app)
+      run(['scripts/macdylibs.ts', join(dir, app)])
+  }
 
   if (process.platform === 'linux' && !have('mpv')) {
     console.log('Note: mpv is not on PATH, so the built app will not be able to play anything.\n')

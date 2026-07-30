@@ -27,6 +27,7 @@
 	},
 	"build": {
 		"beforeBuildCommand": "bun run generate",
+		"beforeBundleCommand": "bun scripts/macdylibs.ts",
 		"frontendDist": "../.output/public",
 		"beforeDevCommand": "bun run dev",
 		"devUrl": "http://localhost:3000"

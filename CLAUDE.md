@@ -48,10 +48,18 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   into `src-tauri/mpv/` and `tauri.windows.conf.json` bundles it as a resource.
   The build scripts call that before invoking tauri — a missing resource fails
   the build. macOS is neither: it *links* libmpv, so `brew install mpv` is a
-  build dependency as much as a runtime one, and `build.rs` adds the Homebrew and
-  MacPorts lib directories to the linker's search path because neither is on it.
-  Bundling that dylib into the .app (so it runs on a Mac without Homebrew) is
-  still to do.
+  build dependency, and `build.rs` adds the Homebrew and MacPorts lib
+  directories to the linker's search path because neither is on it. The linker
+  records those absolute paths, so the .app carries its own copies:
+  `scripts/macdylibs.ts` runs as `beforeBundleCommand` — the one moment when the
+  binary exists and the bundle does not — dylibbundler rewrites every load
+  command to `@executable_path`, and `tauri.macos.conf.json` copies the staged
+  dylibs into `Contents/Resources/dylibs`. All of it is then ad-hoc signed:
+  rewriting a Mach-O invalidates its signature, and Apple Silicon kills a
+  process whose signature is broken rather than ignoring it.
+  `bun scripts/macdylibs.ts <path.app>` re-checks a finished bundle, which is
+  the only way to see the failure — the build machine has Homebrew, so a dylib
+  left behind resolves fine there and nowhere else.
 - Playback starts through `downloads.start(key, …)`, never `startTorrent`
   directly: the store files the info hash under the title's progress key
   (`ventic.cached`), and that map is what lets an already-downloaded film play

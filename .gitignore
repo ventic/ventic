@@ -12,6 +12,8 @@ dist
 src-tauri/target
 # Downloaded by scripts/mpv.ts and bundled into Windows builds.
 src-tauri/mpv
+# Collected by scripts/macdylibs.ts and bundled into the macOS .app.
+src-tauri/dylibs
 
 # Local editor/agent state.
 .claude/settings.local.json

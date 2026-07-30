@@ -37,10 +37,12 @@ jobs:
           - os: windows-latest
             args: ''
             targets: ''
-          # One .dmg for both Apple architectures.
+          # Apple Silicon only. A universal build would have to link a universal
+          # libmpv, and Homebrew bottles are single-arch — the x86_64 half fails
+          # at the linker. An Intel .dmg needs an Intel runner, not a flag.
           - os: macos-latest
-            args: --target universal-apple-darwin
-            targets: aarch64-apple-darwin,x86_64-apple-darwin
+            args: ''
+            targets: ''
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
@@ -63,6 +65,12 @@ jobs:
       - if: runner.os == 'Windows'
         run: bun scripts/mpv.ts
 
+      # macOS links libmpv instead of launching mpv, so it is needed to build at
+      # all; dylibbundler is what then carries it — and the ffmpeg tree behind it
+      # — into the .app, via the beforeBundleCommand hook.
+      - if: runner.os == 'macOS'
+        run: brew install mpv dylibbundler
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -73,6 +81,11 @@ jobs:
           releaseName: Ventic ${{ github.ref_name }}
           releaseDraft: true
           args: ${{ matrix.args }}
+
+      # The runner has Homebrew, so a .dmg that still depends on it looks fine
+      # here and fails on every other Mac. Fail the release instead.
+      - if: runner.os == 'macOS'
+        run: bun scripts/macdylibs.ts src-tauri/target/release/bundle/macos/Ventic.app
 
   android:
     # The draft release has to exist before there is anything to upload to.
