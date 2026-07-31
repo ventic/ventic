@@ -151,7 +151,7 @@ const ENVELOPE_FLOOR: f32 = -91.0;
 ///
 /// - **The bundled one.** Windows has no ffmpeg and no package manager to get
 ///   one from, so the build downloads it beside mpv.exe and Tauri ships it as a
-///   resource (`scripts/mpv.ts`). Same lookup `mpv_binary` does.
+///   resource (`scripts/build/mpv.ts`). Same lookup `mpv_binary` does.
 /// - **Homebrew's or MacPorts'.** A macOS .app launched from Finder inherits
 ///   none of the shell's environment: it gets `/usr/bin:/bin:/usr/sbin:/sbin`
 ///   and nothing more, so a perfectly good `brew install ffmpeg` is invisible

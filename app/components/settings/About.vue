@@ -16,7 +16,7 @@ onMounted(async () => {
 
 // Naming the licence is half the point of this list. Windows builds carry an
 // mpv.exe, which makes handing one out redistribution of GPL software — the
-// notice and offer of source ride along beside it (see scripts/mpv.ts).
+// notice and offer of source ride along beside it (see scripts/build/mpv.ts).
 const credits = [
   { title: 'mpv', text: 'The player itself — decoding, subtitles and audio. GPLv2 or later.', url: 'https://mpv.io' },
   { title: 'librqbit', text: 'The torrent engine, embedded in the app. MIT licensed.', url: 'https://github.com/ikatson/rqbit' },

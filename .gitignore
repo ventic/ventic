@@ -10,9 +10,9 @@ node_modules
 .cargo
 dist
 src-tauri/target
-# Downloaded by scripts/mpv.ts and bundled into Windows builds.
+# Downloaded by scripts/build/mpv.ts and bundled into Windows builds.
 src-tauri/mpv
-# Collected by scripts/macdylibs.ts and bundled into the macOS .app.
+# Created by build.rs, filled by scripts/build/macos/bundle-dylib.ts, bundled into the macOS .app.
 src-tauri/dylibs
 
 # Local editor/agent state.

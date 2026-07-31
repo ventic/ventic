@@ -28,7 +28,7 @@ import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
 /**
  * https://github.com/zhongfly/mpv-winbuild/releases
@@ -70,7 +70,7 @@ const CACHE = join(ROOT, '.cache', 'mpv')
  * GPLv2, verbatim, as mpv ships it. Committed rather than fetched: a licence
  *  that only exists if a download succeeds is one a build can silently omit.
  */
-const GPL = join(ROOT, 'scripts', 'mpv-LICENSE.GPL')
+const GPL = join(ROOT, 'scripts', 'build', 'mpv-LICENSE.GPL')
 const LICENCE = join(DEST_DIR, 'LICENSE.txt')
 
 /**
@@ -212,7 +212,7 @@ export function mpvVersion(exe: string): string {
   }
 }
 
-// Also usable on its own: `bun scripts/mpv.ts`
+// Also usable on its own: `bun scripts/build/mpv.ts`
 if (import.meta.main) {
   ensureMpv()
     .then(path => console.log(path))

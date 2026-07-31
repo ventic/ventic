@@ -25,11 +25,11 @@
     "check:theme": "bun scripts/check-theme.ts",
     "bump": "bumpp",
     "tauri": "tauri",
-    "tauri:dev": "npx tsx scripts/tauri-dev.ts",
-    "tauri:dev:android": "bun scripts/build.ts android-dev",
-    "build": "bun scripts/build.ts",
-    "build:windows": "bun scripts/build.ts windows",
-    "build:android": "bun scripts/build.ts android"
+    "tauri:dev": "npx tsx scripts/build/tauri-dev.ts",
+    "tauri:dev:android": "bun scripts/build/index.ts android-dev",
+    "build": "bun scripts/build/index.ts",
+    "build:windows": "bun scripts/build/index.ts windows",
+    "build:android": "bun scripts/build/index.ts android"
   },
   "dependencies": {
     "@mdi/js": "^7.4.47",

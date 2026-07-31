@@ -452,9 +452,8 @@ at [trakt.tv/oauth/applications][trakt-app] with `urn:ietf:wg:oauth:2.0:oob` as 
 - [Bun](https://bun.sh) — enforced by `preinstall`, npm and pnpm are rejected
 - The [Rust toolchain](https://rustup.rs/) (stable), via rustup rather than a distro package
 - The [Tauri 2 system prerequisites](https://v2.tauri.app/start/prerequisites/) for your OS
-- `mpv` and `ffmpeg` on PATH for the Linux desktop build; on macOS,
-  `brew install mpv dylibbundler` — the player links libmpv, so it has to be there before
-  anything will compile, and dylibbundler is what then copies it into the `.app`
+- `mpv` and `ffmpeg` on PATH for the Linux desktop build; on macOS, `brew install mpv` — the
+  player links libmpv, so it has to be there before anything will compile
 
 ```bash
 bun install
@@ -499,15 +498,17 @@ Two limits, both measured rather than assumed:
   because WiX is Windows-only tooling. Run `bun run build` on the Windows machine for one.
 
 macOS is different again: no redistributable SDK and local codesigning, so it has to be built on
-a Mac, with `brew install mpv dylibbundler` first. libmpv is linked into the binary rather than
-launched, so the build fails without it — and because the linker records Homebrew's absolute
-paths, the `.app` would then die on any Mac that has no Homebrew. `scripts/macdylibs.ts` runs as
-Tauri's `beforeBundleCommand`, in the one moment when the binary exists and the bundle does not:
-dylibbundler copies libmpv and the ffmpeg tree behind it into `Contents/Resources/dylibs`,
-rewrites every load command to `@executable_path`, and the whole lot is ad-hoc signed, because
-rewriting a Mach-O invalidates its signature and Apple Silicon kills a process whose signature is
-broken. `bun run build` then re-opens the finished `.app` and fails if anything still points
-outside it — the one failure that is invisible on the machine that built it.
+a Mac, with `brew install mpv` first. libmpv is linked into the binary rather than launched, so
+the build fails without it — and because the linker records Homebrew's absolute paths, the `.app`
+would then die on any Mac that has no Homebrew. `scripts/build/macos/bundle-dylib.ts` runs as Tauri's
+`beforeBundleCommand`, in the one moment when the binary exists and the bundle does not: it walks
+the dylib graph with `otool`, copies libmpv and the ffmpeg tree behind it into
+`Contents/Resources/dylibs`, rewrites every load command to `@executable_path` with
+`install_name_tool`, and ad-hoc signs the whole lot, because rewriting a Mach-O invalidates its
+signature and Apple Silicon kills a process whose signature is broken. Those tools ship with the
+Xcode command line tools, so there is nothing else to install. `bun run build` then re-opens the
+finished `.app` and fails if anything still points outside it — the one failure that is invisible
+on the machine that built it.
 
 Releases are Apple Silicon only. A universal binary would have to link a universal libmpv, and
 Homebrew bottles are single-arch, so the `x86_64` half fails at the linker; an Intel `.dmg`
@@ -614,12 +615,12 @@ BACK key — those need real hardware.
 
 <br/>
 
-Linux uses the system mpv. Windows has none to borrow, so `scripts/mpv.ts` downloads a build (the
+Linux uses the system mpv. Windows has none to borrow, so `scripts/build/mpv.ts` downloads a build (the
 statically linked community one mpv.io points at), checks it against a pinned sha256 and drops it
 in `src-tauri/mpv/`. `tauri.windows.conf.json` declares it as a resource, so the installer puts it
 next to `Ventic.exe` — which also means the raw `.exe` only plays if the `mpv/` folder travels
 with it. Both build scripts do this for you; to bump the version, edit the `BUILD` constant in
-`scripts/mpv.ts` and delete `src-tauri/mpv/`.
+`scripts/build/mpv.ts` and delete `src-tauri/mpv/`.
 
 mpv is GPLv2+, so handing out its binary is redistributing GPL software. The same script writes
 `mpv/LICENSE.txt` — the licence in full, the exact upstream build and mpv commit it was made from,

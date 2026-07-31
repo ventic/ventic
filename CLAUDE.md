@@ -44,22 +44,28 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   `native` flag rather than two players — a new control needs no second
   implementation, but a new mpv property does need a line in the shim's `READ`.
   `bun run check:player` covers the translation.
-- Linux uses the system mpv; Windows has none, so `scripts/mpv.ts` downloads one
-  into `src-tauri/mpv/` and `tauri.windows.conf.json` bundles it as a resource.
-  The build scripts call that before invoking tauri — a missing resource fails
-  the build. macOS is neither: it *links* libmpv, so `brew install mpv` is a
-  build dependency, and `build.rs` adds the Homebrew and MacPorts lib
+- Linux uses the system mpv; Windows has none, so `scripts/build/mpv.ts`
+  downloads one into `src-tauri/mpv/` and `tauri.windows.conf.json` bundles it as
+  a resource. The build scripts call that before invoking tauri — a missing
+  resource fails the build. macOS is neither: it *links* libmpv, so `brew install
+  mpv` is a build dependency, and `build.rs` adds the Homebrew and MacPorts lib
   directories to the linker's search path because neither is on it. The linker
-  records those absolute paths, so the .app carries its own copies:
-  `scripts/macdylibs.ts` runs as `beforeBundleCommand` — the one moment when the
-  binary exists and the bundle does not — dylibbundler rewrites every load
-  command to `@executable_path`, and `tauri.macos.conf.json` copies the staged
-  dylibs into `Contents/Resources/dylibs`. All of it is then ad-hoc signed:
-  rewriting a Mach-O invalidates its signature, and Apple Silicon kills a
-  process whose signature is broken rather than ignoring it.
-  `bun scripts/macdylibs.ts <path.app>` re-checks a finished bundle, which is
-  the only way to see the failure — the build machine has Homebrew, so a dylib
-  left behind resolves fine there and nowhere else.
+  records those absolute paths, so the .app carries its own copies.
+  `scripts/build/macos/bundle-dylib.ts` stages them as `beforeBundleCommand` —
+  the one moment when the binary exists and the bundle does not — walking the
+  dylib graph with `otool`, rewriting every load command to `@executable_path`
+  with
+  `install_name_tool`, and `tauri.macos.conf.json` copies `src-tauri/dylibs/`
+  into `Contents/Resources/dylibs`. Both tools ship with the Xcode command line
+  tools, so mpv stays the only `brew install` a bundle needs. That staging
+  directory is created by `build.rs` rather than the script, because
+  `tauri_build` resolves its resource glob *during the compile* and fails a
+  clone that has never been built, long before the script runs. All of it is
+  then ad-hoc signed: rewriting a Mach-O invalidates its signature, and Apple
+  Silicon kills a process whose signature is broken rather than ignoring it.
+  `bun scripts/build/macos/bundle-dylib.ts <path.app>` re-checks a finished
+  bundle, which is the only way to see the failure — the build machine has
+  Homebrew, so a dylib left behind resolves fine there and nowhere else.
 - Playback starts through `downloads.start(key, …)`, never `startTorrent`
   directly: the store files the info hash under the title's progress key
   (`ventic.cached`), and that map is what lets an already-downloaded film play

@@ -17,7 +17,7 @@
  *     type off Windows, because WiX is Windows-only tooling.
  *   - macOS needs a Mac: the SDK and codesigning aren't redistributable.
  *
- * Windows builds also carry their own mpv.exe, which scripts/mpv.ts fetches
+ * Windows builds also carry their own mpv.exe, which scripts/build/mpv.ts fetches
  * before the bundler runs.
  */
 import { execFileSync, spawnSync } from 'node:child_process'
@@ -140,13 +140,15 @@ async function buildDesktop(extra: string[]) {
   }
 
   // The .app carries that libmpv rather than expecting it on the target Mac —
-  // scripts/macdylibs.ts, run by beforeBundleCommand. Check for its one tool
-  // here rather than after a full release compile.
-  if (process.platform === 'darwin' && !exists('dylibbundler')) {
+  // scripts/build/macos/bundle-dylib.ts, run by beforeBundleCommand, which rewrites
+  // Mach-O load commands with the Xcode command line tools. Check for them here
+  // rather than after a full release compile.
+  if (process.platform === 'darwin' && !['otool', 'install_name_tool', 'codesign'].every(exists)) {
     die(
-      'dylibbundler is missing — it is what puts libmpv and the ffmpeg tree behind\n'
-      + '  it inside the .app, so it runs on a Mac without Homebrew.\n'
-      + '    brew install dylibbundler',
+      'The Xcode command line tools are missing — otool and install_name_tool are\n'
+      + '  what put libmpv and the ffmpeg tree behind it inside the .app, so it runs\n'
+      + '  on a Mac without Homebrew.\n'
+      + '    xcode-select --install',
     )
   }
 
@@ -168,7 +170,7 @@ async function buildDesktop(extra: string[]) {
     const dir = join('src-tauri/target', i === -1 ? '' : extra[i + 1]!, 'release/bundle/macos')
     const app = existsSync(dir) ? readdirSync(dir).find(f => f.endsWith('.app')) : undefined
     if (app)
-      run(['scripts/macdylibs.ts', join(dir, app)])
+      run(['scripts/build/macos/bundle-dylib.ts', join(dir, app)])
   }
 
   if (process.platform === 'linux' && !have('mpv')) {

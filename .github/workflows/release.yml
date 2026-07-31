@@ -63,18 +63,20 @@ jobs:
 
       # Windows ships no mpv, so the bundle carries one (tauri.windows.conf.json).
       - if: runner.os == 'Windows'
-        run: bun scripts/mpv.ts
+        run: bun scripts/build/mpv.ts
 
       # macOS links libmpv instead of launching mpv, so it is needed to build at
-      # all; dylibbundler is what then carries it — and the ffmpeg tree behind it
-      # — into the .app, via the beforeBundleCommand hook.
+      # all. Carrying it — and the ffmpeg tree behind it — into the .app is then
+      # scripts/build/macos/bundle-dylib.ts, via the beforeBundleCommand hook,
+      # which needs only otool and install_name_tool from the Xcode command line
+      # tools the runner image already has.
       - if: runner.os == 'macOS'
-        run: brew install mpv dylibbundler
+        run: brew install mpv
 
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # linuxdeploy's own ancient `strip` fails on .relr.dyn — see scripts/build.ts.
+          # linuxdeploy's own ancient `strip` fails on .relr.dyn — see scripts/build/index.ts.
           NO_STRIP: 1
         with:
           tagName: ${{ github.ref_name }}
@@ -85,7 +87,7 @@ jobs:
       # The runner has Homebrew, so a .dmg that still depends on it looks fine
       # here and fails on every other Mac. Fail the release instead.
       - if: runner.os == 'macOS'
-        run: bun scripts/macdylibs.ts src-tauri/target/release/bundle/macos/Ventic.app
+        run: bun scripts/build/macos/bundle-dylib.ts src-tauri/target/release/bundle/macos/Ventic.app
 
   android:
     # The draft release has to exist before there is anything to upload to.
@@ -107,7 +109,7 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      # NDK comes from the runner image's ANDROID_NDK_HOME, which scripts/build.ts picks up.
+      # NDK comes from the runner image's ANDROID_NDK_HOME, which scripts/build/index.ts picks up.
       - run: bun run build:android
 
       - name: Attach the APK

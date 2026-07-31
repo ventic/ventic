@@ -27,7 +27,7 @@
 	},
 	"build": {
 		"beforeBuildCommand": "bun run generate",
-		"beforeBundleCommand": "bun scripts/macdylibs.ts",
+		"beforeBundleCommand": "bun scripts/build/macos/bundle-dylib.ts",
 		"frontendDist": "../.output/public",
 		"beforeDevCommand": "bun run dev",
 		"devUrl": "http://localhost:3000"

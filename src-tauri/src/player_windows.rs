@@ -24,7 +24,7 @@
 //     which is where every shortcut is handled.
 //
 // Windows ships no mpv, so the build downloads one and Tauri carries it beside
-// the exe. See scripts/mpv.ts and `mpv_binary`.
+// the exe. See scripts/build/mpv.ts and `mpv_binary`.
 // ----------------------------------------------------------------------------
 
 use std::fs::{File, OpenOptions};
