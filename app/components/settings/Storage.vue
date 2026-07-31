@@ -8,20 +8,74 @@ const library = useLibraryStore()
 const error = ref('')
 const canReveal = canOpenFolder()
 // Android names the drives it will accept instead of offering a chooser, so
-// there the folder is picked from a list. Read on mount: plug a stick in and
-// come back to this screen and it's there.
-const volumes = storageVolumes()
-const drives = volumes?.filter(v => v.writable)
-// Plugged in, mounted, and unwritable — almost always NTFS. Naming it is the
-// only way the user learns the stick has to be reformatted; Android fails the
-// folder silently and every app on the box is equally stuck.
-const blocked = volumes?.filter(v => !v.writable) ?? []
+// there the folder is picked from a list.
+const volumes = ref(storageVolumes())
+
+function refresh() {
+  volumes.value = storageVolumes()
+  // A formatted drive is a new volume with a new path, so a folder chosen before
+  // the format names somewhere that no longer exists. On Android anything off
+  // this list is unwritable, and '' is the app's own folder — which always works.
+  if (settings.downloadDir && volumes.value && !volumes.value.some(v => v.writable && v.path === settings.downloadDir))
+    settings.downloadDir = ''
+}
+
+// Android is often still mounting the drive as the app comes back — a format
+// finishes on its own schedule, not on the activity's — so the list is read
+// again a moment after the one that lands too early. Measured on the TV: the
+// read on resume alone still showed the old list.
+const { start: recheck } = useTimeoutFn(refresh, 1500, { immediate: false })
+
+/**
+ * Re-read the drives whenever the app comes back to the foreground.
+ *
+ * Formatting a stick means leaving for Android's storage settings and coming
+ * back, so a list read once at mount is stale exactly when the user has just
+ * fixed the problem — which is what made them switch tabs to force a re-read.
+ * `visibilitychange` is what the webview gets on that round trip (measured on
+ * the TV: hidden, then visible).
+ */
+useEventListener(document, 'visibilitychange', () => {
+  if (document.visibilityState !== 'visible')
+    return
+  refresh()
+  recheck()
+})
+
+const drives = computed(() => volumes.value?.filter(v => v.writable))
+// Plugged in, mounted, and unwritable — an NTFS stick, or a format this box has
+// no driver for. Naming it is the only way the user learns it has to be
+// reformatted; Android fails the folder silently and every app here is stuck.
+const blocked = computed(() => volumes.value?.filter(v => !v.writable) ?? [])
+
+// The drive downloads actually land on: the chosen one, or built-in storage,
+// which is the volume Android lists first.
+const target = computed(() =>
+  (settings.downloadDir ? drives.value?.find(d => d.path === settings.downloadDir) : drives.value?.[0]) ?? null)
 
 // Room for one film. Under it a TV box can't finish a download at all, which is
 // the state a 2 GB set-top arrives in — worth saying out loud rather than
 // leaving the user to discover it as a stalled download.
 const FILM_BYTES = 8 * 1024 ** 3
-const cramped = isTv() === true && !!drives?.length && drives.every(d => d.free < FILM_BYTES)
+const cramped = computed(() =>
+  isTv() === true && !!drives.value?.length && drives.value.every(d => d.free < FILM_BYTES))
+
+// Only Android has a system screen to send them to; `volumes` being non-null is
+// the same thing as the bridge being there.
+const canFormat = computed(() => !!volumes.value)
+const formatHint = ref(false)
+
+/**
+ * Hand off to Android's storage settings. We deliberately don't name a
+ * filesystem: which ones a box supports is not something an app can read, and
+ * the system's own wizard formats the drive in one that works there.
+ */
+function format() {
+  if (openStorageSettings())
+    formatHint.value = true
+  else
+    error.value = 'No storage settings on this device. Format the drive as FAT32 on a computer — every Android box accepts it.'
+}
 
 const confirmClear = ref(false)
 const confirmPrune = ref(false)
@@ -98,16 +152,46 @@ async function openFolder() {
         </v-btn>
       </div>
 
-      <!-- Nothing to press: the fix is on a computer, with the stick out. -->
+      <!-- Said at the moment the drive is picked, not left for the download that
+           dies at 4 GiB. The source list dims those releases (TorrentPicker),
+           so this explains what is about to be seen there. -->
+      <v-alert
+        v-if="target?.maxFile"
+        type="info"
+        variant="tonal"
+        density="compact"
+        :text="`${target.name} is formatted FAT32, which can't hold a single file over
+          ${bytesText(target.maxFile)}. Bigger releases are dimmed in the source list and are never
+          picked automatically — everything smaller works normally.`"
+      />
+
+      <!-- The fix is one screen away, so the alert carries the way to it rather
+           than a filesystem name the user would have to act on elsewhere. -->
       <v-alert
         v-for="volume in blocked"
         :key="volume.name"
         type="warning"
         variant="tonal"
         density="compact"
-        :text="`${volume.name} is plugged in, but this device won't let anything be written to it —
-          it can't handle the format the drive is in. Reformat it as FAT32, which every Android box
-          accepts, and it turns up here as somewhere downloads can go.`"
+      >
+        {{ volume.name }} is plugged in, but nothing can be written to it — this device doesn't
+        support the format the drive is in. Formatting it here fixes that, and erases whatever is
+        on the drive.
+
+        <template #append>
+          <v-btn v-if="canFormat" :prepend-icon="mdiUsbFlashDrive" variant="tonal" @click="format">
+            Format drive…
+          </v-btn>
+        </template>
+      </v-alert>
+
+      <v-alert
+        v-if="formatHint"
+        type="info"
+        variant="tonal"
+        density="compact"
+        text="In the screen that just opened, choose the drive, then “Erase & format as removable
+          storage”. Come back here afterwards and it will be in the list."
       />
 
       <!-- Not while a drive is sitting there unreadable: "plug one in" is the

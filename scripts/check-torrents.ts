@@ -119,6 +119,22 @@ assert.equal(pickBest([sameTier!, hosted!])!.hash, 'bbb', 'a 1080p torrent beats
 assert.equal(pickBest(links, 100)!.url, debrid!.url, 'the storage budget is not its business')
 assert.equal(pickBest([sameTier!], 100), null, 'which a torrent does not get away with')
 
+// --- A drive that caps one file ----------------------------------------------
+// A TV formats a USB stick as FAT32, which stops at 4 GiB however much of the
+// drive is free. The store hands that down as `maxBytes` (see the downloads
+// store), so it is the same ceiling the disk budget uses — a release over it is
+// dropped rather than downloaded to the 4 GiB mark and abandoned there.
+const FAT32 = 4 * 1024 ** 3 - 1
+// The 8.91 GB 4k copy is out, the 2.1 GB 1080p one is not.
+assert.equal(pickBest(parsed, FAT32)!.hash, 'bbb', 'the cap drops what will not fit')
+assert.equal(
+  pickBest(parsed.filter(t => t.hash === 'aaa'), FAT32),
+  null,
+  'and leaves nothing rather than a release that dies at 4 GiB',
+)
+// Still not a link's problem: it never touches the drive that has the limit.
+assert.equal(pickBest(links, FAT32)!.url, debrid!.url, 'a direct link is exempt from it')
+
 // A player that is the system webview (Android, macOS) has the device's codecs
 // and no others, so between two equal releases it takes the one it can decode —
 // but not at the cost of a whole quality tier.

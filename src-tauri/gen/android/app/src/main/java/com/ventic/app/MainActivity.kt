@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.StatFs
 import android.os.storage.StorageManager
+import android.provider.Settings
 import android.view.KeyEvent
 import android.view.WindowManager
 import android.webkit.JavascriptInterface
@@ -25,6 +26,11 @@ import org.json.JSONObject
 class MainActivity : TauriActivity() {
   private var web: WebView? = null
   private var player: VenticPlayer? = null
+
+  companion object {
+    /** Largest file FAT32 can address: 4 GiB, less one byte. */
+    private const val FAT32_MAX = 4L * 1024 * 1024 * 1024 - 1
+  }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     enableEdgeToEdge()
@@ -181,7 +187,7 @@ class MainActivity : TauriActivity() {
         val free = runCatching { StatFs(dir.path).availableBytes }.getOrDefault(0L)
         out.put(
           JSONObject().put("name", name).put("path", dir.path).put("free", free)
-            .put("writable", true),
+            .put("writable", true).put("maxFile", maxFile(dir, free)),
         )
       }
 
@@ -204,10 +210,63 @@ class MainActivity : TauriActivity() {
         val name = runCatching { volume.getDescription(this@MainActivity) }.getOrNull()
         out.put(
           JSONObject().put("name", name ?: "USB drive").put("path", "").put("free", 0)
-            .put("writable", false),
+            .put("writable", false).put("maxFile", 0),
         )
       }
       return out.toString()
+    }
+
+    /**
+     * The largest single file this drive will hold, or 0 for "no limit worth
+     * mentioning". FAT32 stops at 4 GiB, and FAT32 is what a TV formats a stick
+     * as when its kernel has nothing better — so this is the common case, not an
+     * exotic one, and a film that goes over it fails halfway through the
+     * download with an error from the middle of the engine.
+     *
+     * Measured, not guessed: nothing an app is allowed to read says what
+     * filesystem a volume holds (SELinux blocks /proc/filesystems, FUSE hides
+     * the type of the mount). Growing an empty file past the limit answers it in
+     * one syscall — the length is metadata on every filesystem here, so this
+     * writes no data and takes no measurable time.
+     */
+    private fun maxFile(dir: java.io.File, free: Long): Long {
+      // Under a cap there isn't room to reach, the cap decides nothing, and this
+      // also keeps a full disk from reading as a small-file limit.
+      if (free <= FAT32_MAX) return 0L
+      val probe = java.io.File(dir, ".ventic-size-probe")
+      return try {
+        java.io.RandomAccessFile(probe, "rw").use { it.setLength(FAT32_MAX + 1) }
+        0L
+      } catch (e: java.io.IOException) {
+        FAT32_MAX
+      } finally {
+        probe.delete()
+      }
+    }
+
+    /**
+     * Android's own storage screen, where a drive can be erased and formatted.
+     *
+     * This is the whole answer to "what format does my stick need". An app can
+     * neither format a drive nor adopt one — both are system-only — but the
+     * system's own wizard reformats it in whatever this device actually
+     * supports, which no app can work out for itself: `/proc/filesystems` is
+     * denied to us by SELinux, and FUSE hides the real type of a mounted volume.
+     * So we hand the user to the one screen that knows, rather than guessing a
+     * filesystem name at them.
+     *
+     * False if nothing handles either intent, and the caller keeps its written
+     * instructions on screen instead.
+     */
+    @JavascriptInterface
+    fun openStorageSettings(): Boolean {
+      // The generic settings screen is a poor second, but it beats a dead
+      // button on a set-top box that ships its own cut-down Settings.
+      for (action in listOf(Settings.ACTION_INTERNAL_STORAGE_SETTINGS, Settings.ACTION_SETTINGS)) {
+        val ok = runCatching { startActivity(Intent(action)) }.isSuccess
+        if (ok) return true
+      }
+      return false
     }
 
     @JavascriptInterface

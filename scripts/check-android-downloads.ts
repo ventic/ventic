@@ -86,7 +86,7 @@ assert.ok(activity.includes('"VenticScreen"'), 'under that name')
 // leaves the storage screen with nothing to pick and no error either.
 assert.ok(activity.includes('fun volumes()'), 'MainActivity answers volumes()')
 assert.ok(platform.includes('volumes?.()'), 'and storageVolumes() is what calls it')
-for (const field of ['name', 'path', 'free', 'writable']) {
+for (const field of ['name', 'path', 'free', 'writable', 'maxFile']) {
   assert.ok(activity.includes(`"${field}"`), `each drive carries ${field}`)
   assert.ok(platform.includes(field), `and StorageVolume still reads it as ${field}`)
 }
@@ -103,7 +103,39 @@ const storageScreen = readFileSync(
   'utf8',
 )
 assert.ok(storageScreen.includes('v.writable'), 'and the storage screen splits the list on it')
-assert.ok(/FAT32/.test(storageScreen), 'telling the user what to reformat it as')
+
+// An app can neither format a drive nor read which filesystems the box supports
+// (SELinux denies /proc/filesystems, FUSE hides a mounted volume's real type),
+// so the one honest fix is Android's own format wizard. Lose this hop and the
+// screen is back to naming a filesystem at a user with no computer to hand.
+assert.ok(activity.includes('fun openStorageSettings()'), 'MainActivity opens the storage settings')
+assert.ok(
+  activity.includes('ACTION_INTERNAL_STORAGE_SETTINGS'),
+  'with the intent the format wizard lives behind',
+)
+assert.ok(platform.includes('openStorageSettings?.()'), 'and openStorageSettings() calls it')
+assert.ok(storageScreen.includes('openStorageSettings()'), 'from the storage screen button')
+assert.ok(/FAT32/.test(storageScreen), 'with a written fallback when no such screen exists')
+
+// The 4 GiB cap is measured by growing a file past it, because no API reports a
+// volume's filesystem. Both halves have to survive: without the probe every
+// drive looks unlimited, and without the fold into `maxBytes` the cap is known
+// and ignored — which is a download that dies at 4 GiB either way.
+assert.ok(activity.includes('FAT32_MAX'), 'MainActivity knows the FAT32 file ceiling')
+assert.ok(activity.includes('setLength'), 'and measures it rather than guessing the filesystem')
+assert.ok(store.includes('fileLimit'), 'the store carries it')
+assert.ok(
+  /Math\.min\(budget\.value, fileLimit\.value\)/.test(store),
+  'and folds it into the ceiling pickBest already applies to a release',
+)
+const picker = readFileSync(new URL('../app/components/TorrentPicker.vue', import.meta.url), 'utf8')
+assert.ok(picker.includes('downloads.fileLimit'), 'and the picker dims what will not fit')
+
+// Formatting a drive means leaving the app for Android's settings, so the list
+// has to be re-read on the way back or the screen shows the old drive and the
+// user is left switching tabs to force it — which is how this was reported.
+assert.ok(storageScreen.includes('visibilitychange'), 'the drive list re-reads when the app returns')
+assert.ok(storageScreen.includes('useTimeoutFn'), 'and again once Android has finished mounting')
 
 // onPause is the last moment a service may promote itself to the foreground
 // (API 31+), and onResume the only thing that brings it back after Android

@@ -40,6 +40,13 @@ export interface StorageVolume {
    * screen can say why, rather than showing nothing at all.
    */
   writable: boolean
+  /**
+   * Largest single file this drive accepts, or 0 when nothing caps it. 4 GiB on
+   * FAT32, which is what a TV formats a stick as when its kernel supports
+   * nothing else — so a film over that has to be kept off the drive rather than
+   * failing at the last byte. Measured by MainActivity, not inferred.
+   */
+  maxFile: number
 }
 
 /**
@@ -64,10 +71,26 @@ export function storageVolumes(): StorageVolume[] | null {
   }
 }
 
+/**
+ * Send the user to Android's storage settings, where a drive can be erased and
+ * formatted in whatever this device supports — the only reliable answer to "what
+ * format does this box take", since no app can read that (see MainActivity).
+ *
+ * False when there is no such screen to open, and everywhere that isn't Android.
+ */
+export function openStorageSettings(): boolean {
+  return bridge()?.openStorageSettings?.() ?? false
+}
+
 /** MainActivity's `Screen`, present only inside the Android app. */
 function bridge() {
   return (globalThis as {
-    VenticScreen?: { metered?: () => boolean, volumes?: () => string, tv?: () => boolean }
+    VenticScreen?: {
+      metered?: () => boolean
+      volumes?: () => string
+      tv?: () => boolean
+      openStorageSettings?: () => boolean
+    }
   }).VenticScreen
 }
 

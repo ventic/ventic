@@ -86,6 +86,18 @@ const tiers = computed(() => ['all', ...new Set(torrents.value.map(tierOf))])
 // hand can still exceed it, and eviction will make room.
 const best = computed(() => pickBest(torrents.value, downloads.budget))
 
+/**
+ * Too big for the drive to hold at all — a FAT32 stick stops at 4 GiB. Unlike
+ * the budget, no amount of eviction makes room for one of these, so the row is
+ * disabled rather than merely marked: the download would run to the 4 GiB mark
+ * and die there.
+ *
+ * A direct link is exempt, as everywhere else: nothing of it touches the disk.
+ */
+function tooBig(t: Release) {
+  return !t.url && t.bytes > downloads.fileLimit
+}
+
 const list = computed(() => {
   const q = query.value.trim().toLowerCase()
   return torrents.value
@@ -202,6 +214,7 @@ async function download(t: Release) {
               v-for="t in list"
               :key="releaseKey(t)"
               class="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl px-2 py-2 hover:bg-surface-container-high/60 focus-within:bg-surface-container-high/60"
+              :class="tooBig(t) ? 'opacity-45' : ''"
             >
               <div class="min-w-0 flex-1 basis-full sm:basis-0">
                 <div class="flex items-center gap-2">
@@ -216,9 +229,20 @@ async function download(t: Release) {
 
               <v-chip size="x-small" :text="t.quality || 'unknown'" class="shrink-0" />
 
-              <span class="shrink-0 text-body-small sm:w-20 sm:text-right" :class="isBloated(t) ? 'text-warning' : 'opacity-70'">
+              <!-- Amber is "costs more than it's worth", error is "will not fit
+                   at all" — the second has to outrank the first, since a bloated
+                   release is usually also the oversized one. -->
+              <span
+                class="shrink-0 text-body-small sm:w-20 sm:text-right"
+                :class="tooBig(t) ? 'text-error' : isBloated(t) ? 'text-warning' : 'opacity-70'"
+              >
                 {{ t.size || bytesText(t.bytes) }}
-                <v-tooltip v-if="isBloated(t)" activator="parent" text="Bigger than this quality needs — may not keep up while streaming" />
+                <v-tooltip
+                  v-if="tooBig(t)"
+                  activator="parent"
+                  :text="`Over the ${bytesText(downloads.fileLimit)} single-file limit of the drive downloads go to — reformat it in Settings → Storage to use releases this big`"
+                />
+                <v-tooltip v-else-if="isBloated(t)" activator="parent" text="Bigger than this quality needs — may not keep up while streaming" />
               </span>
 
               <!-- A link has no swarm, so this column says what it is instead. -->
@@ -238,9 +262,18 @@ async function download(t: Release) {
               <span class="hidden w-24 shrink-0 truncate text-body-small opacity-50 sm:block">{{ t.source }}</span>
 
               <div class="ml-auto flex shrink-0 items-center sm:ml-0">
-                <v-btn icon size="small" variant="text" color="on-surface" :to="playLink(t)">
+                <!-- Playing is downloading here, so an oversized release is as
+                     dead on Play as it is on Download. -->
+                <v-btn
+                  icon
+                  size="small"
+                  variant="text"
+                  color="on-surface"
+                  :disabled="tooBig(t)"
+                  :to="tooBig(t) ? undefined : playLink(t)"
+                >
                   <v-icon :icon="mdiPlay" size="20" />
-                  <v-tooltip activator="parent" text="Play this source" />
+                  <v-tooltip activator="parent" :text="tooBig(t) ? 'Too big for the download drive' : 'Play this source'" />
                 </v-btn>
                 <!-- Nothing to hand the engine for a link, and nothing it could
                      keep — the file lives on the source's server, not in a swarm. -->
@@ -249,12 +282,15 @@ async function download(t: Release) {
                   size="small"
                   variant="text"
                   color="on-surface"
-                  :disabled="!!t.url"
+                  :disabled="!!t.url || tooBig(t)"
                   :loading="busy === releaseKey(t)"
                   @click="download(t)"
                 >
                   <v-icon :icon="added.includes(releaseKey(t)) ? mdiCheck : mdiDownload" size="20" />
-                  <v-tooltip activator="parent" :text="added.includes(releaseKey(t)) ? 'In downloads' : 'Download'" />
+                  <v-tooltip
+                    activator="parent"
+                    :text="tooBig(t) ? 'Too big for the download drive' : added.includes(releaseKey(t)) ? 'In downloads' : 'Download'"
+                  />
                 </v-btn>
               </div>
             </div>
@@ -262,9 +298,17 @@ async function download(t: Release) {
         </v-card-text>
 
         <v-card-actions>
+          <!-- One legend at a time, and a drive that cannot hold the release
+               outranks a release that is merely fatter than it needs to be.
+               Shown at every width, unlike the amber note: a dimmed row with no
+               explanation reads as the app being broken. -->
+          <span v-if="list.some(tooBig)" class="flex items-center gap-1 pl-2 text-body-small text-error">
+            <v-icon :icon="mdiAlertCircleOutline" size="14" />
+            Dimmed rows are over the {{ bytesText(downloads.fileLimit) }} file limit of the download drive.
+          </span>
           <!-- The legend is the first thing to go when the row gets tight; the
                amber itself still carries a tooltip. -->
-          <span class="hidden items-center gap-1 pl-2 text-body-small opacity-45 sm:flex">
+          <span v-else class="hidden items-center gap-1 pl-2 text-body-small opacity-45 sm:flex">
             <v-icon :icon="mdiWeightLifter" size="14" />
             Sizes in amber cost more bandwidth than the picture is worth.
           </span>

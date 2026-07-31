@@ -76,6 +76,16 @@ export const useDownloadsStore = defineStore('downloads', () => {
   const used = computed(() => usedBytes(torrents.value))
   const budget = computed(() => diskBudget(disk.value, used.value, cap.value))
 
+  /**
+   * Largest single file the storage folder will take, `Infinity` when nothing
+   * caps it — a FAT32 stick in a TV stops at 4 GiB (see `storageVolumes`).
+   *
+   * Separate from `budget` on purpose: the budget is how much of the disk the
+   * cache may fill and is what eviction works against, while this is a ceiling
+   * on one file that no amount of deleting will raise.
+   */
+  const fileLimit = ref(Number.POSITIVE_INFINITY)
+
   /** The torrent being watched: never evicted, and the only one downloading. */
   const focused = ref<number | null>(null)
   /** What `focus` paused, so `release` can put it back. */
@@ -122,7 +132,10 @@ export const useDownloadsStore = defineStore('downloads', () => {
    * title it is fetching.
    */
   async function start(key: string, options: Parameters<typeof startTorrent>[0]) {
-    const started = await startTorrent({ maxBytes: budget.value, cached: cachedFor(key), ...options })
+    // Both ceilings are on the same quantity — the size of the file we'd fetch —
+    // so the tighter one wins and `pickBest` needs to know nothing about drives.
+    const maxBytes = Math.min(budget.value, fileLimit.value)
+    const started = await startTorrent({ maxBytes, cached: cachedFor(key), ...options })
     // A direct link leaves nothing on the disk to come back to, so there is no
     // offline copy to file — and filing an empty hash would shadow a real one.
     if (key && started.hash)
@@ -232,6 +245,16 @@ export const useDownloadsStore = defineStore('downloads', () => {
       if (dormant())
         return
       disk.value = await invoke<DiskSpace>('disk_space', { path: settings.downloadDir || null }).catch(() => null)
+      // Rides along with the free-space poll: the cap belongs to the drive, so
+      // it has to follow the storage folder from one to the other exactly as
+      // the budget does. Only Android reports one.
+      const volumes = storageVolumes()
+      // No folder chosen means the engine's default, which sits on the volume
+      // Android lists first — built-in storage.
+      const drive = settings.downloadDir
+        ? volumes?.find(v => v.path === settings.downloadDir)
+        : volumes?.[0]
+      fileLimit.value = drive?.maxFile || Number.POSITIVE_INFINITY
     },
     10_000,
     { immediateCallback: true },
@@ -409,6 +432,7 @@ export const useDownloadsStore = defineStore('downloads', () => {
     disk,
     used,
     budget,
+    fileLimit,
     cap,
     focused,
     focus,
