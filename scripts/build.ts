@@ -340,15 +340,17 @@ async function devAndroid(extra: string[]) {
     )
   }
 
-  const devices = spawnSync('adb', ['devices'], { encoding: 'utf8' }).stdout ?? ''
-  const attached = devices.split('\n').slice(1).filter(l => /\tdevice$/.test(l.trim()))
+  let attached = adbDevices()
+  if (!attached.length && await adbConnectNearby())
+    attached = adbDevices()
   if (!attached.length) {
     die(
       'adb sees no device.\n'
       + '  Phone: enable Developer options → USB debugging, plug it in, and accept the\n'
       + '         "Allow USB debugging?" prompt on the phone itself (`adb devices` shows\n'
       + '         "unauthorized" until you do).\n'
-      + '  TV box: Developer options → Network debugging, then `adb connect <tv-ip>:5555`.',
+      + '  TV box: Developer options → Network debugging, and put it on this network —\n'
+      + '          it is then found here automatically, no `adb connect` needed.',
     )
   }
   console.log(`\n→ ${attached.length} device(s) attached; starting the dev build\n`)
@@ -371,6 +373,39 @@ async function devAndroid(extra: string[]) {
   // actually failed to reach. Loopback over adb has none of those moving parts
   // and works over USB with the wifi off.
   run(['tauri', 'android', 'dev', '--host', '127.0.0.1', ...extra], env)
+}
+
+function adbDevices() {
+  const out = spawnSync('adb', ['devices'], { encoding: 'utf8' }).stdout ?? ''
+  return out.split('\n').slice(1).filter(l => /\tdevice$/.test(l.trim()))
+}
+
+/**
+ * A TV box has no USB port to sit on, so its adb is a network connection — and
+ * that connection is not the device's to keep: it is dropped by every reboot,
+ * every toggle of the setting and every `adb kill-server` here, which is why it
+ * needs making again from this machine each time. Network debugging advertises
+ * `_adb._tcp` over mDNS whether or not anything is connected, so the box can be
+ * found rather than have its IP pinned in the repo (it's a DHCP lease). adb
+ * auto-connects only to `_adb-tls-connect._tcp`, Android 11's *wireless
+ * debugging* — the plain 5555 service a TV's network debugging opens is left to
+ * us. Discovery is a background daemon that has seen nothing the instant it
+ * starts, hence the poll.
+ */
+async function adbConnectNearby() {
+  for (let i = 0; i < 6; i++) {
+    const out = spawnSync('adb', ['mdns', 'services'], { encoding: 'utf8' }).stdout ?? ''
+    const found = [...out.matchAll(/\t_adb\._tcp\t(\S+:\d+)/g)].map(m => m[1]!)
+    if (found.length) {
+      for (const target of found) {
+        console.log(`\n→ found ${target} over mDNS`)
+        spawnSync('adb', ['connect', target], { stdio: 'inherit' })
+      }
+      return true
+    }
+    await Bun.sleep(500)
+  }
+  return false
 }
 
 function run(args: string[], env: Record<string, string> = {}) {
