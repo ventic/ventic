@@ -9,8 +9,8 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use librqbit::{
-	api::Api, dht::DhtPersistenceConfig, http_api::HttpApi, DhtSessionConfig, Session,
-	SessionOptions, SessionPersistenceConfig
+	api::Api, dht::DhtPersistenceConfig, http_api::HttpApi, storage::StorageFactoryExt,
+	DhtSessionConfig, Session, SessionOptions, SessionPersistenceConfig
 };
 use librqbit_dualstack_sockets::TcpListener;
 
@@ -264,6 +264,84 @@ fn disk_space(app: tauri::AppHandle, path: Option<String>) -> Result<DiskSpace, 
 	}
 }
 
+/// librqbit's own filesystem storage with its one 32-bit call routed around.
+///
+/// Every chunk is written with `pwritev`, whose offset argument is `off_t` —
+/// **32 bits wide on armv7 Android**, which is what a cheap TV box runs.
+/// librqbit narrows the u64 file offset into it with `try_into`, so the first
+/// chunk landing past 2 GiB *into a file* fails the conversion and the download
+/// dies with `error writing to file 0 (…)` — every retry lands in the same
+/// place. Nothing to do with the drive: FAT32's own ceiling is 4 GiB (see
+/// `maxFile` in MainActivity) and internal storage hits this identically.
+///
+/// The fix is to not have that method: `TorrentStorage::pwrite_all_vectored`'s
+/// default issues the two halves as separate `pwrite_all`s, which is std's
+/// `write_all_at` and compiles to `pwrite64` on every target. Left unconditional
+/// rather than gated on the pointer width — one extra syscall on the minority of
+/// chunks that arrive split is nothing beside hashing the piece, and a single
+/// path means the desktop build exercises the one Android runs.
+struct LargeFileStorage(Box<dyn librqbit::storage::TorrentStorage>);
+
+impl librqbit::storage::TorrentStorage for LargeFileStorage {
+	fn init(
+		&mut self,
+		shared: &librqbit::ManagedTorrentShared,
+		metadata: &librqbit::TorrentMetadata,
+	) -> anyhow::Result<()> {
+		self.0.init(shared, metadata)
+	}
+
+	fn pread_exact(&self, file_id: usize, offset: u64, buf: &mut [u8]) -> anyhow::Result<()> {
+		self.0.pread_exact(file_id, offset, buf)
+	}
+
+	fn pwrite_all(&self, file_id: usize, offset: u64, buf: &[u8]) -> anyhow::Result<()> {
+		self.0.pwrite_all(file_id, offset, buf)
+	}
+
+	fn remove_file(&self, file_id: usize, filename: &std::path::Path) -> anyhow::Result<()> {
+		self.0.remove_file(file_id, filename)
+	}
+
+	fn remove_directory_if_empty(&self, path: &std::path::Path) -> anyhow::Result<()> {
+		self.0.remove_directory_if_empty(path)
+	}
+
+	fn ensure_file_length(&self, file_id: usize, length: u64) -> anyhow::Result<()> {
+		self.0.ensure_file_length(file_id, length)
+	}
+
+	fn take(&self) -> anyhow::Result<Box<dyn librqbit::storage::TorrentStorage>> {
+		Ok(Box::new(Self(self.0.take()?)))
+	}
+}
+
+#[derive(Clone, Copy, Default)]
+struct LargeFileStorageFactory(librqbit::storage::filesystem::FilesystemStorageFactory);
+
+impl librqbit::storage::StorageFactory for LargeFileStorageFactory {
+	type Storage = LargeFileStorage;
+
+	fn create(
+		&self,
+		shared: &librqbit::ManagedTorrentShared,
+		metadata: &librqbit::TorrentMetadata,
+	) -> anyhow::Result<Self::Storage> {
+		Ok(LargeFileStorage(Box::new(self.0.create(shared, metadata)?)))
+	}
+
+	/// Answer as the storage we wrap. Session persistence refuses to write a
+	/// resume file for anything that isn't `FilesystemStorageFactory` by exactly
+	/// this test, and losing that would mean re-hashing every torrent on launch.
+	fn is_type_id(&self, type_id: std::any::TypeId) -> bool {
+		self.0.is_type_id(type_id)
+	}
+
+	fn clone_box(&self) -> librqbit::storage::BoxStorageFactory {
+		(*self).boxed()
+	}
+}
+
 /// The librqbit HTTP API + streaming server listens here. The Nuxt frontend
 /// talks to it directly (add torrents, poll stats) and points a plain <video>
 /// element at `http://127.0.0.1:3030/torrents/{id}/stream/{file_idx}`.
@@ -292,6 +370,8 @@ async fn run_torrent_server(
 	let opts = |with_dht: bool| SessionOptions {
 		persistence: Some(SessionPersistenceConfig::Json { folder: Some(session_dir.clone()) }),
 		fastresume: true,
+		// Films are routinely bigger than 2 GiB and a TV box is 32-bit.
+		default_storage_factory: Some(LargeFileStorageFactory::default().boxed()),
 		dht: with_dht.then(|| DhtSessionConfig {
 			// Ask for a fresh port every launch. librqbit otherwise persists
 			// whichever ephemeral port the OS handed it and re-binds that exact

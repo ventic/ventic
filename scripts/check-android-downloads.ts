@@ -148,5 +148,27 @@ for (const hook of ['onResume', 'onPause']) {
 }
 assert.ok(activity.includes('stopService'), 'and closing the app stops it, notification and all')
 
+// A TV box is armv7, where off_t is 32 bits — so librqbit's pwritev-based chunk
+// writer cannot address past 2 GiB and every film bigger than that dies with
+// "error writing to file 0". The storage wrapper in lib.rs exists only to drop
+// that one method and inherit the trait's pwrite64 default, so the three ways it
+// can quietly stop working are all worth an assert: unwired, "completed" with
+// the vectored method someone assumed was missing by accident, or answering
+// is_type_id as itself — which turns off resume persistence and re-hashes every
+// torrent on launch, with nothing on screen to say why.
+const rust = readFileSync(new URL('../src-tauri/src/lib.rs', import.meta.url), 'utf8')
+assert.ok(
+  /default_storage_factory: Some\(LargeFileStorageFactory/.test(rust),
+  'the session writes through the 64-bit-offset storage',
+)
+assert.ok(
+  !/fn pwrite_all_vectored/.test(rust),
+  'which works by not implementing pwrite_all_vectored at all',
+)
+assert.ok(
+  /fn is_type_id[^}]*self\.0\.is_type_id/.test(rust),
+  'and passes for the filesystem storage so resume data keeps being written',
+)
+
 // eslint-disable-next-line no-console
 console.log('android downloads: ok')
