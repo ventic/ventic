@@ -185,14 +185,18 @@ export default defineNuxtPlugin(() => {
    *
    * A slider spends all four on its value, so up and down don't leave it — they
    * resize the posters on the way out and you're still on the slider; Back was
-   * the only exit. A Vuetify list walks its items with up and down, which is
-   * right, but wraps from the last back to the first, so a remote in the drawer
-   * cycles Home → History → Home for ever and never reaches the page.
+   * the only exit. A Vuetify list walks its items with up and down, and a slide
+   * group (the category chips, tabs) walks its own with left and right — both
+   * right, and both wrap from the last item back to the first, so a remote in
+   * the drawer cycles Home → History → Home for ever, and one on the chips
+   * circles Popular → In cinemas → Popular instead of reaching the genre filter
+   * sitting beside them.
    *
-   * Both keep the axis they need and give up the one that leads out: a slider's
-   * value is left/right, a list's cursor is up/down until it runs out of items.
-   * This has to be decided before the component sees the key, so it runs in the
-   * capture phase — by the bubble phase the value has already moved.
+   * All three keep the axis they need and give up the one that leads out: a
+   * slider's value is left/right, a list's cursor is up/down and a group's is
+   * left/right, each until it runs out of items. This has to be decided before
+   * the component sees the key, so it runs in the capture phase — by the bubble
+   * phase the value has already moved.
    */
   function trapped(el: Element | null, dir: Dir) {
     if (!(el instanceof HTMLElement))
@@ -210,11 +214,11 @@ export default defineNuxtPlugin(() => {
     if (el.getAttribute('role') === 'combobox')
       return el.getAttribute('aria-expanded') !== 'true'
 
-    const list = vertical ? el.closest('.v-list') : null
-    if (!list)
+    const group = el.closest(vertical ? '.v-list' : '.v-slide-group')
+    if (!group)
       return false
-    const items = focusables(list)
-    return el === items[dir === 'up' ? 0 : items.length - 1]
+    const items = focusables(group)
+    return el === items[dir === 'up' || dir === 'left' ? 0 : items.length - 1]
   }
 
   /** Fires Escape and reports whether anything claimed it. */
@@ -265,6 +269,18 @@ export default defineNuxtPlugin(() => {
     for (const type of ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click'])
       field?.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true }))
     return true
+  }
+
+  /**
+   * Is a caret in play? A readonly field has no caret to keep — Vuetify builds
+   * its selects out of an `<input readonly>`, and treating that as typing is
+   * what left a remote unable to move sideways off a dropdown at all.
+   */
+  function typing() {
+    const el = document.activeElement
+    return el instanceof HTMLElement
+      && (el.isContentEditable
+        || ((el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && !(el as HTMLInputElement).readOnly))
   }
 
   function markDpad() {
@@ -321,14 +337,7 @@ export default defineNuxtPlugin(() => {
       return
 
     // A text field keeps left/right for the caret; up/down is how you leave it.
-    // A readonly one has no caret to keep — Vuetify builds its selects out of an
-    // `<input readonly>`, and treating that as typing is what left a remote
-    // unable to move sideways off a dropdown at all.
-    const el = document.activeElement
-    const typing = el instanceof HTMLElement
-      && (el.isContentEditable
-        || ((el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && !(el as HTMLInputElement).readOnly))
-    if (typing && (dir === 'left' || dir === 'right'))
+    if (typing() && (dir === 'left' || dir === 'right'))
       return
 
     handle(dir, e)
@@ -353,7 +362,10 @@ export default defineNuxtPlugin(() => {
   // moment to show up, then take the first card; a page that stays empty (an
   // empty watchlist) just keeps the focus it had.
   router.afterEach(() => {
-    if (!dpad)
+    // Not over someone's shoulder while they type: the search box navigates a
+    // few keystrokes in, and taking focus to the first result mid-word shuts the
+    // on-screen keyboard and loses the rest of the query.
+    if (!dpad || typing())
       return
     let tries = 12
     const land = () => {

@@ -69,6 +69,31 @@ assert.strictEqual(pickDirection(navMovies, [sortMenu, poster], 'right'), 1, 'ri
 const navLinks = [box(8, 76, 220, 44), navMovies, box(8, 172, 220, 44)]
 assert.strictEqual(pickDirection(poster, navLinks, 'left'), 1, 'left off a poster reaches the nav item beside it')
 
+// Off the end of the category chips and onto the genre filter beside them. The
+// chips are a slide group, which walks left/right itself and wraps, so the
+// plugin has to take the key back at the last one (see `trapped`) — and once it
+// has, the filter must beat the poster row starting just below and the poster-
+// size slider further along the bar. Boxes measured on the TV at 1280x720.
+const chip = box(565, 80, 78, 26)
+const genre = box(660, 89, 168, 24)
+const sizeSlider = box(1066, 86, 14, 14)
+const firstPoster = box(661, 130, 184, 321)
+assert.strictEqual(pickDirection(chip, [genre, sizeSlider, firstPoster], 'right'), 0, 'right off the last chip reaches the genre filter')
+
+// Straight along the toolbar. Downloads is a long way past the search box and
+// the poster grid is only just below it, so by weighted distance alone a run
+// across the top of the screen dropped into the posters — and Downloads,
+// Settings and Account were unreachable except by climbing the far right of the
+// grid. Boxes measured on the TV.
+const searchBox = box(404, 16, 432, 40)
+const downloads = box(1100, 12, 48, 48)
+const posterRight = box(861, 130, 184, 321)
+assert.strictEqual(pickDirection(searchBox, [posterRight, downloads], 'right'), 1, 'right along the toolbar stays on the toolbar')
+assert.strictEqual(pickDirection(downloads, [posterRight, searchBox], 'left'), 1, 'and back again')
+// But only while something is genuinely level: with the toolbar exhausted, down
+// into the page is exactly what should happen.
+assert.strictEqual(pickDirection(searchBox, [posterRight], 'right'), 0, 'nothing level means the nearest anywhere')
+
 // The seek rail spans the window and the buttons sit under it, so every button
 // overlaps it: the one directly above must not become "every direction".
 assert.strictEqual(pickDirection(seek, bar, 'down'), 0, 'down off the rail takes the first button')

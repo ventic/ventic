@@ -28,6 +28,8 @@ export function pickDirection(from: Box, boxes: Box[], dir: Dir): number {
   const horizontal = dir === 'left' || dir === 'right'
   let best = -1
   let bestScore = Number.POSITIVE_INFINITY
+  /** Whether the leader is one of the boxes squarely in this row or column. */
+  let bestInLine = false
 
   boxes.forEach((box, i) => {
     // Distance between the two edges facing each other. A pixel of overlap is
@@ -45,10 +47,18 @@ export function pickDirection(from: Box, boxes: Box[], dir: Dir): number {
 
     const off = apart(from, box, horizontal ? 'y' : 'x')
 
-    // Sideways drift costs double, so a neighbour in line always beats a closer
-    // one in the next column.
+    // Facing us at all — the boxes overlap on the other axis — is what "on this
+    // row" means, and one of those wins over anything that isn't however much
+    // closer it is. Weighting drift alone wasn't enough: walking right along the
+    // toolbar, Downloads is 264px past the search box while the poster grid
+    // starts 74px below it, so a straight run across the top of the screen fell
+    // into the posters and Downloads and Settings could only be reached the long
+    // way round. Among boxes of the same standing the distance decides, drift
+    // still costing double so a grid walks straight down its column.
+    const inLine = off === 0
     const score = Math.max(gap, 0) + off * 2
-    if (score < bestScore) {
+    if (inLine === bestInLine ? score < bestScore : inLine) {
+      bestInLine = inLine
       bestScore = score
       best = i
     }

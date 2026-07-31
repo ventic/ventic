@@ -15,20 +15,24 @@ having. Anything you add has to be reachable and legible with those six keys.
 pages get remote support for free as long as they follow the rules below.
 
 - **Arrows** move focus to the nearest focusable element in that direction,
-  scored by `pickDirection()` in `app/utils/dpad.ts` (nearest edge gap, with
-  sideways drift weighted double so a grid walks straight down its column).
-  Sideways drift is measured between the boxes' **edges**, not their centres —
-  boxes that face each other at all count as level, or a 44px nav link never
-  reaches the 361px poster beside it.
+  scored by `pickDirection()` in `app/utils/dpad.ts`. Sideways drift is measured
+  between the boxes' **edges**, not their centres — boxes that face each other
+  at all count as level, or a 44px nav link never reaches the 361px poster
+  beside it. Anything level like that beats everything that isn't, however much
+  closer: a run along the toolbar has to reach Downloads 264px away rather than
+  fall into the grid 74px below. Drift costs double only among equals, which is
+  what keeps a grid walking straight down its column.
 - The handler sits on `document` in the **bubble** phase and bails on
   `e.defaultPrevented`, so any component that already handles arrows keeps them:
   Vuetify sliders, lists, selects, and the player's seek keys.
 - A component may own an axis but never the one that leads *out* of it, or the
   d-pad has no exit but Back. A second handler in the **capture** phase takes
-  the key back for the two that would: up/down off a `[role="slider"]` (whose
-  value is left/right, and which otherwise changes as you try to leave), and
-  up/down off the first/last item of a `.v-list` (which otherwise wraps, so the
-  drawer cycles for ever instead of letting go).
+  the key back for the ones that would: up/down off a `[role="slider"]` (whose
+  value is left/right, and which otherwise changes as you try to leave), up/down
+  off the first/last item of a `.v-list` (which otherwise wraps, so the drawer
+  cycles for ever instead of letting go), and left/right off the ends of a
+  `.v-slide-group` — chip groups and tabs wrap the same way, which is why the
+  category chips circled instead of reaching the genre filter beside them.
 - **Only `tabindex="-1"` opts out.** Vuetify's lists rove the tabindex across
   their items and park `-2` on the ones that aren't current — every drawer link
   carries it, and they are all real targets. A wrapper that merely *contains*
@@ -63,9 +67,18 @@ Run `bun run check:dpad` after touching the geometry.
 4. **One obvious first stop.** The layout marks the page region with
    `data-dpad-start`; focus lands on the first thing inside it after a
    navigation. Put the primary action (Play, the first card) early in the DOM.
-5. **Don't rely on typing.** Search must stay optional: every screen has to be
-   reachable by moving and pressing OK. In a text field, left/right belong to
-   the caret and up/down leave the field.
+5. **Don't rely on typing, and don't focus a text field on the way past one.**
+   Every screen has to be reachable by moving and pressing OK. In a text field
+   left/right belong to the caret and up/down leave it — but on a TV a field
+   that merely *has* focus puts the on-screen keyboard over the whole screen,
+   and a remote crosses the app bar's search box to reach Downloads and
+   Settings. So a field a d-pad can pass sits `inert` under a transparent
+   `<button>` (`AppBar.vue`), and OK on that button is what focuses it. It has
+   to be a button: the WebView drops OK for an `<input>` it thinks can't be
+   edited, and Android only raises the keyboard for a focus that happens inside
+   a real press — `nextTick` after the click still counts, a timer seconds later
+   does not. `router.afterEach` leaves focus alone while a caret is in play, or
+   the debounced search navigation snatches it away mid-word.
 6. **Test at 10 feet.** Body text no smaller than `text-body-medium`, targets no
    smaller than ~40px, and never signal state with colour alone at that
    distance.
@@ -110,6 +123,14 @@ Run `bun run check:dpad` after touching the geometry.
   so the player's bars stack in CSS rather than being punched out of a native
   window. A control added to `MpvPlayer.vue` works on both without extra work;
   anything reaching for `player_ipc` directly does not.
+- **A set answers `hover: none` and means it**, but the webview still fires a
+  `pointerenter` at whatever appears under its idea of where a pointer last was
+  — the middle of the screen. One phantom enter with no leave behind it pinned
+  the player's chrome open for a whole film, so anything that lets hover hold UI
+  up has to check it can hover at all (`hoverable` in `MpvPlayer.vue`).
+- Play/pause sits in the bottom bar on a TV (`barTransport`), not in the middle
+  of the picture where a thumb would want it: a remote arrives at the bar
+  anyway, and the centre cluster is up the longest of anything on screen.
 
 ## What has deliberately been left out
 

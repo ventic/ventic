@@ -113,6 +113,19 @@ const exo = hasExoPlayer()
 const behind = exo || (native && !overlay)
 
 /**
+ * Does play/pause live in the bottom bar rather than dead centre?
+ *
+ * Where the picture is a native window over the page it has to: the middle of
+ * the frame can only be an opaque hole, and an opaque box over the film is a
+ * blindfold, not a control. A television lands in the same place from the other
+ * end — the centre cluster is where a thumb already is, and a remote hasn't got
+ * one. What it has is a d-pad that arrives at the bar anyway, so putting the
+ * transport there costs nothing and stops the picture being covered by the one
+ * control that is up the longest, on the one screen watched from across a room.
+ */
+const barTransport = computed(() => overlay || isTv() === true)
+
+/**
  * A finger, not a pointer. Controls get thumb-sized, the volume slider goes
  * away (a phone's own buttons own volume), and a tap on the picture shows the
  * chrome rather than pausing — which is what every other player on a phone does.
@@ -1290,6 +1303,15 @@ async function warm() {
 const IDLE_MS = isTv() ? 6500 : 2800
 const ui = ref(true)
 const hovering = ref(false)
+/**
+ * Is there a pointer that can hover at all? A television answers `hover: none`,
+ * and it means it — but the webview still fires `pointerenter` at whatever turns
+ * up under its idea of where a pointer last was, which is the middle of the
+ * screen, which is where the transport is. One phantom enter with no leave
+ * behind it, and `hovering` stayed true for the rest of the film: the bars never
+ * went away once, on the one device where covering the picture matters most.
+ */
+const hoverable = useMediaQuery('(hover: hover)')
 /** A control in the chrome holds keyboard focus — someone is driving with a remote. */
 const focused = ref(false)
 let hideTimer: ReturnType<typeof setTimeout> | null = null
@@ -1348,7 +1370,7 @@ function noteActivity() {
   // Keep them up while paused, stopped, hovered, or reading a menu — hiding only
   // makes sense mid-playback. Focus does *not* keep them up: on a TV every press
   // leaves something focused, which pinned the bars over the film for good.
-  if (started.value && !paused.value && !menu.value && !hovering.value)
+  if (started.value && !paused.value && !menu.value && !(hovering.value && hoverable.value))
     hideTimer = setTimeout(hideChrome, IDLE_MS)
 }
 
@@ -1783,14 +1805,12 @@ defineExpose({ osd })
          nothing. Hidden behind the centre notices below, which own the same
          patch of screen.
 
-         Only where the page draws *over* the picture. On X11 and Win32 every
-         overlay is a hole cut in mpv's window and therefore opaque, and an
-         opaque box in the middle of the frame is not a control, it's a
-         blindfold — those two keep the transport in the bottom bar, where a
-         bar-shaped hole belongs. No transition for the same reason the bars
-         slide rather than fade: there is nothing behind this to fade against. -->
+         Only where the page draws over the picture and there is a thumb to draw
+         it for — see `barTransport` for the two that keep it in the bottom bar
+         instead. No transition for the same reason the bars slide rather than
+         fade: there is nothing behind this to fade against. -->
     <div
-      v-if="!overlay"
+      v-if="!barTransport"
       v-show="ui && started && !centre"
       class="absolute left-1/2 top-1/2 flex items-center gap-3 rounded-full border border-white/9 bg-[#0e0f11]/70 px-3 py-3 -translate-x-1/2 -translate-y-1/2"
       @pointerenter="hovering = true"
@@ -2085,11 +2105,10 @@ defineExpose({ osd })
         />
 
         <div class="mt-2 flex items-center gap-0.5">
-          <!-- Where the picture is a native window over the page, this is the
-               transport: the middle of the frame can only be an opaque hole.
-               Everywhere else it is the centre cluster above, and this row is
-               left as the clock and the menus. -->
-          <template v-if="overlay">
+          <!-- The transport, where the middle of the picture is no place for it
+               (see `barTransport`). Everywhere else it is the centre cluster
+               above, and this row is left as the clock and the menus. -->
+          <template v-if="barTransport">
             <button ref="playBtn" :class="ICO" :disabled="!started" :title="paused ? 'Play (space)' : 'Pause (space)'" @click="togglePlay">
               <v-icon :icon="paused ? mdiPlay : mdiPause" size="26" />
             </button>
