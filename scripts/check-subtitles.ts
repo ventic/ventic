@@ -1,11 +1,11 @@
 // Self-check for the subtitle grouping/naming, the file labelling and the
 // auto-sync offset search: `bun scripts/check-subtitles.ts`.
 // The fixtures are trimmed real responses; pass --live to also hit the addons.
-import type { Interval } from '../app/utils/subtitles'
+
 import assert from 'node:assert'
 import process from 'node:process'
 import {
-  bestOffset,
+  bestSync,
   byLanguage,
   cueAt,
   findImdbId,
@@ -15,9 +15,11 @@ import {
   parseCues,
   probeLanguage,
   releaseSubtitle,
+  stripCaptions,
   SUBTITLE_DEFAULTS,
   subtitleCss,
   subtitleProps,
+  synced,
 } from '../app/utils/subtitles'
 
 const subtitles = [
@@ -116,44 +118,75 @@ assert.equal(
   'one stray bracket in a whole film is not a captions track',
 )
 
-// --- offset search ---------------------------------------------------------
-// Five minutes of someone talking in bursts, with quiet in between. Irregular
-// on purpose: evenly spaced speech fits equally well at every spacing.
+// --- hiding the hearing-impaired additions ---------------------------------
+// The same job mpv's `sub-filter-sdh` does, for the backends that draw cues
+// themselves. Verified against mpv 0.41 rather than guessed at.
+assert.equal(stripCaptions('[thunder rumbling]'), '', 'a described sound is the whole line')
+assert.equal(stripCaptions('MAN: Get down!'), 'Get down!', 'the speaker label comes off')
+assert.equal(stripCaptions('Hello (door creaks) there'), 'Hello there', 'and an enclosure inside a line')
+assert.equal(stripCaptions('- [door creaks]\n- Run.'), 'Run.', 'the orphaned dialogue dash goes too')
+assert.equal(stripCaptions('Real dialogue here.'), 'Real dialogue here.')
+// Prose is full of colons and parentheses; only the SDH shapes may be touched.
+assert.equal(stripCaptions('I told him: go home.'), 'I told him: go home.', 'a sentence is not a speaker label')
+assert.equal(stripCaptions('Wait — what?'), 'Wait — what?')
+
+// --- the fit ---------------------------------------------------------------
+// Five minutes of someone talking in bursts, quiet in between, as the envelope
+// the backend measures: loud in dB while a burst runs, near-silent otherwise.
+// Irregular on purpose — evenly spaced speech fits equally well at every spacing.
+const BIN = 0.2
 let seed = 7
 const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648
-const speech: Interval[] = []
+const speech: [number, number][] = []
 for (let at = 4; at < 290;) {
   const len = 1 + rnd() * 3
   speech.push([at, at + len])
   at += len + 0.8 + rnd() * 6
 }
-const silence: Interval[] = speech.map(([, end], i) => [end, speech[i + 1]?.[0] ?? 300])
-silence.unshift([0, speech[0]![0]])
 
-const shift = (by: number) => speech.map(([s, e]) => ({ start: s + by, end: e + by, text: '…' }))
+/** The bursts as an audio envelope over `span` seconds, `rate`-stretched. */
+function envelope(span: number, rate = 1) {
+  const env = new Float32Array(Math.round(span / BIN)).fill(-60)
+  for (const [s, e] of speech) {
+    for (let i = Math.round(s * rate / BIN); i < Math.round(e * rate / BIN) && i < env.length; i++)
+      env[i] = -20
+  }
+  return env
+}
 
-const fix = bestOffset(shift(-3), silence, 0, 300)
+function shift(by: number, rate = 1) {
+  return speech.map(([s, e]) => ({ start: s * rate + by, end: e * rate + by, text: '…' }))
+}
+
+const audio = envelope(1200)
+
+const fix = bestSync(shift(-3), audio, 0)
 assert.ok(Math.abs(fix.offset - 3) < 0.3, `early subtitles get pushed back, got ${fix.offset}`)
-assert.ok(fix.score > 0.9 && fix.score > fix.base, 'and the fit is better than leaving them alone')
-assert.ok(Math.abs(bestOffset(shift(7.5), silence, 0, 300).offset + 7.5) < 0.3, 'late subtitles get pulled forward')
-assert.ok(Math.abs(bestOffset(shift(-45), silence, 0, 300).offset - 45) < 0.3, 'and a whole scene of drift still lands')
+assert.ok(synced(fix), 'and the fit is trusted')
+assert.equal(fix.speed, 1, 'a plain shift needs no rate change')
+assert.ok(Math.abs(bestSync(shift(7.5), audio, 0).offset + 7.5) < 0.3, 'late subtitles get pulled forward')
+assert.ok(Math.abs(bestSync(shift(-45), audio, 0).offset - 45) < 0.3, 'and a whole scene of drift still lands')
 
-const fine = bestOffset(shift(0), silence, 0, 300)
+const fine = bestSync(shift(0), audio, 0)
 assert.equal(fine.offset, 0)
-assert.equal(fine.score, fine.base, 'nothing to gain from shifting an in-sync file')
+assert.equal(fine.speed, 1)
+assert.ok(synced(fine), 'an in-sync file is recognised as one rather than nudged')
 
-// Dialogue repeats, so several shifts can fit equally well. The least of them
-// wins: a tie is not a reason to throw the subtitles half a minute.
-const metronome: Interval[] = Array.from({ length: 29 }, (_, i) => [10 + i * 10, 12 + i * 10])
-const beats: Interval[] = metronome.map(([, end], i) => [end, metronome[i + 1]?.[0] ?? 300])
-beats.unshift([0, 10])
-const tie = bestOffset(metronome.map(([s, e]) => ({ start: s + 7.5, end: e + 7.5, text: '…' })), beats, 0, 300)
-assert.ok(Math.abs(tie.offset - 2.5) < 0.3, `smallest shift wins a tie, got ${tie.offset}`)
+// A file cut for 25 fps PAL against a 23.976 transfer drifts a minute an hour;
+// no single delay fixes that, which is what `sub-speed` is for.
+const PAL = 25 / 23.976
+const drift = bestSync(shift(0, 1 / PAL), audio, 0)
+assert.ok(Math.abs(drift.speed - PAL) < 1e-6, `the rate error is found, got ${drift.speed}`)
+assert.ok(Math.abs(drift.offset) < 0.5, `and needs no shift on top, got ${drift.offset}`)
+assert.ok(synced(drift))
 
-// Nothing to work with must answer "no idea" rather than a confident zero.
-assert.equal(bestOffset([], silence, 0, 300).score, 0)
-assert.equal(bestOffset(shift(-3), [], 0, 10).score, 0, 'a ten second window is too short to judge')
-assert.equal(bestOffset(shift(-3), [[0, 5]], 0, 300).score, 0, 'wall-to-wall sound gives no verdict')
+// The window the caller gets to work with is what has played, and a short one
+// has enough freedom to fit anywhere. Refusing beats a confident wrong answer.
+assert.ok(!synced(bestSync(shift(-3), envelope(200), 0)), 'three minutes is not enough to be sure')
+assert.equal(bestSync([], audio, 0).score, 0, 'no cues, no verdict')
+assert.equal(bestSync(shift(-3), envelope(10), 0).score, 0, 'and neither is ten seconds')
+// Nothing but room tone: every shift correlates exactly as badly as every other.
+assert.ok(!synced(bestSync(shift(-3), new Float32Array(6000).fill(-60), 0)), 'silence gives no verdict')
 
 // The look, as mpv properties. Colours are the trap: mpv reads #AARRGGBB, so a
 // plain #rrggbb from the picker lands one channel out and the text goes cyan.

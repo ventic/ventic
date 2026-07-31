@@ -131,65 +131,92 @@ fn deep_link_fix_handler(app: tauri::AppHandle) {
 	}
 }
 
-/// Where the audio goes quiet, in seconds from the start of the file, over
-/// `duration` seconds starting at `start`. The frontend slides a subtitle's cues
-/// over this to find the delay that puts them back on the dialogue.
+/// Seconds of audio behind one reading of `audio_envelope`. The frontend lines
+/// subtitle cues up against those readings and has to bucket them the same way,
+/// so this is spelled out on both sides (`BIN` in app/utils/subtitles.ts).
+const ENVELOPE_BIN: f64 = 0.2;
+/// Sample rate the envelope is measured at. Nothing above 3 kHz survives the
+/// low-pass below, so 8 kHz is already more than Nyquist asks for and keeps the
+/// decode cheap.
+const ENVELOPE_HZ: f64 = 8000.0;
+/// Quieter than this is silence as far as the fit is concerned; it also stands in
+/// for the `-inf` ffmpeg prints for a digitally empty frame, which is not a
+/// number the frontend could average.
+const ENVELOPE_FLOOR: f32 = -91.0;
+
+/// Speech-band loudness over `duration` seconds from `start`, one RMS reading in
+/// dB per `ENVELOPE_BIN`. The frontend slides a subtitle's cues along this and
+/// keeps the shift that correlates best, which is what puts them back on the
+/// dialogue.
+///
+/// Not `silencedetect`: a fixed dB gate says "loud" for the score and the swords
+/// as readily as for a voice, and on a film that is most of the runtime — which
+/// leaves a fit with nothing to lock onto. A continuous envelope of the band
+/// speech actually occupies keeps the shape of the dialogue instead of throwing
+/// it away at a threshold.
 ///
 /// ffmpeg is mpv's own decoder shipped as a command, so it reads exactly what is
 /// playing — including a half-downloaded mkv served over librqbit's http range
 /// endpoint, which is why this takes the stream URL and not a path.
 #[tauri::command]
-async fn audio_silence(url: String, start: f64, duration: f64) -> Result<Vec<(f64, f64)>, String> {
+async fn audio_envelope(url: String, start: f64, duration: f64) -> Result<Vec<f32>, String> {
 	tauri::async_runtime::spawn_blocking(move || {
-		let out = std::process::Command::new("ffmpeg")
-			.args(["-hide_banner", "-nostats", "-nostdin", "-v", "info"])
-			// A stalled read (a piece that never arrives) must not hang the app.
-			.args(["-rw_timeout", "15000000"])
-			.args(["-ss", &start.to_string(), "-t", &duration.max(1.0).to_string()])
-			.args(["-i", &url])
-			// -30 dB / 0.3 s is roughly "a gap between lines" for film audio.
-			.args(["-vn", "-af", "silencedetect=n=-30dB:d=0.3", "-f", "null", "-"])
-			.output()
-			.map_err(|e| format!("syncing needs ffmpeg on PATH, and it would not start: {e}"))?;
-
-		// It reports on stderr, re-based to 0 by the -ss above, one edge per line:
-		//   [silencedetect @ …] silence_start: 12.345
-		//   [silencedetect @ …] silence_end: 14.5 | silence_duration: 2.155
-		let log = String::from_utf8_lossy(&out.stderr);
-		let mut spans: Vec<(f64, f64)> = Vec::new();
-		let mut open: Option<f64> = None;
-		for line in log.lines() {
-			let value = |tag: &str| {
-				line.split_once(tag)
-					.and_then(|(_, rest)| rest.split('|').next())
-					.and_then(|v| v.trim().parse::<f64>().ok())
-			};
-			if let Some(t) = value("silence_start:") {
-				open = Some(t);
-			} else if let Some(t) = value("silence_end:") {
-				let from = open.take().unwrap_or(0.0);
-				spans.push((start + from, start + t));
-			}
+		// A 5.1 mix puts the dialogue in the centre channel and the score around
+		// it, so taking that one channel is worth about twice the confidence of
+		// a downmix. Stereo has no centre — and `pan` answers that with silence
+		// rather than an error, so the retry is driven by the readings, not by
+		// an exit code.
+		let levels = envelope_pass(&url, start, duration, "pan=mono|c0=FC")?;
+		if levels.iter().any(|v| *v > ENVELOPE_FLOOR) {
+			return Ok(levels);
 		}
-		// A file that fades out ends mid-silence and never prints the closing edge.
-		if let Some(from) = open {
-			spans.push((start + from, start + duration));
-		}
-
-		if spans.is_empty() && !out.status.success() {
-			let tail: Vec<&str> = log.lines().rev().take(4).collect();
-			return Err(format!("ffmpeg could not read the audio: {}", tail.join(" ")));
-		}
-		Ok(spans)
+		envelope_pass(&url, start, duration, "aformat=channel_layouts=mono")
 	})
 	.await
 	.map_err(|e| e.to_string())?
 }
 
+fn envelope_pass(url: &str, start: f64, duration: f64, pan: &str) -> Result<Vec<f32>, String> {
+	// astats resets per block and ametadata prints the one figure we want, so
+	// the whole envelope comes back as plain text on stdout.
+	let filter = format!(
+		"{pan},highpass=f=300,lowpass=f=3000,aresample={hz},asetnsamples={n},\
+		 astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level:file=-",
+		hz = ENVELOPE_HZ as u64,
+		n = (ENVELOPE_HZ * ENVELOPE_BIN) as u64,
+	);
+
+	let out = std::process::Command::new("ffmpeg")
+		.args(["-hide_banner", "-nostats", "-nostdin", "-v", "error"])
+		// A stalled read (a piece that never arrives) must not hang the app.
+		.args(["-rw_timeout", "15000000"])
+		.args(["-ss", &start.to_string(), "-t", &duration.max(1.0).to_string()])
+		.args(["-i", url])
+		.args(["-vn", "-af", &filter, "-f", "null", "-"])
+		.output()
+		.map_err(|e| format!("syncing needs ffmpeg on PATH, and it would not start: {e}"))?;
+
+	let levels: Vec<f32> = String::from_utf8_lossy(&out.stdout)
+		.lines()
+		.filter_map(|l| l.split_once("RMS_level="))
+		// "-inf" parses in Rust, and an infinity would poison every average the
+		// frontend takes, so the floor stands in for it.
+		.map(|(_, v)| v.trim().parse::<f32>().unwrap_or(ENVELOPE_FLOOR))
+		.map(|v| if v.is_finite() { v } else { ENVELOPE_FLOOR })
+		.collect();
+
+	if levels.is_empty() {
+		let log = String::from_utf8_lossy(&out.stderr);
+		let tail: Vec<&str> = log.lines().rev().take(4).collect();
+		return Err(format!("ffmpeg could not read the audio: {}", tail.join(" ")));
+	}
+	Ok(levels)
+}
+
 /// One frame from `url` at `at` seconds, JPEG, for the preview that follows the
 /// cursor along the seek bar. Empty when there was no frame to be had.
 ///
-/// Same ffmpeg, same reason as `audio_silence`: it reads exactly what mpv is
+/// Same ffmpeg, same reason as `audio_envelope`: it reads exactly what mpv is
 /// playing, half-downloaded mkv over librqbit's range endpoint included. The
 /// frontend only asks for positions already on disk (see `haveAt`), so a hover
 /// never puts a piece request in front of the film. `rw_timeout` is the backstop
@@ -483,7 +510,7 @@ pub fn run() {
 			player::player_set_geometry,
 			player::player_pointer,
 			player::player_status,
-			audio_silence,
+			audio_envelope,
 			thumbnail,
 			deep_link_fix_handler,
 			disk_space

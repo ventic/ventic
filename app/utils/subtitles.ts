@@ -233,6 +233,42 @@ export function parseCues(text: string): Cue[] {
 const CAPTION_LINE = /^-?\s*(?:[[(][^\])]*[\])]\s*[.,!?]?$|[A-Z][A-Z0-9 .'#-]{2,}:)/
 
 /**
+ * A speaker label at the head of a line: "MAN:", "NARRATOR:", "DR. WALLACE:".
+ * Upper case only, and the same shape `CAPTION_LINE` looks for — a label that
+ * reads like a sentence isn't one. "I told him: go home" has to survive this.
+ */
+const SPEAKER = /^(-?\s*)[A-Z][A-Z0-9 .'#-]{2,}:\s*/
+/** A described sound anywhere in the line: "(door creaks)", "[thunder]". */
+const ENCLOSED = /[[(][^\])]*[\])]/g
+
+/**
+ * The same text with the hearing-impaired additions taken out, and lines that
+ * were nothing else dropped entirely.
+ *
+ * For the `<video>` and ExoPlayer paths, where the page draws the cues itself;
+ * mpv does its own with `sub-filter-sdh`, and this matches what that does.
+ */
+export function stripCaptions(text: string) {
+  const lines = text.split('\n')
+  const kept = lines
+    .map(line => line
+      .replace(SPEAKER, '$1')
+      .replace(ENCLOSED, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim())
+    // A lone "-" is the dialogue dash of a line that has just gone away.
+    .filter(l => l && l !== '-')
+
+  // That dash marks one speaker of two. Once the other one has been dropped it
+  // marks nothing, so "- [door creaks] / - Run." ends up as plain "Run." — but
+  // a cue that always was one dashed line keeps it, since there it means the
+  // line before.
+  return (kept.length === 1 && kept.length < lines.length
+    ? [kept[0]!.replace(/^-\s*/, '')]
+    : kept).join('\n')
+}
+
+/**
  * Is this the hearing-impaired cut? A handful of stray brackets is normal
  * (song lyrics, a translated sign), so it takes both a real count and a real
  * share of the file — the SDH releases sit around 10% and the plain ones at 0.
@@ -302,89 +338,138 @@ export async function probeLanguage(lang: SubtitleLanguage, limit = 8): Promise<
 // Auto-sync
 // ---------------------------------------------------------------------------
 
-/** [start, end] in seconds from the start of the file. */
-export type Interval = [number, number]
-
-/** Resolution of both timelines. Finer than this is below what anyone notices. */
+/**
+ * Seconds per reading of the audio envelope. Set by `ENVELOPE_BIN` on the Rust
+ * side, which is what actually decides it — this only has to agree.
+ */
 const BIN = 0.2
 
-export interface Offset {
-  /** Seconds to shift the subtitles by — straight into mpv's `sub-delay`. */
+/**
+ * Playback rates a subtitle file gets authored against. Almost every timing that
+ * drifts rather than sits at a fixed offset is one transfer meeting another:
+ * 25 fps PAL against 23.976 film is 4.3%, which is two and a half minutes by the
+ * end of a feature, and 24 against 23.976 is the 0.1% of NTSC pulldown.
+ *
+ * Straight into mpv's `sub-speed`, which multiplies cue timestamps — so these
+ * are ratios and not fps, and 1 (leave it alone) has to be tried like the rest.
+ */
+const RATES = [1, 25 / 23.976, 23.976 / 25, 24 / 23.976, 23.976 / 24]
+
+/**
+ * Shortest window worth a verdict, and the shortest that can tell a rate error
+ * from a plain shift. Under this the fit has enough freedom to land somewhere
+ * confidently wrong: a two-minute window will happily "find" a 75 s shift at the
+ * wrong rate and score it well.
+ */
+export const SYNC_MIN_WINDOW = 600
+
+export interface Sync {
+  /** Seconds to shift by — straight into mpv's `sub-delay`. */
   offset: number
-  /** Share of subtitle time that lands on speech at that shift, 0–1. */
+  /** Timestamp multiplier for `sub-speed`; 1 unless the file was cut for another rate. */
+  speed: number
+  /** Correlation at the winning fit, -1 to 1. */
   score: number
-  /** The same share as it is now, to tell "already fine" from "fixed it". */
-  base: number
+  /** The best correlation well away from the winner — what the peak beat. */
+  rival: number
 }
 
 /**
- * Slide the cues over the audio and keep the shift where they cover speech best.
- * Both timelines are 0/1 masks in BIN-second buckets and the score is their
- * overlap — the trick ffsubsync uses, minus the FFT: a 10 minute window over
- * ±90 s of shift is a few million adds, which is nothing.
+ * Is this fit worth applying, or should the caller say it couldn't tell?
  *
- * Here "not silent" stands in for "someone is speaking", so a wall-to-wall
- * score can leave nothing to lock onto — the caller checks `score` before
- * trusting it. A real VAD (ffsubsync, alass) is the upgrade if that shows up.
+ * A correlation is only meaningful against its own competition: dialogue is
+ * repetitive and a whole scene can line up against the wrong one, so a peak that
+ * barely beats the next-best candidate is a coin toss dressed as an answer. The
+ * absolute floor rules out a window with no dialogue in it at all.
  */
-export function bestOffset(cues: Cue[], silence: Interval[], from: number, to: number, maxShift = 90): Offset {
-  const n = Math.floor((to - from) / BIN)
-  if (n < 100 || !cues.length)
-    return { offset: 0, score: 0, base: 0 }
+export function synced(fit: Sync) {
+  return fit.score >= 0.12 && fit.score > fit.rival * 1.4
+}
 
-  // Both masks round their edges the same way, so a perfect fit scores ~1 rather
-  // than losing a bin at every boundary to opposite rounding.
-  const fill = (mask: Float32Array, s: number, e: number, v: number) => {
-    for (let i = Math.max(0, Math.round((s - from) / BIN)); i < Math.min(n, Math.round((e - from) / BIN)); i++)
-      mask[i] = v
-  }
+/**
+ * Slide the cues along the audio envelope and keep the fit that correlates best.
+ *
+ * The metric is Pearson correlation between a 0/1 subtitle mask and the measured
+ * loudness, which is the whole reason this works where counting overlap didn't:
+ * overlap only ever punished a cue sitting over silence, never speech left
+ * uncovered, so on a film that is loud two thirds of the time the way to score
+ * well was to bunch every cue onto the noisiest stretch. Correlation is zero-mean
+ * on both sides and has to match the gaps as well as the dialogue.
+ *
+ * `rates` is left off for a window too short to tell a rate error from a shift.
+ * Cost is one pass per rate per shift — a 20 minute window over ±90 s at five
+ * rates is ~27 M multiply-adds, a couple of hundred ms, and it runs on a click.
+ */
+export function bestSync(cues: Cue[], envelope: Float32Array, from: number, maxShift = 90, rates = true): Sync {
+  const n = envelope.length
+  const none: Sync = { offset: 0, speed: 1, score: 0, rival: 0 }
+  if (n * BIN < SYNC_MIN_WINDOW / 2 || !cues.length)
+    return none
 
-  const speech = new Float32Array(n).fill(1)
-  for (const [s, e] of silence)
-    fill(speech, s, e, 0)
-
-  // A stretch that is never quiet — wall-to-wall score, music under everything —
-  // has nothing to lock onto, and every shift would look perfect. Say so instead
-  // of returning a confident zero the caller would read as "already in sync".
-  if (speech.reduce((a, b) => a + b, 0) * 10 > n * 9)
-    return { offset: 0, score: 0, base: 0 }
-
-  const sub = new Float32Array(n)
-  for (const c of cues)
-    fill(sub, c.start, c.end, 1)
-
-  const score = (k: number) => {
-    let hit = 0
-    let total = 0
-    for (let i = 0; i < n; i++) {
-      const j = i + k
-      if (!sub[i] || j < 0 || j >= n)
-        continue
-      total++
-      hit += speech[j]!
-    }
-    // Shifted so far that barely any of it is still inside the window: no verdict.
-    return total * 40 > n ? hit / total : 0
-  }
-
-  // Outwards from no shift at all, so that when several shifts fit equally well
-  // — dialogue is repetitive, and a whole scene can line up against the wrong
-  // one — the answer is the smallest move, and a shift has to beat standing
-  // still outright to be worth making.
   const steps = Math.round(maxShift / BIN)
-  const base = score(0)
-  let offset = 0
-  let best = base
-  for (let k = 1; k <= steps; k++) {
-    for (const dir of [-1, 1]) {
-      const s = score(k * dir)
-      if (s > best) {
-        best = s
-        offset = k * dir * BIN
+  let best = none
+  let bestScore = -1
+
+  for (const speed of rates ? RATES : [1]) {
+    // mpv's `sub-speed` multiplies timestamps from zero, so the mask is built
+    // the same way rather than scaled about the middle of the window — a file
+    // authored at the wrong rate is wrong from its first cue, not from here.
+    const sub = new Float32Array(n)
+    for (const c of cues) {
+      const a = Math.max(0, Math.round((c.start * speed - from) / BIN))
+      const b = Math.min(n, Math.round((c.end * speed - from) / BIN))
+      for (let i = a; i < b; i++)
+        sub[i] = 1
+    }
+
+    const curve = new Float32Array(steps * 2 + 1)
+    let peak = -1
+    let at = 0
+    for (let k = -steps; k <= steps; k++) {
+      // Only the overlap is scored, so a shift that pushes most of the window
+      // off the end is compared on what is left rather than padded with zeros.
+      const lo = Math.max(0, -k)
+      const hi = Math.min(n, n - k)
+      const m = hi - lo
+      let sx = 0
+      let sy = 0
+      let sxy = 0
+      let sxx = 0
+      let syy = 0
+      for (let i = lo; i < hi; i++) {
+        const x = sub[i]!
+        const y = envelope[i + k]!
+        sx += x
+        sy += y
+        sxy += x * y
+        sxx += x * x
+        syy += y * y
+      }
+      const cov = sxy / m - (sx / m) * (sy / m)
+      const vx = sxx / m - (sx / m) ** 2
+      const vy = syy / m - (sy / m) ** 2
+      // No cues in range, or a dead-flat stretch of audio: nothing to correlate.
+      const r = vx > 1e-9 && vy > 1e-9 ? cov / Math.sqrt(vx * vy) : -1
+      curve[k + steps] = r
+      if (r > peak) {
+        peak = r
+        at = k
       }
     }
+
+    // The runner-up has to be a different answer, not the same peak one bin over.
+    let rival = -1
+    for (let k = -steps; k <= steps; k++) {
+      if (Math.abs(k - at) * BIN > 3)
+        rival = Math.max(rival, curve[k + steps]!)
+    }
+
+    if (peak > bestScore) {
+      bestScore = peak
+      best = { offset: at * BIN, speed, score: peak, rival }
+    }
   }
-  return { offset, score: best, base }
+  return best
 }
 
 // ---------------------------------------------------------------------------
@@ -409,6 +494,14 @@ export interface SubtitleStyle {
   background: number
   /** mpv's `sub-pos`: 100 is the bottom of the frame, 0 the top. */
   position: number
+  /**
+   * Drop the hearing-impaired additions — "(electricity buzzing)", "MAN:".
+   *
+   * Not a look, but it lives here because this is the shape the player pushes to
+   * mpv on every edit, so the toggle reaches a running film for free and gets
+   * carried by the backup like every other preference.
+   */
+  hideCaptions: boolean
 }
 
 export const SUBTITLE_DEFAULTS: SubtitleStyle = {
@@ -419,6 +512,7 @@ export const SUBTITLE_DEFAULTS: SubtitleStyle = {
   outline: 1.65,
   background: 0,
   position: 100,
+  hideCaptions: false,
 }
 
 /** The fonts every desktop and Android build can be assumed to resolve. */
@@ -450,6 +544,12 @@ export function subtitleProps(style: SubtitleStyle): Record<string, string | num
     'sub-border-style': style.background > 0 ? 'background-box' : 'outline-and-shadow',
     'sub-back-color': mpvColor('#000000', style.background),
     'sub-pos': style.position,
+    // mpv's own SDH filter, live and reversible — no reload needed. The plain
+    // flag drops a described-sound line and a speaker label; `harder` also takes
+    // an enclosure out of the middle of a line of real dialogue, which is the
+    // half of it people actually complain about.
+    'sub-filter-sdh': style.hideCaptions,
+    'sub-filter-sdh-harder': style.hideCaptions,
   }
 }
 

@@ -11,6 +11,7 @@ import {
   mdiChevronDown,
   mdiChevronUp,
   mdiClose,
+  mdiEarHearing,
   mdiFastForward10,
   mdiFullscreen,
   mdiFullscreenExit,
@@ -286,6 +287,8 @@ const probing = ref('')
 /** The downloaded file currently showing, which is what auto-sync works on. */
 const activeUrl = ref('')
 const subDelay = ref(0)
+/** mpv's `sub-speed`. Only auto-sync ever moves it off 1. */
+const subSpeed = ref(1)
 const syncing = ref(false)
 const syncNote = ref('')
 let subsFetched = false
@@ -325,8 +328,14 @@ const cueText = computed(() => native
   // A muxed track is decoded by the backend that found it and handed over as
   // plain text, so both kinds are drawn right here in the user's own styling —
   // and the settings preview stays honest for either.
-  // sub-delay is "show them this much later", so it comes off the clock.
-  : subText.value || cueAt(probed(activeUrl.value)?.cues ?? [], position.value - subDelay.value))
+  // mpv shows a cue at `start * sub-speed + sub-delay`, so reading the cue list
+  // at a given moment means undoing both — and the same two knobs auto-sync set.
+  : captioned(subText.value || cueAt(probed(activeUrl.value)?.cues ?? [], (position.value - subDelay.value) / subSpeed.value)))
+
+/** What `sub-filter-sdh` does for mpv, for the backends that draw their own. */
+function captioned(text: string) {
+  return settings.subs.hideCaptions ? stripCaptions(text) : text
+}
 const cueStyle = computed(() => subtitleCss(settings.subs, boxHeight.value))
 
 /**
@@ -455,6 +464,7 @@ async function loadFile(file: Subtitle, lang: SubtitleLanguage) {
   await ipc(['sub-add', file.url, 'cached', lang.name, lang.code])
   activeUrl.value = file.url
   setDelay(0) // another file, its own timing
+  setSubSpeed(1)
   syncNote.value = ''
   await refreshTracks()
   osd(`Subtitles: ${lang.name}`)
@@ -534,21 +544,31 @@ async function applyPreferredSub() {
 }
 
 // ---------------------------------------------------------------------------
-// Timing. A file made for another release plays early or late by a fixed
-// amount, so mpv's `sub-delay` fixes it — the only question is by how much,
-// which the backend's silence map answers.
+// Timing. A file cut for another release is early or late, and one cut for
+// another framerate is early or late by a little more every minute. mpv answers
+// both: `sub-delay` shifts the cues and `sub-speed` multiplies their timestamps,
+// so `t = cue * speed + delay`. Which pair to use is what the audio decides.
 // ---------------------------------------------------------------------------
 /**
  * Only a file we downloaded ourselves has cues to line up; muxed tracks are
  * already cut to the release. And only the desktop can listen to the audio at
- * all — `audio_silence` shells out to ffmpeg, which Android has no way to run.
+ * all — `audio_envelope` shells out to ffmpeg, which Android has no way to run.
  */
 const syncable = computed(() => native && !!probed(activeUrl.value)?.cues.length)
 const delayText = computed(() => `${subDelay.value > 0 ? '+' : ''}${subDelay.value.toFixed(1)}s`)
 
+/** As much audio as the fit wants. Longer is better and 20 minutes is plenty. */
+const SYNC_WINDOW = 1200
+
 function setDelay(seconds: number) {
   subDelay.value = Math.round(seconds * 10) / 10
   ipc(['set_property', 'sub-delay', subDelay.value])
+}
+
+/** Only ever 1 or one of `RATES`; a nudge of the delay leaves it alone. */
+function setSubSpeed(rate: number) {
+  subSpeed.value = rate
+  ipc(['set_property', 'sub-speed', rate])
 }
 
 function nudgeDelay(delta: number) {
@@ -564,29 +584,47 @@ async function autoSync() {
   syncing.value = true
   syncNote.value = ''
   try {
-    // The ten minutes just played: those bytes are already on disk, so ffmpeg
-    // reads them without pulling pieces away from the download ahead.
-    const from = Math.max(0, position.value - 600)
-    // Never run off the end of the file: past it ffmpeg reports no silence at
-    // all, which reads as one long speech and drags the fit with it.
-    const span = Math.min(600, Math.max(300, position.value - from), (duration.value || 1e9) - from)
-    const silence = await invoke<[number, number][]>('audio_silence', {
+    // The twenty minutes just played: those bytes are certainly on disk, so
+    // ffmpeg reads them without pulling pieces away from the download ahead.
+    // Early on there aren't twenty minutes behind us, so the window borrows from
+    // in front — but only as far as the download has actually reached, which is
+    // what `onDisk` answers.
+    const span = Math.min(SYNC_WINDOW, duration.value || SYNC_WINDOW)
+    const from = Math.max(0, Math.min(position.value - span, (duration.value || span) - span))
+    const ahead = from + span
+    const to = ahead > position.value && !await onDisk(ahead) ? position.value : ahead
+
+    if (to - from < SYNC_MIN_WINDOW) {
+      syncNote.value = `Not enough has played yet — auto-sync needs about ${Math.round(SYNC_MIN_WINDOW / 60)} minutes of audio to be sure. Nudge the delay for now.`
+      return
+    }
+
+    const envelope = await invoke<number[]>('audio_envelope', {
       url: props.src,
       start: from,
-      duration: span,
+      duration: to - from,
     })
 
-    const { offset, score, base } = bestOffset(file.cues, silence, from, from + span)
-    if (score < 0.7) {
-      syncNote.value = 'Couldn\'t tell — too little quiet in this stretch to line up against. Try again over a talkier scene.'
+    const fit = bestSync(file.cues, Float32Array.from(envelope), from)
+    if (!synced(fit)) {
+      // A confident wrong answer is worse than none: the old fit would happily
+      // shift by a minute and a half on a stretch that gave it nothing.
+      syncNote.value = 'Couldn\'t tell — nothing in this stretch lines up clearly. Try again over a talkier scene.'
+      return
     }
-    else if (score < base + 0.05) {
-      // Nothing beats leaving it alone, so undo any earlier guess.
-      setDelay(0)
+
+    setDelay(fit.offset)
+    setSubSpeed(fit.speed)
+    if (fit.speed !== 1) {
+      // A rate error is global, so this one holds for the whole film rather than
+      // just the scene it was measured on.
+      syncNote.value = `This file was cut for a different framerate — stretched to fit and shifted by ${delayText.value}.`
+      osd(`Subtitles synced (${delayText.value}, rate fixed)`, 2500)
+    }
+    else if (Math.abs(fit.offset) < 0.2) {
       syncNote.value = 'Already in sync.'
     }
     else {
-      setDelay(offset)
       syncNote.value = `Shifted by ${delayText.value}.`
       osd(`Subtitles synced (${delayText.value})`, 2000)
     }
@@ -923,6 +961,7 @@ async function startPlayer() {
     activeUrl.value = ''
     subText.value = ''
     subDelay.value = 0 // a fresh mpv starts at zero
+    subSpeed.value = 1
     syncNote.value = ''
     lastKey = '' // force a geometry + shape push on the next frame
 
@@ -2030,6 +2069,19 @@ defineExpose({ osd })
 
             <template v-if="subsOn">
               <p :class="MENU_GROUP">
+                Text
+              </p>
+              <button :class="MENU_ROW" @click="settings.subs.hideCaptions = !settings.subs.hideCaptions">
+                <span class="flex items-center gap-2">
+                  <v-icon :icon="mdiEarHearing" size="16" /> Hide sound descriptions
+                </span>
+                <v-icon v-if="settings.subs.hideCaptions" :icon="mdiCheck" size="16" />
+              </button>
+              <p :class="NOTE">
+                Drops “(electricity buzzing)” and “MAN:” from subtitles written for the hard of hearing.
+              </p>
+
+              <p :class="MENU_GROUP">
                 Timing
               </p>
               <div class="flex items-center justify-between px-2.5 py-1">
@@ -2056,7 +2108,7 @@ defineExpose({ osd })
                 <v-progress-circular v-if="syncing" indeterminate size="13" width="2" />
               </button>
               <p v-if="syncing" :class="NOTE">
-                Listening to the last few minutes…
+                Listening to the last twenty minutes…
               </p>
               <p v-else-if="syncNote" :class="NOTE">
                 {{ syncNote }}
