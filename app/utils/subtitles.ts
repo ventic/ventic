@@ -704,6 +704,20 @@ export function subtitleProps(style: SubtitleStyle): Record<string, string | num
 }
 
 /**
+ * `sub-pos` lifted clear of an overlay `cover` px tall along the bottom of a
+ * `height` px picture — mpv draws its subtitles inside its own window, under
+ * anything the page puts on top, so an open panel simply hides them.
+ *
+ * Never below where the user put the line, and never lifted so far that a tall
+ * panel parks the text in the middle of the frame.
+ */
+export function subtitleLift(position: number, cover: number, height: number) {
+  if (cover <= 0 || height <= 0)
+    return position
+  return Math.min(position, Math.max(35, 100 - cover / height * 100))
+}
+
+/**
  * The same style as CSS, for the `<video>` path. `height` is the video box in
  * physical layout px: mpv sizes subtitles against a 720-tall window and scales
  * from there, so both sizes have to be derived the same way or the settings

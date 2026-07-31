@@ -22,6 +22,7 @@ import {
   subRuntime,
   SUBTITLE_DEFAULTS,
   subtitleCss,
+  subtitleLift,
   subtitleProps,
   synced,
 } from '../app/utils/subtitles'
@@ -255,6 +256,15 @@ assert.equal(subtitleCss(SUBTITLE_DEFAULTS, 1440).fontSize, '76.0px', 'twice the
 assert.equal(subtitleCss(SUBTITLE_DEFAULTS, 0).fontSize, '38.0px', 'an unmeasured box falls back to 720')
 assert.equal(subtitleCss(SUBTITLE_DEFAULTS, 720).backgroundColor, 'transparent', 'no box asked for')
 assert.equal(subtitleCss({ ...SUBTITLE_DEFAULTS, background: 0.5 }, 720).backgroundColor, 'rgba(0,0,0,0.5)')
+
+// Lifting the line clear of the player's menu, which otherwise covers it —
+// mpv's subtitles are drawn inside its own window, under everything the page
+// puts on top of it.
+assert.equal(subtitleLift(100, 0, 1080), 100, 'nothing in the way, nothing moves')
+assert.equal(subtitleLift(100, 400, 1080), 100 - 400 / 1080 * 100, 'just above a 400px panel')
+assert.equal(subtitleLift(60, 200, 1080), 60, 'a line already above the panel keeps the user\'s own position')
+assert.equal(subtitleLift(100, 900, 1080), 35, 'a tall panel never parks the text mid-frame')
+assert.equal(subtitleLift(100, 400, 0), 100, 'an unmeasured box leaves the position alone')
 
 // Which line is on screen. Overlaps are both speakers talking, not a choice.
 const lines = [

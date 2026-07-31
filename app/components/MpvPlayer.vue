@@ -304,12 +304,34 @@ const subLang = useLocalStorage('ventic.subLang', '')
 const settings = useSettingsStore()
 const library = useLibraryStore()
 
+const { height: boxHeight } = useElementSize(boxEl)
+/** The track/speed panel, measured because the subtitles have to clear it. */
+const menuEl = ref<HTMLElement | null>(null)
+const { height: menuHeight } = useElementSize(menuEl)
+/** Its own gap from the bottom of the frame — the bottom bar plus a little. */
+const menuBottom = computed(() => touch.value ? 112 : 106)
+/**
+ * Where the subtitle line goes. The panel covers the bottom of the picture and
+ * mpv draws underneath it, so while it is open the subtitles move above it
+ * rather than sitting behind it. The height is 0 with no panel mounted.
+ */
+const subPos = computed(() => subtitleLift(
+  settings.subs.position,
+  menuHeight.value ? menuBottom.value + menuHeight.value + 8 : 0,
+  boxHeight.value,
+))
+
+watch(subPos, pos => {
+  if (started.value && native)
+    ipc(['set_property', 'sub-pos', pos])
+})
+
 function applySubtitleStyle() {
   // The other two backends draw their cues through the page, so styling is the
   // computed below and needs no pushing — it re-renders on the same edit.
   if (!started.value || !native)
     return
-  for (const [name, value] of Object.entries(subtitleProps(settings.subs)))
+  for (const [name, value] of Object.entries(subtitleProps({ ...settings.subs, position: subPos.value })))
     ipc(['set_property', name, value])
 }
 
@@ -320,7 +342,6 @@ watch(() => settings.subs, applySubtitleStyle, { deep: true })
 // file as text ExoPlayer decoded and handed over. The `<video>` path has only
 // the first — Chromium never hands out a muxed track, which is why its menu
 // offers none.
-const { height: boxHeight } = useElementSize(boxEl)
 /** Cues from a track inside the file, which only ExoPlayer can read out. */
 const subText = ref('')
 const cueText = computed(() => native
@@ -1817,7 +1838,7 @@ defineExpose({ osd })
     <div
       v-if="cueText"
       class="pointer-events-none absolute inset-x-0 px-[6%] text-center leading-tight"
-      :style="{ bottom: `${Math.max(0, 104 - settings.subs.position)}%` }"
+      :style="{ bottom: `${Math.max(0, 104 - subPos)}%` }"
     >
       <span class="inline-block whitespace-pre-line rounded px-1.5" :style="cueStyle">{{ cueText }}</span>
     </div>
@@ -1966,12 +1987,15 @@ defineExpose({ osd })
       enter-from-class="translate-y-[115%]"
       leave-to-class="translate-y-[115%]"
     >
-      <!-- bottom: the bottom bar (h-24) plus a 10px gap. -->
+      <!-- bottom: the bottom bar (h-24) plus a 10px gap. Bound rather than a
+           class because `subPos` measures the subtitles against it. -->
       <section
         v-if="menu"
+        ref="menuEl"
         data-cut
         class="absolute right-4 max-h-[44vh] w-75 flex flex-col overflow-hidden border rounded-xl"
-        :class="[SURFACE, touch ? 'bottom-[112px]' : 'bottom-[106px]']"
+        :class="SURFACE"
+        :style="{ bottom: `${menuBottom}px` }"
         @pointerenter="hovering = true"
         @pointerleave="hovering = false"
       >
