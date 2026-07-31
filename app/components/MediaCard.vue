@@ -27,13 +27,26 @@ const watched = computed(() => library.isWatched(props.media))
 // Focus counts as hover: a remote has no pointer, and the overlay is what tells
 // you which card you're on.
 const hover = ref(false)
+
+// The browse pages hold hundreds of cards and a TV's GPU repaints all of them,
+// on screen or not — the home page scrolled at 5fps on the test set. This is the
+// browser's own answer: skip layout and paint for a card that isn't visible.
+// It doubled the scroll frame rate there and costs nothing on a desktop.
+//
+// The size is only what to reserve for a card never yet drawn — `auto` means the
+// real one is remembered from then on — but it has to be close, or the scrollbar
+// jumps as the guesses are replaced. Same arithmetic as the home page's
+// `rowHeight`: a 2:3 poster, plus the title and year when they're shown.
+const reserve = computed(() =>
+  `auto ${ui.cardWidth}px auto ${Math.round(ui.cardWidth * 1.5) + (props.detail ? 44 : 0)}px`)
 </script>
 
 <template>
   <nuxt-link
     :to="to ?? mediaLink(media)"
     :title="media.title"
-    class="group block select-none outline-none"
+    class="group block select-none outline-none [content-visibility:auto]"
+    :style="{ containIntrinsicSize: reserve }"
     @mouseenter="hover = true; ui.preview(media)"
     @mouseleave="hover = false"
     @focus="hover = true; ui.select(media)"
@@ -46,8 +59,11 @@ const hover = ref(false)
         class="transition-transform duration-500 group-hover:scale-105"
       />
 
-      <!-- Inline svg rather than v-icon: this badge is on every card. -->
-      <div v-if="media.rating" class="absolute left-1.5 top-1.5 flex items-center gap-0.5 rounded-full bg-black/65 px-1.5 py-0.5 text-label-small text-white backdrop-blur-sm">
+      <!-- Inline svg rather than v-icon: this badge is on every card. No
+           backdrop-blur either: it is one readback of the frame buffer per card,
+           twenty of them on a screen, and at 43x20 under a 65% black fill there
+           was nothing to see for it — worth a quarter of the frame rate on a TV. -->
+      <div v-if="media.rating" class="absolute left-1.5 top-1.5 flex items-center gap-0.5 rounded-full bg-black/65 px-1.5 py-0.5 text-label-small text-white">
         <svg viewBox="0 0 24 24" class="size-3 fill-amber-400"><path :d="mdiStar" /></svg>
         {{ media.rating.toFixed(1) }}
       </div>

@@ -16,6 +16,7 @@
     "check:android-downloads": "bun scripts/check-android-downloads.ts",
     "check:dpad": "bun scripts/check-dpad.ts",
     "check:library": "bun scripts/check-library.ts",
+    "check:perf": "bun scripts/check-perf.ts",
     "check:player": "bun scripts/check-player.ts",
     "check:torrents": "bun scripts/check-torrents.ts",
     "check:subtitles": "bun scripts/check-subtitles.ts",

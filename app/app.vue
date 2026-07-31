@@ -20,6 +20,13 @@ watchEffect(() => {
   document.documentElement.style.zoom = String(settings.uiScale)
 })
 
+// One class, one block of CSS (assets/css/layers.css) — cheaper than teaching
+// every component that draws a blur or a transition about the setting, and it
+// reaches Vuetify's own styles, which no prop of ours would.
+watchEffect(() => {
+  document.documentElement.classList.toggle('reduce-effects', settings.reduceEffects)
+})
+
 // WebKit — the webview on Linux, our main target — implements `zoom` itself but
 // not the `Element.currentCSSZoom` accessor Vuetify reads it back with, so its
 // overlay positioning silently skips the zoom correction and every tooltip and

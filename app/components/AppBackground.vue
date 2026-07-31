@@ -30,7 +30,7 @@ watch(() => ui.backdrop, url => {
       <div
         v-if="shown"
         :key="shown"
-        class="absolute h-[130%] w-[130%] bg-cover bg-top -left-[15%] -top-[15%]"
+        class="ventic-backdrop absolute h-[130%] w-[130%] bg-cover bg-top -left-[15%] -top-[15%]"
         :style="{ backgroundImage: `url(${shown})`, filter: `blur(${ui.blur}px) brightness(0.5) saturate(1.25)` }"
       />
     </transition>

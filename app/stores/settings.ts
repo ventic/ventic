@@ -45,6 +45,15 @@ export const useSettingsStore = defineStore('settings', () => {
   const customCss = useLocalStorage('ventic.customCss', '')
   /** Zoom for the whole interface. 1 = the sizes the app ships with. */
   const uiScale = useLocalStorage('ventic.uiScale', 1)
+  /**
+   * Drop the effects that cost the most frames — see `.reduce-effects` in
+   * assets/css/layers.css for exactly which. Defaults on for a television,
+   * which is the hardware that needs it: the set this was measured on took ten
+   * d-pad moves at 13fps with these effects and 23 without them.
+   * `isTv()` reads a bridge Android installs before the page loads, so it
+   * answers correctly the first time the store is built.
+   */
+  const reduceEffects = useLocalStorage('ventic.reduceEffects', isTv() ?? false)
 
   // --- Sources ---
   /**
@@ -74,5 +83,5 @@ export const useSettingsStore = defineStore('settings', () => {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { section, theme, accent, customCss, uiScale, sources, downLimit, upLimit, wifiOnly, downloadDir, subs, resetSubs }
+  return { section, theme, accent, customCss, uiScale, reduceEffects, sources, downLimit, upLimit, wifiOnly, downloadDir, subs, resetSubs }
 })

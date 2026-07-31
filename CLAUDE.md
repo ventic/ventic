@@ -68,8 +68,22 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
 - Logic worth trusting has a `bun run check:*` script beside it
   (`check:dpad`, `check:torrents`, `check:subtitles`, `check:theme`,
   `check:library`, `check:player`, `check:trakt`, `check:swipe`,
-  `check:android-downloads`). Add to
+  `check:perf`, `check:android-downloads`). Add to
   those rather than pulling in a test framework.
+- **A TV's GPU is the budget, not its CPU.** Profiling the set showed paint and
+  raster taking essentially the whole frame while style, layout and script
+  together stayed under a tenth of it — so the thing to count on a new screen is
+  blurred and animated *area*, not components or renders. Two rules follow.
+  `backdrop-filter` is a frame-buffer readback: it is affordable once on the
+  chrome, never per-item in a list (twenty rating badges cost a quarter of the
+  frame rate for an effect invisible at 43x20). And anything mounted in bulk
+  wants `content-visibility: auto` with a `contain-intrinsic-size` — it is worth
+  more than everything else here put together (2.2x on the browse pages), and
+  the reserved size has to be right or the scrollbar jumps. The effects that
+  can't be made cheap sit behind `settings.reduceEffects` instead, which is one
+  class on `<html>` and one block in `assets/css/layers.css` — put new ones
+  there rather than teaching a component about the setting. `bun run check:perf`
+  holds the shape of it; the numbers are in that script's header.
 - The engine runs *inside* the app process, so on Android "the user opened
   another app" means "the download stopped": the process is cached and then
   frozen. `DownloadService` (`gen/android/.../Downloads.kt`) is the foreground
