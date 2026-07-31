@@ -3,7 +3,7 @@
 // public-domain film. `--live <source-url> <imdb-id>` also searches for real.
 import assert from 'node:assert'
 import process from 'node:process'
-import { diskBudget, ENGINE, findReleases, haveAt, isAwkward, normalizeSource, pickBest, pickSubtitleFiles, pickVideoFile, planEviction, planNetwork, releaseKey, setSources, startTorrent, streamParts, toRelease, uploadLimit, usedBytes } from '../app/utils/torrents'
+import { diskBudget, ENGINE, findReleases, haveAt, isAwkward, normalizeSource, parseRelease, pickBest, pickSubtitleFiles, pickVideoFile, planEviction, planNetwork, releaseKey, setSources, startTorrent, streamParts, toRelease, uploadLimit, usedBytes } from '../app/utils/torrents'
 
 const streams = [
   {
@@ -223,6 +223,52 @@ assert.deepEqual(pickSubtitleFiles([
   { name: 'Feature.CD2.avi', length: 5, included: true },
   { name: 'Feature.CD2.srt', length: 5, included: true },
 ], 1), [2])
+
+// --- Reading a release name ---------------------------------------------------
+// A magnet arrives with nothing but its release name, and no catalogue has ever
+// heard of "House.of.the.Dragon.S01.1080p.BluRay.x265[eztv.re]". Everything
+// before the first technical detail is the title.
+const rel = (s: string) => parseRelease(s)
+assert.deepEqual(rel('House.of.the.Dragon.S01.1080p.BluRay.x265[eztv.re]'), {
+  title: 'House of the Dragon',
+  year: '',
+  season: 1,
+  episode: 0,
+})
+assert.deepEqual(rel('Obsession.2026.1080p.AMZN.WEB-DL.DDP5.1.H264.MP4-BEN.THE.MEN'), {
+  title: 'Obsession',
+  year: '2026',
+  season: 0,
+  episode: 0,
+})
+// A season pack names the season; only the file inside it names the episode.
+assert.equal(rel('House.of.the.Dragon.S01E03.1080p.BluRay.x265.mkv').episode, 3)
+assert.equal(rel('Show.Name.1x05.HDTV.XviD').episode, 5, 'the other way of spelling it')
+
+// A year later than next year is part of the title, not a release year.
+assert.deepEqual(rel('Blade.Runner.2049.2017.2160p.UHD.BluRay.x265'), {
+  title: 'Blade Runner 2049',
+  year: '2017',
+  season: 0,
+  episode: 0,
+})
+assert.equal(rel('Blade Runner 2049 1080p BluRay').title, 'Blade Runner 2049', 'even with no year to find')
+// And a detail with nothing in front of it is the title, or these match anything.
+assert.deepEqual(rel('1917.2019.1080p.BluRay.x264-SPARKS'), {
+  title: '1917',
+  year: '2019',
+  season: 0,
+  episode: 0,
+})
+assert.equal(rel('2012.2009.1080p.BluRay').title, '2012')
+
+assert.equal(rel('[eztv] Some.Show.S02E10.720p.HDTV').title, 'Some Show', 'the tracker tag comes off')
+assert.equal(rel('Obsession (2026) 1080p WEB-DL').year, '2026', 'a year in brackets is still a year')
+assert.equal(rel('Obsession (2026) 1080p WEB-DL').title, 'Obsession', 'and the bracket does not survive it')
+// A title that is already a title has nothing to cut, which is what makes this
+// safe to run over everything rather than only over magnets.
+assert.deepEqual(rel('Dune Part Two'), { title: 'Dune Part Two', year: '', season: 0, episode: 0 })
+assert.deepEqual(rel(''), { title: '', year: '', season: 0, episode: 0 })
 
 // --- Disk budget --------------------------------------------------------------
 

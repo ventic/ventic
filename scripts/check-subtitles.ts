@@ -8,14 +8,18 @@ import {
   bestSync,
   byLanguage,
   cueAt,
+  fileLabel,
+  fileNote,
   findImdbId,
   findSubtitles,
+  fitsRuntime,
   isCaptions,
   langName,
   parseCues,
   probeLanguage,
   releaseSubtitle,
   stripCaptions,
+  subRuntime,
   SUBTITLE_DEFAULTS,
   subtitleCss,
   subtitleProps,
@@ -62,6 +66,47 @@ assert.equal(named('Example.Show.S01E07.1080p.WEB.DL.x264.srt').code, '', 'no co
 assert.equal(named('Subs/es-419.srt').name, 'Spanish', 'a tag is spelled out')
 assert.equal(named('whatever.srt').name, 'whatever', 'shown as it is rather than hidden')
 assert.equal(named('Subs/2_English.srt').files[0]!.url, 'http://127.0.0.1:3030/torrents/1/stream/2')
+// The label is the trimmed words; the file keeps its whole name for the row
+// underneath it, which is the one place the user can see what it really is.
+assert.equal(named('Subs/Example.Show.S01E07/2_English.srt').files[0]!.name, '2_English.srt')
+
+// --- telling one file of a language from another ---------------------------
+// The listing gives a url, a language and nothing else, so everything the menu
+// says about a file is read back out of the file itself.
+function file(cues: { start: number, end: number, text: string }[], extra = {}) {
+  return { id: '1', url: 'https://x/1', lang: 'eng', cues, captions: false, ...extra }
+}
+const twoHours = [{ start: 10, end: 12, text: 'Hi' }, { start: 7300, end: 7320, text: 'Bye' }]
+
+assert.equal(subRuntime(file(twoHours)), 7320, 'the last line is where the file ends')
+assert.equal(subRuntime(file([])), 0)
+
+// A file for the right film stops a few minutes before the credits do.
+assert.equal(fitsRuntime(file(twoHours), 7500), true)
+// One for a 45-minute episode, dropped onto a two-hour film: not this video.
+assert.equal(fitsRuntime(file([{ start: 10, end: 2670, text: 'Bye' }]), 7500), false)
+// An extended cut runs long enough to be a different film as far as this goes.
+assert.equal(fitsRuntime(file([{ start: 10, end: 9600, text: 'Bye' }]), 7500), false)
+// 25fps against 23.976 is 4.3% out and `sub-speed` fixes it — keep those.
+assert.equal(fitsRuntime(file([{ start: 10, end: 7500 * 1.043, text: 'Bye' }]), 7500), true)
+assert.equal(fitsRuntime(file([{ start: 10, end: 7500 / 1.043, text: 'Bye' }]), 7500), true)
+// Nothing to judge by is never a reason to condemn a file.
+assert.equal(fitsRuntime(file(twoHours), 0), true, 'no duration yet')
+assert.equal(fitsRuntime(file([]), 7500), true, 'unreadable is unreadable, not wrong')
+
+assert.equal(fileLabel(file(twoHours)), 'Dialogue only')
+assert.equal(fileLabel(file(twoHours, { captions: true })), 'Captions (SDH)')
+assert.equal(fileLabel(file([])), 'Unreadable')
+// A provider that named the file wins: a release name says which cut it is for,
+// which is the one thing the derived label can never say.
+assert.equal(fileLabel(file(twoHours, { name: 'Film.2019.1080p.BluRay-RARBG.srt' })), 'Film.2019.1080p.BluRay-RARBG.srt')
+assert.equal(fileNote(file(twoHours)), '2h 2m · 2 lines')
+assert.equal(fileNote(file([])), 'Unreadable')
+assert.equal(
+  fileNote(file(twoHours, { name: 'x.srt', captions: true })),
+  'SDH · 2h 2m · 2 lines',
+  'with a name shown above, the row still has to say it is the captioned cut',
+)
 
 // --- cue parsing -----------------------------------------------------------
 const srt = `1
@@ -235,12 +280,28 @@ if (process.argv.includes('--live')) {
   // Cinemeta backstop on its own, the case TMDB structurally can't answer.
   assert.equal(await findImdbId('Inception', false, '2010'), 'tt1375666', 'the IMDb-backed fallback still resolves a title')
 
+  // Cinemeta answers a fuzzy search with its best guess whatever you asked, and
+  // that guess used to be taken. One wrong id is an evening of another film's
+  // subtitles, so a name that isn't the name we asked for is now no answer.
+  assert.equal(
+    await findImdbId('Qwertyuiop Asdfghjkl Zxcvbnm', false, ''),
+    '',
+    'a search that matched nothing by name answers nothing',
+  )
+
   // Oppenheimer's English list leads with the hearing-impaired cut, which is
   // exactly the case the sort exists for.
   const eng = byLanguage(await findSubtitles('tt15398776')).find(l => l.name === 'English')!
   const files = await probeLanguage(eng)
   console.log('live: english versions →', files.map(f => `${f.captions ? 'SDH' : 'plain'}/${f.cues.length}`).join(' '))
   assert.equal(files[0]!.captions, false, 'plain dialogue is offered first')
+
+  // 180 minutes of film. Sorted against that runtime, whatever ends up on top
+  // has to be a file that actually covers it — the whole point of the probe.
+  const fitted = await probeLanguage(eng, 180 * 60)
+  const off = fitted.filter(f => !fitsRuntime(f, 180 * 60)).length
+  console.log(`live: ${off} of ${fitted.length} english files are the wrong length for a 3h film`)
+  assert.equal(fitsRuntime(fitted[0]!, 180 * 60), true, 'a file that covers the runtime is offered first')
 }
 
 console.log('subtitles: ok')

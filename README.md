@@ -189,7 +189,7 @@ One component, one set of controls, three backends underneath.
 | **Seek preview** | Frames pulled with ffmpeg and cached, warmed only while the control bar is up |
 | **Tracks** | The file's own audio and subtitle tracks, the release's subtitle files, and OpenSubtitles — in one menu |
 | **Subtitle styling** | Font, size, colour, outline, position, applied to mpv and to the page-drawn cues alike, previewing live from Settings |
-| **Auto-sync** | A file cut for another release is slid onto the audio's silence map (desktop only — it needs ffmpeg) |
+| **Auto-sync** | A file cut for another release is slid onto the audio's silence map (desktop only — it needs ffmpeg, which Windows bundles) |
 | **Resume** | Progress recorded as it plays, per episode, and scrobbled to Trakt if connected |
 | **Fullscreen** | Held for as long as the player is mounted; Android goes landscape and immersive |
 
@@ -205,9 +205,9 @@ clicks included, while the video window itself never resizes.
 | Platform | Backend | Notes |
 | --- | --- | --- |
 | Linux | mpv | Needs `mpv` and `ffmpeg` on PATH |
-| Windows | mpv | Ships its own `mpv.exe`; subtitle auto-sync additionally wants `ffmpeg` on PATH |
+| Windows | mpv | Ships its own `mpv.exe` and `ffmpeg.exe` — nothing to install |
 | Android phone / TV | ExoPlayer | The device's own decoders; landscape and immersive while playing |
-| macOS | mpv | Ships its own libmpv, linked rather than launched; see below |
+| macOS | mpv | Ships its own libmpv, linked rather than launched; see below. Seek previews and auto-sync want `brew install ffmpeg` — an .app launched from Finder inherits no shell PATH, so Homebrew's own prefixes are checked directly |
 | `bun run dev` in a browser | `<video>` | Which is what makes the mobile player testable without a device |
 
 - **mpv plays everything**, and needs none of the rest of this section.
@@ -252,10 +252,18 @@ The engine runs inside the app process, which has consequences worth knowing.
 
 Files that came inside the torrent are offered first — they're already on disk, already cut to
 that release, and work with no network at all. Otherwise the OpenSubtitles list comes from
-Stremio's public addon, so there's no API key in the app and no quota to hit. Plain-dialogue
-cuts are sorted ahead of the hearing-impaired ones, the chosen language is remembered for the
-next episode, and where mpv isn't drawing the cues the page draws them with the same font, size
-and colour settings.
+Stremio's public addon, so there's no API key in the app and no quota to hit; any source you
+configured is asked too, since one addon base answers `/subtitles/` and `/stream/` alike.
+
+That listing carries a URL and a language and nothing else — no release name, no
+hearing-impaired flag, and it matches on the IMDb id alone, which is why a list of forty files
+for one film holds so many that were never cut for the copy you are playing. So the files
+themselves are read: each candidate is downloaded and parsed, and the menu says how long it
+runs, how many lines it has and whether it is the captioned cut. One that plainly doesn't cover
+this video's runtime — another episode, an extended cut, a different film after a bad title
+match — sorts last and says so. Where a provider does name a file, that name is what you see.
+The chosen language is remembered for the next episode, and where mpv isn't drawing the cues the
+page draws them with the same font, size and colour settings.
 
 Auto-sync slides a mismatched file over the audio's silence map — the trick ffsubsync uses,
 minus the FFT — and reports its own confidence rather than silently applying a bad shift.
@@ -412,7 +420,7 @@ Grab the latest build from the [Releases page][releases].
 | Platform | Format | Notes |
 | --- | --- | --- |
 | **Linux** | `.deb`, `.rpm`, `.AppImage` | Needs `mpv` and `ffmpeg` from your package manager |
-| **Windows** | `.msi`, `.exe` (NSIS) | Ships its own mpv; WebView2 comes with Windows 11 and updated Windows 10 |
+| **Windows** | `.msi`, `.exe` (NSIS) | Ships its own mpv and ffmpeg; WebView2 comes with Windows 11 and updated Windows 10 |
 | **Android / Android TV** | `.apk` | Sideload; also the phone build |
 | **macOS** | `.app`, `.dmg` | Apple Silicon; carries its own libmpv, so nothing to install first. Unsigned — right-click → *Open* the first time |
 

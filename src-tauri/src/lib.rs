@@ -144,6 +144,50 @@ const ENVELOPE_HZ: f64 = 8000.0;
 /// number the frontend could average.
 const ENVELOPE_FLOOR: f32 = -91.0;
 
+/// What to spawn for ffmpeg — the seek previews and the subtitle auto-sync both
+/// shell out to it, and neither has any other way to read the audio or a frame.
+///
+/// Three answers, in order:
+///
+/// - **The bundled one.** Windows has no ffmpeg and no package manager to get
+///   one from, so the build downloads it beside mpv.exe and Tauri ships it as a
+///   resource (`scripts/mpv.ts`). Same lookup `mpv_binary` does.
+/// - **Homebrew's or MacPorts'.** A macOS .app launched from Finder inherits
+///   none of the shell's environment: it gets `/usr/bin:/bin:/usr/sbin:/sbin`
+///   and nothing more, so a perfectly good `brew install ffmpeg` is invisible
+///   and both features fail on the one desktop that needs Homebrew to build in
+///   the first place. Same prefixes `build.rs` hands the linker, for the reason.
+/// - **PATH**, which is the whole of it on Linux and the fallback everywhere.
+///
+/// Resolved once: the answer cannot change while the app runs, and the previews
+/// ask for one on every hover.
+fn ffmpeg(app: &tauri::AppHandle) -> &'static std::ffi::OsStr {
+	static FOUND: std::sync::OnceLock<std::ffi::OsString> = std::sync::OnceLock::new();
+	FOUND.get_or_init(|| {
+		// Resolves to nothing on the platforms that declare no such resource, so
+		// this needs no cfg of its own.
+		if let Some(bundled) = app
+			.path()
+			.resolve("mpv/ffmpeg.exe", tauri::path::BaseDirectory::Resource)
+			.ok()
+			.filter(|p| p.is_file())
+		{
+			return bundled.into();
+		}
+
+		#[cfg(target_os = "macos")]
+		if let Some(brewed) =
+			["/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg", "/opt/local/bin/ffmpeg"]
+				.into_iter()
+				.find(|p| std::path::Path::new(p).exists())
+		{
+			return brewed.into();
+		}
+
+		"ffmpeg".into()
+	})
+}
+
 /// Speech-band loudness over `duration` seconds from `start`, one RMS reading in
 /// dB per `ENVELOPE_BIN`. The frontend slides a subtitle's cues along this and
 /// keeps the shift that correlates best, which is what puts them back on the
@@ -159,24 +203,36 @@ const ENVELOPE_FLOOR: f32 = -91.0;
 /// playing — including a half-downloaded mkv served over librqbit's http range
 /// endpoint, which is why this takes the stream URL and not a path.
 #[tauri::command]
-async fn audio_envelope(url: String, start: f64, duration: f64) -> Result<Vec<f32>, String> {
+async fn audio_envelope(
+	app: tauri::AppHandle,
+	url: String,
+	start: f64,
+	duration: f64,
+) -> Result<Vec<f32>, String> {
+	let exe = ffmpeg(&app);
 	tauri::async_runtime::spawn_blocking(move || {
 		// A 5.1 mix puts the dialogue in the centre channel and the score around
 		// it, so taking that one channel is worth about twice the confidence of
 		// a downmix. Stereo has no centre — and `pan` answers that with silence
 		// rather than an error, so the retry is driven by the readings, not by
 		// an exit code.
-		let levels = envelope_pass(&url, start, duration, "pan=mono|c0=FC")?;
+		let levels = envelope_pass(exe, &url, start, duration, "pan=mono|c0=FC")?;
 		if levels.iter().any(|v| *v > ENVELOPE_FLOOR) {
 			return Ok(levels);
 		}
-		envelope_pass(&url, start, duration, "aformat=channel_layouts=mono")
+		envelope_pass(exe, &url, start, duration, "aformat=channel_layouts=mono")
 	})
 	.await
 	.map_err(|e| e.to_string())?
 }
 
-fn envelope_pass(url: &str, start: f64, duration: f64, pan: &str) -> Result<Vec<f32>, String> {
+fn envelope_pass(
+	exe: &std::ffi::OsStr,
+	url: &str,
+	start: f64,
+	duration: f64,
+	pan: &str,
+) -> Result<Vec<f32>, String> {
 	// astats resets per block and ametadata prints the one figure we want, so
 	// the whole envelope comes back as plain text on stdout.
 	let filter = format!(
@@ -186,7 +242,7 @@ fn envelope_pass(url: &str, start: f64, duration: f64, pan: &str) -> Result<Vec<
 		n = (ENVELOPE_HZ * ENVELOPE_BIN) as u64,
 	);
 
-	let out = std::process::Command::new("ffmpeg")
+	let out = std::process::Command::new(exe)
 		.args(["-hide_banner", "-nostats", "-nostdin", "-v", "error"])
 		// A stalled read (a piece that never arrives) must not hang the app.
 		.args(["-rw_timeout", "15000000"])
@@ -194,7 +250,7 @@ fn envelope_pass(url: &str, start: f64, duration: f64, pan: &str) -> Result<Vec<
 		.args(["-i", url])
 		.args(["-vn", "-af", &filter, "-f", "null", "-"])
 		.output()
-		.map_err(|e| format!("syncing needs ffmpeg on PATH, and it would not start: {e}"))?;
+		.map_err(|e| format!("syncing needs ffmpeg, and {exe:?} would not start: {e}"))?;
 
 	let levels: Vec<f32> = String::from_utf8_lossy(&out.stdout)
 		.lines()
@@ -222,9 +278,10 @@ fn envelope_pass(url: &str, start: f64, duration: f64, pan: &str) -> Result<Vec<
 /// never puts a piece request in front of the film. `rw_timeout` is the backstop
 /// for when it guesses wrong — a preview is never worth stalling on.
 #[tauri::command]
-async fn thumbnail(url: String, at: f64) -> Result<tauri::ipc::Response, String> {
+async fn thumbnail(app: tauri::AppHandle, url: String, at: f64) -> Result<tauri::ipc::Response, String> {
+	let exe = ffmpeg(&app);
 	tauri::async_runtime::spawn_blocking(move || {
-		let out = std::process::Command::new("ffmpeg")
+		let out = std::process::Command::new(exe)
 			.args(["-hide_banner", "-nostats", "-nostdin", "-v", "error"])
 			.args(["-rw_timeout", "5000000"])
 			// Before -i: seek by keyframe and start decoding there, rather than
@@ -236,7 +293,7 @@ async fn thumbnail(url: String, at: f64) -> Result<tauri::ipc::Response, String>
 			// nothing at all without it.
 			.args(["-vf", "scale=192:-2", "-pix_fmt", "yuvj420p", "-f", "mjpeg", "-"])
 			.output()
-			.map_err(|e| format!("previews need ffmpeg on PATH, and it would not start: {e}"))?;
+			.map_err(|e| format!("previews need ffmpeg, and {exe:?} would not start: {e}"))?;
 		Ok(tauri::ipc::Response::new(out.stdout))
 	})
 	.await

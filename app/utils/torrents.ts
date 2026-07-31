@@ -28,6 +28,15 @@ export function setSources(urls: string[]) {
 }
 
 /**
+ * The same list, for the subtitle search. One addon protocol serves `/stream/`
+ * and `/subtitles/` off the same base, so an addon the user already trusts for
+ * releases is asked about subtitles too — still nothing this app added itself.
+ */
+export function configuredSources() {
+  return sources
+}
+
+/**
  * What a user actually has on the clipboard — or what arrived on a `ventic://`
  * link — turned into a base URL we can append `/stream/…` to. Nobody copies a
  * bare origin: an addon hands out a scheme link or a `…/manifest.json` URL, and
@@ -457,6 +466,84 @@ function filePath(f: EngineFile) {
 function episodeIn(name: string) {
   const m = name.match(/\bs(\d{1,2})[\s._-]*e(\d{1,3})(?!\d)|\b(\d{1,2})x(\d{2})(?!\d)/i)
   return m ? { season: Number(m[1] ?? m[3]), episode: Number(m[2] ?? m[4]) } : null
+}
+
+/**
+ * The first token in a release name that can only be a technical detail, which
+ * is therefore where the title stops. Year, season/episode, resolution, source,
+ * codec, audio — in roughly the order they actually turn up.
+ *
+ * Deliberately short. Every extra word is a chance to cut a real title in half,
+ * and a name almost always reaches one of the first three before anything else.
+ */
+const DETAIL = /\b(?:(?:19|20)\d{2}|s\d{1,2}(?:[\s.,_-]*e\d{1,3})?|\d{1,2}x\d{2}|\d{3,4}p|4k|uhd|bluray|blu-ray|bdrip|brrip|dvdrip|web-?dl|web-?rip|hdtv|hdrip|remux|amzn|dsnp|atvp|x26[45]|h\.?26[45]|hevc|avc|xvid|divx|aac|ac3|eac3|ddp?\d|truehd|atmos|repack|proper|extended|uncut|imax|complete|season)\b/gi
+
+/** What a release name says once the scene furniture is taken off it. */
+export interface ReleaseName {
+  /** "House.of.the.Dragon.S01.1080p…" -> "House of the Dragon". */
+  title: string
+  year: string
+  /** 0 when the name doesn't say. */
+  season: number
+  episode: number
+}
+
+/**
+ * Take a release name apart into something a metadata service can be searched
+ * with. `House.of.the.Dragon.S01.1080p.BluRay.x265[eztv.re]` is not a title any
+ * catalogue has ever heard of, and handing it to one whole is why a magnet used
+ * to find no subtitles at all.
+ *
+ * Scene and p2p names are `Title.Separators.Then.Every.Technical.Detail`, so the
+ * title is simply everything before the first detail. Two things stop that from
+ * eating real titles:
+ *
+ * - A year later than next year is part of the name, not a release year, which
+ *   is what keeps *Blade Runner 2049* whole.
+ * - A detail with nothing in front of it isn't the boundary — otherwise *1917*
+ *   and *2012* parse to an empty title and match everything.
+ *
+ * ponytail: a title whose own words are release tokens ("Alien: Covenant" is
+ * fine, "The Post 2017" is fine, but "4K" or "Extended Family" would clip) is
+ * left clipped. Reach for a real parser (parse-torrent-title) only if that ever
+ * shows up in practice — this is 20 lines and covers everything seen so far.
+ */
+export function parseRelease(name: string): ReleaseName {
+  const text = (name.split('/').pop() ?? '')
+    // A container extension, and the tracker's tag: "[eztv.re]", "(YTS.MX)".
+    .replace(/\.(?:mkv|mp4|avi|m4v|mov|ts|webm)$/i, '')
+    .replace(/[._]+/g, ' ')
+    .trim()
+
+  const limit = new Date().getFullYear() + 1
+  const plausible = (token: string) => !/^\d{4}$/.test(token) || Number(token) <= limit
+
+  let cut = text.length
+  for (const m of text.matchAll(DETAIL)) {
+    if (m.index && plausible(m[0])) {
+      cut = m.index
+      break
+    }
+  }
+
+  // What's left over from a title: a leading tracker tag, and the bracket a
+  // year was opened with, which the cut lands in the middle of.
+  const title = text.slice(0, cut)
+    .replace(/[[(][^\])]*[\])]/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/[\s\-–—:[(]+$/, '')
+    .trim()
+
+  // The year is the first plausible one *after* the title, so the 2049 in
+  // "Blade Runner 2049 2017" is read as part of the name and the 2017 as a year.
+  const year = text.slice(cut).match(/\b(?:19|20)\d{2}\b/)
+  const ep = episodeIn(text)
+  return {
+    title,
+    year: year && plausible(year[0]) ? year[0] : '',
+    season: ep?.season ?? Number(text.match(/\bs(\d{1,2})\b/i)?.[1] ?? 0),
+    episode: ep?.episode ?? 0,
+  }
 }
 
 /**

@@ -348,14 +348,22 @@ const cueStyle = computed(() => subtitleCss(settings.subs, boxHeight.value))
  * that URL is `…/torrents/{id}/stream/{index}` and nothing else ever plays here.
  */
 const release = ref<{ file: Subtitle, lang: SubtitleLanguage }[]>([])
+/**
+ * The video file's own name, which is the only description of *this* cut we
+ * have. Handed to the subtitle search as Stremio's `filename` extra so a
+ * provider that matches on a release rather than on a title can use it.
+ */
+const videoName = ref('')
 
 async function loadReleaseSubs() {
   release.value = []
+  videoName.value = ''
   const [, id, index] = props.src.match(/\/torrents\/(\d+)\/stream\/(\d+)/) ?? []
   if (!id)
     return
   const files = (await torrentDetails(Number(id)))?.files ?? []
   const video = files[Number(index)]?.name ?? ''
+  videoName.value = video
   release.value = pickSubtitleFiles(files, Number(index)).map(i => {
     const f = files[i]!
     const lang = releaseSubtitle(f.components?.join('/') ?? f.name, video, streamUrl(Number(id), i))
@@ -384,7 +392,27 @@ async function refreshTracks() {
   aid.value = typeof p.aid === 'number' ? p.aid : 'no'
 }
 
-const series = computed(() => (props.season ?? 0) > 0 && (props.episode ?? 0) > 0)
+/**
+ * What to search by. A title that reached us through TMDB is already a title;
+ * a magnet arrives as a raw release name, and handing
+ * `House.of.the.Dragon.S01.1080p.BluRay.x265[eztv.re]` to a catalogue whole is
+ * why one used to find no subtitles at all.
+ *
+ * The playing file is read for the episode as well as the release name, because
+ * a season pack's name stops at "S01" and only the file inside it says which
+ * episode is on — and for a magnet the route knows neither.
+ */
+const searchBy = computed(() => {
+  const named = parseRelease(props.title ?? '')
+  const file = parseRelease(videoName.value)
+  return {
+    title: named.title || (props.title ?? ''),
+    year: props.year || named.year,
+    season: props.season || file.season || named.season,
+    episode: props.episode || file.episode,
+  }
+})
+
 /** Nothing to search by at all — no id and no name. */
 const unsearchable = computed(() => !props.imdbId && !props.title?.trim())
 
@@ -394,10 +422,11 @@ async function fetchExternals() {
   subLoading.value = true
   subError.value = ''
   try {
-    const id = props.imdbId || await findImdbId(props.title ?? '', series.value, props.year ?? '')
+    const { title, year, season, episode } = searchBy.value
+    const id = props.imdbId || await findImdbId(title, season > 0, year)
     if (!id)
-      throw new Error(`Couldn't match "${props.title}" to a title OpenSubtitles knows.`)
-    externals.value = await findSubtitles(id, props.season, props.episode)
+      throw new Error(`Couldn't match "${title}" to a title OpenSubtitles knows.`)
+    externals.value = await findSubtitles(id, season, episode, videoName.value)
     subsFetched = true
   }
   catch (e) {
@@ -427,14 +456,18 @@ function subsOff() {
   osd('Subtitles off')
 }
 
-/** Download this language's files so they can be told apart, once per language. */
+/**
+ * Download this language's files so they can be told apart, once per language.
+ * The video's own length goes in, because "is this file even for this video"
+ * is the first thing that separates them — see `fitsRuntime`.
+ */
 async function probeFiles(lang: SubtitleLanguage) {
   const have = variants.value[lang.name]
   if (have)
     return have
   probing.value = lang.name
   try {
-    const list = await probeLanguage(lang)
+    const list = await probeLanguage(lang, duration.value)
     variants.value[lang.name] = list
     return list
   }
@@ -477,20 +510,19 @@ async function useLanguage(lang: SubtitleLanguage) {
   if (own)
     return useTrack(own)
 
-  // The addon's own order puts the hearing-impaired cut first often enough that
-  // picking blind means reading "(electricity buzzing)" all evening. probeFiles
-  // sorts plain dialogue to the front.
+  // The addon's own order is the id it matched on and nothing else: the file for
+  // another cut, the hearing-impaired one and the right one arrive shuffled.
+  // probeFiles reads them and puts one that covers this runtime on top.
+  expanded.value = lang.name
   const list = await probeFiles(lang)
   const pick = list[0] ?? lang.files[0]
   if (pick)
     await loadFile(pick, lang)
 }
 
-/** What to call one file of a language, since the addon labels none of them. */
-function fileLabel(f: SubtitleFile) {
-  if (!f.cues.length)
-    return 'Unreadable'
-  return f.captions ? 'Captions (SDH)' : 'Dialogue only'
+/** Does this file look like it belongs to what's playing? See `fitsRuntime`. */
+function fits(f: SubtitleFile) {
+  return fitsRuntime(f, duration.value)
 }
 
 function setAudio(t: Track) {
@@ -2005,8 +2037,12 @@ defineExpose({ osd })
                 :class="[MENU_ROW, activeUrl === r.file.url && 'text-primary']"
                 @click="loadFile(r.file, r.lang)"
               >
-                <span class="truncate">{{ r.lang.name }}</span>
-                <v-icon v-if="activeUrl === r.file.url" :icon="mdiCheck" size="16" />
+                <span class="min-w-0 flex-1">
+                  <span class="block truncate">{{ r.lang.name }}</span>
+                  <!-- The file's own name, since here we actually have one. -->
+                  <span class="block truncate text-label-small opacity-45">{{ r.file.name }}</span>
+                </span>
+                <v-icon v-if="activeUrl === r.file.url" class="shrink-0" :icon="mdiCheck" size="16" />
               </button>
             </template>
 
@@ -2048,6 +2084,9 @@ defineExpose({ osd })
                 </button>
               </div>
 
+              <!-- The listing itself says nothing about a file, so every row
+                   here is read out of the downloaded cues: what it runs to, how
+                   many lines it has, and whether that is this video at all. -->
               <template v-if="expanded === l.name">
                 <button
                   v-for="f in variants[l.name] ?? []"
@@ -2055,11 +2094,14 @@ defineExpose({ osd })
                   class="pl-6" :class="[MENU_ROW, activeUrl === f.url && 'text-primary']"
                   @click="loadFile(f, l)"
                 >
-                  <span class="truncate opacity-80">{{ fileLabel(f) }}</span>
-                  <span class="shrink-0 text-label-small opacity-45">
-                    <template v-if="f.cues.length">{{ f.cues.length }} lines</template>
-                    <v-icon v-if="activeUrl === f.url" class="ml-1" :icon="mdiCheck" size="16" />
+                  <span class="min-w-0 flex-1">
+                    <span class="block truncate opacity-80">{{ fileLabel(f) }}</span>
+                    <span class="block truncate text-label-small opacity-45">{{ fileNote(f) }}</span>
+                    <span v-if="!fits(f)" class="block truncate text-label-small text-error opacity-90">
+                      Doesn't match this video's length
+                    </span>
                   </span>
+                  <v-icon v-if="activeUrl === f.url" class="shrink-0" :icon="mdiCheck" size="16" />
                 </button>
                 <p v-if="probing === l.name" :class="NOTE">
                   Reading the files…

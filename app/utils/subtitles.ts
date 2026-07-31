@@ -12,9 +12,23 @@
  * api.opensubtitles.com — an API key plus a per-user login and a download
  * quota, which is the whole reason it isn't the first choice.
  *
- * No OpenSubtitles REST client and no key in the app.
+ * No OpenSubtitles REST client and no key in the app. That rules the good
+ * aggregators out too — the free ones have all grown a per-user key — which is
+ * why the search widens sideways instead: the user's own sources are asked as
+ * well, since a Stremio addon serves `/subtitles/` off the same base as
+ * `/stream/`, and nothing gets added to the app to make that happen.
+ *
+ * What this endpoint does *not* give is the thing that would settle everything:
+ * it matches on the IMDb id alone and hands back a url, a language and an
+ * encoding — no release name, no hearing-impaired flag, and it ignores the
+ * `videoHash`/`filename` extras that would pin a file to this exact copy
+ * (verified: a bogus hash returns the identical list). So the file itself is
+ * the evidence. `probe` downloads it, and the cues answer what the listing
+ * won't: how long it runs, how many lines it has, and whether it is the
+ * captioned cut — see `fitsRuntime`.
  */
-import { imdbIdByTitle } from './tmdb'
+import { imdbIdByTitle, runtimeText } from './tmdb'
+import { configuredSources } from './torrents'
 
 const ADDON = 'https://opensubtitles-v3.strem.io'
 /**
@@ -29,6 +43,15 @@ export interface Subtitle {
   url: string
   /** OpenSubtitles' 3-letter code: ISO 639-2/B and /T mixed, plus its own. */
   lang: string
+  /**
+   * What the provider called the file, when it says at all — the release name
+   * is the one thing that tells you a file was cut for *this* encode.
+   *
+   * The built-in addon never says: its entries carry a url, a language and an
+   * encoding and nothing else, which is why `fileLabel` has a whole second way
+   * of describing a file. Other addons do, so it is read where it is offered.
+   */
+  name?: string
 }
 
 /** The codes Intl doesn't know, because OpenSubtitles invented them. */
@@ -86,7 +109,8 @@ const NOT_LANGUAGES = /^(?:sdh|hi|cc|forced)$/i
  */
 export function releaseSubtitle(path: string, video: string, url: string): SubtitleLanguage {
   const seen = new Set(video.toLowerCase().split(/[^a-z0-9]+/i))
-  const words = (path.split('/').pop() ?? '')
+  const file = path.split('/').pop() ?? ''
+  const words = file
     .replace(/\.[^.]+$/, '')
     .split(/[^a-z0-9]+/i)
     // The leading number in "2_English" is the muxer's index, not part of a name.
@@ -95,7 +119,9 @@ export function releaseSubtitle(path: string, video: string, url: string): Subti
   const label = (w: string) => NOT_LANGUAGES.test(w) ? w : langName(w)
   const code = words.findLast(w => w.length <= 3 && label(w) !== w) ?? ''
   const name = words.map(label).join(' ') || 'Subtitles'
-  return { code, name, files: [{ id: url, url, lang: code }] }
+  // The trimmed words are the menu's label; the file's own name is kept whole so
+  // the row underneath can show what it actually is on disk.
+  return { code, name, files: [{ id: url, url, lang: code, name: file }] }
 }
 
 /** One entry per language; the files inside it are told apart by `probe` below. */
@@ -139,8 +165,14 @@ export async function findImdbId(title: string, series = false, year = ''): Prom
     if (!res.ok)
       return ''
 
-    const data = await res.json() as { metas?: { id?: string, releaseInfo?: string }[] }
-    const hits = (data.metas ?? []).filter(m => /^tt\d+$/.test(m.id ?? ''))
+    const data = await res.json() as { metas?: { id?: string, name?: string, releaseInfo?: string }[] }
+    // Cinemeta's catalogue search is fuzzy full-text and always answers with
+    // *something* — for a mangled release name that something is routinely a
+    // different film, and one wrong id here is a whole evening of subtitles for
+    // the wrong movie. So the name it found has to be the name we asked for;
+    // no match is a better answer than a confident wrong one.
+    const hits = (data.metas ?? []).filter(m =>
+      /^tt\d+$/.test(m.id ?? '') && plainTitle(m.name ?? '') === plainTitle(title))
     // Titles get remade; the year decides between "Dune" and "Dune".
     const hit = (year && hits.find(m => String(m.releaseInfo ?? '').startsWith(year))) || hits[0]
     return hit?.id ?? ''
@@ -150,18 +182,74 @@ export async function findImdbId(title: string, series = false, year = ''): Prom
   }
 }
 
-/** Every subtitle the addon has for a movie, or for one episode of a show. */
-export async function findSubtitles(imdbId: string, season = 0, episode = 0): Promise<Subtitle[]> {
+/** Punctuation, case and spacing are noise when two catalogues name one film. */
+function plainTitle(s: string) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+}
+
+/** The name fields the addons that bother to name a file actually use. */
+const NAME_KEYS = ['SubFileName', 'name', 'title', 'release', 'filename']
+
+function toSubtitle(raw: Record<string, unknown>): Subtitle | null {
+  if (typeof raw.url !== 'string' || !raw.url || typeof raw.lang !== 'string' || !raw.lang)
+    return null
+  const named = NAME_KEYS.map(k => raw[k]).find(v => typeof v === 'string' && v.trim())
+  return {
+    id: String(raw.id ?? raw.url),
+    url: raw.url,
+    lang: raw.lang,
+    name: named ? String(named).trim() : undefined,
+  }
+}
+
+async function subtitlesFrom(base: string, path: string): Promise<Subtitle[]> {
+  const res = await fetch(base + path, { signal: AbortSignal.timeout(20000) })
+  if (!res.ok)
+    throw new Error(`${base} answered HTTP ${res.status}`)
+
+  const data = await res.json() as { subtitles?: Record<string, unknown>[] }
+  return (data.subtitles ?? []).flatMap(s => toSubtitle(s) ?? [])
+}
+
+/**
+ * Every subtitle for a movie, or for one episode of a show.
+ *
+ * The built-in addon is asked, and so is every source the user configured: one
+ * addon base answers `/stream/` and `/subtitles/` off the same URL, so a source
+ * that also does subtitles is already in the list and costs one request. Most
+ * don't and 404, which is why a failure is only fatal when they all fail — the
+ * same rule `findReleases` searches under.
+ *
+ * `filename` is Stremio's own extra and is what a provider matches a *cut* by
+ * rather than just a title. The built-in addon ignores it (it matches on the
+ * IMDb id alone, which is the whole reason a list of forty files for one film
+ * contains so many that were never cut for the copy being played) — the ones
+ * that honour it hand back something already in sync.
+ */
+export async function findSubtitles(imdbId: string, season = 0, episode = 0, filename = ''): Promise<Subtitle[]> {
   const series = season > 0 && episode > 0
   const id = series ? `${imdbId}:${season}:${episode}` : imdbId
-  const res = await fetch(`${ADDON}/subtitles/${series ? 'series' : 'movie'}/${id}.json`, {
-    signal: AbortSignal.timeout(20000),
-  })
-  if (!res.ok)
-    throw new Error(`Subtitle search failed (HTTP ${res.status}).`)
+  const extra = filename ? `/filename=${encodeURIComponent(filename)}` : ''
+  const path = `/subtitles/${series ? 'series' : 'movie'}/${id}${extra}.json`
 
-  const data = await res.json() as { subtitles?: Subtitle[] }
-  return (data.subtitles ?? []).filter(s => s.url && s.lang)
+  const bases = [ADDON, ...configuredSources().filter(b => b !== ADDON)]
+  const results = await Promise.allSettled(bases.map(b => subtitlesFrom(b, path)))
+  const failed = results.flatMap(r => r.status === 'rejected' ? [String(r.reason)] : [])
+  if (failed.length === results.length)
+    throw new Error(`Subtitle search failed — ${failed[0]}`)
+
+  // Two addons fronting the same OpenSubtitles mirror hand back the same file
+  // twice; the first base wins, so a named copy from a source outranks the
+  // built-in addon's anonymous one only if it got there first.
+  const seen = new Map<string, Subtitle>()
+  for (const s of results.flatMap(r => r.status === 'fulfilled' ? r.value : [])) {
+    const had = seen.get(s.url)
+    if (!had)
+      seen.set(s.url, s)
+    else if (!had.name && s.name)
+      seen.set(s.url, { ...had, name: s.name })
+  }
+  return [...seen.values()]
 }
 
 // ---------------------------------------------------------------------------
@@ -323,15 +411,77 @@ export function cueAt(cues: Cue[], t: number) {
   return cues.filter(c => t >= c.start && t < c.end).map(c => c.text).join('\n')
 }
 
+/** Where the last line lands — near enough the runtime the file was cut for. */
+export function subRuntime(f: { cues: Cue[] }) {
+  return f.cues.length ? f.cues[f.cues.length - 1]!.end : 0
+}
+
 /**
- * The files of one language, plain dialogue first: the addon's own order puts
- * the hearing-impaired cut on top often enough that it can't be trusted as a
- * default. Unreadable ones sink to the bottom.
+ * Could this file be for the video that is playing at all?
+ *
+ * This is the answer to subtitles that are not late or early but *unrelated*.
+ * The addon matches on the IMDb id and nothing else, so a list for one film also
+ * holds files cut for the extended edition, for a different episode of the same
+ * show, and — once a bare magnet has been matched to the wrong title — for a
+ * different film entirely. All of those stop minutes away from where this video
+ * does, and the cues are already downloaded, so the check is free.
+ *
+ * The window is wide on purpose. A film's last line lands well before the end
+ * credits, and a file authored for another framerate runs ~4% long or short and
+ * is worth keeping because `sub-speed` fixes it. Nothing is ever hidden by
+ * this — a bad fit sorts last and says so, since a file that fails the test is
+ * still better than the no subtitles you'd have without it.
  */
-export async function probeLanguage(lang: SubtitleLanguage, limit = 8): Promise<SubtitleFile[]> {
+export function fitsRuntime(f: { cues: Cue[] }, duration: number) {
+  const end = subRuntime(f)
+  if (!duration || !end)
+    return true // an unreadable file, or a video whose length we don't know yet
+  return end > duration * 0.7 && end < duration * 1.08 + 60
+}
+
+/**
+ * What to call one file. A provider that named it wins — a release name is the
+ * only label that says which encode a file was cut for. The built-in addon
+ * names none, so the fallback describes what is actually in the file instead of
+ * numbering it.
+ */
+export function fileLabel(f: SubtitleFile) {
+  if (f.name)
+    return f.name
+  if (!f.cues.length)
+    return 'Unreadable'
+  return f.captions ? 'Captions (SDH)' : 'Dialogue only'
+}
+
+/** The dim second line: the facts that tell two files of one language apart. */
+export function fileNote(f: SubtitleFile) {
+  if (!f.cues.length)
+    return 'Unreadable'
+  return [
+    // Already said by the label when there is no name to show instead.
+    f.name && f.captions ? 'SDH' : '',
+    runtimeText(Math.round(subRuntime(f) / 60)),
+    `${f.cues.length} lines`,
+  ].filter(Boolean).join(' · ')
+}
+
+/**
+ * The files of one language, best first: one that covers this video's runtime
+ * over one that plainly doesn't, then plain dialogue over the hearing-impaired
+ * cut — the addon's own order puts that on top often enough that it can't be
+ * trusted as a default. Unreadable ones sink to the bottom.
+ *
+ * `duration` is the video's, in seconds; 0 where it isn't known yet, which just
+ * leaves the fit out of the ordering. The limit is what bounds the cost: each
+ * file is ~100 KB of Cloudflare-cached text, fetched in parallel, and a dozen
+ * is enough to find a good one without pulling bandwidth off the download.
+ */
+export async function probeLanguage(lang: SubtitleLanguage, duration = 0, limit = 12): Promise<SubtitleFile[]> {
   const list = await Promise.all(lang.files.slice(0, limit).map(probe))
   return list.sort((a, b) =>
-    Number(a.captions) - Number(b.captions) || Number(!a.cues.length) - Number(!b.cues.length))
+    Number(fitsRuntime(b, duration)) - Number(fitsRuntime(a, duration))
+    || Number(a.captions) - Number(b.captions)
+    || Number(!a.cues.length) - Number(!b.cues.length))
 }
 
 // ---------------------------------------------------------------------------
