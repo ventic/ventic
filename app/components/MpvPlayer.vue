@@ -131,6 +131,16 @@ const SURFACE = computed(() => overlay ? 'bg-[#0e0f11] border-white/9' : 'bg-[#0
 /** Square icon button in the bars and the menu head. */
 const ICO = computed(() => `inline-flex items-center justify-center border-0 bg-transparent text-white opacity-86 transition-colors transition-opacity duration-120 hover:bg-white/12 hover:opacity-100 disabled:pointer-events-none disabled:opacity-30 rounded-lg ${touch.value ? 'h-11 min-w-11' : 'h-9.5 min-w-9.5'}`)
 
+/**
+ * The transport, dead centre. Play is where a remote lands and where a thumb
+ * already is, so it is the biggest target on the screen rather than a 38px
+ * square in a corner — and at ten feet that is the difference between pausing a
+ * film and hunting for the button that would.
+ */
+const ROUND = 'inline-flex items-center justify-center border-0 rounded-full bg-white/10 text-white transition-colors duration-120 hover:bg-white/22 disabled:pointer-events-none disabled:opacity-30'
+const SEEK_BTN = computed(() => `${ROUND} ${touch.value ? 'h-13 w-13' : 'h-12 w-12'}`)
+const PLAY_BTN = computed(() => `${ROUND} ${touch.value ? 'h-17 w-17' : 'h-16 w-16'}`)
+
 /** Filled button in the centre notice. */
 const BTN = 'inline-flex items-center gap-1.5 border-0 rounded-lg bg-white/12 px-3.5 py-1.75 text-label-large transition-colors duration-120 hover:bg-white/20'
 
@@ -151,7 +161,7 @@ const SLIDE = 'transition-transform duration-180 ease-[cubic-bezier(0.32,0.72,0,
 
 const rootEl = ref<HTMLElement | null>(null)
 const boxEl = ref<HTMLElement | null>(null)
-/** Where a d-pad enters the control bar. */
+/** Where a d-pad enters the chrome: the centre play button. */
 const playBtn = ref<HTMLButtonElement | null>(null)
 
 const videoEl = ref<HTMLVideoElement | null>(null)
@@ -1271,7 +1281,13 @@ async function warm() {
 // ---------------------------------------------------------------------------
 // Auto-hiding chrome
 // ---------------------------------------------------------------------------
-const IDLE_MS = 2800
+/**
+ * How long the chrome stays up with nobody doing anything. A remote is slower
+ * than a mouse — you look at the button, move to it, then press — and the bars
+ * going away mid-aim on a television is what makes one feel broken, so a set
+ * gets more than twice as long.
+ */
+const IDLE_MS = isTv() ? 6500 : 2800
 const ui = ref(true)
 const hovering = ref(false)
 /** A control in the chrome holds keyboard focus — someone is driving with a remote. */
@@ -1311,19 +1327,33 @@ function onMouseMove() {
     noteActivity()
 }
 
+/**
+ * Put the chrome away, and let go of whatever it had focused: a hidden button
+ * holding focus leaves a remote pressing OK at nothing it can see. Dropping it
+ * costs nothing, because OK on the picture brings the bars back with the play
+ * button under the cursor again (see `onKey`).
+ */
+function hideChrome() {
+  ui.value = false
+  const at = document.activeElement as HTMLElement | null
+  if (at && rootEl.value?.contains(at))
+    at.blur()
+}
+
 function noteActivity() {
   ui.value = true
   if (hideTimer)
     clearTimeout(hideTimer)
   hideTimer = null
-  // Keep them up while paused, stopped, hovered, focused, or reading a menu —
-  // hiding only makes sense mid-playback. Hiding a focused control would drop
-  // the remote's place in the bar.
-  if (started.value && !paused.value && !menu.value && !hovering.value && !focused.value)
-    hideTimer = setTimeout(() => (ui.value = false), IDLE_MS)
+  // Keep them up while paused, stopped, hovered, or reading a menu — hiding only
+  // makes sense mid-playback. Focus does *not* keep them up: on a TV every press
+  // leaves something focused, which pinned the bars over the film for good.
+  if (started.value && !paused.value && !menu.value && !hovering.value)
+    hideTimer = setTimeout(hideChrome, IDLE_MS)
 }
 
-watch([started, paused, menu, hovering, focused], noteActivity)
+// Not `focused`: the blur `hideChrome` does would fire this straight back.
+watch([started, paused, menu, hovering], noteActivity)
 
 // The bar appearing is the only notice anyone gives that a scrub may be coming.
 // `duration` is in there because it lands a beat after playback starts, and a
@@ -1370,8 +1400,10 @@ function speedStep(delta: number) {
 const KEYS: Record<string, () => void> = {
   ' ': togglePlay,
   'k': togglePlay,
-  // OK on a remote, with the bar out of the way.
-  'Enter': togglePlay,
+  // OK on a remote, with nothing focused for the browser to click: bring the
+  // chrome up and put the cursor on play, rather than toggling something the
+  // screen gives no sign of. A second press then pauses.
+  'Enter': () => focusChrome(),
   'ArrowLeft': () => seekBy(-5),
   'ArrowRight': () => seekBy(5),
   'j': () => seekBy(-10),
@@ -1391,7 +1423,10 @@ const KEYS: Record<string, () => void> = {
   'End': () => seekTo(Math.max(0, duration.value - 5)),
 }
 
-/** Where a remote picks up when it presses down out of the picture. */
+/**
+ * Where a remote picks up: the chrome comes back and the cursor lands on play,
+ * whether it got here by pressing OK on the picture or down out of it.
+ */
 function focusChrome() {
   noteActivity()
   nextTick(() => playBtn.value?.focus())
@@ -1503,7 +1538,7 @@ function flashSeek(side: 'back' | 'forward') {
 /** Show the bars, or put them away — what a bare tap does. */
 function toggleChrome() {
   if (ui.value) {
-    ui.value = false
+    hideChrome()
     if (hideTimer)
       clearTimeout(hideTimer)
     hideTimer = null
@@ -1741,6 +1776,42 @@ defineExpose({ osd })
         </div>
       </header>
     </transition>
+
+    <!-- The transport, dead centre, up with the rest of the chrome: where a
+         d-pad lands (see `focusChrome`) and where a thumb already is, so a tap
+         in the middle of the picture with the bars up pauses rather than doing
+         nothing. Hidden behind the centre notices below, which own the same
+         patch of screen.
+
+         Only where the page draws *over* the picture. On X11 and Win32 every
+         overlay is a hole cut in mpv's window and therefore opaque, and an
+         opaque box in the middle of the frame is not a control, it's a
+         blindfold — those two keep the transport in the bottom bar, where a
+         bar-shaped hole belongs. No transition for the same reason the bars
+         slide rather than fade: there is nothing behind this to fade against. -->
+    <div
+      v-if="!overlay"
+      v-show="ui && started && !centre"
+      class="absolute left-1/2 top-1/2 flex items-center gap-3 rounded-full border border-white/9 bg-[#0e0f11]/70 px-3 py-3 -translate-x-1/2 -translate-y-1/2"
+      @pointerenter="hovering = true"
+      @pointerleave="hovering = false"
+    >
+      <button :class="SEEK_BTN" :disabled="!started" title="Back 10s (j)" @click="seekBy(-10)">
+        <v-icon :icon="mdiRewind10" size="26" />
+      </button>
+      <button
+        ref="playBtn"
+        :class="PLAY_BTN"
+        :disabled="!started"
+        :title="paused ? 'Play (space)' : 'Pause (space)'"
+        @click="togglePlay"
+      >
+        <v-icon :icon="paused ? mdiPlay : mdiPause" size="38" />
+      </button>
+      <button :class="SEEK_BTN" :disabled="!started" title="Forward 10s (l)" @click="seekBy(10)">
+        <v-icon :icon="mdiFastForward10" size="26" />
+      </button>
+    </div>
 
     <!-- Status, dead centre. A cutout, so it works while mpv is on screen too. -->
     <div
@@ -2014,15 +2085,21 @@ defineExpose({ osd })
         />
 
         <div class="mt-2 flex items-center gap-0.5">
-          <button ref="playBtn" :class="ICO" :disabled="!started" :title="paused ? 'Play (space)' : 'Pause (space)'" @click="togglePlay">
-            <v-icon :icon="paused ? mdiPlay : mdiPause" size="26" />
-          </button>
-          <button :class="ICO" :disabled="!started" title="Back 10s (j)" @click="seekBy(-10)">
-            <v-icon :icon="mdiRewind10" size="22" />
-          </button>
-          <button :class="ICO" :disabled="!started" title="Forward 10s (l)" @click="seekBy(10)">
-            <v-icon :icon="mdiFastForward10" size="22" />
-          </button>
+          <!-- Where the picture is a native window over the page, this is the
+               transport: the middle of the frame can only be an opaque hole.
+               Everywhere else it is the centre cluster above, and this row is
+               left as the clock and the menus. -->
+          <template v-if="overlay">
+            <button ref="playBtn" :class="ICO" :disabled="!started" :title="paused ? 'Play (space)' : 'Pause (space)'" @click="togglePlay">
+              <v-icon :icon="paused ? mdiPlay : mdiPause" size="26" />
+            </button>
+            <button :class="ICO" :disabled="!started" title="Back 10s (j)" @click="seekBy(-10)">
+              <v-icon :icon="mdiRewind10" size="22" />
+            </button>
+            <button :class="ICO" :disabled="!started" title="Forward 10s (l)" @click="seekBy(10)">
+              <v-icon :icon="mdiFastForward10" size="22" />
+            </button>
+          </template>
 
           <!-- The slider only unrolls while the group is hovered, so the bar
                stays quiet the rest of the time. Nothing hovers on a phone or a

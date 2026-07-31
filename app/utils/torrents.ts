@@ -658,17 +658,48 @@ export interface Started {
  * What the engine still holds of a torrent played before, if it holds it at
  * all. `ready` means every byte of the wanted file is on disk — that copy plays
  * with no sources, no peers and no network of any kind.
+ *
+ * `want` is the file the caller named; without one the same guess `startTorrent`
+ * makes is made here, since a magnet on its own says nothing about which file
+ * inside it anyone means.
  */
-async function heldCopy(hash: string, index: number) {
-  const held = (await listTorrents().catch(() => []))
-    .find(t => t.info_hash.toLowerCase() === hash.toLowerCase())
+async function heldCopy(hash: string, want: number | null, of?: { season?: number, episode?: number }) {
+  const held = hash
+    ? (await listTorrents().catch(() => [])).find(t => t.info_hash.toLowerCase() === hash.toLowerCase())
+    : null
   if (!held)
     return null
   // The list carries per-file progress but not the lengths to compare it to.
   const files = (await torrentDetails(held.id))?.files ?? []
-  const want = files[index]
-  const have = held.stats?.file_progress?.[index] ?? 0
-  return { id: held.id, files, ready: !!want && have >= want.length }
+  const index = want ?? pickVideoFile(files, null, of)
+  const size = index == null ? 0 : files[index]?.length ?? 0
+  const have = index == null ? 0 : held.stats?.file_progress?.[index] ?? 0
+  return { id: held.id, hash: held.info_hash, files, index, ready: !!size && have >= size }
+}
+
+/**
+ * The info hash a magnet names, '' for anything that isn't one. Taken as it is
+ * spelled rather than validated: the only thing it is ever compared against is
+ * the engine's own list, so a base32 magnet simply matches nothing there and
+ * takes the long way round.
+ */
+function magnetHash(magnet: string) {
+  return magnet.match(/xt=urn:btih:([^&]+)/i)?.[1] ?? ''
+}
+
+/**
+ * Play a copy the engine already holds, without adding anything: every byte of
+ * the wanted file is on the disk, so there is nothing to fetch and nobody to
+ * ask. This is the whole of what "offline" means here.
+ */
+async function playHeld(held: NonNullable<Awaited<ReturnType<typeof heldCopy>>>, torrent: Release | null): Promise<Started> {
+  // A copy downloaded before the subtitles were ever asked for can still gain
+  // them — the engine only fetches a file it was told to, and it will do that
+  // when peers turn up. The film plays off the disk meanwhile.
+  const missing = pickSubtitleFiles(held.files, held.index!).filter(i => !held.files[i]!.included)
+  if (missing.length)
+    await limitToFiles(held.id, [...held.files.flatMap((f, i) => f.included ? [i] : []), ...missing])
+  return { id: held.id, index: held.index!, hash: held.hash, url: '', torrent }
 }
 
 /** Release names and TMDB titles compared on the letters only. */
@@ -763,20 +794,15 @@ export async function startTorrent(options: {
     return { id: -1, index: -1, hash: '', url: options.url, torrent: null }
 
   // A magnet the caller named is a release someone chose by hand, so it beats
-  // whatever is already on the disk.
+  // whatever is already on the disk. Asked before the id lookup below, because
+  // skipping that round trip is the point: a film on the disk plays with TMDB
+  // unreachable.
   if (!magnet && options.cached) {
     const { hash, file } = options.cached
     const held = await heldCopy(hash, file)
     // Every byte is here: nothing to search, nobody to ask, nothing to wait for.
-    if (held?.ready) {
-      // A copy downloaded before the subtitles were ever asked for can still
-      // gain them — the engine only fetches a file it was told to, and it will
-      // do that when peers turn up. The film plays off the disk meanwhile.
-      const missing = pickSubtitleFiles(held.files, file).filter(i => !held.files[i]!.included)
-      if (missing.length)
-        await limitToFiles(held.id, [...held.files.flatMap((f, i) => f.included ? [i] : []), ...missing])
-      return { id: held.id, index: file, hash, url: '', torrent: null }
-    }
+    if (held?.ready)
+      return playHeld(held, null)
     // Part-way through, the same release still beats searching for another one —
     // a second copy of a film you are half-way through is what that costs.
     if (held) {
@@ -819,6 +845,15 @@ export async function startTorrent(options: {
       hint = picked.fileIdx
     }
   }
+
+  // The engine may already hold whatever we ended up with: the downloads page
+  // plays by magnet and never by title, and an adopted download is by definition
+  // already there. Re-adding a hash it holds makes librqbit re-open a torrent it
+  // is already serving — which is the "fetching metadata" wait a film that
+  // finished downloading sat through with every byte of it on the disk.
+  const already = await heldCopy(magnetHash(magnet), options.fileIndex ?? hint, options)
+  if (already?.ready)
+    return playHeld(already, picked)
 
   step('Fetching metadata from peers…')
   const added = await addTorrent(magnet)

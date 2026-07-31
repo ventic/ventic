@@ -463,10 +463,30 @@ const cached = { hash: 'bbb', file: 1 }
 const disk = await startTorrent({ imdbId: 'tt0000001', cached })
 assert.equal(disk.id, 7)
 assert.equal(disk.index, 1, 'the file it was played from, not the biggest one')
-assert.equal(disk.hash, 'bbb')
+// The engine's own spelling, not the caller's: what comes back here is filed as
+// the title's offline copy, and the store prunes that list by comparing it to
+// the hashes the engine lists (see `prune`).
+assert.equal(disk.hash, 'BBB')
 assert.ok(!requests.some(u => u.startsWith('https://a.example')), 'nothing on disk is ever searched for')
 assert.ok(!requests.some(u => u.includes('overwrite')), 'nor re-added to the engine')
 assert.ok(requests.includes(`${ENGINE}/torrents/7`), 'it asked the engine what it actually holds')
+
+// The downloads page plays by magnet and never by title, so nothing is filed
+// under a key and `cached` is empty — the hash in the magnet is the only clue
+// that this is the copy sitting on the disk. Re-adding it made librqbit re-open
+// a torrent it was already serving, which is a finished film sitting through
+// "fetching metadata" with every byte of it downloaded.
+requests = []
+const byMagnet = await startTorrent({ magnet: 'magnet:?xt=urn:btih:bbb&dn=pack&tr=udp%3A%2F%2Ftracker', fileIndex: 1 })
+assert.equal(byMagnet.id, 7)
+assert.equal(byMagnet.index, 1)
+assert.ok(!requests.some(u => u.includes('overwrite')), 'a hash the engine holds is never re-added')
+
+// Same again with nobody naming a file: the magnet says which torrent, and the
+// pack's own contents say which file inside it.
+requests = []
+assert.equal((await startTorrent({ magnet: 'magnet:?xt=urn:btih:BBB' })).index, 1)
+assert.ok(!requests.some(u => u.includes('overwrite')), 'and the case of the hash is not what decides it')
 
 // Half-downloaded: the same release still beats searching for another one, and
 // the engine picks up where it left off.

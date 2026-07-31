@@ -184,6 +184,20 @@ function toSeconds(stamp: string) {
 }
 
 /**
+ * Markup a line carries for a renderer rather than for the reader: SubRip's
+ * `<i>`/`<b>`/`<font>`, WebVTT's `<v Speaker>` and inline timestamps, and the
+ * ASS override blocks (`{\an8}`) both formats smuggle.
+ *
+ * mpv draws these. Every other backend gets the text drawn as plain DOM by the
+ * page, where an `<i>` would show up as three literal characters — which is what
+ * it did on Android and on the TV. Matching wants them gone too: a leading `<i>`
+ * hides the bracket `CAPTION_LINE` looks for.
+ */
+function stripMarkup(line: string) {
+  return line.replace(/<[^>]*>/g, '').replace(/\{\\[^}]*\}/g, '').trim()
+}
+
+/**
  * SubRip and WebVTT both hang everything off the `-->` line, and that's all this
  * needs, so one parser covers the pair.
  *
@@ -203,8 +217,13 @@ export function parseCues(text: string): Cue[] {
     if (!Number.isFinite(start) || !Number.isFinite(end))
       continue
     const body: string[] = []
-    while (++i < lines.length && lines[i]!.trim())
-      body.push(lines[i]!.trim())
+    // A blank line ends the cue, so the loop still tests the raw line — a line
+    // that was nothing but markup drops out instead of leaving an empty row.
+    while (++i < lines.length && lines[i]!.trim()) {
+      const line = stripMarkup(lines[i]!)
+      if (line)
+        body.push(line)
+    }
     out.push({ start, end, text: body.join('\n') })
   }
   return out

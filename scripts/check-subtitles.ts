@@ -84,6 +84,25 @@ assert.equal(vtt.length, 1)
 assert.equal(vtt[0]!.start, 12.5)
 assert.deepEqual(parseCues('[Script Info]\nDialogue: 0,0:00:01.00'), [], 'ASS parses to nothing, not to junk')
 
+// Markup is for whoever renders the line. Everywhere but mpv the page draws the
+// text as plain DOM, so anything left in here is read out as characters — which
+// is what put a literal "<i>" on screen on Android and on the TV.
+const marked = parseCues(`1
+00:00:01,000 --> 00:00:02,000
+{\\an8}<i>Hello</i> <b>there</b>
+<font color="#ff0000">General Kenobi.</font>
+
+2
+00:00:03,000 --> 00:00:04,000
+{\\an8}
+<i>[door creaks]</i>
+`)
+assert.equal(marked[0]!.text, 'Hello there\nGeneral Kenobi.')
+assert.equal(marked[1]!.text, '[door creaks]', 'a line that was only markup leaves no blank one behind')
+// And the caption detector reads the bracket that italics used to hide.
+assert.equal(isCaptions(Array.from({ length: 200 }, (_, i) =>
+  ({ start: i, end: i + 1, text: i % 8 ? 'Just talking.' : marked[1]!.text }))), true)
+
 // --- SDH detection ---------------------------------------------------------
 const dialogue = Array.from({ length: 200 }, (_, i) => ({ start: i, end: i + 1, text: 'Just talking.' }))
 assert.equal(isCaptions(dialogue), false)
