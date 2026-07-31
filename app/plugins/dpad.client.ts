@@ -23,6 +23,13 @@ const DIRS: Record<string, Dir> = {
 const FOCUSABLE = 'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])'
 
 /**
+ * Actionable in its own right, as opposed to a focusable box that exists to hold
+ * other targets. The difference decides both which candidates survive
+ * `focusables()` and whether focus is somewhere a direction means anything.
+ */
+const ACTIONABLE = 'a[href], button, input, select, textarea'
+
+/**
  * Dialogs, menus and selects own the screen while they're up. Tooltips are
  * overlays too but they open on focus, so counting them would trap the d-pad on
  * whichever button it just landed on.
@@ -69,7 +76,7 @@ export default defineNuxtPlugin(() => {
     // right after this one is the only one that can be inside it.
     return list.filter((el, i) => {
       const next = list[i + 1]
-      return !next || !el.contains(next) || el.matches('a[href], button, input, select, textarea')
+      return !next || !el.contains(next) || el.matches(ACTIONABLE)
     })
   }
 
@@ -119,9 +126,22 @@ export default defineNuxtPlugin(() => {
     if (!from || from === document.body || !root.contains(from))
       return focusFirst()
 
+    const all = focusables(root)
+
+    // Focus can be sitting on a container rather than on a control: Vuetify
+    // parks it on a dialog's `.v-overlay__content` as the dialog opens, and that
+    // box encloses every button in it — so nothing lies in any direction, no
+    // arrow moves anything, and the only way out of a Remove or a Sources dialog
+    // is Back. Hand those presses to `focusFirst`, which lands inside the dialog
+    // exactly as it does on a fresh page. Being a wrapper is the whole test: an
+    // episode row is a button that owns a Play button and is a fine place to
+    // move from, which is the same distinction `focusables` draws above.
+    if (!from.matches(ACTIONABLE) && all.some(el => el !== from && from.contains(el)))
+      return focusFirst()
+
     // Descendants stay in play (a card's own Play button is a real target);
     // ancestors don't, since their box encloses ours in every direction.
-    const list = focusables(root).filter(el => el !== from && !el.contains(from))
+    const list = all.filter(el => el !== from && !el.contains(from))
     const at = pickDirection(from.getBoundingClientRect(), list.map(el => el.getBoundingClientRect()), dir)
     if (at < 0)
       return false

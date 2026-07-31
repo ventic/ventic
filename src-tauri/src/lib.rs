@@ -9,8 +9,8 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use librqbit::{
-	api::Api, dht::DhtPersistenceConfig, http_api::HttpApi, storage::StorageFactoryExt,
-	DhtSessionConfig, Session, SessionOptions, SessionPersistenceConfig
+	api::Api, dht::DhtPersistenceConfig, http_api::HttpApi, DhtSessionConfig, Session,
+	SessionOptions, SessionPersistenceConfig
 };
 use librqbit_dualstack_sockets::TcpListener;
 
@@ -316,29 +316,37 @@ impl librqbit::storage::TorrentStorage for LargeFileStorage {
 	}
 }
 
+/// Note the `Storage` type: this hands back an already-boxed storage so it *is*
+/// a `BoxStorageFactory`, rather than being put in one by `StorageFactoryExt::
+/// boxed()`. That is not tidiness. `boxed()`'s private wrapper answers
+/// `is_type_id` with `self.sf.type_id()` — the wrapped factory's own concrete
+/// id, never the override below — and session persistence refuses any factory
+/// that doesn't report itself as `FilesystemStorageFactory`. Through `boxed()`
+/// the engine turns down every add with "storages other than
+/// FilesystemStorageFactory are not supported", which is a 400 on the very
+/// first magnet.
 #[derive(Clone, Copy, Default)]
 struct LargeFileStorageFactory(librqbit::storage::filesystem::FilesystemStorageFactory);
 
 impl librqbit::storage::StorageFactory for LargeFileStorageFactory {
-	type Storage = LargeFileStorage;
+	type Storage = Box<dyn librqbit::storage::TorrentStorage>;
 
 	fn create(
 		&self,
 		shared: &librqbit::ManagedTorrentShared,
 		metadata: &librqbit::TorrentMetadata,
 	) -> anyhow::Result<Self::Storage> {
-		Ok(LargeFileStorage(Box::new(self.0.create(shared, metadata)?)))
+		Ok(Box::new(LargeFileStorage(Box::new(self.0.create(shared, metadata)?))))
 	}
 
-	/// Answer as the storage we wrap. Session persistence refuses to write a
-	/// resume file for anything that isn't `FilesystemStorageFactory` by exactly
-	/// this test, and losing that would mean re-hashing every torrent on launch.
+	/// Answer as the storage we wrap, or persistence writes no resume file and
+	/// every torrent is re-hashed from scratch on the next launch.
 	fn is_type_id(&self, type_id: std::any::TypeId) -> bool {
 		self.0.is_type_id(type_id)
 	}
 
 	fn clone_box(&self) -> librqbit::storage::BoxStorageFactory {
-		(*self).boxed()
+		Box::new(*self)
 	}
 }
 
@@ -370,8 +378,9 @@ async fn run_torrent_server(
 	let opts = |with_dht: bool| SessionOptions {
 		persistence: Some(SessionPersistenceConfig::Json { folder: Some(session_dir.clone()) }),
 		fastresume: true,
-		// Films are routinely bigger than 2 GiB and a TV box is 32-bit.
-		default_storage_factory: Some(LargeFileStorageFactory::default().boxed()),
+		// Films are routinely bigger than 2 GiB and a TV box is 32-bit. Boxed
+		// here rather than through `.boxed()` — see LargeFileStorageFactory.
+		default_storage_factory: Some(Box::new(LargeFileStorageFactory::default())),
 		dht: with_dht.then(|| DhtSessionConfig {
 			// Ask for a fresh port every launch. librqbit otherwise persists
 			// whichever ephemeral port the OS handed it and re-binds that exact

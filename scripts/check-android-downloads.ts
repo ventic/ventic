@@ -154,11 +154,12 @@ assert.ok(activity.includes('stopService'), 'and closing the app stops it, notif
 // that one method and inherit the trait's pwrite64 default, so the three ways it
 // can quietly stop working are all worth an assert: unwired, "completed" with
 // the vectored method someone assumed was missing by accident, or answering
-// is_type_id as itself — which turns off resume persistence and re-hashes every
-// torrent on launch, with nothing on screen to say why.
+// is_type_id as itself. That last one is not a slow degradation: session
+// persistence refuses a factory that doesn't report as FilesystemStorageFactory,
+// and the refusal comes back as a 400 on the add — no torrent starts at all.
 const rust = readFileSync(new URL('../src-tauri/src/lib.rs', import.meta.url), 'utf8')
 assert.ok(
-  /default_storage_factory: Some\(LargeFileStorageFactory/.test(rust),
+  /default_storage_factory: Some\(Box::new\(LargeFileStorageFactory/.test(rust),
   'the session writes through the 64-bit-offset storage',
 )
 assert.ok(
@@ -167,7 +168,16 @@ assert.ok(
 )
 assert.ok(
   /fn is_type_id[^}]*self\.0\.is_type_id/.test(rust),
-  'and passes for the filesystem storage so resume data keeps being written',
+  'and reports as the filesystem storage it wraps',
+)
+// `.boxed()` is the trap: its private wrapper answers is_type_id with the
+// wrapped factory's own concrete id and never calls the override above, so the
+// engine turned down every magnet with 400 "storages other than
+// FilesystemStorageFactory are not supported". Boxing it directly is what keeps
+// the override in the vtable. Found on the TV, not by reading.
+assert.ok(
+  !/LargeFileStorageFactory[^\n]*\.boxed\(\)/.test(rust),
+  'and is boxed directly, since StorageFactoryExt::boxed() would discard that',
 )
 
 // eslint-disable-next-line no-console

@@ -73,4 +73,15 @@ assert.strictEqual(pickDirection(poster, navLinks, 'left'), 1, 'left off a poste
 // overlaps it: the one directly above must not become "every direction".
 assert.strictEqual(pickDirection(seek, bar, 'down'), 0, 'down off the rail takes the first button')
 
+// A box that *encloses* the targets has none of them in any direction, which is
+// correct and is also a dead end: Vuetify parks focus on a dialog's content
+// wrapper when it opens, and from there no arrow reached Cancel or Delete files
+// — measured on the TV, focus never left the wrapper. The plugin has to notice
+// it is on a container and hand over to focusFirst; nothing here can rescue it.
+const dialog = box(410, 266, 460, 188)
+const actions = [box(426, 396, 84, 34), box(614, 396, 106, 34), box(730, 396, 124, 34)]
+for (const dir of ['up', 'down', 'left', 'right'] as const)
+  assert.strictEqual(pickDirection(dialog, actions, dir), -1, `a wrapper has nothing ${dir} of it`)
+assert.strictEqual(pickDirection(actions[0]!, actions.slice(1), 'right'), 0, 'while its buttons walk normally')
+
 console.info('d-pad picker: ok')
