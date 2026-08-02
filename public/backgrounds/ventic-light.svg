@@ -1,0 +1,17 @@
+<!-- The same background upside down, for Ventic Light: the darker tone-45 red
+     the light theme uses, on its off-white paper. See ventic-dark.svg. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <radialGradient id="red" cx="0.18" cy="0.82" r="0.8">
+      <stop offset="0" stop-color="#c92d33" stop-opacity="0.55" />
+      <stop offset="1" stop-color="#c92d33" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="warm" cx="0.85" cy="0.12" r="0.7">
+      <stop offset="0" stop-color="#ffb787" stop-opacity="0.5" />
+      <stop offset="1" stop-color="#ffb787" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="#fdf8f8" />
+  <rect width="1920" height="1080" fill="url(#red)" />
+  <rect width="1920" height="1080" fill="url(#warm)" />
+</svg>

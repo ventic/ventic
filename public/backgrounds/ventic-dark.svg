@@ -1,0 +1,26 @@
+<!-- Ventic Dark's own background. Vector rather than a photo because it is
+     scaled to any screen, weighs nothing on a set-top box, and is read through
+     28-44px of blur anyway — the shapes are the point, not the detail. The
+     colours are the theme's: the logo red, its cool tertiary, and the warm
+     near-black they sit on. Drop a JPEG in beside it and point the preset at
+     that instead if you want a picture. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <radialGradient id="red" cx="0.18" cy="0.82" r="0.8">
+      <stop offset="0" stop-color="#ff5555" stop-opacity="0.85" />
+      <stop offset="1" stop-color="#ff5555" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="teal" cx="0.85" cy="0.12" r="0.7">
+      <stop offset="0" stop-color="#5cdcb6" stop-opacity="0.45" />
+      <stop offset="1" stop-color="#5cdcb6" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="deep" cx="0.6" cy="0.55" r="0.85">
+      <stop offset="0" stop-color="#a60e1e" stop-opacity="0.35" />
+      <stop offset="1" stop-color="#a60e1e" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="#141011" />
+  <rect width="1920" height="1080" fill="url(#deep)" />
+  <rect width="1920" height="1080" fill="url(#red)" />
+  <rect width="1920" height="1080" fill="url(#teal)" />
+</svg>

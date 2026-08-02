@@ -1,0 +1,35 @@
+{
+	"$schema": "../gen/schemas/desktop-schema.json",
+	"identifier": "main",
+	"description": "Capabilities for the app window, on every platform",
+	"windows": [
+		"main",
+		"secondary"
+	],
+	"permissions": [
+		"core:path:default",
+		"core:event:default",
+		"core:window:default",
+		"core:window:allow-set-fullscreen",
+		"core:window:allow-is-fullscreen",
+		"core:app:default",
+		"core:resources:default",
+		"shell:allow-open",
+		"dialog:allow-open",
+		"notification:default",
+		"os:allow-platform",
+		"os:allow-arch",
+		"os:allow-family",
+		"os:allow-version",
+		"os:allow-locale",
+		"fs:allow-document-read",
+		"fs:allow-document-write",
+		"store:default",
+		"deep-link:default",
+		"deep-link:allow-register",
+		"deep-link:allow-unregister",
+		"deep-link:allow-is-registered",
+		"core:webview:allow-create-webview",
+		"core:webview:allow-create-webview-window"
+	]
+}

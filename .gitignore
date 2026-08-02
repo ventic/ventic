@@ -1,0 +1,24 @@
+node_modules
+.DS_Store
+*.log*
+.data
+.nuxt
+.nitro
+.cache
+.output
+.env
+.cargo
+dist
+src-tauri/target
+# Downloaded by scripts/build/mpv.ts and bundled into Windows builds.
+src-tauri/mpv
+# Created by build.rs, filled by scripts/build/macos/bundle-dylib.ts, bundled into the macOS .app.
+src-tauri/dylibs
+
+# Local editor/agent state.
+.claude/settings.local.json
+
+# The APK signing key. It lives in a GitHub secret (see .github/workflows/release.yml);
+# a copy landing here would hand anyone the ability to publish an upgrade to Ventic.
+*.jks
+*.keystore

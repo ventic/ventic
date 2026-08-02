@@ -1,0 +1,170 @@
+# Builds every bundle for a tagged version and attaches them to a draft release.
+#
+#   bun run bump   → pick a version; it commits, tags vX.Y.Z and pushes
+#   the tag push   → this
+#
+# The release is left as a *draft*: check the artifacts, write the notes, then
+# publish. Nothing here signs anything, so macOS and Windows both warn on first
+# launch — the alternative is a paid certificate on each.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+# Baked into the frontend bundle at build time (nuxt.config runtimeConfig).
+env:
+  TMDB_API: ${{ secrets.TMDB_API }}
+
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # 22.04 rather than latest: the .deb and .AppImage link against the
+          # runner's glibc, so building on the oldest supported one is what
+          # makes them run anywhere else.
+          - os: ubuntu-22.04
+            args: ''
+            targets: ''
+          # Native, so NSIS *and* the .msi come out — neither cross-compiles.
+          - os: windows-latest
+            args: ''
+            targets: ''
+          # Apple Silicon only. A universal build would have to link a universal
+          # libmpv, and Homebrew bottles are single-arch — the x86_64 half fails
+          # at the linker. An Intel .dmg needs an Intel runner, not a flag.
+          - os: macos-latest
+            args: ''
+            targets: ''
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.targets }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+
+      - run: bun install --frozen-lockfile
+
+      # Windows ships no mpv, so the bundle carries one (tauri.windows.conf.json).
+      - if: runner.os == 'Windows'
+        run: bun scripts/build/mpv.ts
+
+      # macOS links libmpv instead of launching mpv, so it is needed to build at
+      # all. Carrying it — and the ffmpeg tree behind it — into the .app is then
+      # scripts/build/macos/bundle-dylib.ts, via the beforeBundleCommand hook,
+      # which needs only otool and install_name_tool from the Xcode command line
+      # tools the runner image already has.
+      - if: runner.os == 'macOS'
+        run: brew install mpv
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # linuxdeploy's own ancient `strip` fails on .relr.dyn — see scripts/build/index.ts.
+          NO_STRIP: 1
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: Ventic ${{ github.ref_name }}
+          releaseDraft: true
+          args: ${{ matrix.args }}
+
+      # tauri-action drives the bundler itself, so scripts/build/index.ts — and
+      # the AppImage repack it ends with — never runs here. Do it to the bundle
+      # tauri-action left behind and replace the asset it just uploaded, or the
+      # AppImage aborts at startup on every distro newer than this runner.
+      - if: runner.os == 'Linux'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bun scripts/build/linux/appimage.ts
+          gh release upload "${{ github.ref_name }}" \
+            src-tauri/target/release/bundle/appimage/*.AppImage --clobber
+
+      # The runner has Homebrew, so a .dmg that still depends on it looks fine
+      # here and fails on every other Mac. Fail the release instead.
+      - if: runner.os == 'macOS'
+        run: bun scripts/build/macos/bundle-dylib.ts src-tauri/target/release/bundle/macos/Ventic.app
+
+  android:
+    # The draft release has to exist before there is anything to upload to.
+    needs: desktop
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          # armv7 is the TV sets — a lot of them run a 32-bit userspace, and
+          # scripts/build/index.ts refuses to start without the target.
+          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - run: bun install --frozen-lockfile
+
+      # The APK is debug-signed, and the debug key is per-machine — so on a fresh
+      # runner every release was signed by a different certificate and the phone
+      # rejected each new one as an upgrade. One keystore, held as a secret,
+      # keeps that identity stable across releases; see app/build.gradle.kts.
+      # Without the secret the build still succeeds, it just falls back to the
+      # throwaway key and its APK can't upgrade an earlier install.
+      # The `secrets` context is not available in a step-level `if:`, so the
+      # presence check is here rather than a condition on the step.
+      - name: Restore the signing keystore
+        env:
+          ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+        run: |
+          if [ -n "$ANDROID_KEYSTORE" ]; then
+            printf '%s' "$ANDROID_KEYSTORE" | base64 -d > "$RUNNER_TEMP/ventic.jks"
+            echo "Signing with the release keystore."
+          else
+            echo "::warning::No ANDROID_KEYSTORE secret — this APK gets a throwaway debug key and will not install over an earlier release."
+          fi
+
+      # NDK comes from the runner image's ANDROID_NDK_HOME, which scripts/build/index.ts picks up.
+      - run: bun run build:android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/ventic.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      # An unsigned or wrongly-signed APK is worse than a failed build: it reaches
+      # people, fails to install, and every later release inherits the mismatch.
+      # Check before it can be uploaded, not after.
+      - name: Verify the APK is signed
+        run: |
+          apk=src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk
+          if [ ! -f "$apk" ]; then
+            echo "::error::$apk is missing. An *-unsigned.apk here means the keystore secret never reached Gradle."
+            ls -la "$(dirname "$apk")" || true
+            exit 1
+          fi
+          "$ANDROID_HOME"/build-tools/36.0.0/apksigner verify --print-certs "$apk"
+
+      - name: Attach the APK
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          apk=src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk
+          mv "$apk" "Ventic_${GITHUB_REF_NAME#v}.apk"
+          gh release upload "$GITHUB_REF_NAME" "Ventic_${GITHUB_REF_NAME#v}.apk" --clobber

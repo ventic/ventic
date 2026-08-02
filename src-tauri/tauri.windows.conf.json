@@ -1,0 +1,9 @@
+{
+	"bundle": {
+		"resources": [
+			"mpv/mpv.exe",
+			"mpv/ffmpeg.exe",
+			"mpv/LICENSE.txt"
+		]
+	}
+}

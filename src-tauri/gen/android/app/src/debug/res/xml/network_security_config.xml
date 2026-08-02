@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only, overriding the loopback-only rule in `main`: `tauri
+     android dev` serves the front end over plain http from the dev machine's
+     LAN address, which is not loopback and is not https either. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

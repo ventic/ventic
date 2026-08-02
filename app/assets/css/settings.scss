@@ -1,0 +1,14 @@
+@use 'vuetify/settings' with (
+  // UnoCSS generates the utility classes now, on demand.
+  $utilities: false,
+  $color-pack: false,
+  $grid-breakpoints: (
+    // keep in sync with app/theme/breakpoints.ts
+    'xs': 0,
+    'sm': 600px,
+    'md': 960px,
+    'lg': 1280px,
+    'xl': 1920px,
+    'xxl': 2560px
+  )
+);

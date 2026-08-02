@@ -1,0 +1,64 @@
+{
+	"bundle": {
+		"active": true,
+		"targets": "all",
+		"windows": {
+			"certificateThumbprint": null,
+			"digestAlgorithm": "sha256",
+			"timestampUrl": ""
+		},
+		"icon": [
+			"icons/32x32.png",
+			"icons/128x128.png",
+			"icons/128x128@2x.png",
+			"icons/icon.icns",
+			"icons/icon.ico"
+		],
+		"resources": [],
+		"externalBin": [],
+		"copyright": "",
+		"category": "Entertainment",
+		"shortDescription": "A media library and BitTorrent player",
+		"longDescription": "Ventic keeps track of what you watch and plays torrents in a native player, on the desktop and on Android TV. It hosts no content and ships with no sources configured.",
+		"macOS": {},
+		"linux": {
+			"deb": {}
+		}
+	},
+	"build": {
+		"beforeBuildCommand": "bun run generate",
+		"beforeBundleCommand": "bun scripts/build/macos/bundle-dylib.ts",
+		"frontendDist": "../.output/public",
+		"beforeDevCommand": "bun run dev",
+		"devUrl": "http://localhost:3000"
+	},
+	"productName": "Ventic",
+	"version": "0.1.0",
+	"identifier": "com.ventic.app",
+	"plugins": {
+		"shell": {
+			"open": "(?:(?:https?|file)://.+|mailto:.+|tel:.+|/.+|[A-Za-z]:[\\\\/].+|\\\\\\\\.+)"
+		},
+		"deep-link": {
+			"desktop": {
+				"schemes": ["ventic", "stremio"]
+			}
+		}
+	},
+	"app": {
+		"windows": [
+			{
+				"title": "Ventic",
+				"width": 1366,
+				"height": 768,
+				"minWidth": 480,
+				"minHeight": 400,
+				"resizable": true,
+				"fullscreen": false
+			}
+		],
+		"security": {
+			"csp": null
+		}
+	}
+}
