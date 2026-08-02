@@ -22,6 +22,10 @@ Nuxt and Tauri, driven as happily by a TV remote as by a mouse.
 
 <br/>
 
+<a href="https://buymeacoffee.com/tilenpirih"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+
+<br/>
+
 [Why Ventic](#why-ventic) &middot; [Features](#feature-tour) &middot; [Sources](#sources) &middot;
 [Install](#install) &middot; [Build](#build-from-source) &middot; [Architecture](#architecture) &middot;
 [FAQ](#faq) &middot; [Contributing](#contributing)
@@ -29,13 +33,6 @@ Nuxt and Tauri, driven as happily by a TV remote as by a mouse.
 </div>
 
 <br/>
-
-<p align="center">
-  <img src="docs/media/hero.webp" width="900" alt="Ventic home screen">
-  <br/>
-  <sub>Home, with Continue watching and TMDB-backed rows. The library works before a single
-  source is configured.</sub>
-</p>
 
 https://github.com/user-attachments/assets/2d0bd58f-c838-43e2-a0ce-e503f9317aa8
 
@@ -825,7 +822,8 @@ distribution that includes mpv must carry mpv's licence and an offer of its sour
 <div align="center">
 <img src="public/logo.svg" width="40" alt="">
 <br/><br/>
-<sub>Built to be used from a sofa. <a href="#readme-top">&#9650; back to top</a></sub>
+<sub>Built to be used from a sofa. &middot; <a href="https://buymeacoffee.com/tilenpirih">Buy me a coffee</a>
+&middot; <a href="#readme-top">&#9650; back to top</a></sub>
 </div>
 
 <!-- links -->

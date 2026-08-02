@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { mdiOpenInNew } from '@mdi/js'
+import { mdiCoffee, mdiOpenInNew } from '@mdi/js'
 
 const version = ref('')
 const platform = ref('')
@@ -79,6 +79,17 @@ function open(url: string) {
           @click="open(item.url)"
         />
       </v-list>
+    </settings-section>
+
+    <settings-section title="Support">
+      <p class="text-body-small opacity-70">
+        Ventic is free and always will be. If it earned one, you can buy me a coffee.
+      </p>
+      <div>
+        <v-btn :prepend-icon="mdiCoffee" variant="tonal" size="small" @click="open('https://buymeacoffee.com/tilenpirih')">
+          Buy me a coffee
+        </v-btn>
+      </div>
     </settings-section>
 
     <settings-section title="Legal">
