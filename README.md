@@ -346,9 +346,14 @@ addon pages already do for other players:
 ```
 
 The app opens (or comes to the front), shows the URL in full, and **asks before adding it** — a
-link can never change what Ventic searches on its own. Under *Settings → Sources* there's also an
-opt-in switch to handle `stremio://` links, off by default because only one app can own a scheme
-and turning it on takes it from Stremio.
+link can never change what Ventic searches on its own. Under *Settings → Sources* there's also a
+switch to handle `stremio://` links, since addon pages publish those rather than `ventic://` ones.
+
+Only one app can own a scheme. On Linux, Ventic takes `stremio://` on first run **only if nothing
+else answers it** — a machine with Stremio installed keeps its association, and the check runs
+once, so a user who later turns the switch off does not get it back on the next launch. Windows
+and macOS never claim it on their own: the switch is the only way, because a Windows registration
+would silently shadow an existing Stremio install rather than lose to it.
 
 The scheme association is written by the installers. Builds that were never installed
 (`tauri dev`, a bare `.exe`, an unregistered AppImage) register it themselves at startup instead;
@@ -430,6 +435,10 @@ Everything user-facing lives in *Settings* and is stored locally. Build-time key
 | --- | --- | --- |
 | `TMDB_API` | yes | All metadata. A free key from [themoviedb.org][tmdb-key]. |
 | `TAURI_DEV_HOST` | no | The address an Android device reaches your dev server on. |
+
+A build's `TMDB_API` ships inside the client bundle, so a released copy can be cut off if that
+token is ever revoked. *Settings → About* takes a token of the user's own to use instead, which is
+the way back from that without waiting for a release. It is left out of backup files.
 
 <p align="right"><a href="#readme-top">&#9650; back to top</a></p>
 

@@ -207,6 +207,9 @@ const live = fakeStore({
   'ventic.watchlist': JSON.stringify({ 'movie:603': 6, 'tv:1396': 7 }),
   'ventic.sources': JSON.stringify(['https://a.example']),
   'ventic.theme': '"dark"',
+  // A credential. A backup is a file you mail to yourself, and one of these
+  // can't be taken back out of it — so it stays behind. (SECRET in utils/backup.)
+  'ventic.tmdbKey': 'secret-token',
   // Somebody else's key in the same origin — never ours to carry or restore.
   'vuetify:dynamic-theme': 'x',
 })

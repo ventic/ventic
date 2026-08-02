@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { mdiCoffee, mdiOpenInNew } from '@mdi/js'
 
+const settings = useSettingsStore()
 const version = ref('')
 const platform = ref('')
 
@@ -66,6 +67,22 @@ function open(url: string) {
           themoviedb.org
         </v-btn>
       </div>
+
+      <!-- The way back from a revoked bundled token without shipping a release.
+           Empty is the normal state — nobody should need this to use the app. -->
+      <v-text-field
+        v-model.trim="settings.tmdbKey"
+        label="Your own TMDB read token"
+        placeholder="Leave empty to use the built-in one"
+        variant="solo-filled"
+        density="comfortable"
+        rounded="lg"
+        flat
+        autocomplete="off"
+        spellcheck="false"
+        hint="Only needed if the app stops loading artwork and titles. Create one free under your TMDB account settings, API, “API Read Access Token”. It is kept out of backup files."
+        persistent-hint
+      />
     </settings-section>
 
     <settings-section title="Built on">

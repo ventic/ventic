@@ -76,6 +76,16 @@ export const useSettingsStore = defineStore('settings', () => {
    */
   const sources = useLocalStorage<string[]>('ventic.sources', [])
 
+  // --- Film data ---
+  /**
+   * A TMDB read token of the user's own, used instead of the one the build
+   * ships with. The bundled token sits in the client bundle where anyone can
+   * read it, so it is one complaint away from being revoked — and a revoked
+   * token is every installed copy losing artwork, titles and search at once.
+   * This is the way back from that without waiting for a release.
+   */
+  const tmdbKey = useLocalStorage('ventic.tmdbKey', '')
+
   // --- Network ---
   // MB/s, 0 meaning "work it out" (see `uploadLimit` in utils/torrents).
   const downLimit = useLocalStorage('ventic.downLimit', 0)
@@ -97,5 +107,5 @@ export const useSettingsStore = defineStore('settings', () => {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { section, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, downLimit, upLimit, wifiOnly, downloadDir, subs, resetSubs }
+  return { section, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, tmdbKey, downLimit, upLimit, wifiOnly, downloadDir, subs, resetSubs }
 })

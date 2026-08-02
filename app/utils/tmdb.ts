@@ -45,10 +45,14 @@ export interface Media {
 }
 
 export function tmdb<T>(path: string, params?: Record<string, unknown>) {
+  // The user's own token wins when they have set one — see `tmdbKey` in the
+  // settings store for why that escape hatch exists.
+  const key = useSettingsStore().tmdbKey || useRuntimeConfig().public.TMDB_API
+
   return $fetch<T>(path, {
     baseURL: 'https://api.themoviedb.org/3',
     params: { language: 'en-US', ...params },
-    headers: { Authorization: `Bearer ${useRuntimeConfig().public.TMDB_API}` },
+    headers: { Authorization: `Bearer ${key}` },
   })
 }
 
