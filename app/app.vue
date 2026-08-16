@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import type { ThemeName } from '~/theme/presets'
-import { PRESETS } from '~/theme/presets'
-import { applyTheme } from '~/theme/themes'
+import { applyTheme, paintedTheme } from '~/theme/themes'
 
 // The settings page only writes preferences; this is where the two global ones
 // take effect. It sits in app.vue rather than a plugin because `useTheme()`
@@ -17,19 +15,7 @@ const theme = useTheme()
  * source coming off the screen instead of a slider. The user's own theme choice
  * is left alone underneath, and comes back when the setting goes off.
  */
-const painted = computed(() => {
-  // A picture the user chose is only "what's on screen" if they say so — the
-  // usual case is a background picked to go with a theme, which it has no
-  // business recolouring. Artwork still moves the palette either way.
-  const following = settings.themeFromArt && !!ui.artSource
-    && (ui.showingArt || settings.colourFromPicture)
-  return {
-    theme: following
-      ? (PRESETS[settings.theme as ThemeName]?.dark === false ? 'generatedLight' : 'generated')
-      : settings.theme,
-    source: following ? ui.artSource : settings.source,
-  }
-})
+const painted = computed(() => paintedTheme(settings, ui.shownArt, ui.backdropImage))
 
 watch(painted, value => applyTheme(theme, value), { immediate: true })
 

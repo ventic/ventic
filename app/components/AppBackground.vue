@@ -7,8 +7,10 @@ const settings = useSettingsStore()
 // Swap only once the new image is decoded, otherwise the crossfade shows a
 // blank frame while it downloads.
 const shown = ref<string>()
-// The decoded picture itself, kept so the palette can be read straight off it.
-const loaded = shallowRef<HTMLImageElement>()
+// The decoded picture itself, kept so the palette can be read straight off it,
+// with the backdrop it came from — the colour is only ever published together
+// with the picture it belongs to (see `paintedTheme`).
+const loaded = shallowRef<{ url: string, image: HTMLImageElement }>()
 
 /**
  * Asking for the pixels back means asking for them CORS-clean, and it has to
@@ -40,7 +42,7 @@ watch([() => ui.backdrop, () => settings.themeFromArt], ([url, cors]) => {
       if (ui.backdrop !== url)
         return
       shown.value = src
-      loaded.value = image
+      loaded.value = { url, image }
     }
     image.onerror = () => anonymous && (bust ? load(false) : load(true, true))
     image.src = src
@@ -49,17 +51,20 @@ watch([() => ui.backdrop, () => settings.themeFromArt], ([url, cors]) => {
 }, { immediate: true })
 
 // The palette that follows the art, read off the picture already on screen —
-// no second request, and nothing to taint the canvas.
+// no second request, and nothing to taint the canvas. It lands here rather than
+// on the backdrop changing, which is what keeps the palette a step behind the
+// art instead of a step ahead of it: nothing is repainted until the picture the
+// colour came from is the picture being shown.
 //
 // The source is dropped only when there is nothing to read it off any more, not
 // merely because this component has no decoded picture *yet*: changing layout
 // remounts it, and clearing in between drops the whole interface back to the
 // plain theme for the frame it takes to decode the same picture from cache.
-watch([loaded, () => settings.themeFromArt], ([image, on]) => {
-  if (on && image)
-    ui.artSource = sourceFromImage(image) ?? ''
+watch([loaded, () => settings.themeFromArt], ([art, on]) => {
+  if (on && art)
+    ui.shownArt = { url: art.url, colour: sourceFromImage(art.image) ?? '' }
   else if (!on || !ui.backdrop)
-    ui.artSource = ''
+    ui.shownArt = { url: '', colour: '' }
 }, { immediate: true })
 </script>
 

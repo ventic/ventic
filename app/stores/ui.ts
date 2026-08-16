@@ -64,8 +64,13 @@ export const useUiStore = defineStore('ui', () => {
    * everywhere the artwork isn't.
    */
   const artOverCustom = useLocalStorage('ventic.backdropArtOverCustom', true)
-  /** Source colour pulled off the current art, when that setting is on. */
-  const artSource = ref('')
+  /**
+   * The picture actually painted and the source colour read off it, published
+   * as one value by `AppBackground` once the picture has decoded. The two are
+   * never apart: a colour belongs to the picture it was read from, and the
+   * backdrop moves to a new title well before that picture is on screen.
+   */
+  const shownArt = ref({ url: '', colour: '' })
 
   /** What the cursor or focus is on — the home page's hero reads this. */
   const selected = ref<Media | null>(null)
@@ -90,13 +95,6 @@ export const useUiStore = defineStore('ui', () => {
     backdropImage.value,
     artOverCustom.value && picked.value,
   ))
-
-  /**
-   * Whether what's behind the app is a title's artwork rather than the picture
-   * the user chose. Read off the answer instead of repeating how it was reached:
-   * anything that isn't their own picture is art, and nothing at all is neither.
-   */
-  const showingArt = computed(() => !!backdrop.value && backdrop.value !== backdropImage.value)
 
   // Every card is cardWidth wide, so one bucket serves the whole grid — a 110px
   // card has no use for the 342px art. Ratio is reactive: the window can move
@@ -169,5 +167,5 @@ export const useUiStore = defineStore('ui', () => {
   // Sweeping the cursor across a grid would otherwise queue a crossfade per card.
   const preview = useDebounceFn(hover, 120)
 
-  return { layout, cardWidth, posterSize, rail, drawer, pendingSource, blur, tint, backdropMode, backdropImage, backdropFollowsHover, artOverCustom, artSource, selected, art, backdrop, showingArt, isGrid, isDetailed, select, ambient, release, hover, preview }
+  return { layout, cardWidth, posterSize, rail, drawer, pendingSource, blur, tint, backdropMode, backdropImage, backdropFollowsHover, artOverCustom, shownArt, selected, art, backdrop, isGrid, isDetailed, select, ambient, release, hover, preview }
 })

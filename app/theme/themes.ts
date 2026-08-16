@@ -75,6 +75,32 @@ export function isGenerated(name: string) {
 }
 
 /**
+ * Which theme to paint and what to generate it from. Both halves come out of
+ * the *painted* picture — one url and the colour read off that url — never out
+ * of `ui.backdrop`, which names the next picture the moment a title is opened
+ * and so runs a decode ahead of its colour. Reading the two separately paints
+ * the incoming title in the outgoing picture's colours until it loads, which is
+ * one theme change too many and reads as a flash.
+ */
+export function paintedTheme(
+  s: { theme: string, source: string, themeFromArt: boolean, colourFromPicture: boolean },
+  art: { url: string, colour: string },
+  ownPicture: string,
+) {
+  // A picture the user chose is only "what's on screen" if they say so — the
+  // usual case is a background picked to go with a theme, which has no business
+  // recolouring it. Artwork still moves the palette either way.
+  const following = s.themeFromArt && !!art.colour
+    && ((!!art.url && art.url !== ownPicture) || s.colourFromPicture)
+  return {
+    theme: following
+      ? (PRESETS[s.theme as ThemeName]?.dark === false ? 'generatedLight' : 'generated')
+      : s.theme,
+    source: following ? art.colour : s.source,
+  }
+}
+
+/**
  * Point Vuetify at a theme. Every colour is re-applied from the definition (or
  * regenerated from the source colour) every time, so the generated entries
  * follow the source colour rather than keeping whatever was registered at boot.

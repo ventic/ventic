@@ -5,7 +5,7 @@ import assert from 'node:assert'
 import { existsSync } from 'node:fs'
 import { contrast, fromHue, hueOf, luminance, mix, scheme, toRgb } from '../app/theme/palette'
 import { PRESET_LIST, PRESETS } from '../app/theme/presets'
-import { themes } from '../app/theme/themes'
+import { paintedTheme, themes } from '../app/theme/themes'
 import { backdropFor } from '../app/utils/tmdb'
 
 assert.deepEqual(toRgb('#ffffff'), [255, 255, 255])
@@ -131,6 +131,30 @@ assert.equal(backdropFor('custom', ART, MINE, false), MINE, 'a browsed row never
 assert.match(backdropFor('custom', ART, MINE, true)!, /art\.jpg$/, 'a title the user opened does')
 assert.equal(backdropFor('custom', null, MINE, true), MINE, 'a title with no art falls back to it')
 assert.equal(backdropFor('custom', ART, '', false), undefined, 'and no picture chosen is a flat colour')
+
+// And which colour goes with it. The whole interface changes on this, so it may
+// only change once per picture: the backdrop moves to a new title a decode
+// before the new colour exists, so anything derived from the *requested*
+// picture repaints the app in the outgoing one's colours on the way in.
+const MOCHA = { theme: 'mocha', source: '#cba6f7', themeFromArt: true, colourFromPicture: false }
+const ORANGE = '#ff8800'
+const GREEN = '#00aa55'
+
+assert.deepEqual(paintedTheme(MOCHA, { url: ART, colour: ORANGE }, MINE), { theme: 'generated', source: ORANGE })
+// The flash this replaced: a colour with no picture of its own is the last
+// picture's, and painting it is the film you just left colouring the one you opened.
+assert.deepEqual(paintedTheme(MOCHA, { url: '', colour: GREEN }, MINE), { theme: 'mocha', source: MOCHA.source })
+// A picture that decoded but wouldn't give its pixels back (no CORS) is no colour at all.
+assert.deepEqual(paintedTheme(MOCHA, { url: ART, colour: '' }, MINE), { theme: 'mocha', source: MOCHA.source })
+// The user's own picture is not artwork — until they say it is.
+assert.deepEqual(paintedTheme(MOCHA, { url: MINE, colour: GREEN }, MINE), { theme: 'mocha', source: MOCHA.source })
+assert.deepEqual(
+  paintedTheme({ ...MOCHA, colourFromPicture: true }, { url: MINE, colour: GREEN }, MINE),
+  { theme: 'generated', source: GREEN },
+)
+assert.deepEqual(paintedTheme({ ...MOCHA, themeFromArt: false }, { url: ART, colour: ORANGE }, MINE), { theme: 'mocha', source: MOCHA.source })
+// A light theme keeps its light: the two generated palettes are not interchangeable.
+assert.equal(paintedTheme({ ...MOCHA, theme: 'latte' }, { url: ART, colour: ORANGE }, MINE).theme, 'generatedLight')
 
 // --- Presets -----------------------------------------------------------------
 
