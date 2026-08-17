@@ -141,24 +141,24 @@ Wi-Fi-only switch.
 <table>
 <tr>
 <td width="50%" align="center">
-<img src="docs/media/detail.webp" width="100%" alt="Title detail page"><br/>
+<img src="docs/media/detail.png" width="100%" alt="Title detail page"><br/>
 <sub><b>Detail</b> &middot; backdrop, cast, ratings, seasons and episodes, with resume points and
 watched ticks per episode.</sub>
 </td>
 <td width="50%" align="center">
-<img src="docs/media/player.webp" width="100%" alt="Player"><br/>
+<img src="docs/media/player.png" width="100%" alt="Player"><br/>
 <sub><b>Player</b> &middot; embedded mpv with seek-preview frames, track menus and subtitle styling
 that previews live.</sub>
 </td>
 </tr>
 <tr>
 <td width="50%" align="center">
-<img src="docs/media/downloads.webp" width="100%" alt="Downloads page"><br/>
+<img src="docs/media/downloads.png" width="100%" alt="Downloads page"><br/>
 <sub><b>Downloads</b> &middot; the torrent engine's own UI — per-file selection, seeding, speed
 limits, disk budget.</sub>
 </td>
 <td width="50%" align="center">
-<img src="docs/media/themes.webp" width="100%" alt="Appearance settings"><br/>
+<img src="docs/media/themes.png" width="100%" alt="Appearance settings"><br/>
 <sub><b>Appearance</b> &middot; a palette generated from any colour, 26 presets,
 poster size, app scale and a global CSS box.</sub>
 </td>
