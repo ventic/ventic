@@ -68,6 +68,7 @@ https://github.com/user-attachments/assets/2d0bd58f-c838-43e2-a0ce-e503f9317aa8
 - [Your library](#your-library)
 - [Privacy](#privacy)
 - [Install](#install)
+  - [Opening it on macOS](#opening-it-on-macos)
 - [Configuration](#configuration)
 - [Build from source](#build-from-source)
 - [Architecture](#architecture)
@@ -419,10 +420,35 @@ Grab the latest build from the [Releases page][releases].
 | **Linux** | `.deb`, `.rpm`, `.AppImage` | Needs `mpv` and `ffmpeg` from your package manager |
 | **Windows** | `.msi`, `.exe` (NSIS) | Ships its own mpv and ffmpeg; WebView2 comes with Windows 11 and updated Windows 10 |
 | **Android / Android TV** | `.apk` | Sideload; also the phone build |
-| **macOS** | `.app`, `.dmg` | Apple Silicon; carries its own libmpv, so nothing to install first. Unsigned — right-click → *Open* the first time |
+| **macOS** | `.app`, `.dmg` | Apple Silicon; carries its own libmpv, so nothing to install first. Unsigned — [one command before the first launch](#opening-it-on-macos) |
 
 First run has no sources and searches nothing. Add one under *Settings → Sources*, or skip that
 entirely and use it as a torrent client — paste a magnet on the Downloads page and it plays.
+
+### Opening it on macOS
+
+The macOS builds are **unsigned**. Signing them means Apple's Developer Program at €99 a year,
+which a free project with no income doesn't have — so macOS refuses the app the first time you
+open it, usually with *"Ventic is damaged and can't be opened. You should move it to the Trash."*
+
+Nothing is damaged. That message is what Gatekeeper says about a downloaded app when no paid
+certificate vouches for it. Drag Ventic to Applications, then clear the quarantine flag the
+download arrived with:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/Ventic.app
+```
+
+Open it normally afterwards and it stays open — the app is ad-hoc signed, so once the flag is gone
+macOS treats it like anything else. This is per install, not per launch.
+
+> Control-click → *Open* was the old way round this and stopped working in macOS 15 (Sequoia),
+> where Apple removed that override; *System Settings → Privacy & Security → Open Anyway* only
+> appears for apps that are signed but not notarised, which isn't this. The command is the one
+> route that works on every version.
+
+Run it on a build you fetched from the [Releases page][releases] — that command is you telling
+macOS you trust the file, so it deserves the same care anywhere else you're told to type it.
 
 <p align="right"><a href="#readme-top">&#9650; back to top</a></p>
 
@@ -765,6 +791,10 @@ window into the page — and to run a BitTorrent engine in-process instead of sh
 
 **Does it work on a TV?**
 That's the point. There's an Android TV build, and every screen is reachable with a d-pad.
+
+**macOS says Ventic is damaged. Is it?**
+No — it's unsigned, which is what macOS says about any downloaded app no paid certificate vouches
+for. One command clears it: see [Opening it on macOS](#opening-it-on-macos).
 
 <p align="right"><a href="#readme-top">&#9650; back to top</a></p>
 
