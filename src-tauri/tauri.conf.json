@@ -33,7 +33,7 @@
 		"devUrl": "http://localhost:3000"
 	},
 	"productName": "Ventic",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"identifier": "com.ventic.app",
 	"plugins": {
 		"shell": {
