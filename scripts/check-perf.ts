@@ -29,6 +29,7 @@ const background = read('app/components/AppBackground.vue')
 const settings = read('app/stores/settings.ts')
 const appearance = read('app/components/settings/appearance/Display.vue')
 const app = read('app/app.vue')
+const row = read('app/components/ScrollRow.vue')
 
 // --- Always on, no setting: these cost nothing to look at ---
 
@@ -87,6 +88,28 @@ assert.match(
   /html\.reduce-effects \.ventic-backdrop\s*\{[^}]*brightness\([^)]*\)[^}]*saturate\(/,
   'dropping the backdrop blur must keep its brightness/saturation',
 )
+
+// --- The rows ---
+
+// A card crossing under a stationary cursor mounts the hover overlay, moves the
+// backdrop and comes out of content-visibility — a whole row of that per flick
+// of the wheel, which is what made paging a row flicker and shift+wheel stutter.
+// On the track, not the scroller: a scroller that ignores the pointer never sees
+// the wheel either, and the page would scroll instead of the row.
+assert.match(
+  row,
+  /:class="\{ 'pointer-events-none': gliding \}"/,
+  'a moving row must take its cards out of the pointer\'s way',
+)
+assert.doesNotMatch(
+  row.replace(/<!--[\s\S]*?-->/g, ''),
+  /snap-x|snap-start/,
+  'no scroll-snap on a row: it re-animates after every wheel notch and every appended page',
+)
+
+// `useScroll` measures on mount and on scroll only, and a row is empty when it
+// mounts — both arrows came up disabled and stayed there until it was dragged.
+assert.match(row, /useResizeObserver\(\[scroller, track\], measure\)/, 'the arrows must re-measure as cards arrive')
 
 // --- Wiring: a setting nothing reads is a setting that does nothing ---
 

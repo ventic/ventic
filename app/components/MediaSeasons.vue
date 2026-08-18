@@ -57,7 +57,7 @@ function markEarlier() {
       v-for="season in seasons"
       :key="season.number"
       :to="seasonLink(showId, season.number)"
-      class="group block shrink-0 snap-start select-none outline-none"
+      class="group block shrink-0 select-none outline-none"
       :style="{ width: `${ui.cardWidth}px` }"
     >
       <div class="relative aspect-2/3 overflow-hidden rounded-xl bg-surface-container">

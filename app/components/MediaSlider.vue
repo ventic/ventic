@@ -15,7 +15,7 @@ const { items, pending, done, loadMore } = useMediaFeed(() => props.request)
       :key="`${media.type}-${media.id}`"
       :media="media"
       :detail="ui.isDetailed"
-      class="shrink-0 snap-start"
+      class="shrink-0"
       :style="{ width: `${ui.cardWidth}px` }"
     />
     <div

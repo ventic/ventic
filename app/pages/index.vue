@@ -11,22 +11,26 @@ const { data: trending } = useAsyncData(
   { lazy: true, transform: page => page.results.flatMap(item => toMedia(item) ?? []) },
 )
 
-// The page has no art of its own — the app backdrop is the art, and hovering
-// any card below swaps both it and this panel.
-const featured = computed(() => ui.selected ?? trending.value?.[0])
+/**
+ * The five at the top. Backdrop art is the whole point of the panel, so a title
+ * without one is passed over rather than shown as a grey box.
+ */
+const spotlight = computed(() => (trending.value ?? []).filter(m => m.backdrop).slice(0, 5))
 
-watchEffect(() => {
-  if (!ui.selected && trending.value?.[0])
-    ui.ambient(trending.value[0])
-})
+const at = ref(0)
+const featured = computed(() => spotlight.value[Math.min(at.value, spotlight.value.length - 1)])
+
+// The panel carries its own art; this is the window behind it, blurred down to
+// a wash — `ambient` rather than `select` so it never covers a picture the user
+// set themselves.
+watch(featured, media => media && ui.ambient(media), { immediate: true })
+
+// ponytail: no auto-advance. It moves the thing under a remote's focus ring,
+// and it is a `useIntervalFn` plus a pause-on-focus rule away if it's missed.
 
 const rows = [
-  { title: 'Trending today', request: { path: '/trending/all/day' } },
   { title: 'Popular movies', request: { path: '/movie/popular', type: 'movie' as const } },
   { title: 'Popular shows', request: { path: '/tv/popular', type: 'tv' as const } },
-  { title: 'Top rated movies', request: { path: '/movie/top_rated', type: 'movie' as const } },
-  { title: 'Top rated shows', request: { path: '/tv/top_rated', type: 'tv' as const } },
-  { title: 'In cinemas', request: { path: '/movie/now_playing', type: 'movie' as const } },
 ]
 
 // Enough room for a poster row so v-lazy doesn't collapse before it mounts.
@@ -35,51 +39,92 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
 
 <template>
   <div class="h-full overflow-y-auto pb-10">
-    <section class="flex min-h-[34vh] flex-col justify-end gap-3 px-4 pb-10 pt-6 md:min-h-[44vh] md:px-6">
-      <template v-if="featured">
+    <!-- The panel is its own picture rather than a hole onto the app backdrop:
+         that one is off entirely in two of the three backdrop modes, and a hero
+         with nothing behind it is worse than no hero. -->
+    <section class="relative mx-4 mt-2 h-[42vh] min-h-64 overflow-hidden rounded-2xl md:mx-6 md:h-[46vh]">
+      <transition
+        enter-active-class="transition-opacity duration-500"
+        leave-active-class="transition-opacity duration-500"
+        enter-from-class="opacity-0"
+        leave-to-class="opacity-0"
+      >
+        <div v-if="featured" :key="featured.id" class="absolute inset-0">
+          <media-poster :src="backdropUrl(featured.backdrop, 'w1280')" :alt="featured.title" />
+        </div>
+      </transition>
+
+      <!-- White text on somebody else's photograph: the copy needs its own
+           darkness under it, in both directions, whatever the theme is doing. -->
+      <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
+      <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/25 to-transparent" />
+
+      <div v-if="featured" class="relative h-full flex flex-col justify-end gap-2 p-4 text-white md:p-6">
         <div class="flex items-center gap-2">
           <v-chip size="small" :prepend-icon="mdiStar" class="font-medium">
             {{ featured.rating.toFixed(1) }}
           </v-chip>
-          <span class="text-label-medium uppercase opacity-70">
+          <span class="text-label-medium uppercase opacity-80">
             {{ featured.type === 'movie' ? 'Movie' : 'TV Show' }} · {{ featured.year || 'unknown' }}
           </span>
         </div>
 
-        <h1 class="max-w-3xl text-headline-large font-bold drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)] md:text-display-medium">
+        <h1 class="max-w-3xl text-headline-medium font-bold drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)] md:text-display-small">
           {{ featured.title }}
         </h1>
 
-        <p class="line-clamp-3 max-w-2xl text-body-medium opacity-80 md:text-body-large">
+        <p class="line-clamp-2 max-w-2xl text-body-medium opacity-85">
           {{ featured.overview }}
         </p>
 
-        <div class="flex flex-wrap items-center gap-2 pt-1">
+        <!-- gap-y: on a phone the posters wrap under the buttons, and a bare
+             gap-2 leaves them touching. -->
+        <div class="flex flex-wrap items-end gap-x-2 gap-y-3 pt-1">
           <v-btn :prepend-icon="mdiPlay" size="large" :to="library.resumeLink(featured)">
             Play
           </v-btn>
           <v-btn :prepend-icon="mdiInformationOutline" size="large" variant="tonal" :to="mediaLink(featured)">
             Details
           </v-btn>
-          <v-btn icon variant="text" color="on-surface" size="large" @click="library.toggleWatchlist(featured)">
+          <v-btn icon variant="text" color="white" size="large" @click="library.toggleWatchlist(featured)">
             <v-icon :icon="library.inWatchlist(featured) ? mdiBookmark : mdiBookmarkOutline" :color="library.inWatchlist(featured) ? 'primary' : undefined" />
             <v-tooltip activator="parent" :text="library.inWatchlist(featured) ? 'Remove from watchlist' : 'Add to watchlist'" />
           </v-btn>
-          <v-btn icon variant="text" color="on-surface" size="large" @click="library.toggleFavourite(featured)">
+          <v-btn icon variant="text" color="white" size="large" @click="library.toggleFavourite(featured)">
             <v-icon :icon="library.isFavourite(featured) ? mdiHeart : mdiHeartOutline" :color="library.isFavourite(featured) ? 'primary' : undefined" />
             <v-tooltip activator="parent" :text="library.isFavourite(featured) ? 'Remove from favourites' : 'Favourite'" />
           </v-btn>
-        </div>
-      </template>
 
-      <div v-else class="flex flex-col gap-3">
-        <div class="animate-pulse h-6 w-32 rounded-lg bg-surface-container/60" />
-        <div class="animate-pulse h-12 w-2/3 max-w-md rounded-lg bg-surface-container/60" />
-        <div class="animate-pulse h-16 w-full max-w-2xl rounded-lg bg-surface-container/60" />
+          <v-spacer />
+
+          <!-- Posters, not dots: they say which title you are switching to, and
+               they are a real target for a thumb and for a remote. Buttons, so
+               the d-pad reaches them from Play along the same row. -->
+          <div class="flex gap-2">
+            <button
+              v-for="(media, index) in spotlight"
+              :key="media.id"
+              type="button"
+              class="h-15 w-10 shrink-0 overflow-hidden rounded-lg outline-none ring-2 ring-white/25 transition-all md:h-18 md:w-12 hover:ring-white focus-visible:ring-white"
+              :class="index === at ? 'ring-primary opacity-100' : 'opacity-60'"
+              :aria-label="media.title"
+              :aria-current="index === at"
+              @click="at = index"
+              @focus="at = index"
+            >
+              <media-poster :src="posterUrl(media.poster, 'w185')" :alt="media.title" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div v-else class="relative h-full flex flex-col justify-end gap-3 p-4 md:p-6">
+        <div class="animate-pulse h-10 max-w-md w-2/3 rounded-lg bg-surface-container/60" />
+        <div class="animate-pulse h-12 max-w-2xl w-full rounded-lg bg-surface-container/60" />
       </div>
     </section>
 
-    <div class="flex flex-col gap-7">
+    <div class="flex flex-col gap-7 pt-7">
       <!-- Straight back into playback, not to the detail page: this row exists
            to save you the two clicks. Not lazy — it comes out of localStorage,
            and it's the first thing you should see. -->
@@ -90,7 +135,7 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
           :media="entry.media"
           :to="watchLink(entry.media.type, entry.media.id, entry.season, entry.episode)"
           :detail="ui.isDetailed"
-          class="shrink-0 snap-start"
+          class="shrink-0"
           :style="{ width: `${ui.cardWidth}px` }"
         />
       </scroll-row>
