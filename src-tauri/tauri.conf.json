@@ -2,6 +2,7 @@
 	"bundle": {
 		"active": true,
 		"targets": "all",
+		"createUpdaterArtifacts": true,
 		"windows": {
 			"certificateThumbprint": null,
 			"digestAlgorithm": "sha256",
@@ -36,6 +37,15 @@
 	"version": "0.1.1",
 	"identifier": "com.ventic.app",
 	"plugins": {
+		"updater": {
+			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM2NDY4OUExNDhBQUUwNUMKUldSYzRLcElvWWxHTnNWUnF0bWh1MXBMK1dFZ21MaC9mRFliYjFEZU1KZEFRVzR4QmcvNFA3TG4K",
+			"endpoints": [
+				"https://github.com/ventic/ventic/releases/latest/download/latest.json"
+			],
+			"windows": {
+				"installMode": "passive"
+			}
+		},
 		"shell": {
 			"open": "(?:(?:https?|file)://.+|mailto:.+|tel:.+|/.+|[A-Za-z]:[\\\\/].+|\\\\\\\\.+)"
 		},

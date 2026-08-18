@@ -21,7 +21,7 @@
  * before the bundler runs.
  */
 import { execFileSync, spawnSync } from 'node:child_process'
-import { existsSync, readdirSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { homedir } from 'node:os'
 import { delimiter, join } from 'node:path'
@@ -66,6 +66,50 @@ function exists(cmd: string) {
 function haveLibmpv() {
   return ['/opt/homebrew/lib', '/usr/local/lib', '/opt/local/lib']
     .some(dir => ['libmpv.dylib', 'libmpv.2.dylib'].some(lib => existsSync(join(dir, lib))))
+}
+
+/**
+ * What to hand `tauri build` about update signatures.
+ *
+ * `bundle.createUpdaterArtifacts` is on, and the bundler treats a configured
+ * `pubkey` with no private key as an error — thrown at the very end, after the
+ * whole release compile. That is fine in CI, where the key is a secret, and
+ * wrong everywhere else: someone who cloned this to build it for themselves has
+ * no key and no reason to want one.
+ *
+ * So: the environment wins, then the key `tauri signer generate -w` writes by
+ * convention, and failing both the artifacts are simply turned off for that
+ * build. The bundles are byte-for-byte the same either way — all that is missing
+ * is the .sig beside them, which only a release needs.
+ */
+function updaterSigning(): { env: Record<string, string>, args: string[] } {
+  if (process.env.TAURI_SIGNING_PRIVATE_KEY)
+    return { env: {}, args: [] }
+
+  const key = join(homedir(), '.tauri', 'ventic.key')
+  if (existsSync(key)) {
+    console.log(`✓ Signing updates with ${key}\n`)
+    return {
+      // The key's *contents*, which is what CI passes too. `tauri build` reads
+      // only this one variable — the `_PATH` form the signer subcommand takes is
+      // not consulted here, and setting it just gets you the "public key has
+      // been found, but no private key" error at the end of a whole build.
+      env: {
+        TAURI_SIGNING_PRIVATE_KEY: readFileSync(key, 'utf8').trim(),
+        // Explicitly empty rather than absent: an unset password makes the CLI
+        // stop and prompt for one, which hangs a build nobody is watching.
+        TAURI_SIGNING_PRIVATE_KEY_PASSWORD: '',
+      },
+      args: [],
+    }
+  }
+
+  console.log(
+    'Note: no updater signing key, so these bundles carry no update signature and\n'
+    + '      the in-app updater will not accept them. Fine for a build you are going to\n'
+    + '      run yourself; for a release, see .github/workflows/release.yml.\n',
+  )
+  return { env: {}, args: ['--config', '{"bundle":{"createUpdaterArtifacts":false}}'] }
 }
 
 function die(msg: string): never {
@@ -169,18 +213,25 @@ async function buildDesktop(extra: string[]) {
   if (process.platform === 'win32')
     await bundleMpv()
 
+  const signing = updaterSigning()
+
   console.log(`\n→ Building for ${process.platform}: ${bundles}\n`)
   // The AppImage step shells out to linuxdeploy, which carries its own ancient
   // `strip`. On a distro new enough to emit `.relr.dyn` relocation sections it
   // fails on every system library it copies in and takes the bundle down with
   // it. Skipping the strip costs a few MB and nothing else.
-  run(['tauri', 'build', ...extra], process.platform === 'linux' ? { NO_STRIP: '1' } : {})
+  run(
+    ['tauri', 'build', ...signing.args, ...extra],
+    { ...signing.env, ...(process.platform === 'linux' ? { NO_STRIP: '1' } : {}) },
+  )
 
   // The AppImage ships the build machine's libwayland and can't be left that
   // way — see the script. CI does the same thing as its own workflow step,
   // because tauri-action never runs this file.
+  // With the signing env, because the repack invalidates the signature the
+  // bundler just made and the script signs it again (see there).
   if (process.platform === 'linux')
-    run(['scripts/build/linux/appimage.ts'])
+    run(['scripts/build/linux/appimage.ts'], signing.env)
 
   console.log('\n✓ Bundles are in src-tauri/target/release/bundle/\n')
 
@@ -239,8 +290,13 @@ async function buildWindows(extra: string[]) {
   const nsis = exists('makensis')
   const bundle = nsis ? ['--bundles', 'nsis'] : ['--no-bundle']
 
+  const signing = updaterSigning()
+
   console.log(`\n→ Cross-compiling for Windows (${WIN_TARGET})${nsis ? ' + NSIS installer' : ', binary only'}\n`)
-  run(['tauri', 'build', '--runner', 'cargo-xwin', '--target', WIN_TARGET, ...bundle, ...extra], crossPath())
+  run(
+    ['tauri', 'build', '--runner', 'cargo-xwin', '--target', WIN_TARGET, ...bundle, ...signing.args, ...extra],
+    { ...crossPath(), ...signing.env },
+  )
 
   const out = `src-tauri/target/${WIN_TARGET}/release/`
   console.log(`\n✓ ${out}ventic.exe — copy it over together with the mpv/ folder beside it.\n`)

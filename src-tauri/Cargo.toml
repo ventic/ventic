@@ -78,6 +78,13 @@ libc = "0.2"
 # running app instead of dying silently.
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-single-instance = { version = "2.4.3", features = ["deep-link"] }
+# In-app updates. Not `[dependencies]`: the plugin has no Android implementation
+# at all, so an ungated entry breaks the APK build rather than compiling to a
+# stub. Android is told to fetch the APK itself instead — see `can_self_update`.
+# Its default features bring rustls, matching the reason librqbit takes it.
+tauri-plugin-updater = "2"
+# Nothing but `relaunch()` after an update lands. Core has no equivalent.
+tauri-plugin-process = "2"
 
 # rustls, not the default native-tls: openssl-sys can't cross-compile to
 # aarch64-linux-android without a sysroot, and it comes in twice — via reqwest

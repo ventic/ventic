@@ -1,7 +1,7 @@
 {
 	"$schema": "../gen/schemas/desktop-schema.json",
 	"identifier": "desktop",
-	"description": "The tray icon and its menu, which only exist on desktop targets",
+	"description": "The tray icon, its menu and the in-app updater — all desktop-only",
 	"platforms": [
 		"linux",
 		"macOS",
@@ -13,6 +13,8 @@
 	],
 	"permissions": [
 		"core:menu:default",
-		"core:tray:default"
+		"core:tray:default",
+		"updater:default",
+		"process:allow-restart"
 	]
 }

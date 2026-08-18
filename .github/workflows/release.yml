@@ -71,33 +71,81 @@ jobs:
       - if: runner.os == 'macOS'
         run: brew install mpv
 
+      # Uploads the bundles *and* latest.json, which is what the in-app updater
+      # reads. Each runner merges its own platforms into the copy already on the
+      # release, so one file ends up describing all three — and it is written
+      # only if the bundler produced .sig files, i.e. only if the signing key
+      # below actually reached it. A release with no latest.json means that
+      # secret is missing: the app then still says a version is out, and points
+      # at the release page instead of installing it.
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # linuxdeploy's own ancient `strip` fails on .relr.dyn — see scripts/build/index.ts.
           NO_STRIP: 1
+          # The other half of `plugins.updater.pubkey` in tauri.conf.json. Lose
+          # this key and no existing install can ever be updated again, because
+          # a new keypair's signatures fail against the public key they shipped
+          # with — so it lives in the repo secrets and in a backup, nowhere else.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          # Only needed if the key ever gets a passphrase. Unset is fine: the CLI
+          # takes an empty one whenever `CI` is set, which every runner sets. It
+          # is wired up so that adding the passphrase is the only step then.
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Ventic ${{ github.ref_name }}
           releaseDraft: true
           args: ${{ matrix.args }}
+          # Windows builds both, and the updater installs whichever this names.
+          # NSIS: it is per-user, so `installMode: passive` can run it without a
+          # UAC prompt, where the .msi needs admin for a machine-wide install.
+          updaterJsonPreferNsis: true
 
       # tauri-action drives the bundler itself, so scripts/build/index.ts — and
       # the AppImage repack it ends with — never runs here. Do it to the bundle
       # tauri-action left behind and replace the asset it just uploaded, or the
       # AppImage aborts at startup on every distro newer than this runner.
+      # The repack rewrites the AppImage, which invalidates the signature the
+      # bundler made moments earlier — so the script signs it again (see there),
+      # and both files are replaced together. The `updater` job below then puts
+      # that signature into latest.json, where it can't race the other runners.
+      #
+      # The presence check is in the shell, not a step-level `if:`: the `secrets`
+      # context is not available there (same as the Android keystore below).
       - if: runner.os == 'Linux'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
           bun scripts/build/linux/appimage.ts
           gh release upload "${{ github.ref_name }}" \
             src-tauri/target/release/bundle/appimage/*.AppImage --clobber
+          if [ -n "$TAURI_SIGNING_PRIVATE_KEY" ]; then
+            gh release upload "${{ github.ref_name }}" \
+              src-tauri/target/release/bundle/appimage/*.AppImage.sig --clobber
+          else
+            echo "::warning::No TAURI_SIGNING_PRIVATE_KEY secret — this release ships without in-app updates. The app will point people at the release page instead."
+          fi
 
       # The runner has Homebrew, so a .dmg that still depends on it looks fine
       # here and fails on every other Mac. Fail the release instead.
       - if: runner.os == 'macOS'
         run: bun scripts/build/macos/bundle-dylib.ts src-tauri/target/release/bundle/macos/Ventic.app
+
+  # `latest.json` is written by all three desktop runners at once, each merging
+  # its platforms into the copy already on the release — so the Linux signature
+  # can only be corrected once every one of them has finished writing.
+  updater:
+    needs: desktop
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bun scripts/build/linux/appimage-signature.ts "${{ github.ref_name }}"
 
   android:
     # The draft release has to exist before there is anything to upload to.

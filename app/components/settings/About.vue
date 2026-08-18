@@ -1,19 +1,28 @@
 <script setup lang="ts">
-import { mdiCoffee, mdiOpenInNew } from '@mdi/js'
+import { mdiCoffee, mdiOpenInNew, mdiRestart, mdiTrayArrowDown, mdiUpdate } from '@mdi/js'
 
 const settings = useSettingsStore()
-const version = ref('')
+const updates = useUpdatesStore()
 const platform = ref('')
 
-onMounted(async () => {
-  // Both fail in a browser-only dev session, where there is no Tauri at all —
-  // and `platform` throws synchronously rather than rejecting.
+onMounted(() => {
+  // Throws synchronously rather than rejecting when there is no Tauri at all,
+  // which is every `bun run dev` browser session. The version comes from the
+  // updates store, which needs it anyway to know whether it is behind.
   try {
-    version.value = await useTauriAppGetVersion()
     platform.value = useTauriOsPlatform()
   }
   catch {}
 })
+
+/**
+ * Where "get it yourself" points when this copy can't replace itself. Android is
+ * the one platform with a single obvious file — the APK on the release — so it
+ * gets a direct link; everywhere else the release page is the honest answer,
+ * because which of the six bundles is the right one is the user's call.
+ */
+const downloadUrl = computed(() =>
+  (platform.value === 'android' && updates.available?.apk) || updates.available?.url || RELEASES_URL)
 
 // Naming the licence is half the point of this list. Windows builds carry an
 // mpv.exe, which makes handing one out redistribution of GPL software — the
@@ -39,7 +48,7 @@ function open(url: string) {
         <img src="/logo.svg" alt="" class="size-14">
         <div>
           <div class="text-title-medium">
-            Version {{ version || 'unknown' }}
+            Version {{ updates.current || 'unknown' }}
           </div>
           <div class="text-body-small opacity-70">
             A media library and BitTorrent player, on the desktop and on Android TV.
@@ -49,6 +58,115 @@ function open(url: string) {
           </div>
         </div>
       </div>
+    </settings-section>
+
+    <settings-section title="Updates">
+      <!-- Three outcomes, and which one shows has nothing to do with which
+           platform this is: `capable` is about how the app was *installed*.
+           See can_self_update in src-tauri/src/lib.rs. -->
+      <template v-if="updates.available">
+        <p class="text-body-medium">
+          Ventic {{ updates.available.version }} is out.
+        </p>
+
+        <!-- The release body, as GitHub markdown. Nothing renders it and nothing
+             should: a markdown dependency for the one screen that shows release
+             notes is a poor trade, and the notes read fine as text. -->
+        <pre
+          v-if="updates.available.notes"
+          class="text-body-small max-h-60 overflow-y-auto whitespace-pre-wrap rounded-lg bg-surface-container/40 p-4 font-sans opacity-80"
+        >{{ updates.available.notes }}</pre>
+
+        <p v-if="!updates.capable && platform === 'android'" class="text-body-medium opacity-70">
+          Android installs from the package itself — download it and open it. It is signed
+          with the same key as the copy you have, so it upgrades in place and keeps your
+          library.
+        </p>
+        <p v-else-if="!updates.capable" class="text-body-medium opacity-70">
+          This copy wasn't installed by Ventic's own installer — a package manager, or a
+          build from source — so whatever put it there is what updates it. Replacing the
+          files from in here would only confuse it.
+        </p>
+
+        <!-- Failing over to the download link rather than dead-ending: the
+             manifest can be missing this platform even when everything else
+             about the install is fine. -->
+        <p v-if="updates.status === 'failed'" class="text-body-medium text-error">
+          The update couldn't be installed: {{ updates.error }}
+        </p>
+
+        <v-progress-linear
+          v-if="updates.status === 'downloading'"
+          :model-value="updates.progress * 100"
+          :indeterminate="!updates.progress"
+          color="primary"
+          rounded
+          height="6"
+        />
+
+        <div class="flex flex-wrap items-center gap-2">
+          <v-btn
+            v-if="updates.status === 'ready'"
+            :prepend-icon="mdiRestart"
+            variant="flat"
+            color="primary"
+            @click="updates.restart()"
+          >
+            Restart to finish
+          </v-btn>
+          <v-btn
+            v-else-if="updates.capable"
+            :prepend-icon="mdiUpdate"
+            :loading="updates.status === 'downloading'"
+            variant="flat"
+            color="primary"
+            @click="updates.install()"
+          >
+            Update now
+          </v-btn>
+          <v-btn
+            v-if="!updates.capable || updates.status === 'failed'"
+            :prepend-icon="platform === 'android' ? mdiTrayArrowDown : mdiOpenInNew"
+            variant="tonal"
+            @click="open(downloadUrl)"
+          >
+            {{ platform === 'android' ? 'Download the APK' : 'Open the release' }}
+          </v-btn>
+          <v-btn
+            v-if="updates.status !== 'downloading' && updates.status !== 'ready' && !updates.dismissed"
+            variant="text"
+            @click="updates.dismiss()"
+          >
+            Not now
+          </v-btn>
+        </div>
+
+        <p v-if="updates.status === 'ready'" class="text-body-small opacity-70">
+          Installed. It takes effect the next time Ventic starts.
+        </p>
+      </template>
+
+      <template v-else>
+        <p class="text-body-medium opacity-70">
+          {{ updates.current ? 'Ventic is up to date.' : 'Updates are checked in the installed app, not here.' }}
+        </p>
+        <div>
+          <v-btn
+            :prepend-icon="mdiUpdate"
+            :loading="updates.status === 'checking'"
+            variant="tonal"
+            size="small"
+            @click="updates.check()"
+          >
+            Check again
+          </v-btn>
+        </div>
+      </template>
+
+      <p class="text-body-small opacity-70">
+        Checked once each time Ventic starts, against this project's GitHub releases.
+        Nothing else is sent — there is no account and no telemetry behind it.
+      </p>
     </settings-section>
 
     <settings-section title="Film and TV data">

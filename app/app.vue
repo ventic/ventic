@@ -51,6 +51,10 @@ if (!('currentCSSZoom' in Element.prototype)) {
   })
 }
 
+// One check a launch, for the badge in the toolbar. Deliberately not awaited and
+// never fatal: it is a GitHub request, and being offline is the ordinary case.
+useUpdatesStore().check()
+
 // Unlayered, so a user rule beats both Vuetify's components and UnoCSS —
 // otherwise "advanced" would mean "fight the cascade" (see assets/css/layers.css).
 useStyleTag(computed(() => settings.customCss), { id: 'ventic-custom-css' })

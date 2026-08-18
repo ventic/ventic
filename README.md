@@ -403,6 +403,7 @@ Besides the sources you add and the peers your torrents connect to, Ventic reach
 | **TMDB** (`api.themoviedb.org`, `image.tmdb.org`) | Every poster, backdrop, synopsis, cast list and rating, and the title → IMDb id lookup a source is keyed by. Used under the TMDB API terms, attribution shown under *Settings → About*. |
 | **Stremio's public addons** | `opensubtitles-v3.strem.io` for the subtitle list, and `v3-cinemeta.strem.io` for the one case TMDB can't produce an IMDb id. A guest arrangement, not an agreement: if either stops answering, search reports it and playback carries on. |
 | **YouTube** (`youtube-nocookie.com`) | A title's trailer, in YouTube's own embedded player on its no-cookie domain. |
+| **GitHub** (`api.github.com`) | One request at startup asking whether a newer Ventic has been released — the public releases endpoint, unauthenticated, sending nothing but the request itself. |
 
 `app/utils/torrents.ts` additionally appends a handful of well-known public trackers to magnets
 that carry none, as every torrent client does.
@@ -424,6 +425,29 @@ Grab the latest build from the [Releases page][releases].
 
 First run has no sources and searches nothing. Add one under *Settings → Sources*, or skip that
 entirely and use it as a torrent client — paste a magnet on the Downloads page and it plays.
+
+### Staying up to date
+
+Ventic checks once at startup whether this project has published a newer release, and puts a
+badge in the toolbar when it has. *Settings → About* is where it lands: release notes, and one
+button.
+
+What that button does depends on how you installed it, because replacing files another program
+is keeping track of does more harm than an out-of-date app:
+
+| How you installed it | What the button does |
+| --- | --- |
+| `.AppImage`, `.msi`, `.exe`, `.app`/`.dmg` | Downloads, verifies and installs it, then offers to restart. Windows closes the app to run its installer; Linux and macOS keep running until you restart. |
+| `.deb`, `.rpm`, or a distro package (AUR, Nix, …) | Nothing — those files belong to `apt`, `dnf` or your package manager, and it will offer the new version itself. The panel says so and links to the release. |
+| Android / Android TV | Links to the `.apk`. Android installs updates from the package, and every release is signed with the same key, so it upgrades in place and keeps your library. |
+| Built from source | Nothing to replace. `git pull` and build again. |
+
+Updates are verified against a signing key built into the app, so a bundle that wasn't produced
+by this project's release workflow is refused. The check itself is one request to GitHub's public
+API — no account, nothing about you, and *Not now* stops it mentioning that version again.
+
+> Updating never touches your library: watch state, favourites and settings live in the webview's
+> own storage, which survives an install. *Settings → Account* can still export a backup first.
 
 ### Opening it on macOS
 
@@ -713,8 +737,8 @@ flowchart TD
 app/
   components/      MpvPlayer.vue and the rest of the UI
   pages/           routes — browse, detail, watch, downloads, settings
-  stores/          library, downloads, settings, ui (Pinia)
-  utils/           torrents, subtitles, tmdb, backup, htmlvideo, dpad
+  stores/          library, downloads, settings, ui, updates (Pinia)
+  utils/           torrents, subtitles, tmdb, backup, htmlvideo, dpad, updates
   plugins/         dpad, deep links, drawer swipe
   theme/           MD3 palette generation and the 26 presets
 src-tauri/
@@ -732,6 +756,10 @@ Three notes for anyone changing the Rust side:
   silently never linked. Spell the triples out.
 - `tauri_plugin_single_instance` must be the **first** plugin registered, or a second launch
   won't forward its deep link to the running app.
+- The updater is **not** a plugin every install may use. `can_self_update` refuses anything the
+  tauri bundler didn't package — a `.deb`, an AUR build, a Nix store path — because the plugin's
+  Linux path would otherwise rename the binary away and write over it. Add a bundle type there,
+  not a caller-side check.
 
 </details>
 
@@ -751,6 +779,7 @@ bun run check:subtitles
 bun run check:theme             # contrast of every generated colour pair
 bun run check:swipe
 bun run check:android-downloads
+bun run check:updates           # version ordering, and the GitHub release shape
 ```
 
 `check:torrents` also takes `--live <source-url> <imdb-id>` to search a real source, skipped by

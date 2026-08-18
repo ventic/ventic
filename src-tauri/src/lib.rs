@@ -103,6 +103,55 @@ fn claim_stremio_if_free(app: &tauri::AppHandle) {
 #[cfg(all(desktop, not(target_os = "linux")))]
 fn claim_stremio_if_free(_app: &tauri::AppHandle) {}
 
+/// May this copy replace itself in place, or does something else own the files?
+///
+/// The updater plugin is happy to overwrite whatever the binary sits in, and on
+/// Linux an unrecognised bundle falls through to its AppImage path — so an
+/// `/usr/bin/ventic` from the AUR, a Nix store path or a plain `cargo build`
+/// would be renamed away and written over. That is the failure this answers:
+/// only a bundle *we* produced and that nothing else tracks is ours to swap.
+///
+/// `bundle_type()` is a string the tauri bundler patches into the binary, so it
+/// is `None` for anything the bundler never packaged. Everything the app can be
+/// installed from lands somewhere in here:
+///
+///   - AppImage, .msi, .exe (NSIS), .app — ours, self-contained, one owner.
+///   - .deb, .rpm — dpkg and rpm own those files and hold a hash of each. The
+///     plugin would `pkexec dpkg -i` over the top and desync the package
+///     database; apt and dnf do the same job properly.
+///   - `None` — AUR, Nix, Flatpak, a portable .exe, a dev build. Whoever put it
+///     there updates it.
+///
+/// A store install (chocolatey, winget, scoop) is the one case this cannot see:
+/// it wraps our own NSIS installer, so it reports Nsis and self-updates. That is
+/// harmless — the installer writes the same registry version those tools read
+/// back, so they see an up-to-date app rather than a broken one.
+#[tauri::command]
+fn can_self_update() -> bool {
+	// Android has no updater plugin to call in the first place (the crate has no
+	// implementation there, which is why Cargo.toml gates it off), and an APK is
+	// the package manager's job regardless.
+	#[cfg(any(target_os = "android", target_os = "ios"))]
+	{
+		false
+	}
+
+	#[cfg(not(any(target_os = "android", target_os = "ios")))]
+	{
+		use tauri::utils::config::BundleType;
+		match tauri::utils::platform::bundle_type() {
+			// Dmg and App are the same install — a .app in /Applications, which
+			// the updater swaps whole.
+			Some(BundleType::Msi | BundleType::Nsis | BundleType::App | BundleType::Dmg) => true,
+			// The runtime sets APPIMAGE to the file it mounted, which is the file
+			// the updater has to rewrite. Without it we are running the unpacked
+			// tree out of an extracted AppDir, where there is nothing to replace.
+			Some(BundleType::AppImage) => std::env::var_os("APPIMAGE").is_some(),
+			Some(BundleType::Deb | BundleType::Rpm) | None => false,
+		}
+	}
+}
+
 /// Applies [`unquote_exec`] to the handler entry. Called after every `register`
 /// and `register_all`, both of which rewrite the file with the quotes back on.
 #[tauri::command]
@@ -582,6 +631,13 @@ pub fn run() {
 		}
 	}));
 
+	// In-app updates, desktop only — there is no Android build of either crate.
+	// Whether this copy is actually allowed to use them is `can_self_update`.
+	#[cfg(desktop)]
+	let builder = builder
+		.plugin(tauri_plugin_updater::Builder::new().build())
+		.plugin(tauri_plugin_process::init());
+
 	builder
 		.plugin(tauri_plugin_deep_link::init())
 		.manage(player::PlayerState::default())
@@ -596,7 +652,8 @@ pub fn run() {
 			audio_envelope,
 			thumbnail,
 			deep_link_fix_handler,
-			disk_space
+			disk_space,
+			can_self_update
 		])
 		.setup(|app| {
 			// The installers write the scheme association (registry keys on

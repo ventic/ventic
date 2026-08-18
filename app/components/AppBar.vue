@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import type { SectionKey } from '~/stores/settings'
-import { mdiAccountCircle, mdiArrowLeft, mdiCogOutline, mdiDownload, mdiMagnify, mdiMenu } from '@mdi/js'
+import { mdiAccountCircle, mdiArrowLeft, mdiCogOutline, mdiDownload, mdiMagnify, mdiMenu, mdiUpdate } from '@mdi/js'
 
 const ui = useUiStore()
 const settings = useSettingsStore()
 const downloads = useDownloadsStore()
+const updates = useUpdatesStore()
 const route = useRoute()
 const router = useRouter()
 const { mobile } = useDisplay()
@@ -124,6 +125,24 @@ function open(section: SectionKey) {
          account are desktop-only here: on a phone they move into the drawer,
          the overlay this toolbar can't reach. -->
     <div class="ms-auto flex items-center gap-1 sm:gap-2">
+      <!-- Only here at all when there is something to say, and it goes away for
+           good once the version behind it has been waved off — so it reads as a
+           notification rather than as a permanent part of the toolbar. Shown at
+           every width, unlike settings and account: a phone's drawer is an
+           overlay this row can't reach, and a release is worth a detour. -->
+      <v-badge
+        v-if="updates.available && !updates.dismissed"
+        dot
+        color="primary"
+        offset-x="10"
+        offset-y="10"
+      >
+        <v-btn icon variant="text" color="on-surface" to="/settings" @click="open('about')">
+          <v-icon :icon="mdiUpdate" />
+          <v-tooltip activator="parent" :text="`Ventic ${updates.available.version} is out`" />
+        </v-btn>
+      </v-badge>
+
       <v-badge
         :model-value="!!downloads.active"
         :content="downloads.active"

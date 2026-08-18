@@ -80,7 +80,7 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
 - Logic worth trusting has a `bun run check:*` script beside it
   (`check:dpad`, `check:torrents`, `check:subtitles`, `check:theme`,
   `check:library`, `check:player`, `check:swipe`,
-  `check:perf`, `check:android-downloads`). Add to
+  `check:perf`, `check:android-downloads`, `check:updates`). Add to
   those rather than pulling in a test framework.
 - **Every theme is generated, then contradicted.** `scheme()` in
   `app/theme/palette.ts` turns one colour into the whole MD3 token set with
@@ -150,6 +150,27 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
 - `app/utils/backup.ts` carries every `ventic.` localStorage key by design, so a
   new preference is in the backup the day it's added. A key holding a
   credential must go in its `SECRET` set.
+- **The updater is opt-in per install, and the default is no.** Two separate
+  questions, answered in two places. *Is there a newer one* is
+  `app/utils/updates.ts`: the GitHub API, which every build can reach — the
+  release file the updater itself reads redirects to a host that sends no CORS
+  header at all, so a webview can't fetch it. *May this copy replace itself* is
+  `can_self_update` in `lib.rs`, and it says yes only to a bundle the tauri
+  bundler packaged (AppImage with `$APPIMAGE` set, .msi, NSIS, .app). A `.deb`,
+  an `.rpm`, an AUR or Nix build and a bare `cargo build` all get no — dpkg and
+  rpm hold a hash of every file they own, and an unrecognised bundle falls
+  through the plugin's *AppImage* path, which renames the binary away and writes
+  over it. Everything else in the panel follows from that bool; don't add a
+  platform check beside it.
+- **The AppImage is rewritten after it is signed.**
+  `scripts/build/linux/appimage.ts` strips libwayland and repacks *after*
+  tauri-action has already put a signature for the original file into
+  `latest.json`, so the release ships an artifact the updater refuses. The
+  workflow signs the repacked file again and a separate `updater` job
+  (`scripts/build/linux/appimage-signature.ts`) puts that signature in the
+  manifest — separate because all three desktop runners read-modify-write
+  `latest.json` in parallel, and a patch from inside the Linux job loses the
+  race. Touch either script and check the other still matches.
 - Cargo resolves `[target.'cfg(…)'.dependencies]` against the **target triple
   only**. Tauri's `desktop`/`mobile` cfgs are emitted by `tauri-build` and work
   in `#[cfg(…)]` but not there — a dep gated on `cfg(desktop)` is silently never

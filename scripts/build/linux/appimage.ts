@@ -82,6 +82,33 @@ function unbundleWayland() {
     die(`Repacking ${image} without ${dropped.join(', ')} failed.`)
 
   console.log(`\n✓ ${image} repacked without ${dropped.join(', ')}\n`)
+  resign(join(DIR, image))
+}
+
+/**
+ * Sign the AppImage again, because the repack above just invalidated the
+ * signature the bundler made — it signed the file as it was seconds earlier,
+ * and `latest.json` names *that*. Left alone, the updater downloads the
+ * AppImage that shipped, checks it against a signature for a file that no
+ * longer exists, and refuses to install it. No Linux user would ever get an
+ * update, and nothing about the release would look wrong.
+ *
+ * Whoever rewrites the file is who owes it a new signature, so it happens here
+ * rather than in either caller. With no key in the environment there was no
+ * signature to invalidate either, and this is a no-op.
+ *
+ * Putting the new signature into `latest.json` is a separate job on the release
+ * — see scripts/build/linux/appimage-signature.ts for why it can't be done here.
+ */
+function resign(image: string) {
+  if (!process.env.TAURI_SIGNING_PRIVATE_KEY)
+    return
+
+  const signed = spawnSync('bun', ['run', 'tauri', 'signer', 'sign', image], { stdio: 'inherit' })
+  if (signed.status !== 0)
+    die(`Repacked ${image}, but could not sign it — the release would ship a signature for the file it replaced.`)
+
+  console.log(`\n✓ ${image}.sig now covers the repacked file\n`)
 }
 
 // Called unconditionally by the build script; only Linux has an AppImage.
