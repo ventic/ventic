@@ -101,6 +101,10 @@ jobs:
           # NSIS: it is per-user, so `installMode: passive` can run it without a
           # UAC prompt, where the .msi needs admin for a machine-wide install.
           updaterJsonPreferNsis: true
+          # latest.json carries every signature inline, and that is the only copy
+          # the updater ever reads — so a .sig beside each bundle is six more
+          # files on the download page answering a question nobody asked.
+          uploadUpdaterSignatures: false
 
       # tauri-action drives the bundler itself, so scripts/build/index.ts — and
       # the AppImage repack it ends with — never runs here. Do it to the bundle
@@ -122,12 +126,20 @@ jobs:
           bun scripts/build/linux/appimage.ts
           gh release upload "${{ github.ref_name }}" \
             src-tauri/target/release/bundle/appimage/*.AppImage --clobber
-          if [ -n "$TAURI_SIGNING_PRIVATE_KEY" ]; then
-            gh release upload "${{ github.ref_name }}" \
-              src-tauri/target/release/bundle/appimage/*.AppImage.sig --clobber
-          else
+          if [ -z "$TAURI_SIGNING_PRIVATE_KEY" ]; then
             echo "::warning::No TAURI_SIGNING_PRIVATE_KEY secret — this release ships without in-app updates. The app will point people at the release page instead."
           fi
+
+      # Hand that signature to the `updater` job. A workflow artifact rather than
+      # a release asset: it is plumbing between two jobs, and the release page is
+      # not the place to park it. Missing when there was no key to sign with,
+      # which is a release without in-app updates rather than a failure.
+      - if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: appimage-signature
+          path: src-tauri/target/release/bundle/appimage/*.AppImage.sig
+          if-no-files-found: ignore
 
       # The runner has Homebrew, so a .dmg that still depends on it looks fine
       # here and fails on every other Mac. Fail the release instead.
@@ -143,9 +155,16 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
+      # Absent when the Linux job had no signing key, so this must not fail the
+      # release — the script skips on a signature that isn't there.
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: appimage-signature
+          path: appimage-signature
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bun scripts/build/linux/appimage-signature.ts "${{ github.ref_name }}"
+        run: bun scripts/build/linux/appimage-signature.ts "${{ github.ref_name }}" appimage-signature/*.AppImage.sig
 
   android:
     # The draft release has to exist before there is anything to upload to.

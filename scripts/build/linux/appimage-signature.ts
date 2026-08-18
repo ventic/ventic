@@ -12,9 +12,11 @@
  * Nobody on Linux would ever get an update, and nothing about the release would
  * look wrong.
  *
- * So the workflow signs the AppImage *again* after the repack, uploads that
- * `.sig` beside it, and this puts it in the manifest. A few kilobytes each way —
- * the AppImage itself is never fetched.
+ * So the workflow signs the AppImage *again* after the repack, hands that `.sig`
+ * over as a workflow artifact, and this puts it in the manifest. The AppImage
+ * itself is never fetched, and nothing lands on the release but the manifest —
+ * `latest.json` carries every signature inline, which is the only copy the
+ * updater reads, so a `.sig` asset beside each bundle would be pure clutter.
  *
  * It runs as its own job, after every platform's build. `latest.json` is
  * read-modify-written by all three of them in parallel, each merging its own
@@ -27,7 +29,7 @@
  * in-app updates, not a broken one.
  */
 import { spawnSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -44,9 +46,9 @@ interface Manifest {
   platforms?: Record<string, { signature?: string, url?: string }>
 }
 
-const tag = process.argv[2]
-if (!tag) {
-  console.error('Usage: bun scripts/build/linux/appimage-signature.ts <tag>')
+const [tag, sigPath] = process.argv.slice(2)
+if (!tag || !sigPath) {
+  console.error('Usage: bun scripts/build/linux/appimage-signature.ts <tag> <path/to/x.AppImage.sig>')
   process.exit(1)
 }
 
@@ -65,6 +67,11 @@ function skip(why: string): never {
   process.exit(0)
 }
 
+// An unexpanded glob lands here as its own literal path when the artifact was
+// never produced, which is the no-signing-key build.
+if (!existsSync(sigPath))
+  skip(`there is no ${sigPath}, so the AppImage was never signed`)
+
 // Ask what the release holds before downloading anything, so "the release is a
 // draft gh can't see" fails loudly here instead of arriving further down as a
 // missing file and being mistaken for an unsigned build.
@@ -75,16 +82,12 @@ const assets = (JSON.parse(gh(['release', 'view', tag, '--json', 'assets'])) as 
 if (!assets.includes('latest.json'))
   skip('the release carries none, so this build was not signed')
 
-const sigAsset = assets.find(name => name.endsWith('.AppImage.sig'))
-if (!sigAsset)
-  skip('no .AppImage.sig on the release — see the "Re-sign" step in the workflow')
-
 const dir = mkdtempSync(join(tmpdir(), 'ventic-updater-'))
-// Both are a few kilobytes. The AppImage they describe is never fetched.
-gh(['release', 'download', tag, '--dir', dir, '--pattern', 'latest.json', '--pattern', sigAsset])
+// A few kilobytes. The AppImage it describes is never fetched.
+gh(['release', 'download', tag, '--dir', dir, '--pattern', 'latest.json'])
 
 const manifestPath = join(dir, 'latest.json')
-const signature = readFileSync(join(dir, sigAsset), 'utf8').trim()
+const signature = readFileSync(sigPath, 'utf8').trim()
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as Manifest
 const platforms = manifest.platforms ?? {}
 
