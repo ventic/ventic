@@ -4,7 +4,7 @@
 import type { KeyStore } from '../app/utils/backup'
 import assert from 'node:assert'
 import { applyBackup, backupSummary, makeBackup, readBackup } from '../app/utils/backup'
-import { continuing, finished, fraction, nextEpisode, parseKey, placeholder, playedTitles, progressKey, remainingText, resumable, showEntries, slim, UNKNOWN_TITLE } from '../app/utils/library'
+import { continuing, finished, fraction, nextEpisode, parseKey, placeholder, playedTitles, progressKey, remainingText, resumable, showEntries, slim, UNKNOWN_TITLE, watchedInSeason } from '../app/utils/library'
 import { mediaLink } from '../app/utils/tmdb'
 
 const HOUR = 3600
@@ -130,6 +130,18 @@ assert.deepEqual(
   ['tv:1396:2:1', 'tv:1396:1:2', 'tv:1396:1:1'],
   'same millisecond: the latest episode still comes first',
 )
+
+// --- Season progress ----------------------------------------------------------
+// The bar and the tick under a season card. Only watched episodes count: the
+// one left part-way through is not one of them.
+
+assert.equal(watchedInSeason(stored, 1396, 2), 1, 'S2E2 is watched, S2E3 was only started')
+assert.equal(watchedInSeason(stored, 1396, 1), 0, 'nothing of season 1')
+assert.equal(watchedInSeason(batch, 1396, 1), 2)
+// `tv:1396:1:` must not match `tv:1396:10:` — the trailing colon is the whole
+// defence, and getting it wrong marks a season card watched off another season.
+assert.equal(watchedInSeason({ 'tv:1396:10:1': entry(0, 0, 1, true) }, 1396, 1), 0)
+assert.equal(watchedInSeason({ 'tv:1396:10:1': entry(0, 0, 1, true) }, 1396, 10), 1)
 
 assert.deepEqual(
   continuing(stored).map(e => e.key),

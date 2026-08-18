@@ -232,15 +232,18 @@ const playLabel = computed(() => [
       </section>
 
       <div class="flex flex-col gap-8">
-        <cast-row v-if="media?.cast.length" title="Cast" :people="media.cast" />
-
+        <!-- Above the cast: on a show this row is what the page is for — the
+             way to the next episode — and the cast is something you read. -->
         <media-seasons
           v-if="type === 'tv' && media?.seasons.length"
           :key="id"
           :show-id="id"
           :seasons="media.seasons"
           :poster="media.poster"
+          :show="media"
         />
+
+        <cast-row v-if="media?.cast.length" title="Cast" :people="media.cast" />
 
         <media-slider
           v-if="status !== 'pending'"

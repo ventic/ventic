@@ -56,6 +56,11 @@ export const useLibraryStore = defineStore('library', () => {
     return progress.value[progressKey('tv', showId, season, episode)]
   }
 
+  /** Watched episodes of one season — the bar and the tick on a season card. */
+  function seasonWatched(showId: number | string, season: number) {
+    return watchedInSeason(progress.value, showId, season)
+  }
+
   /** The episode a show should pick up from, before the next-episode rollover. */
   function lastEpisode(showId: number | string) {
     const entry = showEntries(progress.value, showId)[0]
@@ -197,6 +202,16 @@ export const useLibraryStore = defineStore('library', () => {
     }
   }
 
+  /**
+   * A whole season at once, from the season card. The episode count comes from
+   * TMDB's season list, so nothing has to fetch the season to mark it — and the
+   * one-per-episode keys are the same ones an episode row writes.
+   */
+  function markSeason(m: Media | Pick<Media, 'id' | 'type'>, season: number, episodes: number, watched: boolean) {
+    for (let n = 1; n <= episodes; n++)
+      setWatched(m, watched, season, n)
+  }
+
   function toggleWatched(m: Media | Pick<Media, 'id' | 'type'>, season = 0, episode = 0) {
     const key = progressKey(m.type, m.id, season, episode)
     setWatched(m, !progress.value[key]?.watched, season, episode)
@@ -235,6 +250,7 @@ export const useLibraryStore = defineStore('library', () => {
     favouriteList,
     watchlistItems,
     episodeProgress,
+    seasonWatched,
     lastEpisode,
     cardProgress,
     cardLabel,
@@ -246,6 +262,7 @@ export const useLibraryStore = defineStore('library', () => {
     record,
     finish,
     setWatched,
+    markSeason,
     toggleWatched,
     toggleFavourite,
     toggleWatchlist,

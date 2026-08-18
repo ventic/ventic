@@ -126,6 +126,16 @@ export function showEntries(progress: Record<string, Progress>, showId: number |
 }
 
 /**
+ * How many episodes of one season are marked watched — what a season card's bar
+ * measures. Counted off the keys because the store keeps one flat map; the
+ * trailing colon is what keeps season 1 out of season 10.
+ */
+export function watchedInSeason(progress: Record<string, Progress>, showId: number | string, season: number) {
+  const prefix = `tv:${showId}:${season}:`
+  return Object.entries(progress).filter(([key, p]) => key.startsWith(prefix) && p.watched).length
+}
+
+/**
  * What "Continue watching" lists: everything part-way through, newest first,
  * and only one card per title — being six episodes into a show is one thing to
  * carry on with, not six.
