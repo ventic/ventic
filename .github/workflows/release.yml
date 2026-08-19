@@ -234,4 +234,9 @@ jobs:
         run: |
           apk=src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk
           mv "$apk" "Ventic_${GITHUB_REF_NAME#v}.apk"
-          gh release upload "$GITHUB_REF_NAME" "Ventic_${GITHUB_REF_NAME#v}.apk" --clobber
+          # The same file twice: the versioned name for the releases page, and an
+          # unversioned copy so `releases/latest/download/Ventic.apk` resolves. That
+          # URL is what ventic.tv/apk redirects to and what a television's Downloader
+          # app fetches, and it only works if the name never carries the version.
+          cp "Ventic_${GITHUB_REF_NAME#v}.apk" Ventic.apk
+          gh release upload "$GITHUB_REF_NAME" "Ventic_${GITHUB_REF_NAME#v}.apk" Ventic.apk --clobber
