@@ -5,7 +5,9 @@ export default antfu({
   vue: true,
   typescript: true,
   // The Rust/Tauri side owns its own formatting (rustfmt, generated schemas).
-  ignores: ['src-tauri/**'],
+  // boot-diagnostics.js is deliberately ES5 and deliberately unbundled — every
+  // modern rule here is one it has to break to do its job.
+  ignores: ['src-tauri/**', 'app/boot-diagnostics.js'],
 }, {
   files: ['**/*.vue'],
   rules: {

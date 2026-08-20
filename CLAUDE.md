@@ -79,7 +79,7 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   the title silently loses its offline copy.
 - Logic worth trusting has a `bun run check:*` script beside it
   (`check:dpad`, `check:torrents`, `check:subtitles`, `check:theme`,
-  `check:library`, `check:player`, `check:swipe`,
+  `check:library`, `check:player`, `check:swipe`, `check:boot`,
   `check:perf`, `check:android-downloads`, `check:updates`). Add to
   those rather than pulling in a test framework.
 - **Every theme is generated, then contradicted.** `scheme()` in
@@ -177,6 +177,16 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   linked. Spell the triples out (see `tauri-plugin-single-instance`).
 - `tauri_plugin_single_instance` must be the **first** plugin registered, or a
   second launch won't forward its deep link to the running app.
+- **A white screen is a bug report with nothing in it.** The bundle is built for
+  Chrome 111 (Vite's default target, and Vuetify calls `Array.prototype.toSorted`
+  besides), so a webview older than that can't parse it — and a script that never
+  parses paints nothing, leaving the activity window behind the transparent
+  webview. `app/boot-diagnostics.js` is inlined into the head by `nuxt.config.ts`
+  to answer that: it is ES5 with no bundler anywhere near it *because* it has to
+  run where the app couldn't, and it takes the screen only when `#__nuxt` is
+  still empty. Every error also lands on `window.__venticBoot` for adb and
+  devtools. Keep `NEEDS` in it honest if the build target ever moves.
+
 - `app/utils/*` and `app/composables/*` are auto-imported; so are Vuetify
   components and the Tauri wrappers in `app/modules/tauri.ts`.
 - Comments explain *why*, not what. Match that.

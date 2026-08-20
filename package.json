@@ -14,6 +14,7 @@
     "lint": "eslint . --fix",
     "logo": "tauri icon public/logo.svg && cp src-tauri/icons/icon.png public/logo.png",
     "check:android-downloads": "bun scripts/check-android-downloads.ts",
+    "check:boot": "bun scripts/check-boot.ts",
     "check:dpad": "bun scripts/check-dpad.ts",
     "check:library": "bun scripts/check-library.ts",
     "check:perf": "bun scripts/check-perf.ts",

@@ -1,7 +1,17 @@
+import { readFileSync } from 'node:fs'
 import process from 'node:process'
+import { version } from './package.json'
 import vuetifyConfig from './vuetify.config'
 
 const host = process.env.TAURI_DEV_HOST
+
+/**
+ * Inlined rather than imported, because it has to run on a webview that
+ * couldn't parse the bundle — see app/boot-diagnostics.js. A separate file
+ * would be one more request that can fail on the way to explaining a failure.
+ */
+const bootDiagnostics = readFileSync(new URL('app/boot-diagnostics.js', import.meta.url), 'utf8')
+  .replace('__VERSION__', version)
 
 export default defineNuxtConfig({
   compatibilityDate: '2026-01-01',
@@ -39,6 +49,9 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'icon', href: '/logo.svg' },
+      ],
+      script: [
+        { innerHTML: bootDiagnostics },
       ],
     },
   },
