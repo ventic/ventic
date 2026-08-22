@@ -681,22 +681,36 @@ pub fn run() {
 
 			#[cfg(desktop)]
 			{
-				let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-				let menu = Menu::with_items(app, &[&quit_i])?;
+				// libappindicator is dlopen'd, and its loader *panics* rather
+				// than returning an error when no appindicator library is
+				// installed — a Flatpak's runtime carries none, and neither does
+				// a minimal desktop. The tray is one Quit item; it is not worth
+				// taking the whole app down with it, so the panic is caught here
+				// rather than left to kill setup.
+				let tray = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+					let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+					let menu = Menu::with_items(app, &[&quit_i])?;
 
-				let _tray = TrayIconBuilder::new()
-					.menu(&menu)
-					.show_menu_on_left_click(true)
-					.icon(app.default_window_icon().unwrap().clone())
-					.on_menu_event(|app, event| match event.id.as_ref() {
-						"quit" => {
-							app.exit(0);
-						}
-						other => {
-							println!("menu item {} not handled", other);
-						}
-					})
-					.build(app)?;
+					TrayIconBuilder::new()
+						.menu(&menu)
+						.show_menu_on_left_click(true)
+						.icon(app.default_window_icon().unwrap().clone())
+						.on_menu_event(|app, event| match event.id.as_ref() {
+							"quit" => {
+								app.exit(0);
+							}
+							other => {
+								println!("menu item {} not handled", other);
+							}
+						})
+						.build(app)
+				}));
+
+				match tray {
+					Ok(Ok(_)) => {}
+					Ok(Err(e)) => eprintln!("[ventic] no tray icon: {e}"),
+					Err(_) => eprintln!("[ventic] no tray icon: no appindicator library here"),
+				}
 			}
 
 			// Where finished/partial torrent data lives on disk, and next to it
