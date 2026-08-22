@@ -16,6 +16,7 @@ export interface TmdbItem {
   vote_average?: number
   vote_count?: number
   genre_ids?: number[]
+  original_language?: string
 }
 
 export interface TmdbPage<T = TmdbItem> {
@@ -30,6 +31,9 @@ export interface Genre {
   name: string
 }
 
+/** TMDB's Animation genre, in both the movie and tv lists. */
+export const ANIMATION = 16
+
 /** Everything the UI renders, with movie/tv field differences already flattened. */
 export interface Media {
   id: number
@@ -42,6 +46,11 @@ export interface Media {
   overview: string
   rating: number
   genreIds: number[]
+  /**
+   * ISO 639-1 original language. Optional because a card snapshot stored before
+   * it was kept has none — see `kindOf` for what stands in there.
+   */
+  lang?: string
 }
 
 export function tmdb<T>(path: string, params?: Record<string, unknown>) {
@@ -171,6 +180,7 @@ export function toMedia(item: TmdbItem, type?: MediaType): Media | null {
     overview: item.overview ?? '',
     rating: item.vote_average ?? 0,
     genreIds: item.genre_ids ?? [],
+    lang: item.original_language ?? '',
   }
 }
 

@@ -46,7 +46,9 @@ export const useLibraryStore = defineStore('library', () => {
       return
     const key = titleKey(m.type, m.id)
     const known = media.value[key]
-    if (known?.title !== m.title || known?.poster !== m.poster)
+    // The language clause backfills snapshots stored before it was kept — it is
+    // what tells an anime apart from any other cartoon (see `kindOf`).
+    if (known?.title !== m.title || known?.poster !== m.poster || (!known?.lang && m.lang))
       media.value[key] = slim(m)
   }
 

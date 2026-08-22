@@ -3,7 +3,7 @@
 // (stores/library.ts) is the reactive localStorage wrapper around them.
 import type { Media, MediaType } from './tmdb'
 // Explicit, not auto-imported: the check script loads this file outside Nuxt.
-import { runtimeText } from './tmdb'
+import { ANIMATION, runtimeText } from './tmdb'
 
 /**
  * Seconds of a file that count as "seen it". Plex's number, and it holds up:
@@ -190,6 +190,7 @@ export function placeholder(key: string): Media {
     overview: '',
     rating: 0,
     genreIds: [],
+    lang: '',
   }
 }
 
@@ -216,5 +217,58 @@ export function slim(m: Media): Media {
     overview: m.overview,
     rating: m.rating,
     genreIds: m.genreIds,
+    lang: m.lang,
   }
+}
+
+// --- Narrowing a library page ------------------------------------------------
+
+/** The buckets the app's own navigation already splits titles into. */
+export type LibraryKind = 'all' | 'movie' | 'tv' | 'anime'
+export type LibrarySort = 'recent' | 'title' | 'year' | 'rating'
+
+export interface LibraryView {
+  query: string
+  kind: LibraryKind
+  sort: LibrarySort
+  /** Flips whatever order `sort` picked; each one already leads with its useful end. */
+  reverse: boolean
+}
+
+/**
+ * Which of the three nav pages a title belongs on. Animation + Japanese is the
+ * pair the Anime page asks TMDB for, and it is exclusive here for the same
+ * reason it is there: an anime film is on the Anime page, not the Movies one.
+ *
+ * ponytail: a snapshot saved before `lang` was kept has none, so the genre
+ * alone stands in and over-counts western animation until `remember` backfills
+ * it. Drop the fallback once no library predates the field.
+ */
+export function kindOf(m: Media): Exclude<LibraryKind, 'all'> {
+  return m.genreIds.includes(ANIMATION) && (m.lang ?? 'ja') === 'ja' ? 'anime' : m.type
+}
+
+function rank(m: Media, sort: LibrarySort) {
+  return sort === 'year' ? Number(m.year) || 0 : m.rating
+}
+
+/**
+ * What Favourites, the Watchlist and History actually render: the list the store
+ * hands over, narrowed and reordered. Pure, so `check:library` holds the rules.
+ */
+export function arrange(items: Media[], view: LibraryView) {
+  const q = view.query.trim().toLowerCase()
+  // filter() already copies, so the sort below is not the caller's array.
+  const shown = items.filter(m =>
+    (view.kind === 'all' || kindOf(m) === view.kind)
+    && (!q || m.title.toLowerCase().includes(q)))
+
+  // 'recent' is the order the store keeps them in — newest first, either by
+  // when it was added or by when it was last played.
+  if (view.sort === 'title')
+    shown.sort((a, b) => a.title.localeCompare(b.title))
+  else if (view.sort !== 'recent')
+    shown.sort((a, b) => rank(b, view.sort) - rank(a, view.sort))
+
+  return view.reverse ? shown.reverse() : shown
 }

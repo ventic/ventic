@@ -12,9 +12,6 @@ const { lgAndUp } = useDisplay()
 
 const isMovie = props.type === 'movie'
 
-/** TMDB's Animation genre, in both the movie and tv lists. */
-const ANIMATION = 16
-
 const categories = [
   { value: 'popular', title: 'Popular' },
   // /trending takes no filters at all, so it can't be narrowed to anime.
@@ -86,9 +83,9 @@ const { items, pending, error, done, loadMore } = useMediaFeed(request)
       <!-- Chips only from lg up, where the row has room for five of them beside
            the genre filter, poster slider and layout toggle. Below that — a
            phone, or a desktop window in the md–lg band — they'd crowd those
-           controls off the bar, so the category collapses to a dropdown. The
-           filters still go inline down to md (the sheet is OptionsBar's own
-           `mobile` call); only the category swaps earlier. -->
+           controls off the bar, so the category collapses to a dropdown. It
+           stays on the bar either way; the genre filter beside it is the one
+           that goes behind the button once OptionsBar runs out of room. -->
       <v-chip-group
         v-if="lgAndUp"
         v-model="category"
@@ -112,8 +109,8 @@ const { items, pending, error, done, loadMore } = useMediaFeed(request)
         class="max-w-52 shrink-0 md:w-52 md:max-w-none"
       />
 
-      <!-- Inline on a wide window, in a bottom sheet on a phone. The `md:`
-           widths are the bar's; in the sheet each one takes the full row. -->
+      <!-- Inline while the row can hold it, in a bottom sheet when it can't.
+           The `md:` widths are the bar's; in the sheet it takes the full row. -->
       <template #filters>
         <v-select
           v-model="genre"
@@ -122,7 +119,7 @@ const { items, pending, error, done, loadMore } = useMediaFeed(request)
           item-value="id"
           label="Genre"
           clearable
-          class="w-full shrink-0 grow-0 md:w-52"
+          class="w-52 shrink-0"
         />
       </template>
     </options-bar>

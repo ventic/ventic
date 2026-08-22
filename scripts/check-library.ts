@@ -1,10 +1,11 @@
+import type { KeyStore } from '../app/utils/backup'
 // Self-check for the watch-state rules: `bun scripts/check-library.ts`.
 // These decide whether something is marked watched and which episode comes up
 // next — get them wrong and the app either forgets what you saw or skips it.
-import type { KeyStore } from '../app/utils/backup'
+import type { Media } from '../app/utils/tmdb'
 import assert from 'node:assert'
 import { applyBackup, backupSummary, makeBackup, readBackup } from '../app/utils/backup'
-import { continuing, finished, fraction, nextEpisode, parseKey, placeholder, playedTitles, progressKey, remainingText, resumable, showEntries, slim, UNKNOWN_TITLE, watchedInSeason } from '../app/utils/library'
+import { arrange, continuing, finished, fraction, kindOf, nextEpisode, parseKey, placeholder, playedTitles, progressKey, remainingText, resumable, showEntries, slim, UNKNOWN_TITLE, watchedInSeason } from '../app/utils/library'
 import { mediaLink } from '../app/utils/tmdb'
 
 const HOUR = 3600
@@ -179,6 +180,7 @@ const detail = {
   overview: 'x',
   rating: 8.9,
   genreIds: [18],
+  lang: 'en',
   cast: Array.from({ length: 20 }, (_, i) => ({ id: i })),
   seasons: [{ number: 1 }],
 }
@@ -186,6 +188,7 @@ assert.deepEqual(Object.keys(slim(detail as never)).sort(), [
   'backdrop',
   'genreIds',
   'id',
+  'lang',
   'overview',
   'poster',
   'rating',
@@ -282,5 +285,68 @@ for (const [text, why] of [
   ['{"app":"ventic","version":1,"keys":{}}', 'nothing to restore'],
 ] as const)
   assert.throws(() => readBackup(text), Error, why)
+
+// --- Narrowing a library page --------------------------------------------------
+// The three library pages are one component over `arrange`, so these rules are
+// the whole of what Favourites, the Watchlist and History show.
+
+function card(id: number, over: Partial<Media> = {}): Media {
+  return {
+    id,
+    type: 'movie',
+    title: `Film ${id}`,
+    year: '2000',
+    poster: null,
+    backdrop: null,
+    overview: '',
+    rating: 5,
+    genreIds: [],
+    lang: 'en',
+    ...over,
+  }
+}
+
+const ANIME = card(1, { title: 'Akira', genreIds: [16], lang: 'ja' })
+const PIXAR = card(2, { title: 'Up', genreIds: [16], lang: 'en' })
+const SHOW = card(3, { type: 'tv', title: 'Breaking Bad' })
+const FILM = card(4, { title: 'Heat' })
+// A snapshot from before `lang` was stored: the genre is all there is to go on.
+const LEGACY = { ...card(5, { title: 'Ghost in the Shell', genreIds: [16] }), lang: undefined }
+
+assert.equal(kindOf(ANIME), 'anime')
+assert.equal(kindOf(PIXAR), 'movie', 'animated is not anime — western animation stays a film')
+assert.equal(kindOf(SHOW), 'tv')
+assert.equal(kindOf(FILM), 'movie')
+assert.equal(kindOf(LEGACY), 'anime', 'no language recorded: the genre stands in')
+assert.equal(kindOf(placeholder('tv:1396')), 'tv', 'a card with nothing on it still lands somewhere')
+
+const all = [ANIME, PIXAR, SHOW, FILM]
+const view = { query: '', kind: 'all', sort: 'recent', reverse: false } as const
+
+assert.deepEqual(arrange(all, view), all, 'untouched: the store\'s own order, newest first')
+assert.deepEqual(arrange(all, { ...view, reverse: true }).map(m => m.id), [4, 3, 2, 1])
+assert.notEqual(arrange(all, view), all, 'never sorts the caller\'s array in place')
+
+assert.deepEqual(arrange(all, { ...view, kind: 'anime' }), [ANIME])
+assert.deepEqual(arrange(all, { ...view, kind: 'movie' }), [PIXAR, FILM], 'an anime film is on the Anime page, not this one')
+assert.deepEqual(arrange(all, { ...view, kind: 'tv' }), [SHOW])
+
+assert.deepEqual(arrange(all, { ...view, query: 'hea' }).map(m => m.id), [4], 'case-insensitive, and matches inside the title')
+assert.deepEqual(arrange(all, { ...view, query: '  BREAKING ' }).map(m => m.id), [3], 'trimmed')
+assert.deepEqual(arrange(all, { ...view, query: 'nothing at all' }), [])
+// Both narrow at once, or the search box would quietly widen the chosen bucket.
+assert.deepEqual(arrange(all, { ...view, kind: 'tv', query: 'akira' }), [])
+
+const mixed = [
+  card(10, { title: 'Zulu', year: '1964', rating: 7.4 }),
+  card(11, { title: 'alien', year: '1979', rating: 8.2 }),
+  card(12, { title: 'Mad Max', year: '2015', rating: 8.1 }),
+]
+assert.deepEqual(arrange(mixed, { ...view, sort: 'title' }).map(m => m.id), [11, 12, 10], 'A–Z, and case does not split the list')
+assert.deepEqual(arrange(mixed, { ...view, sort: 'title', reverse: true }).map(m => m.id), [10, 12, 11])
+assert.deepEqual(arrange(mixed, { ...view, sort: 'year' }).map(m => m.id), [12, 11, 10], 'newest first')
+assert.deepEqual(arrange(mixed, { ...view, sort: 'rating' }).map(m => m.id), [11, 12, 10], 'best first')
+// A title TMDB has no release date for sorts last rather than to the top.
+assert.deepEqual(arrange([...mixed, card(13, { year: '' })], { ...view, sort: 'year' }).map(m => m.id), [12, 11, 10, 13])
 
 console.log('check-library: ok')
