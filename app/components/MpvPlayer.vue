@@ -289,7 +289,11 @@ const subDelay = ref(0)
 /** mpv's `sub-speed`. Only auto-sync ever moves it off 1. */
 const subSpeed = ref(1)
 const syncing = ref(false)
+/** The slow second pass is running: the whole film rather than what just played. */
+const syncWide = ref(false)
 const syncNote = ref('')
+/** The best fit of a pass that wasn't sure enough to apply itself. */
+const guess = ref<Sync | null>(null)
 let subsFetched = false
 /** Set once mpv has the file open, which is when tracks and a duration exist. */
 let loaded = false
@@ -519,6 +523,7 @@ async function loadFile(file: Subtitle, lang: SubtitleLanguage) {
   setDelay(0) // another file, its own timing
   setSubSpeed(1)
   syncNote.value = ''
+  guess.value = null
   await refreshTracks()
   osd(`Subtitles: ${lang.name}`)
 }
@@ -607,13 +612,17 @@ async function applyPreferredSub() {
  * all — `audio_envelope` shells out to ffmpeg, which Android has no way to run.
  */
 const syncable = computed(() => native && !!probed(activeUrl.value)?.cues.length)
-const delayText = computed(() => `${subDelay.value > 0 ? '+' : ''}${subDelay.value.toFixed(1)}s`)
+// Two decimals, trailing zero trimmed: the fit lands well inside a tenth of a
+// second and rounding the display to one would show "+0.0s" for a real shift.
+const seconds = (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(2).replace(/0$/, '')}s`
+const delayText = computed(() => seconds(subDelay.value))
+const guessText = computed(() => seconds(guess.value?.offset ?? 0))
 
-/** As much audio as the fit wants. Longer is better and 20 minutes is plenty. */
+/** The first look. Cheap to read, and enough for most files. */
 const SYNC_WINDOW = 1200
 
 function setDelay(seconds: number) {
-  subDelay.value = Math.round(seconds * 10) / 10
+  subDelay.value = Math.round(seconds * 100) / 100
   ipc(['set_property', 'sub-delay', subDelay.value])
 }
 
@@ -624,9 +633,61 @@ function setSubSpeed(rate: number) {
 }
 
 function nudgeDelay(delta: number) {
-  setDelay(subDelay.value + delta)
+  // Back onto the tenth-of-a-second grid: a fit leaves the delay somewhere in
+  // between, and stepping from 0.14 to 0.24 reads like a stuck button.
+  setDelay(Math.round((subDelay.value + delta) * 10) / 10)
   syncNote.value = ''
+  guess.value = null
   osd(`Subtitle delay ${delayText.value}`)
+}
+
+/**
+ * The audio behind `span` seconds of playback, clipped to what is on disk. The
+ * bytes just played are certainly there; ffmpeg reading ahead of the download
+ * pulls pieces away from it, or blocks on ones that never come. `onDisk` is what
+ * answers that, and a plain url is always ready.
+ */
+async function playedSpan(span: number) {
+  const from = Math.max(0, Math.min(position.value - span, (duration.value || span) - span))
+  const ahead = from + span
+  const to = ahead > position.value && !await onDisk(ahead) ? position.value : ahead
+  return { from, to, length: to - from }
+}
+
+async function fitOver(cues: Cue[], from: number, to: number) {
+  const envelope = await invoke<number[]>('audio_envelope', {
+    url: props.src,
+    start: from,
+    duration: to - from,
+  })
+  return bestSync(cues, Float32Array.from(envelope), from)
+}
+
+/**
+ * Both numbers are absolute — the fit is measured from the file's own
+ * timestamps — so this replaces a delay set by hand rather than adding to it.
+ */
+function applyFit(fit: Sync) {
+  const was = subDelay.value
+  const wasSpeed = subSpeed.value
+  setDelay(fit.offset)
+  setSubSpeed(fit.speed)
+  guess.value = null
+  const moved = Math.abs(subDelay.value - was) >= 0.05 || fit.speed !== wasSpeed
+
+  if (fit.speed !== 1) {
+    // A rate error is global, so this one holds for the whole film rather than
+    // just the scene it was measured on.
+    syncNote.value = `This file was cut for a different framerate — stretched to fit, delay ${delayText.value}.`
+    osd(`Subtitles synced (${delayText.value}, rate fixed)`, 2500)
+  }
+  else if (!moved) {
+    syncNote.value = `Already in sync at ${delayText.value}.`
+  }
+  else {
+    syncNote.value = `Delay set to ${delayText.value}.`
+    osd(`Subtitles synced (${delayText.value})`, 2000)
+  }
 }
 
 async function autoSync() {
@@ -635,57 +696,49 @@ async function autoSync() {
     return
   syncing.value = true
   syncNote.value = ''
+  guess.value = null
   try {
-    // The twenty minutes just played: those bytes are certainly on disk, so
-    // ffmpeg reads them without pulling pieces away from the download ahead.
-    // Early on there aren't twenty minutes behind us, so the window borrows from
-    // in front — but only as far as the download has actually reached, which is
-    // what `onDisk` answers.
-    const span = Math.min(SYNC_WINDOW, duration.value || SYNC_WINDOW)
-    const from = Math.max(0, Math.min(position.value - span, (duration.value || span) - span))
-    const ahead = from + span
-    const to = ahead > position.value && !await onDisk(ahead) ? position.value : ahead
+    const near = await playedSpan(Math.min(SYNC_WINDOW, duration.value || SYNC_WINDOW))
+    let fit = near.length >= SYNC_MIN_WINDOW ? await fitOver(file.cues, near.from, near.to) : null
 
-    if (to - from < SYNC_MIN_WINDOW) {
+    // Twenty minutes of an old, quiet or sparsely-spoken film can honestly mean
+    // anything — and the rest of the film is more of the same signal, which is
+    // exactly what a weak one needs. Reading the lot is a few seconds of ffmpeg
+    // on a normal encode and half a second of arithmetic — a minute of I/O on a
+    // 4K remux, which is why it waits for the cheap look to fail first, and only
+    // ever covers what the download has actually reached.
+    if (!fit || !synced(fit)) {
+      const all = await playedSpan(duration.value || SYNC_WINDOW)
+      if (all.length >= SYNC_MIN_WINDOW && all.length > near.length + 60) {
+        syncWide.value = true
+        const wide = await fitOver(file.cues, all.from, all.to)
+        if (!fit || wide.confidence > fit.confidence)
+          fit = wide
+      }
+    }
+
+    if (!fit) {
       syncNote.value = `Not enough has played yet — auto-sync needs about ${Math.round(SYNC_MIN_WINDOW / 60)} minutes of audio to be sure. Nudge the delay for now.`
       return
     }
 
-    const envelope = await invoke<number[]>('audio_envelope', {
-      url: props.src,
-      start: from,
-      duration: to - from,
-    })
-
-    const fit = bestSync(file.cues, Float32Array.from(envelope), from)
     if (!synced(fit)) {
-      // A confident wrong answer is worse than none: the old fit would happily
-      // shift by a minute and a half on a stretch that gave it nothing.
-      syncNote.value = 'Couldn\'t tell — nothing in this stretch lines up clearly. Try again over a talkier scene.'
+      // A confident wrong answer is worse than none. The best it found is still
+      // worth offering though: a file a minute out is unwatchable, and one wrong
+      // button is cheaper than six hundred taps of the nudge.
+      guess.value = fit.score > 0.05 ? fit : null
+      syncNote.value = 'Couldn\'t tell — the audio doesn\'t line up clearly with this file. Try a different subtitle file, or nudge the delay by hand.'
       return
     }
 
-    setDelay(fit.offset)
-    setSubSpeed(fit.speed)
-    if (fit.speed !== 1) {
-      // A rate error is global, so this one holds for the whole film rather than
-      // just the scene it was measured on.
-      syncNote.value = `This file was cut for a different framerate — stretched to fit and shifted by ${delayText.value}.`
-      osd(`Subtitles synced (${delayText.value}, rate fixed)`, 2500)
-    }
-    else if (Math.abs(fit.offset) < 0.2) {
-      syncNote.value = 'Already in sync.'
-    }
-    else {
-      syncNote.value = `Shifted by ${delayText.value}.`
-      osd(`Subtitles synced (${delayText.value})`, 2000)
-    }
+    applyFit(fit)
   }
   catch (e) {
     syncNote.value = e instanceof Error ? e.message : String(e)
   }
   finally {
     syncing.value = false
+    syncWide.value = false
   }
 }
 
@@ -1014,6 +1067,7 @@ async function startPlayer() {
     subDelay.value = 0 // a fresh mpv starts at zero
     subSpeed.value = 1
     syncNote.value = ''
+    guess.value = null
     lastKey = '' // force a geometry + shape push on the next frame
 
     // Clicks and the wheel land on the video window in front of the page, never
@@ -2154,7 +2208,7 @@ defineExpose({ osd })
                   <button class="!h-7 !min-w-7" :class="ICO" title="Earlier (z)" @click="nudgeDelay(-0.1)">
                     <v-icon :icon="mdiMinus" size="14" />
                   </button>
-                  <span class="w-14 text-center text-label-large tabular-nums">{{ delayText }}</span>
+                  <span class="w-16 text-center text-label-large tabular-nums">{{ delayText }}</span>
                   <button class="!h-7 !min-w-7" :class="ICO" title="Later (Z)" @click="nudgeDelay(0.1)">
                     <v-icon :icon="mdiPlus" size="14" />
                   </button>
@@ -2172,11 +2226,18 @@ defineExpose({ osd })
                 <v-progress-circular v-if="syncing" indeterminate size="13" width="2" />
               </button>
               <p v-if="syncing" :class="NOTE">
-                Listening to the last twenty minutes…
+                {{ syncWide ? 'Nothing certain in the last twenty minutes — listening to the whole film…' : 'Listening to what has played…' }}
               </p>
-              <p v-else-if="syncNote" :class="NOTE">
-                {{ syncNote }}
-              </p>
+              <template v-else-if="syncNote">
+                <p :class="NOTE">
+                  {{ syncNote }}
+                </p>
+                <button v-if="guess" :class="MENU_ROW" @click="applyFit(guess)">
+                  <span class="flex items-center gap-2">
+                    <v-icon :icon="mdiAutoFix" size="16" /> Shift by {{ guessText }} anyway
+                  </span>
+                </button>
+              </template>
               <p v-else-if="!native" :class="NOTE">
                 Auto-sync listens to the audio with ffmpeg, which this build can't run. Nudge the delay above instead.
               </p>

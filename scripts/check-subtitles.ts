@@ -204,6 +204,29 @@ function shift(by: number, rate = 1) {
   return speech.map(([s, e]) => ({ start: s * rate + by, end: e * rate + by, text: '…' }))
 }
 
+/**
+ * The same bursts under a real mix: levels that wander a reel at a time, a music
+ * bed under the middle third that is louder than anyone talking, and effects
+ * nobody subtitled. This is the case the fit used to get wrong — correlating
+ * against the loudness itself pulls the cues towards the music, because the
+ * music is where the numbers are biggest.
+ */
+function scored(span: number, rate = 1) {
+  const env = new Float32Array(Math.round(span / BIN))
+  for (let i = 0; i < env.length; i++) {
+    const t = i * BIN
+    env[i] = t > span / 3 && t < 2 * span / 3 ? -26 : -58 + 6 * Math.sin(t / 240)
+    // A door, a gunshot, a car: loud, regular, and in no subtitle file.
+    if (t % 47 < 1.5)
+      env[i]! += 22
+  }
+  for (const [s, e] of speech) {
+    for (let i = Math.round(s * rate / BIN); i < Math.round(e * rate / BIN) && i < env.length; i++)
+      env[i]! += 12
+  }
+  return env
+}
+
 const audio = envelope(1200)
 
 const fix = bestSync(shift(-3), audio, 0)
@@ -213,8 +236,10 @@ assert.equal(fix.speed, 1, 'a plain shift needs no rate change')
 assert.ok(Math.abs(bestSync(shift(7.5), audio, 0).offset + 7.5) < 0.3, 'late subtitles get pulled forward')
 assert.ok(Math.abs(bestSync(shift(-45), audio, 0).offset - 45) < 0.3, 'and a whole scene of drift still lands')
 
+// The peak is interpolated between bins, so a file that needs nothing lands on
+// a hair either side of zero rather than exactly on it.
 const fine = bestSync(shift(0), audio, 0)
-assert.equal(fine.offset, 0)
+assert.ok(Math.abs(fine.offset) < 0.05, `an in-sync file needs no shift, got ${fine.offset}`)
 assert.equal(fine.speed, 1)
 assert.ok(synced(fine), 'an in-sync file is recognised as one rather than nudged')
 
@@ -226,13 +251,72 @@ assert.ok(Math.abs(drift.speed - PAL) < 1e-6, `the rate error is found, got ${dr
 assert.ok(Math.abs(drift.offset) < 0.5, `and needs no shift on top, got ${drift.offset}`)
 assert.ok(synced(drift))
 
+// A film mix rather than a test tone: the fit has to follow the voices past a
+// music bed that is louder than they are and past effects that aren't dialogue.
+const mixed = bestSync(shift(-3), scored(1200), 0)
+assert.ok(Math.abs(mixed.offset - 3) < 0.3, `the music doesn't drag the fit, got ${mixed.offset}`)
+assert.ok(synced(mixed), `and it is still trusted, got score ${mixed.score.toFixed(2)} at ${mixed.confidence.toFixed(1)}σ`)
+assert.equal(mixed.speed, 1)
+const mixedDrift = bestSync(shift(0, 1 / PAL), scored(1200), 0)
+assert.ok(Math.abs(mixedDrift.speed - PAL) < 1e-6, `and the rate error too, got ${mixedDrift.speed}`)
+
+/**
+ * A 1968 optical mono print: hiss under everything and about six decibels
+ * between it and a shout. Any fixed idea of "loud enough to be a voice" reads
+ * the whole reel as either silent or spoken; the fit has to normalise to the
+ * range the film actually has.
+ */
+function optical(span: number, talking = true) {
+  const env = new Float32Array(Math.round(span / BIN))
+  for (let i = 0; i < env.length; i++)
+    env[i] = -38 + Math.sin(i * BIN / 130) * 2 + Math.sin(i * 12.9898) * 1.5
+  if (talking) {
+    for (const [s, e] of speech) {
+      for (let i = Math.round(s / BIN); i < Math.round(e / BIN) && i < env.length; i++)
+        env[i]! += 6
+    }
+  }
+  return env
+}
+
+const faint = bestSync(shift(-3), optical(1200), 0)
+assert.ok(Math.abs(faint.offset - 3) < 0.3, `six decibels of range is enough to fit on, got ${faint.offset}`)
+assert.ok(synced(faint), `and to be sure of, got ${faint.score.toFixed(2)} at ${faint.confidence.toFixed(1)}σ`)
+// Hiss and nothing else. Normalising to the film's own range must not turn the
+// wobble into a full-scale mask and then fit the cues to it.
+assert.ok(!synced(bestSync(shift(-3), optical(1200, false), 0)), 'a reel with nothing said in it is refused')
+
 // The window the caller gets to work with is what has played, and a short one
 // has enough freedom to fit anywhere. Refusing beats a confident wrong answer.
-assert.ok(!synced(bestSync(shift(-3), envelope(200), 0)), 'three minutes is not enough to be sure')
+assert.equal(bestSync(shift(-3), envelope(200), 0).score, 0, 'three minutes is not enough to be sure')
 assert.equal(bestSync([], audio, 0).score, 0, 'no cues, no verdict')
 assert.equal(bestSync(shift(-3), envelope(10), 0).score, 0, 'and neither is ten seconds')
+// Five minutes is a verdict on the shift, but not on the rate: a tenth of a
+// percent over that window is under the slop, so it would be guessed off noise.
+const short = bestSync(shift(-3, 1 / PAL), envelope(400, 1 / PAL), 0)
+assert.ok(Math.abs(short.offset - 3) < 0.4, `a short window still finds the shift, got ${short.offset}`)
+assert.equal(short.speed, 1, 'and leaves the rate alone rather than guessing it')
 // Nothing but room tone: every shift correlates exactly as badly as every other.
 assert.ok(!synced(bestSync(shift(-3), new Float32Array(6000).fill(-60), 0)), 'silence gives no verdict')
+// The same generator, a different film. Dialogue is dialogue, so some shift
+// always correlates better than the others — the fit has to notice that the
+// winner didn't win by much and say so instead of shifting by a minute.
+const other: [number, number][] = []
+for (let at = 6; at < 290;) {
+  const len = 1 + rnd() * 3
+  other.push([at, at + len])
+  at += len + 0.8 + rnd() * 6
+}
+const foreign = bestSync(other.map(([s, e]) => ({ start: s, end: e, text: '…' })), audio, 0)
+assert.ok(
+  !synced(foreign),
+  `a file for another film is refused, got ${foreign.score.toFixed(2)} at ${foreign.confidence.toFixed(1)}σ`,
+)
+
+// A peak that only just beats the rest of the curve is a coincidence, not an
+// answer — the whole point of the confidence test.
+assert.ok(!synced({ offset: 12, speed: 1, score: 0.4, confidence: 2 }), 'a peak in the crowd is no answer')
+assert.ok(synced({ offset: 12, speed: 1, score: 0.4, confidence: 9 }), 'one standing clear of it is')
 
 // The look, as mpv properties. Colours are the trap: mpv reads #AARRGGBB, so a
 // plain #rrggbb from the picker lands one channel out and the text goes cyan.

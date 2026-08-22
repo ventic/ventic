@@ -502,16 +502,37 @@ const BIN = 0.2
  *
  * Straight into mpv's `sub-speed`, which multiplies cue timestamps — so these
  * are ratios and not fps, and 1 (leave it alone) has to be tried like the rest.
+ * It goes first: the tie-break below hands a close call to changing nothing.
  */
 const RATES = [1, 25 / 23.976, 23.976 / 25, 24 / 23.976, 23.976 / 24]
 
 /**
- * Shortest window worth a verdict, and the shortest that can tell a rate error
- * from a plain shift. Under this the fit has enough freedom to land somewhere
- * confidently wrong: a two-minute window will happily "find" a 75 s shift at the
- * wrong rate and score it well.
+ * Shortest window worth a verdict. Under this the fit has enough freedom to land
+ * somewhere confidently wrong: a two-minute window will happily "find" a 75 s
+ * shift and score it well.
  */
-export const SYNC_MIN_WINDOW = 600
+export const SYNC_MIN_WINDOW = 300
+
+/**
+ * And the shortest that can measure a rate error rather than guess one. A rate
+ * error shows inside the window as a stretch, and 0.1% of five minutes is a
+ * third of a second — under the slop of the fit, so a short window would pick
+ * a rate off noise and hand the whole film a drift it didn't have. A shift
+ * found at the wrong rate is at least right where it was measured, which is
+ * where the film is being watched.
+ */
+const RATE_MIN_WINDOW = 600
+
+/** Shifts this close to the winner are the same answer, not a rival one. */
+const PEAK_GUARD = 3
+
+/**
+ * How much better a rate has to fit before changing it is worth it. Two of
+ * `RATES` are a tenth of a percent apart and fit each other's films almost as
+ * well, so without a margin the winner is a coin toss — and the rate that
+ * leaves the file alone should win a coin toss.
+ */
+const RATE_MARGIN = 0.02
 
 export interface Sync {
   /** Seconds to shift by — straight into mpv's `sub-delay`. */
@@ -520,47 +541,194 @@ export interface Sync {
   speed: number
   /** Correlation at the winning fit, -1 to 1. */
   score: number
-  /** The best correlation well away from the winner — what the peak beat. */
-  rival: number
+  /** How far that peak stands above the rest of the curve, in standard deviations. */
+  confidence: number
 }
 
 /**
  * Is this fit worth applying, or should the caller say it couldn't tell?
  *
- * A correlation is only meaningful against its own competition: dialogue is
- * repetitive and a whole scene can line up against the wrong one, so a peak that
- * barely beats the next-best candidate is a coin toss dressed as an answer. The
- * absolute floor rules out a window with no dialogue in it at all.
+ * A correlation means nothing on its own — how high it runs depends on how
+ * talky the film is. What separates an answer from a coincidence is how far the
+ * peak stands out of its own curve, so the test is a z-score against every other
+ * shift that was tried. Dialogue is repetitive and a whole scene can line up
+ * against the wrong one, but it can't do so five deviations better than
+ * everything else. The floor underneath rules out a stretch with no dialogue in
+ * it at all, where the curve is flat enough for noise to score well.
  */
 export function synced(fit: Sync) {
-  return fit.score >= 0.12 && fit.score > fit.rival * 1.4
+  return fit.score >= 0.1 && fit.confidence >= 5
 }
 
 /**
- * Slide the cues along the audio envelope and keep the fit that correlates best.
+ * How quiet the film gets around each bin, in dB.
  *
- * The metric is Pearson correlation between a 0/1 subtitle mask and the measured
- * loudness, which is the whole reason this works where counting overlap didn't:
- * overlap only ever punished a cue sitting over silence, never speech left
- * uncovered, so on a film that is loud two thirds of the time the way to score
- * well was to bunch every cue onto the noisiest stretch. Correlation is zero-mean
- * on both sides and has to match the gaps as well as the dialogue.
- *
- * `rates` is left off for a window too short to tell a rate error from a shift.
- * Cost is one pass per rate per shift — a 20 minute window over ±90 s at five
- * rates is ~27 M multiply-adds, a couple of hundred ms, and it runs on a click.
+ * Levels wander across twenty minutes — a reel change, a scene under music, an
+ * old transfer that was never mastered evenly — and dialogue in the loud part
+ * is quieter than the room tone in another. Sampling the low end of each half
+ * minute and sliding between those marks gives every bin a local zero to be
+ * measured against, so the cut below is one decision for the window rather than
+ * one per scene.
  */
-export function bestSync(cues: Cue[], envelope: Float32Array, from: number, maxShift = 90, rates = true): Sync {
+function quietFloor(envelope: Float32Array): Float32Array {
+  const block = Math.round(30 / BIN)
+  const marks: number[] = []
+  for (let i = 0; i < envelope.length; i += block) {
+    const chunk = Array.from(envelope.slice(i, i + block)).sort((a, b) => a - b)
+    marks.push(chunk[Math.floor(chunk.length * 0.2)] ?? chunk[0] ?? 0)
+  }
+
+  const floor = new Float32Array(envelope.length)
+  for (let i = 0; i < envelope.length; i++) {
+    // Marks sit at block centres; before the first and after the last there is
+    // nothing to slide towards, so they hold.
+    const x = Math.max(0, Math.min(marks.length - 1, (i - block / 2) / block))
+    const a = Math.floor(x)
+    const b = Math.min(marks.length - 1, a + 1)
+    floor[i] = marks[a]! + (marks[b]! - marks[a]!) * (x - a)
+  }
+  return floor
+}
+
+/**
+ * How much is being said in each bin, 0 to 1.
+ *
+ * The level itself can't be used as it stands: a subtitle file knows when
+ * someone speaks and nothing whatever about how loud the film is while they do,
+ * so correlating against loudness matched the two on the one thing they don't
+ * share — a score sting or a door slam outranks a spoken line, and on a scored
+ * film the cues drift towards the music. Measured against the local floor and
+ * flattened at the top, what is left is where the film is louder than the room
+ * it is in, which is a shape a subtitle file does have.
+ *
+ * Flattened at the *film's* own top, not a fixed number of decibels: a 1968
+ * optical mono print has maybe six decibels between the hiss and a shout, a
+ * modern mix has fifty, and a constant that suits one calls the other silent.
+ * The loudest fiftieth of the window is full scale and everything else is read
+ * against that, so both come out with the same contrast to fit against — a
+ * fiftieth rather than a tenth because a window can easily be nine tenths
+ * silence, and then a tenth is silence too.
+ *
+ * The floor under it is the one number that has to be a number: a stretch whose
+ * loudest moment is under three decibels over its own room tone has no dialogue
+ * in it to find, and without the guard it would be normalised into a full-scale
+ * mask made of nothing but hiss.
+ */
+function heard(envelope: Float32Array): Float32Array {
+  const floor = quietFloor(envelope)
+  const over = Float32Array.from(envelope, (v, i) => v - floor[i]!)
+
+  const ranked = Array.from(over).sort((a, b) => b - a)
+  const top = Math.max(3, ranked[Math.floor(ranked.length * 0.02)]!)
+  return Float32Array.from(over, v => Math.min(1, Math.max(0, v / top)))
+}
+
+/**
+ * Pearson correlation between the cues and the audio at every shift in ±`steps`
+ * bins,
+ * one reading per bin. `sub[i]` against `audio[i + k]` — so a positive k is the
+ * cues arriving before the sound, which is a positive `sub-delay`.
+ */
+function correlate(sub: Float32Array, audio: Float32Array, steps: number) {
+  const n = sub.length
+  const curve = new Float32Array(steps * 2 + 1)
+  for (let k = -steps; k <= steps; k++) {
+    // Only the overlap is scored, so a shift that pushes most of the window off
+    // the end is compared on what is left rather than padded with zeros.
+    const lo = Math.max(0, -k)
+    const hi = Math.min(n, n - k)
+    const m = hi - lo
+    let sx = 0
+    let sy = 0
+    let sxy = 0
+    let sxx = 0
+    let syy = 0
+    for (let i = lo; i < hi; i++) {
+      const x = sub[i]!
+      const y = audio[i + k]!
+      sx += x
+      sy += y
+      sxy += x * y
+      sxx += x * x
+      syy += y * y
+    }
+    const cov = sxy / m - (sx / m) * (sy / m)
+    const vx = sxx / m - (sx / m) ** 2
+    const vy = syy / m - (sy / m) ** 2
+    // No cues in range, or a dead-flat stretch of audio: nothing to correlate.
+    curve[k + steps] = vx > 1e-9 && vy > 1e-9 ? cov / Math.sqrt(vx * vy) : -1
+  }
+  return curve
+}
+
+/**
+ * The peak of a correlation curve, in bins from its middle, and how far it
+ * stands above the rest of it.
+ *
+ * The peak lands between two bins as often as on one, so a parabola through it
+ * and its neighbours says where — a fifth of a bin is 40 ms, and the difference
+ * between subtitles that feel synced and subtitles that feel nearly synced is
+ * smaller than the 200 ms the audio is measured in.
+ */
+function peakOf(curve: Float32Array, steps: number) {
+  let at = 0
+  for (let i = 1; i < curve.length; i++) {
+    if (curve[i]! > curve[at]!)
+      at = i
+  }
+  const score = curve[at]!
+
+  const l = curve[at - 1]
+  const r = curve[at + 1]
+  const bend = l !== undefined && r !== undefined ? l + r - 2 * score : 0
+  const tweak = bend < 0 ? Math.max(-0.5, Math.min(0.5, (l! - r!) / (2 * bend))) : 0
+
+  // Everything that isn't the winner or its own shoulder: what the peak beat.
+  const guard = PEAK_GUARD / BIN
+  let sum = 0
+  let sq = 0
+  let count = 0
+  for (let i = 0; i < curve.length; i++) {
+    if (Math.abs(i - at) <= guard)
+      continue
+    sum += curve[i]!
+    sq += curve[i]! ** 2
+    count++
+  }
+  const mean = count ? sum / count : 0
+  const sd = count ? Math.sqrt(Math.max(0, sq / count - mean ** 2)) : 0
+
+  return { shift: at - steps + tweak, score, confidence: sd > 1e-6 ? (score - mean) / sd : 0 }
+}
+
+/**
+ * Slide the cues along the audio and keep the fit that correlates best.
+ *
+ * Both sides are reduced to "is anything being said here" first (`heard`), which
+ * is the whole reason this works where correlating against raw loudness didn't:
+ * a subtitle file knows when someone speaks and nothing whatever about how loud
+ * the film is while they do, so matching the two on level was matching them on
+ * the one thing they don't share. Zero-mean correlation on top of that has to
+ * match the gaps as well as the dialogue, which is what stops every cue bunching
+ * onto the talkiest stretch.
+ *
+ * `maxShift` is generous on purpose: a file cut for another release is off by a
+ * distributor's logo or a missing intro card as often as by a second, and the
+ * confidence test above is what keeps the extra room from being extra rope.
+ * Cost is one pass per rate per shift — a 20 minute window over ±3 min at five
+ * rates is ~54 M multiply-adds, ~130 ms, and it runs on a click.
+ */
+export function bestSync(cues: Cue[], envelope: Float32Array, from: number, maxShift = 180): Sync {
   const n = envelope.length
-  const none: Sync = { offset: 0, speed: 1, score: 0, rival: 0 }
-  if (n * BIN < SYNC_MIN_WINDOW / 2 || !cues.length)
+  const none: Sync = { offset: 0, speed: 1, score: 0, confidence: 0 }
+  if (n * BIN < SYNC_MIN_WINDOW || !cues.length)
     return none
 
+  const audio = heard(envelope)
   const steps = Math.round(maxShift / BIN)
   let best = none
-  let bestScore = -1
 
-  for (const speed of rates ? RATES : [1]) {
+  for (const speed of n * BIN >= RATE_MIN_WINDOW ? RATES : [1]) {
     // mpv's `sub-speed` multiplies timestamps from zero, so the mask is built
     // the same way rather than scaled about the middle of the window — a file
     // authored at the wrong rate is wrong from its first cue, not from here.
@@ -572,52 +740,9 @@ export function bestSync(cues: Cue[], envelope: Float32Array, from: number, maxS
         sub[i] = 1
     }
 
-    const curve = new Float32Array(steps * 2 + 1)
-    let peak = -1
-    let at = 0
-    for (let k = -steps; k <= steps; k++) {
-      // Only the overlap is scored, so a shift that pushes most of the window
-      // off the end is compared on what is left rather than padded with zeros.
-      const lo = Math.max(0, -k)
-      const hi = Math.min(n, n - k)
-      const m = hi - lo
-      let sx = 0
-      let sy = 0
-      let sxy = 0
-      let sxx = 0
-      let syy = 0
-      for (let i = lo; i < hi; i++) {
-        const x = sub[i]!
-        const y = envelope[i + k]!
-        sx += x
-        sy += y
-        sxy += x * y
-        sxx += x * x
-        syy += y * y
-      }
-      const cov = sxy / m - (sx / m) * (sy / m)
-      const vx = sxx / m - (sx / m) ** 2
-      const vy = syy / m - (sy / m) ** 2
-      // No cues in range, or a dead-flat stretch of audio: nothing to correlate.
-      const r = vx > 1e-9 && vy > 1e-9 ? cov / Math.sqrt(vx * vy) : -1
-      curve[k + steps] = r
-      if (r > peak) {
-        peak = r
-        at = k
-      }
-    }
-
-    // The runner-up has to be a different answer, not the same peak one bin over.
-    let rival = -1
-    for (let k = -steps; k <= steps; k++) {
-      if (Math.abs(k - at) * BIN > 3)
-        rival = Math.max(rival, curve[k + steps]!)
-    }
-
-    if (peak > bestScore) {
-      bestScore = peak
-      best = { offset: at * BIN, speed, score: peak, rival }
-    }
+    const fit = peakOf(correlate(sub, audio, steps), steps)
+    if (fit.score > best.score + (speed === 1 ? 0 : RATE_MARGIN))
+      best = { offset: fit.shift * BIN, speed, score: fit.score, confidence: fit.confidence }
   }
   return best
 }
