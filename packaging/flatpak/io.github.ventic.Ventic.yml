@@ -82,6 +82,7 @@ modules:
       - --enable-gnutls
       - --enable-gpl
       - --disable-doc
+      - --disable-ffplay
       - --enable-libdav1d
       - --enable-libvpx
       - --enable-libopus
@@ -133,6 +134,9 @@ modules:
   # Not optional — mpv 0.38 and later will not configure without it.
   - name: libplacebo
     buildsystem: meson
+    # plplay, a demo player nothing here calls.
+    cleanup:
+      - /bin
     sources:
       - type: git
         url: https://github.com/haasn/libplacebo.git
@@ -141,6 +145,22 @@ modules:
         x-checker-data:
           type: git
           tag-pattern: ^v([\d.]+)$
+
+  # mpv's x11 feature hard-requires xpresent and the GNOME runtime ships no
+  # libXpresent at all — no library, no .pc. Everything else -Dx11=enabled pulls
+  # in (xext, xscrnsaver, xrandr, the present and Xfixes headers) is already
+  # there, so this is the only piece missing.
+  - name: libXpresent
+    buildsystem: autotools
+    sources:
+      - type: archive
+        url: https://www.x.org/releases/individual/lib/libXpresent-1.0.2.tar.xz
+        sha256: 4e5b21b4812206a4b223013606ae31170502c1043038777a1ef8f70c09d37602
+        x-checker-data:
+          type: anitya
+          project-id: 17166
+          stable-only: true
+          url-template: https://www.x.org/releases/individual/lib/libXpresent-$version.tar.xz
 
   - name: mpv
     buildsystem: meson
@@ -179,6 +199,9 @@ modules:
       - /share/doc
       - /share/icons
       - /share/zsh
+      # mpv ships its own metainfo, which would appear as a second component
+      # in a software centre listing.
+      - /share/metainfo
     sources:
       - type: archive
         url: https://github.com/mpv-player/mpv/archive/v0.41.0.tar.gz
@@ -218,21 +241,36 @@ modules:
       # from the same package.json — see generate-sources.sh.
       - type: file
         path: package-lock.json
+      # From the flathub repo beside the manifest, not from the checkout: these
+      # two describe the *packaged* app, and a tag predating this directory
+      # would otherwise fail the build. generate-sources.sh already puts them
+      # there, and the metainfo's release list is rewritten as it goes.
+      - type: file
+        path: io.github.ventic.Ventic.desktop
+      - type: file
+        path: io.github.ventic.Ventic.metainfo.xml
       - cargo-sources.json
       - node-sources.json
     build-commands:
       # --ignore-scripts because `preinstall` is only-allow bun, which would
       # refuse npm outright. That also skips the `postinstall` (nuxt prepare),
       # so it is run by hand on the next line.
-      - npm ci --offline --ignore-scripts --cache=flatpak-node/npm-cache
+      #
+      # `install` rather than `ci`: npm records peer-installed packages as
+      # `extraneous` in a v3 lockfile — here oxc-parser, which nothing depends
+      # on directly, and all 19 of its platform bindings. `ci` installs an
+      # extraneous entry instead of treating it as the optional dep it is, and
+      # dies on the Android ARM binding. `install --offline` reads the same
+      # vendored cache and skips what does not match the platform.
+      - npm install --offline --ignore-scripts --cache=flatpak-node/npm-cache
       - npx nuxt prepare
       - npx nuxt generate
       # tauri-build embeds .output/public into the binary here, which is why
       # there is no separate step installing the frontend.
       - cargo --offline build --release --manifest-path src-tauri/Cargo.toml
       - install -Dm755 src-tauri/target/release/ventic ${FLATPAK_DEST}/bin/ventic
-      - install -Dm644 packaging/flatpak/${FLATPAK_ID}.desktop ${FLATPAK_DEST}/share/applications/${FLATPAK_ID}.desktop
-      - install -Dm644 packaging/flatpak/${FLATPAK_ID}.metainfo.xml ${FLATPAK_DEST}/share/metainfo/${FLATPAK_ID}.metainfo.xml
+      - install -Dm644 ${FLATPAK_ID}.desktop ${FLATPAK_DEST}/share/applications/${FLATPAK_ID}.desktop
+      - install -Dm644 ${FLATPAK_ID}.metainfo.xml ${FLATPAK_DEST}/share/metainfo/${FLATPAK_ID}.metainfo.xml
       - install -Dm644 src-tauri/icons/32x32.png ${FLATPAK_DEST}/share/icons/hicolor/32x32/apps/${FLATPAK_ID}.png
       - install -Dm644 src-tauri/icons/64x64.png ${FLATPAK_DEST}/share/icons/hicolor/64x64/apps/${FLATPAK_ID}.png
       - install -Dm644 src-tauri/icons/128x128.png ${FLATPAK_DEST}/share/icons/hicolor/128x128/apps/${FLATPAK_ID}.png
