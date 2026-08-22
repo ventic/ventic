@@ -1,0 +1,95 @@
+# Publishes a release to Flathub.
+#
+# Flathub builds from its own repo, so "release" here means: regenerate the
+# vendored cargo and npm sources for the new tag and push them to
+# flathub/io.github.ventic.Ventic. Their CI builds whatever lands on master.
+#
+# On `release: published` for the same reason as aur.yml — release.yml leaves a
+# draft, and this reads the tag rather than the assets, but publishing is still
+# the signal that the release is real.
+#
+# Needs two secrets:
+#   TMDB_API      the read token, same one release.yml uses
+#   FLATHUB_TOKEN a PAT with push access to flathub/io.github.ventic.Ventic,
+#                 which only exists once the first submission has been merged
+name: Flathub
+
+on:
+  release:
+    types: [published]
+  # Re-run against any published tag, e.g. after fixing the manifest by hand.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to publish (vX.Y.Z)
+        required: true
+
+jobs:
+  # Its own job because the `secrets` context is not available in a job-level
+  # `if:`. Until the Flathub submission is merged there is no token, and that
+  # is a state this has to sit in quietly rather than fail every release in.
+  token:
+    runs-on: ubuntu-latest
+    outputs:
+      present: ${{ steps.check.outputs.present }}
+    steps:
+      - id: check
+        env:
+          FLATHUB_TOKEN: ${{ secrets.FLATHUB_TOKEN }}
+        run: |
+          if [ -n "$FLATHUB_TOKEN" ]; then
+            echo "present=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::No FLATHUB_TOKEN secret, so nothing was pushed to Flathub. Set it up once the submission is merged — see packaging/README.md."
+          fi
+
+  publish:
+    needs: token
+    if: needs.token.outputs.present == 'yes'
+    runs-on: ubuntu-latest
+    steps:
+      # Full history: generate-sources.sh reads package.json and Cargo.lock out
+      # of the tag rather than the working tree, so the hashes describe the
+      # bytes Flathub will check out.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # appstreamcli validates the metainfo before anything is pushed; a
+      # version Flathub has never heard of fails their build, not ours.
+      - run: sudo apt-get update && sudo apt-get install -y appstream
+
+      - name: Generate sources
+        env:
+          TMDB_API: ${{ secrets.TMDB_API }}
+        run: |
+          tag="${{ github.event.inputs.tag || github.event.release.tag_name }}"
+          ./packaging/flatpak/generate-sources.sh "$tag"
+
+      - name: Push to Flathub
+        env:
+          FLATHUB_TOKEN: ${{ secrets.FLATHUB_TOKEN }}
+        run: |
+          tag="${{ github.event.inputs.tag || github.event.release.tag_name }}"
+          git clone --depth 1 \
+            "https://x-access-token:$FLATHUB_TOKEN@github.com/flathub/io.github.ventic.Ventic.git" flathub
+          cp packaging/flatpak/generated/io.github.ventic.Ventic.yml \
+             packaging/flatpak/generated/io.github.ventic.Ventic.metainfo.xml \
+             packaging/flatpak/generated/io.github.ventic.Ventic.desktop \
+             packaging/flatpak/generated/flathub.json \
+             packaging/flatpak/generated/cargo-sources.json \
+             packaging/flatpak/generated/node-sources.json \
+             packaging/flatpak/generated/package-lock.json \
+             flathub/
+          cd flathub
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Nothing to do if a rerun produced identical bytes.
+          git diff --quiet && git diff --cached --quiet && exit 0
+          git add -A
+          git commit -m "Update to ${tag#v}"
+          git push

@@ -120,14 +120,30 @@ directories, so changing it would strand every existing install's settings.
    which is worth saying in the PR description.
 
 4. Once merged you get push access to a `flathub/io.github.ventic.Ventic` repo.
-   Every later release is a PR (or a direct push) there.
+   Add a **`FLATHUB_TOKEN`** repository secret here — a PAT with push access to
+   that repo — and releases publish themselves from then on.
 
 ### Per release
+
+Nothing, once `FLATHUB_TOKEN` is set. `.github/workflows/flathub.yml` runs when
+a release is **published**, regenerates the sources for that tag and pushes them
+to the Flathub repo; their CI builds whatever lands on master. Without the
+secret it prints a notice and does nothing, so it is harmless before the
+submission is merged.
+
+By hand, if you ever need to:
 
 ```sh
 TMDB_API=<token> ./packaging/flatpak/generate-sources.sh v0.2.3 ~/src/flathub-ventic
 cd ~/src/flathub-ventic && git commit -am "Update to 0.2.3" && git push
 ```
+
+The one thing that is *not* automatic is the app's own version: the manifest
+deliberately carries no `is-main-source`, so Flathub's update bot never bumps
+the tag on its own. It would open a PR pinning a new tag against the previous
+release's vendored cargo and npm sources, which cannot build offline. The bot
+still updates ffmpeg, mpv, libplacebo and libXpresent, which it can do
+correctly.
 
 `generated/` is gitignored: the two source manifests are megabytes of hashes
 that belong in the flathub repo, and the generated manifest has the TMDB token
