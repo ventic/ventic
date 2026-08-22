@@ -313,14 +313,17 @@ const menuEl = ref<HTMLElement | null>(null)
 const { height: menuHeight } = useElementSize(menuEl)
 /** Its own gap from the bottom of the frame — the bottom bar plus a little. */
 const menuBottom = computed(() => touch.value ? 112 : 106)
+/** Is the chrome up? Declared here because `subPos` measures against it. */
+const ui = ref(true)
 /**
- * Where the subtitle line goes. The panel covers the bottom of the picture and
- * mpv draws underneath it, so while it is open the subtitles move above it
- * rather than sitting behind it. The height is 0 with no panel mounted.
+ * Where the subtitle line goes. The bottom bar covers the bottom of the picture
+ * and mpv draws underneath it, so while the chrome is up the subtitles move
+ * above it rather than sitting behind it — and higher again for an open panel,
+ * whose height is 0 with none mounted.
  */
 const subPos = computed(() => subtitleLift(
   settings.subs.position,
-  menuHeight.value ? menuBottom.value + menuHeight.value + 8 : 0,
+  menuHeight.value ? menuBottom.value + menuHeight.value + 8 : ui.value ? menuBottom.value : 0,
   boxHeight.value,
 ))
 
@@ -1454,7 +1457,6 @@ async function warm() {
  * gets more than twice as long.
  */
 const IDLE_MS = isTv() ? 6500 : 2800
-const ui = ref(true)
 const hovering = ref(false)
 /**
  * Is there a pointer that can hover at all? A television answers `hover: none`,
