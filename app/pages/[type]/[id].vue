@@ -260,6 +260,7 @@ const playLabel = computed(() => [
             v-if="trailer"
             :src="`https://www.youtube-nocookie.com/embed/${media?.trailer}?autoplay=1`"
             class="aspect-video w-full border-0"
+            style="zoom: var(--frame-zoom, 1)"
             allow="autoplay; encrypted-media; fullscreen"
             allowfullscreen
           />

@@ -19,11 +19,24 @@ const painted = computed(() => paintedTheme(settings, ui.shownArt, ui.backdropIm
 
 watch(painted, value => applyTheme(theme, value), { immediate: true })
 
+// Whether the webview is one of the engines that implements `zoom` itself
+// rather than the standard property — see the shim further down for what that
+// costs, and `--frame-zoom` right here for the other half of it.
+const legacyZoom = !('currentCSSZoom' in Element.prototype)
+
 // Vuetify and UnoCSS both size in px, so the single knob that grows all of it
 // at once is the root's zoom — the same thing a browser's Ctrl+= does. Menus
 // and dialogs teleport to <body>, so scaling anything lower would miss them.
+//
+// A child frame is the one thing the root's zoom gets wrong on WebKit: it lays
+// the frame's document out in the zoomed page's device pixels and then scales
+// it again, so a YouTube embed comes out `uiScale` too big and the card clips
+// the right of it. Undoing the zoom on the frame is the only compensation that
+// leaves the box where it was — a transform scales the box down with the
+// content, and widening the box overflows the card instead of the frame.
 watchEffect(() => {
   document.documentElement.style.zoom = String(settings.uiScale)
+  document.documentElement.style.setProperty('--frame-zoom', String(legacyZoom ? 1 / settings.uiScale : 1))
 })
 
 // One class, one block of CSS (assets/css/layers.css) — cheaper than teaching
@@ -43,7 +56,7 @@ function effectiveZoom(el: Element | null): number {
   return el ? (Number.parseFloat(getComputedStyle(el).zoom) || 1) * effectiveZoom(el.parentElement) : 1
 }
 
-if (!('currentCSSZoom' in Element.prototype)) {
+if (legacyZoom) {
   Object.defineProperty(Element.prototype, 'currentCSSZoom', {
     get(this: Element) {
       return effectiveZoom(this)
