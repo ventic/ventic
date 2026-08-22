@@ -53,10 +53,6 @@ finish-args:
   # writes there with an ordinary path — it is not a file the document portal
   # ever sees, so a portal grant would not reach it.
   - --filesystem=home
-  # WebKitGTK's DMA-BUF renderer is broken on a good number of drivers inside a
-  # sandbox and paints nothing at all; every Tauri and WebKit app on Flathub
-  # carries this.
-  - --env=WEBKIT_DISABLE_DMABUF_RENDERER=1
   # mpv parses numbers from its own IPC replies and a comma decimal separator
   # breaks them.
   - --env=LC_NUMERIC=C
@@ -232,10 +228,13 @@ modules:
         url: https://github.com/ventic/ventic.git
         tag: __TAG__
         commit: __COMMIT__
+        # No is-main-source: the checker would open a PR bumping this tag on
+        # its own, and cargo-sources.json / node-sources.json / package-lock.json
+        # would still describe the previous release — an offline build against
+        # the wrong dependency set. Bumping this is generate-sources.sh's job.
         x-checker-data:
           type: git
           tag-pattern: ^v([\d.]+)$
-          is-main-source: true
       # The repo is bun-only (`preinstall` enforces it) and there is no bun in
       # any SDK, so the offline install is npm's. This lockfile is generated
       # from the same package.json — see generate-sources.sh.
