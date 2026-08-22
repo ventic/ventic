@@ -833,10 +833,19 @@ function viewport(dpr: number) {
   }
 }
 
+/**
+ * What has to show through mpv's window. `[data-cut]` is this file's own bars;
+ * the second half is a Vuetify tooltip, which teleports to the app root and so
+ * would never be found by a search scoped to the player — leaving mpv painting
+ * over the only label a bare icon button has.
+ */
+const CUT = '[data-cut], .v-tooltip > .v-overlay__content'
+
 /** Every overlay's rectangle, clipped to the video box and in physical pixels. */
 function cutouts(box: DOMRect, dpr: number): Rect[] {
   const out: Rect[] = []
-  for (const el of rootEl.value?.querySelectorAll<HTMLElement>('[data-cut]') ?? []) {
+  // A closed tooltip is `display: none` and measures 0x0, which the clip drops.
+  for (const el of document.querySelectorAll<HTMLElement>(CUT)) {
     const r = el.getBoundingClientRect()
     const left = Math.max(r.left, box.left)
     const top = Math.max(r.top, box.top)
@@ -1960,19 +1969,19 @@ defineExpose({ osd })
       @pointerenter="hovering = true"
       @pointerleave="hovering = false"
     >
-      <button :class="SEEK_BTN" :disabled="!started" title="Back 10s (j)" @click="seekBy(-10)">
+      <button v-tooltip:top="'Back 10s (j)'" :class="SEEK_BTN" :disabled="!started" @click="seekBy(-10)">
         <v-icon :icon="mdiRewind10" size="26" />
       </button>
       <button
         ref="playBtn"
+        v-tooltip:top="paused ? 'Play (space)' : 'Pause (space)'"
         :class="PLAY_BTN"
         :disabled="!started"
-        :title="paused ? 'Play (space)' : 'Pause (space)'"
         @click="togglePlay"
       >
         <v-icon :icon="paused ? mdiPlay : mdiPause" size="38" />
       </button>
-      <button :class="SEEK_BTN" :disabled="!started" title="Forward 10s (l)" @click="seekBy(10)">
+      <button v-tooltip:top="'Forward 10s (l)'" :class="SEEK_BTN" :disabled="!started" @click="seekBy(10)">
         <v-icon :icon="mdiFastForward10" size="26" />
       </button>
     </div>
@@ -2053,7 +2062,7 @@ defineExpose({ osd })
       >
         <header class="flex items-center justify-between border-b border-white/9 py-2 pl-3.5 pr-2 text-title-small">
           <span>{{ menuTitle }}</span>
-          <button class="!h-7 !min-w-7" :class="ICO" title="Close" @click="menu = ''">
+          <button v-tooltip:top="'Close'" class="!h-7 !min-w-7" :class="ICO" @click="menu = ''">
             <v-icon :icon="mdiClose" size="16" />
           </button>
         </header>
@@ -2152,8 +2161,8 @@ defineExpose({ osd })
                 </button>
                 <button
                   v-if="l.files.length > 1"
+                  v-tooltip:top="expanded === l.name ? 'Hide versions' : 'Show all versions'"
                   class="!h-8 !min-w-8" :class="ICO"
-                  :title="expanded === l.name ? 'Hide versions' : 'Show all versions'"
                   @click="expand(l)"
                 >
                   <v-icon :icon="expanded === l.name ? mdiChevronUp : mdiChevronDown" size="16" />
@@ -2205,11 +2214,11 @@ defineExpose({ osd })
               <div class="flex items-center justify-between px-2.5 py-1">
                 <span class="text-label-large opacity-70">Delay</span>
                 <div class="flex items-center gap-0.5">
-                  <button class="!h-7 !min-w-7" :class="ICO" title="Earlier (z)" @click="nudgeDelay(-0.1)">
+                  <button v-tooltip:top="'Earlier (z)'" class="!h-7 !min-w-7" :class="ICO" @click="nudgeDelay(-0.1)">
                     <v-icon :icon="mdiMinus" size="14" />
                   </button>
                   <span class="w-16 text-center text-label-large tabular-nums">{{ delayText }}</span>
-                  <button class="!h-7 !min-w-7" :class="ICO" title="Later (Z)" @click="nudgeDelay(0.1)">
+                  <button v-tooltip:top="'Later (Z)'" class="!h-7 !min-w-7" :class="ICO" @click="nudgeDelay(0.1)">
                     <v-icon :icon="mdiPlus" size="14" />
                   </button>
                 </div>
@@ -2286,13 +2295,19 @@ defineExpose({ osd })
                (see `barTransport`). Everywhere else it is the centre cluster
                above, and this row is left as the clock and the menus. -->
           <template v-if="barTransport">
-            <button ref="playBtn" :class="ICO" :disabled="!started" :title="paused ? 'Play (space)' : 'Pause (space)'" @click="togglePlay">
+            <button
+              ref="playBtn"
+              v-tooltip:top="paused ? 'Play (space)' : 'Pause (space)'"
+              :class="ICO"
+              :disabled="!started"
+              @click="togglePlay"
+            >
               <v-icon :icon="paused ? mdiPlay : mdiPause" size="26" />
             </button>
-            <button :class="ICO" :disabled="!started" title="Back 10s (j)" @click="seekBy(-10)">
+            <button v-tooltip:top="'Back 10s (j)'" :class="ICO" :disabled="!started" @click="seekBy(-10)">
               <v-icon :icon="mdiRewind10" size="22" />
             </button>
-            <button :class="ICO" :disabled="!started" title="Forward 10s (l)" @click="seekBy(10)">
+            <button v-tooltip:top="'Forward 10s (l)'" :class="ICO" :disabled="!started" @click="seekBy(10)">
               <v-icon :icon="mdiFastForward10" size="22" />
             </button>
           </template>
@@ -2301,7 +2316,7 @@ defineExpose({ osd })
                stays quiet the rest of the time. Nothing hovers on a phone or a
                TV, and both have a volume rocker of their own. -->
           <div v-if="!touch" class="group/volume flex items-center">
-            <button :class="ICO" :disabled="!started" :title="muted ? 'Unmute (m)' : 'Mute (m)'" @click="toggleMute">
+            <button v-tooltip:top="muted ? 'Unmute (m)' : 'Mute (m)'" :class="ICO" :disabled="!started" @click="toggleMute">
               <v-icon :icon="volumeIcon" size="22" />
             </button>
             <player-slider
@@ -2321,9 +2336,9 @@ defineExpose({ osd })
           <span v-if="remaining" class="opacity-55" :class="TIME">{{ remaining }}</span>
 
           <button
+            v-tooltip:top="'Playback speed ([ / ])'"
             class="px-2" :class="[ICO, menu === 'speed' && '!text-primary !opacity-100']"
             :disabled="!started"
-            title="Playback speed ([ / ])"
             @click="openMenu('speed')"
           >
             <v-icon v-if="speed === 1" :icon="mdiPlaySpeed" size="20" />
@@ -2331,21 +2346,21 @@ defineExpose({ osd })
           </button>
           <button
             v-if="audioTracks.length > 1"
+            v-tooltip:top="'Audio track'"
             :class="[ICO, menu === 'audio' && '!text-primary !opacity-100']"
-            title="Audio track"
             @click="openMenu('audio')"
           >
             <v-icon :icon="mdiSurroundSound" size="20" />
           </button>
           <button
+            v-tooltip:top="'Subtitles (s)'"
             :class="[ICO, menu === 'subs' && '!text-primary !opacity-100']"
             :disabled="!started"
-            title="Subtitles (s)"
             @click="openMenu('subs')"
           >
             <v-icon :icon="subsOn ? mdiSubtitles : mdiSubtitlesOutline" size="22" />
           </button>
-          <button :class="ICO" :title="windowFullscreen ? 'Exit fullscreen (f)' : 'Fullscreen (f)'" @click="toggleFullscreen">
+          <button v-tooltip:top="windowFullscreen ? 'Exit fullscreen (f)' : 'Fullscreen (f)'" :class="ICO" @click="toggleFullscreen">
             <v-icon :icon="windowFullscreen ? mdiFullscreenExit : mdiFullscreen" size="22" />
           </button>
         </div>

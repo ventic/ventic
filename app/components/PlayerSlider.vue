@@ -70,8 +70,13 @@ function onUp(e: PointerEvent) {
   emit('change', valueAt(e))
 }
 
+/** Position along the rail, 0–1. */
+function frac(v: number) {
+  return Math.max(0, Math.min(1, v / (props.max || 1)))
+}
+
 function pct(v: number) {
-  return `${Math.max(0, Math.min(100, (v / (props.max || 1)) * 100))}%`
+  return `${frac(v) * 100}%`
 }
 
 // The rail is a d-pad target of its own: on a remote, left/right on the seek bar
@@ -123,11 +128,13 @@ function onKey(e: KeyboardEvent) {
       <div class="absolute inset-y-0 left-0 bg-primary" :style="{ width: pct(modelValue) }" />
     </div>
 
-    <!-- Sized to match VSlider's thumbSize in vuetify.config.ts. -->
+    <!-- Sized to match VSlider's thumbSize in vuetify.config.ts. Its travel is
+         inset by its own radius so the ends stay inside the rail — the volume
+         slider's parent clips, and half a knob is what showed at 100%. -->
     <div
       class="absolute top-1/2 size-3.5 rounded-full bg-primary transition-transform duration-120 -translate-x-1/2 -translate-y-1/2 group-hover:scale-100"
       :class="dragging ? 'scale-100' : 'scale-0'"
-      :style="{ left: pct(modelValue) }"
+      :style="{ left: `calc(7px + (100% - 14px) * ${frac(modelValue)})` }"
     />
 
     <!-- A frame is taller than the bar, so this one overhangs it and needs a
