@@ -26,23 +26,17 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@pinia/nuxt',
   ],
-  // Roboto is named once, in a CSS custom property (app/assets/css/layers.css),
-  // and the scanner skips any file with no literal `font-family:` in it — so
-  // without this it downloads nothing and the app falls back to whatever
-  // sans-serif the host happens to have. Which on Arch, Windows and most of
-  // Linux is not Roboto; only Android ships it.
-  fonts: {
-    experimental: {
-      processCSSVariables: true,
-    },
-  },
-
   runtimeConfig: {
     public: {
       TMDB_API: process.env.TMDB_API,
     },
   },
   css: [
+    // The font itself, from a package rather than @nuxt/fonts: that module
+    // resolves families over the network at build time, and a Flathub build has
+    // none — it emitted no @font-face at all there, silently, while working
+    // here. A dependency is vendored into the offline build like any other.
+    '@fontsource-variable/roboto',
     '@/assets/css/layers.css',
   ],
 

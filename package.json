@@ -33,6 +33,7 @@
     "build:android": "bun scripts/build/index.ts android"
   },
   "dependencies": {
+    "@fontsource-variable/roboto": "^5.3.0",
     "@material/material-color-utilities": "^0.4.0",
     "@mdi/js": "^7.4.47",
     "@nuxt/fonts": "^0.14.0",

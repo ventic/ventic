@@ -18,8 +18,8 @@
      `font-heading` / `font-body` at them, so the MD3 type shortcuts and
      Vuetify's own components resolve to the same faces. */
   :root {
-    --v-font-heading: 'Roboto', sans-serif;
-    --v-font-body: 'Roboto', sans-serif;
+    --v-font-heading: 'Roboto Variable', 'Roboto', sans-serif;
+    --v-font-body: 'Roboto Variable', 'Roboto', sans-serif;
 
     /* How much of each edge the OS has already spoken for: Android's status bar
        and gesture pill, a phone's notch in landscape. Everywhere else these are
