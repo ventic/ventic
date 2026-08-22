@@ -22,3 +22,9 @@ src-tauri/dylibs
 # a copy landing here would hand anyone the ability to publish an upgrade to Ventic.
 *.jks
 *.keystore
+
+# Written by packaging/flatpak/generate-sources.sh — a venv, a clone of
+# flatpak-builder-tools, and the two multi-megabyte source manifests that belong
+# in the flathub repo rather than this one. The generated manifest also has the
+# TMDB token substituted into it.
+packaging/flatpak/generated

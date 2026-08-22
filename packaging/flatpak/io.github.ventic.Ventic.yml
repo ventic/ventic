@@ -1,0 +1,240 @@
+# Flathub manifest for Ventic.
+#
+# Two halves. The bottom module builds the app: Nuxt with the node SDK
+# extension, then plain `cargo build` — not `tauri build`, because the Tauri CLI
+# would only re-run a `beforeBuildCommand` that shells out to bun (which is not
+# in any SDK) and then bundle a .deb we would immediately unpack again.
+# `tauri-build` embeds .output/public into the binary during that cargo build,
+# so the binary is the whole frontend; the desktop file, icons and metainfo are
+# installed by hand beside it.
+#
+# Everything above it is mpv, which no runtime ships. The module list is the
+# trimmed version of Celluloid's (io.github.celluloid_player.Celluloid) —
+# the same mpv 0.41 / libass / libplacebo / ffmpeg stack on the same runtime,
+# with its Lua, Blu-ray, DVD, CD and VapourSynth options turned off because
+# Ventic drives mpv over the IPC socket and plays exactly one thing: a file
+# served by the torrent engine on localhost.
+#
+# Regenerating cargo-sources.json / node-sources.json for a new release is
+# ./generate-sources.sh — see README.md here.
+
+id: io.github.ventic.Ventic
+
+# GNOME rather than freedesktop because Tauri links webkit2gtk-4.1, which only
+# the GNOME runtime carries. Version 50 is what other Tauri apps on Flathub are
+# built against today.
+runtime: org.gnome.Platform
+runtime-version: '50'
+sdk: org.gnome.Sdk
+
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.node22
+  - org.freedesktop.Sdk.Extension.rust-stable
+
+command: ventic
+
+finish-args:
+  # Plain x11, not fallback-x11 + wayland: the player parents a real mpv process
+  # into a child of the app's own window by X11 window id (src-tauri/player.rs,
+  # which sets GDK_BACKEND=x11 before GTK starts for exactly this reason). A
+  # Wayland surface has no id to hand mpv, so there is nothing to fall back to —
+  # under a Wayland session this runs on XWayland like it does outside the
+  # sandbox.
+  - --socket=x11
+  - --share=ipc
+  # Torrent peers, the tracker/DHT, TMDB, and the engine's own HTTP API on
+  # localhost that mpv reads the film from.
+  - --share=network
+  - --socket=pulseaudio
+  - --filesystem=xdg-run/pipewire-0:ro
+  # GPU for both WebKit and mpv's vo, plus VA-API/VDPAU decode.
+  - --device=dri
+  # Downloads go wherever the user points Settings → Storage, and the engine
+  # writes there with an ordinary path — it is not a file the document portal
+  # ever sees, so a portal grant would not reach it.
+  - --filesystem=home
+  # WebKitGTK's DMA-BUF renderer is broken on a good number of drivers inside a
+  # sandbox and paints nothing at all; every Tauri and WebKit app on Flathub
+  # carries this.
+  - --env=WEBKIT_DISABLE_DMABUF_RENDERER=1
+  # mpv parses numbers from its own IPC replies and a comma decimal separator
+  # breaks them.
+  - --env=LC_NUMERIC=C
+
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - /lib/cmake
+  - /share/man
+  - '*.a'
+  - '*.la'
+
+modules:
+  # ffmpeg is built rather than taken from the runtime because Ventic runs the
+  # `ffmpeg` *binary* for two things — one mjpeg frame for the seek-bar preview,
+  # and an RMS envelope for subtitle sync (see `thumbnail` and `audio_envelope`
+  # in src-tauri/src/lib.rs). Encoders, muxers and programs are therefore all
+  # left on; the runtime's own build has no CLI at all.
+  - name: ffmpeg
+    config-opts:
+      - --enable-shared
+      - --disable-static
+      - --enable-gnutls
+      - --enable-gpl
+      - --disable-doc
+      - --enable-libdav1d
+      - --enable-libvpx
+      - --enable-libopus
+      - --enable-libvorbis
+    sources:
+      - type: archive
+        url: https://ffmpeg.org/releases/ffmpeg-9.0.1.tar.xz
+        sha256: cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635
+        x-checker-data:
+          type: anitya
+          project-id: 5405
+          stable-only: true
+          url-template: https://ffmpeg.org/releases/ffmpeg-$version.tar.xz
+
+  - name: libass
+    config-opts:
+      - --disable-static
+    sources:
+      - type: archive
+        url: https://github.com/libass/libass/releases/download/0.17.5/libass-0.17.5.tar.xz
+        sha256: 2dca25c0e0c837ddf00b52011b3f82cac1e4ddd3ad018227806b0c2288864acc
+        x-checker-data:
+          type: anitya
+          project-id: 1560
+          stable-only: true
+          url-template: https://github.com/libass/libass/releases/download/$version/libass-$version.tar.xz
+
+  # Subtitle files come off the internet in whatever encoding they were saved
+  # in; this is what lets mpv's sub-codepage=auto guess right instead of
+  # rendering a Central European .srt as mojibake.
+  - name: uchardet
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_STATIC=0
+      - -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+    cleanup:
+      - /bin
+    sources:
+      - type: archive
+        url: https://www.freedesktop.org/software/uchardet/releases/uchardet-0.0.8.tar.xz
+        sha256: e97a60cfc00a1c147a674b097bb1422abd9fa78a2d9ce3f3fdcc2e78a34ac5f0
+        x-checker-data:
+          type: anitya
+          project-id: 9265
+          stable-only: true
+          url-template: https://www.freedesktop.org/software/uchardet/releases/uchardet-$version.tar.xz
+
+  # Not optional — mpv 0.38 and later will not configure without it.
+  - name: libplacebo
+    buildsystem: meson
+    sources:
+      - type: git
+        url: https://github.com/haasn/libplacebo.git
+        tag: v7.360.1
+        commit: cee9b076f2c63104ccfd497fa79c39a867293ec4
+        x-checker-data:
+          type: git
+          tag-pattern: ^v([\d.]+)$
+
+  - name: mpv
+    buildsystem: meson
+    config-opts:
+      - -Dbuild-date=false
+      - -Dcplayer=true
+      # The player launches the mpv process; nothing here links libmpv. (macOS
+      # does, but macOS is not built from this manifest.)
+      - -Dlibmpv=false
+      # Ventic sends commands down input-ipc-server, so mpv's own scripting
+      # runtimes are dead weight.
+      - -Dlua=disabled
+      - -Djavascript=disabled
+      # Optical media and editing filters: nothing here can reach a disc, and
+      # speed changes use mpv's built-in scaletempo2.
+      - -Dcdda=disabled
+      - -Ddvdnav=disabled
+      - -Dlibbluray=disabled
+      - -Dlibarchive=disabled
+      - -Drubberband=disabled
+      - -Dvapoursynth=disabled
+      - -Dzimg=disabled
+      # Wayland off for the same reason finish-args asks for plain x11.
+      - -Dwayland=disabled
+      # These four are the embedding itself; a build that quietly loses them
+      # produces an mpv that cannot take --wid, so fail loudly instead.
+      - -Dx11=enabled
+      - -Dgl-x11=enabled
+      - -Degl-x11=enabled
+      - -Dvulkan=enabled
+      - -Duchardet=enabled
+      - -Dwerror=false
+    cleanup:
+      - /share/applications
+      - /share/bash-completion
+      - /share/doc
+      - /share/icons
+      - /share/zsh
+    sources:
+      - type: archive
+        url: https://github.com/mpv-player/mpv/archive/v0.41.0.tar.gz
+        sha256: ee21092a5ee427353392360929dc64645c54479aefdb5babc5cfbb5fad626209
+        x-checker-data:
+          type: anitya
+          project-id: 5348
+          stable-only: true
+          url-template: https://github.com/mpv-player/mpv/archive/v$version.tar.gz
+
+  - name: ventic
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/node22/bin:/usr/lib/sdk/rust-stable/bin
+      env:
+        # flatpak-cargo-generator writes the vendored registry and the config
+        # that points cargo at it into this directory. It is $FLATPAK_BUILDER_BUILDDIR
+        # spelled out, because cargo reads CARGO_HOME before any of our shell runs.
+        CARGO_HOME: /run/build/ventic/cargo
+        # Baked into the frontend bundle by nuxt.config.ts. Public on purpose:
+        # this same token is already readable in every .deb, .AppImage and .exe
+        # on the releases page, so a Flathub build is not where it leaks. A user
+        # who would rather use their own puts it in Settings → About, which wins
+        # over this one.
+        TMDB_API: __TMDB_READ_TOKEN__
+    sources:
+      - type: git
+        url: https://github.com/ventic/ventic.git
+        tag: __TAG__
+        commit: __COMMIT__
+        x-checker-data:
+          type: git
+          tag-pattern: ^v([\d.]+)$
+          is-main-source: true
+      # The repo is bun-only (`preinstall` enforces it) and there is no bun in
+      # any SDK, so the offline install is npm's. This lockfile is generated
+      # from the same package.json — see generate-sources.sh.
+      - type: file
+        path: package-lock.json
+      - cargo-sources.json
+      - node-sources.json
+    build-commands:
+      # --ignore-scripts because `preinstall` is only-allow bun, which would
+      # refuse npm outright. That also skips the `postinstall` (nuxt prepare),
+      # so it is run by hand on the next line.
+      - npm ci --offline --ignore-scripts --cache=flatpak-node/npm-cache
+      - npx nuxt prepare
+      - npx nuxt generate
+      # tauri-build embeds .output/public into the binary here, which is why
+      # there is no separate step installing the frontend.
+      - cargo --offline build --release --manifest-path src-tauri/Cargo.toml
+      - install -Dm755 src-tauri/target/release/ventic ${FLATPAK_DEST}/bin/ventic
+      - install -Dm644 packaging/flatpak/${FLATPAK_ID}.desktop ${FLATPAK_DEST}/share/applications/${FLATPAK_ID}.desktop
+      - install -Dm644 packaging/flatpak/${FLATPAK_ID}.metainfo.xml ${FLATPAK_DEST}/share/metainfo/${FLATPAK_ID}.metainfo.xml
+      - install -Dm644 src-tauri/icons/32x32.png ${FLATPAK_DEST}/share/icons/hicolor/32x32/apps/${FLATPAK_ID}.png
+      - install -Dm644 src-tauri/icons/64x64.png ${FLATPAK_DEST}/share/icons/hicolor/64x64/apps/${FLATPAK_ID}.png
+      - install -Dm644 src-tauri/icons/128x128.png ${FLATPAK_DEST}/share/icons/hicolor/128x128/apps/${FLATPAK_ID}.png
+      - install -Dm644 src-tauri/icons/128x128@2x.png ${FLATPAK_DEST}/share/icons/hicolor/256x256/apps/${FLATPAK_ID}.png
+      - install -Dm644 src-tauri/icons/icon.png ${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/${FLATPAK_ID}.png

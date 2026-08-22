@@ -1,0 +1,104 @@
+# Publishes ventic-bin to the AUR.
+#
+# On `release: published`, not on the tag — release.yml leaves a *draft*, and a
+# draft's asset URLs 404 for everyone including makepkg, so a package pushed
+# then would be broken for however long the draft sat there. Clicking Publish is
+# the signal that the .deb is actually downloadable.
+#
+# Needs two secrets:
+#   AUR_SSH_KEY   private half of the key uploaded to the AUR account
+#   AUR_USERNAME  that account's name (used for the commit author)
+name: AUR
+
+on:
+  release:
+    types: [published]
+  # Re-run against any published tag, e.g. after fixing the PKGBUILD by hand.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to publish (vX.Y.Z)
+        required: true
+
+jobs:
+  # A job of its own purely because the `secrets` context is not available in a
+  # job-level `if:`. Without it every release fails here until the AUR account
+  # exists — and AUR registration is closed from time to time, so "not yet" is a
+  # state this has to sit in quietly rather than page about.
+  key:
+    runs-on: ubuntu-latest
+    outputs:
+      present: ${{ steps.check.outputs.present }}
+    steps:
+      - id: check
+        env:
+          AUR_SSH_KEY: ${{ secrets.AUR_SSH_KEY }}
+        run: |
+          if [ -n "$AUR_SSH_KEY" ]; then
+            echo "present=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::No AUR_SSH_KEY secret, so nothing was pushed to the AUR. Set it up when you have an account — see packaging/README.md."
+          fi
+
+  publish:
+    needs: key
+    runs-on: ubuntu-latest
+    # A prerelease is not what people should get from `pacman -Syu`.
+    if: needs.key.outputs.present == 'yes' && (github.event_name == 'workflow_dispatch' || !github.event.release.prerelease)
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Work out the version
+        run: |
+          tag="${{ inputs.tag || github.event.release.tag_name }}"
+          echo "TAG=$tag" >> "$GITHUB_ENV"
+          echo "PKGVER=${tag#v}" >> "$GITHUB_ENV"
+
+      # The hashes have to be of the files the AUR will actually fetch, so take
+      # them from the release rather than from anything in this checkout.
+      - name: Hash the release assets
+        run: |
+          base=https://github.com/${{ github.repository }}
+          curl -fsSL -o deb "$base/releases/download/$TAG/Ventic_${PKGVER}_amd64.deb"
+          curl -fsSL -o lic "https://raw.githubusercontent.com/${{ github.repository }}/$TAG/LICENSE"
+          echo "DEB_SHA=$(sha256sum deb | cut -d' ' -f1)" >> "$GITHUB_ENV"
+          echo "LIC_SHA=$(sha256sum lic | cut -d' ' -f1)" >> "$GITHUB_ENV"
+
+      # .SRCINFO is generated, and only makepkg generates it correctly — hence a
+      # throwaway Arch container rather than hand-editing a file the AUR rejects
+      # if it disagrees with the PKGBUILD by one character.
+      - name: Rewrite the PKGBUILD and regenerate .SRCINFO
+        run: |
+          cd packaging/aur
+          sed -i \
+            -e "s/^pkgver=.*/pkgver=$PKGVER/" \
+            -e "s/^pkgrel=.*/pkgrel=1/" \
+            -e "0,/^sha256sums=(/{s|^sha256sums=('.*'|sha256sums=('$DEB_SHA'|}" \
+            -e "s|^            '.*')|            '$LIC_SHA')|" \
+            PKGBUILD
+          docker run --rm -v "$PWD:/pkg" -w /pkg archlinux:base-devel sh -c '
+            useradd -m build && chown -R build /pkg &&
+            su build -c "makepkg --printsrcinfo" > .SRCINFO'
+          cat PKGBUILD .SRCINFO
+
+      - name: Push to the AUR
+        env:
+          AUR_SSH_KEY: ${{ secrets.AUR_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$AUR_SSH_KEY" > ~/.ssh/aur
+          chmod 600 ~/.ssh/aur
+          # aur.archlinux.org's host key, pinned rather than trusted on first
+          # use: this runner is new every time and has no known_hosts to trust.
+          ssh-keyscan -t ed25519 aur.archlinux.org >> ~/.ssh/known_hosts
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/aur -o IdentitiesOnly=yes"
+
+          git clone ssh://aur@aur.archlinux.org/ventic-bin.git aur
+          cp packaging/aur/PKGBUILD packaging/aur/.SRCINFO aur/
+          cd aur
+          git config user.name "${{ secrets.AUR_USERNAME }}"
+          git config user.email "${{ secrets.AUR_USERNAME }}@users.noreply.aur.archlinux.org"
+          git add PKGBUILD .SRCINFO
+          git diff --cached --quiet && { echo "Already at $PKGVER."; exit 0; }
+          git commit -m "Update to $PKGVER"
+          git push

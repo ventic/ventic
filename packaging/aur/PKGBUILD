@@ -1,0 +1,41 @@
+# Maintainer: Tilen Pirih <tilen.pirih@gmail.com>
+#
+# Repackages the .deb from the GitHub release rather than building from source:
+# a source build compiles the whole Rust tree *and* runs a Nuxt build, which is
+# twenty minutes on a user's machine for bytes that already exist. The AppImage
+# is deliberately not used — the runtime sets $APPIMAGE, which is what tells
+# `can_self_update` (src-tauri/src/lib.rs) that the app may overwrite its own
+# binary, and that binary would be a pacman-owned file. Unpacked from the .deb
+# there is no bundle type, so the app defers to pacman and the update panel
+# says so.
+#
+# Hashes here are rewritten by .github/workflows/release.yml on every tag.
+
+pkgname=ventic-bin
+pkgver=0.2.2
+pkgrel=1
+pkgdesc="Stream torrents to a real player — a media library over an embedded BitTorrent engine"
+arch=('x86_64')
+url="https://github.com/ventic/ventic"
+license=('MIT')
+# webkit2gtk-4.1 and gtk3 are what the binary links; libayatana-appindicator is
+# the tray icon. mpv and ffmpeg are launched as processes, not linked — mpv is
+# the player itself (parented into the app window over X11), ffmpeg draws the
+# seek-bar previews and the waveform the subtitle sync uses.
+depends=('webkit2gtk-4.1' 'gtk3' 'libayatana-appindicator' 'mpv' 'ffmpeg' 'hicolor-icon-theme')
+provides=('ventic')
+conflicts=('ventic')
+options=('!strip' '!debug')
+source=("${pkgname}-${pkgver}.deb::${url}/releases/download/v${pkgver}/Ventic_${pkgver}_amd64.deb"
+        "LICENSE-${pkgver}::https://raw.githubusercontent.com/ventic/ventic/v${pkgver}/LICENSE")
+sha256sums=('7f53b3940af81796f6fbc9f7331dc8d591871d7288a2fecf3c69c819c7aaf473'
+            'd9738886bc6447902842091d495d18e817ce833d20965fea0d4a314703ee0d9c')
+
+package() {
+	# makepkg unpacks the .deb itself (bsdtar reads ar), which leaves the three
+	# members in $srcdir but does not go inside them. data.tar.gz is already
+	# /usr/bin + /usr/share, so it lands where it belongs untouched.
+	bsdtar -xf "${srcdir}/data.tar.gz" -C "${pkgdir}"
+
+	install -Dm644 "${srcdir}/LICENSE-${pkgver}" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

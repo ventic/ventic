@@ -1,0 +1,23 @@
+pkgbase = ventic-bin
+	pkgdesc = Stream torrents to a real player — a media library over an embedded BitTorrent engine
+	pkgver = 0.2.2
+	pkgrel = 1
+	url = https://github.com/ventic/ventic
+	arch = x86_64
+	license = MIT
+	depends = webkit2gtk-4.1
+	depends = gtk3
+	depends = libayatana-appindicator
+	depends = mpv
+	depends = ffmpeg
+	depends = hicolor-icon-theme
+	provides = ventic
+	conflicts = ventic
+	options = !strip
+	options = !debug
+	source = ventic-bin-0.2.2.deb::https://github.com/ventic/ventic/releases/download/v0.2.2/Ventic_0.2.2_amd64.deb
+	source = LICENSE-0.2.2::https://raw.githubusercontent.com/ventic/ventic/v0.2.2/LICENSE
+	sha256sums = 7f53b3940af81796f6fbc9f7331dc8d591871d7288a2fecf3c69c819c7aaf473
+	sha256sums = d9738886bc6447902842091d495d18e817ce833d20965fea0d4a314703ee0d9c
+
+pkgname = ventic-bin

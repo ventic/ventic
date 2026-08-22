@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Application
+Name=Ventic
+Comment=Media library and BitTorrent player
+Exec=ventic %u
+Icon=io.github.ventic.Ventic
+Terminal=false
+Categories=AudioVideo;Player;
+Keywords=torrent;bittorrent;mpv;video;movies;streaming;
+# The app registers these itself at startup, but inside the sandbox that write
+# lands in ~/.var/app/…/data/applications where the host's xdg-open never looks.
+# Declaring them here is what makes a ventic:// link work from a browser.
+MimeType=x-scheme-handler/ventic;x-scheme-handler/stremio;
+# Tauri names the window class after the binary, not the desktop file.
+StartupWMClass=ventic
+StartupNotify=true

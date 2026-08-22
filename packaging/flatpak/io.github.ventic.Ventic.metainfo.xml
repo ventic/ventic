@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  AppStream metadata for the Flatpak. The id is io.github.ventic.Ventic rather
+  than the com.ventic.app that Tauri uses internally: Flathub requires an id
+  under a domain the publisher demonstrably controls, and github.com/ventic is
+  that. The Tauri identifier is deliberately left alone — it is what names the
+  config and data directories, so changing it would strand every existing
+  install's settings.
+-->
+<component type="desktop-application">
+  <id>io.github.ventic.Ventic</id>
+
+  <name>Ventic</name>
+  <summary>Media library and BitTorrent player</summary>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+
+  <developer id="io.github.ventic">
+    <name>Ventic contributors</name>
+  </developer>
+
+  <launchable type="desktop-id">io.github.ventic.Ventic.desktop</launchable>
+
+  <description>
+    <p>
+      Ventic keeps track of what you are watching and plays torrents in a real mpv
+      window rather than a browser video tag — so half-downloaded MKVs, HEVC, AV1
+      and DTS all just play. It is driven as happily by a TV remote as by a mouse.
+    </p>
+    <p>
+      Ventic hosts no content and indexes no content. It ships with no sources
+      configured, searches nothing on its own, and will not suggest anywhere to
+      look: a source is a URL you add yourself under Settings. With none
+      configured it is a general-purpose torrent client with a very good player
+      attached.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>An embedded mpv window with hardware decoding, subtitle tracks and audio track switching</li>
+      <li>A BitTorrent engine that streams while it downloads, so playback starts before the file does</li>
+      <li>A local watch history, favourites and watchlist — no account, no server, nothing synced</li>
+      <li>Subtitle search, download and resync against the audio</li>
+      <li>Twenty-eight themes, or one generated from a colour or a picture you choose</li>
+      <li>Full keyboard and d-pad navigation</li>
+    </ul>
+  </description>
+
+  <content_rating type="oars-1.1"/>
+
+  <url type="homepage">https://github.com/ventic/ventic</url>
+  <url type="bugtracker">https://github.com/ventic/ventic/issues</url>
+  <url type="vcs-browser">https://github.com/ventic/ventic</url>
+  <url type="donation">https://buymeacoffee.com/tilenpirih</url>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>The detail page for a title</caption>
+      <image>https://raw.githubusercontent.com/ventic/ventic/main/docs/media/detail.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>A film playing in the embedded mpv window</caption>
+      <image>https://raw.githubusercontent.com/ventic/ventic/main/docs/media/player.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Downloads in progress</caption>
+      <image>https://raw.githubusercontent.com/ventic/ventic/main/docs/media/downloads.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Appearance settings</caption>
+      <image>https://raw.githubusercontent.com/ventic/ventic/main/docs/media/themes.png</image>
+    </screenshot>
+  </screenshots>
+
+  <branding>
+    <color type="primary" scheme_preference="light">#d7c5f5</color>
+    <color type="primary" scheme_preference="dark">#2a1f3d</color>
+  </branding>
+
+  <categories>
+    <category>AudioVideo</category>
+    <category>Player</category>
+    <category>Network</category>
+  </categories>
+
+  <keywords>
+    <keyword>torrent</keyword>
+    <keyword>bittorrent</keyword>
+    <keyword>mpv</keyword>
+    <keyword>video</keyword>
+    <keyword>movies</keyword>
+    <keyword>streaming</keyword>
+  </keywords>
+
+  <releases>
+    <release version="0.2.2" date="2026-08-17"/>
+  </releases>
+</component>
