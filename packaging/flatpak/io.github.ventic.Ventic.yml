@@ -267,7 +267,13 @@ modules:
       - npx nuxt generate
       # tauri-build embeds .output/public into the binary here, which is why
       # there is no separate step installing the frontend.
-      - cargo --offline build --release --manifest-path src-tauri/Cargo.toml
+      #
+      # --features tauri/custom-protocol is what `tauri build` passes and a bare
+      # `cargo build` does not: the tauri crate's build script sets `dev` to the
+      # *negation* of that feature, so without it the release binary is a dev
+      # build that loads devUrl (http://localhost:3000) and shows nothing but a
+      # connection refused page.
+      - cargo --offline build --release --features tauri/custom-protocol --manifest-path src-tauri/Cargo.toml
       - install -Dm755 src-tauri/target/release/ventic ${FLATPAK_DEST}/bin/ventic
       - install -Dm644 ${FLATPAK_ID}.desktop ${FLATPAK_DEST}/share/applications/${FLATPAK_ID}.desktop
       - install -Dm644 ${FLATPAK_ID}.metainfo.xml ${FLATPAK_DEST}/share/metainfo/${FLATPAK_ID}.metainfo.xml
