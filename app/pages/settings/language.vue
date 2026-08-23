@@ -26,6 +26,9 @@ const items = computed(() => locales.value.map(l => ({
   value: l.code,
   title: l.name ?? l.code,
   subtitle: english.of(l.code) === l.name ? undefined : english.of(l.code),
+  // Derived, not stored: see app/utils/flag.ts. Esperanto has no country and
+  // so no flag, which is why every use of it is guarded.
+  flag: flag(l.language ?? l.code),
 })))
 
 const translated = computed(() =>
@@ -46,10 +49,23 @@ const translated = computed(() =>
         auto-select-first
         :items="items"
         variant="solo-filled"
-        item-props
         :label="$t('Language')"
         hide-details
-      />
+      >
+        <template #item="{ item, props: itemProps }">
+          <v-list-item v-bind="itemProps" :subtitle="item.subtitle">
+            <template #prepend>
+              <icon v-if="item.flag" :name="item.flag" size="24" class="mr-3" />
+              <span v-else class="mr-3 inline-block w-24px" />
+            </template>
+          </v-list-item>
+        </template>
+
+        <template #selection="{ item }">
+          <icon v-if="item.flag" :name="item.flag" size="20" class="mr-2" />
+          {{ item.title }}
+        </template>
+      </v-autocomplete>
       <p class="text-body-medium opacity-70">
         {{ $t('Descriptions, titles and artwork come from TMDB in {language} — the language list is TMDB\'s own, so anything offered here is a language it can answer in.', { language: translated }) }}
       </p>

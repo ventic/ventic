@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import process from 'node:process'
+import { flag } from './app/utils/flag'
 import i18nLocales from './i18n/i18n.locales.json'
 import { version } from './package.json'
 import vuetifyConfig from './vuetify.config'
@@ -27,6 +28,7 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@pinia/nuxt',
     '@nuxtjs/i18n',
+    '@nuxt/icon',
   ],
 
   /**
@@ -88,6 +90,22 @@ export default defineNuxtConfig({
       script: [
         { innerHTML: bootDiagnostics },
       ],
+    },
+  },
+
+  /**
+   * The only icons that aren't @mdi/js are the language picker's flags, and
+   * they are inlined into the bundle rather than fetched: there is no Nitro
+   * server behind a `tauri://` origin to serve them and no promise of a network
+   * to reach api.iconify.design over. `clientBundle.scan` can't find them —
+   * the name is computed per locale — so the list is built the same way the
+   * page builds it.
+   */
+  icon: {
+    provider: 'none',
+    serverBundle: false,
+    clientBundle: {
+      icons: i18nLocales.locales.map(l => flag(l.language)).filter(i => !!i),
     },
   },
 

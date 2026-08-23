@@ -40,6 +40,7 @@
     "@material/material-color-utilities": "^0.4.0",
     "@mdi/js": "^7.4.47",
     "@nuxt/fonts": "^0.14.0",
+    "@nuxt/icon": "^2.5.0",
     "@nuxtjs/i18n": "^10.6.0",
     "@pinia/nuxt": "^1.0.1",
     "@tauri-apps/api": "^2.11.1",
@@ -62,6 +63,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.2.0",
+    "@iconify-json/twemoji": "^1.2.5",
     "@nuxt/eslint": "^1.16.0",
     "@tauri-apps/cli": "^2.11.4",
     "@types/node": "^24.0.10",
