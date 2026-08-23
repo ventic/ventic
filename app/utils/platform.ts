@@ -95,6 +95,22 @@ function bridge() {
 }
 
 /**
+ * Is this one of the three desktop builds — a real window, a shell, a webview
+ * with a zoom of its own?
+ *
+ * The odd ones out are Android, which has none of that, and `bun run dev` in a
+ * browser, where `platform()` throws because there is no Tauri under it at all.
+ */
+export function isDesktop() {
+  try {
+    return platform() === 'linux' || platform() === 'windows' || platform() === 'macos'
+  }
+  catch {
+    return false
+  }
+}
+
+/**
  * Can this OS show a folder in a file manager?
  *
  * Android can't, twice over: downloads land in a folder only this app is
@@ -103,11 +119,5 @@ function bridge() {
  * buttons are hidden rather than left to error.
  */
 export function canOpenFolder() {
-  try {
-    return platform() === 'linux' || platform() === 'windows' || platform() === 'macos'
-  }
-  catch {
-    // Not running under Tauri at all, so there is no shell to open one with.
-    return false
-  }
+  return isDesktop()
 }

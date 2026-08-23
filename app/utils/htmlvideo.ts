@@ -22,6 +22,7 @@
  * which is also what mpv does for a property it can't produce.
  */
 import { platform } from '@tauri-apps/plugin-os'
+import { isDesktop } from './platform'
 
 /**
  * Is mpv behind the controls? True on exactly the three targets `lib.rs`
@@ -30,14 +31,8 @@ import { platform } from '@tauri-apps/plugin-os'
  * `<video>` element below.
  */
 export function hasNativePlayer() {
-  try {
-    const os = platform()
-    return os === 'linux' || os === 'windows' || os === 'macos'
-  }
-  catch {
-    // Not running under Tauri at all, so there is no native player either.
-    return false
-  }
+  // Not running under Tauri at all counts as no, which `isDesktop` already says.
+  return isDesktop()
 }
 
 /**

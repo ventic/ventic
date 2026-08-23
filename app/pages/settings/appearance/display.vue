@@ -3,23 +3,35 @@ import { mdiRestore } from '@mdi/js'
 
 const settings = useSettingsStore()
 const ui = useUiStore()
+
+const { locale } = useNuxtApp().$i18n
+
+/**
+ * The steps a browser's own zoom offers, which is what this now is on the
+ * desktop (see `app.vue`). A list rather than the slider it replaced: a scale is
+ * picked once and wants naming, and crossing a 0.05-step slider on a remote is
+ * twenty-four presses.
+ */
+const SCALES = [0.8, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2]
+
+const scales = computed(() => {
+  const percent = new Intl.NumberFormat(locale.value, { style: 'percent' })
+  return SCALES.map(value => ({ value, title: percent.format(value) }))
+})
+
+const scale = computed({
+  // A value the old slider saved need not be on the list, so show the nearest —
+  // it becomes one of these exactly as soon as it is touched.
+  get: () => SCALES.reduce((a, b) => Math.abs(b - settings.uiScale) < Math.abs(a - settings.uiScale) ? b : a),
+  set: (value: number) => (settings.uiScale = value),
+})
 </script>
 
 <template>
   <div class="flex flex-col gap-6">
     <settings-section :title="$t('Size')" :hint="$t('How big the interface and the posters on the browse pages are.')">
       <settings-row :label="$t('App scale')">
-        <v-slider
-          v-model="settings.uiScale"
-          :min="0.8"
-          :max="2"
-          :step="0.05"
-          thumb-label
-        >
-          <template #thumb-label="{ modelValue }">
-            {{ Math.round(Number(modelValue) * 100) }}%
-          </template>
-        </v-slider>
+        <v-select v-model="scale" :items="scales" density="comfortable" hide-details />
       </settings-row>
       <settings-row :label="$t('Poster size')">
         <v-slider

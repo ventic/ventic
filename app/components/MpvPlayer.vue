@@ -811,19 +811,32 @@ function toggleFullscreen() {
 interface Rect { x: number, y: number, width: number, height: number }
 
 /**
- * CSS px → physical px, for an element and its already-measured box.
+ * CSS px → physical px, measured rather than worked out.
  *
- * App scale is a `zoom` on the root, and engines disagree on whether
- * getBoundingClientRect already has it folded in (standardised zoom does, the
- * older WebKit/Blink behaviour divides it back out). Guessing wrong parks
- * mpv's native window in the wrong place, so measure it: offsetWidth is always
- * in the element's own unzoomed px, and the ratio says which convention the
- * rect follows.
+ * Only mpv needs this, and app scale on every target mpv runs on is the
+ * webview's own page zoom (`app.vue`) — which the engines fold into
+ * `devicePixelRatio` or leave beside it, and disagree about. Getting it wrong
+ * parks mpv's window in the wrong place, so nothing here reasons about it: ask
+ * the platform how many real pixels wide this webview is and divide by how many
+ * the page thinks it is.
+ *
+ * Re-measured whenever the CSS viewport changes width, which is what a resize
+ * and a change of zoom both do — no listener, and no round trip per frame. The
+ * value it starts at is right for the ordinary case of no zoom at all, so the
+ * frame or two before the first answer lands is not a jump.
  */
-function pxRatio(el: HTMLElement, r: DOMRect) {
-  const zoom = settings.uiScale || 1
-  const inRect = el.offsetWidth ? r.width / el.offsetWidth : zoom
-  return (window.devicePixelRatio || 1) * zoom / inRect
+let pxRatio = window.devicePixelRatio || 1
+let measuredAt = 0
+
+function measurePx() {
+  const css = window.innerWidth
+  if (css === measuredAt || !css)
+    return
+  measuredAt = css
+  useTauriWebviewWindowGetCurrentWebviewWindow().size().then(size => (pxRatio = size.width / css)).catch(() => {
+    // No answer to be had — `devicePixelRatio` is what it keeps, which is
+    // right for the only case that reaches here with mpv running: no zoom.
+  })
 }
 
 /**
@@ -911,7 +924,8 @@ function frame(now: number) {
   if (!el)
     return
   const r = el.getBoundingClientRect()
-  const dpr = pxRatio(el, r)
+  measurePx()
+  const dpr = pxRatio
   // Hide the native surface when the box is off-screen or not laid out —
   // otherwise it keeps painting over whatever the page scrolls under it.
   const visible = r.width >= 16 && r.height >= 16
@@ -1053,7 +1067,8 @@ async function startPlayer() {
     if (native) {
       // Re-measure: the window may have been resized while the probe ran.
       const b = boxEl.value!.getBoundingClientRect()
-      const dpr = pxRatio(boxEl.value!, b)
+      measurePx()
+      const dpr = pxRatio
       await invoke('player_start', {
         url: props.src,
         ...viewport(dpr),
@@ -1822,6 +1837,10 @@ watch(() => behind && started.value, on => {
 
 onMounted(() => {
   window.addEventListener('keydown', onKey, true)
+  // Ahead of the first geometry push rather than alongside it, so the window
+  // mpv opens is already the right size at any scale but 100%.
+  if (native)
+    measurePx()
   rafId = requestAnimationFrame(frame)
   listenToNativeMouse()
   if (props.fullscreen)
