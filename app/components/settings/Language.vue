@@ -42,6 +42,10 @@ const translated = computed(() =>
     >
       <v-autocomplete
         v-model="current"
+        autofocus
+        clearable
+        clear-on-select
+        auto-select-first
         :items="items"
         variant="solo-filled"
         item-props
