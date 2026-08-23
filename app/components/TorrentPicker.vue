@@ -52,7 +52,7 @@ async function load() {
     return
   }
   if (!props.imdbId) {
-    error.value = 'TMDB has no IMDb id for this title, so there is nothing to look it up with.'
+    error.value = $t('TMDB has no IMDb id for this title, so there is nothing to look it up with.')
     return
   }
   pending.value = true

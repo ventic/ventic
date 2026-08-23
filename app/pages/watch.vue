@@ -201,17 +201,17 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
           <template v-if="failure">
             <v-icon :icon="mdiAlertCircleOutline" color="error" size="40" />
             <div class="text-title-large">
-              Nothing to play
+              {{ $t('Nothing to play') }}
             </div>
             <p class="text-body-medium opacity-70">
               {{ failure }}
             </p>
             <div class="mt-2 flex gap-2">
               <v-btn variant="tonal" :prepend-icon="mdiReload" @click="start">
-                Try again
+                {{ $t('Try again') }}
               </v-btn>
               <v-btn variant="text" :prepend-icon="mdiArrowLeft" @click="leave">
-                Back
+                {{ $t('Back') }}
               </v-btn>
             </div>
           </template>
@@ -227,10 +227,10 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
             <div v-if="torrent" class="text-body-small opacity-50">
               {{ torrent.quality }} · {{ torrent.size }}
               <template v-if="torrent.url">
-                · direct link
+                · {{ $t('direct link') }}
               </template>
               <template v-else>
-                · {{ torrent.seeders }} seeders
+                · {{ $t('{count} seeders', { count: torrent.seeders }) }}
               </template>
               · {{ torrent.source }}
               <div class="mt-1 truncate">
@@ -238,7 +238,7 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
               </div>
             </div>
             <v-btn class="mt-2" variant="text" size="small" :prepend-icon="mdiArrowLeft" @click="leave">
-              Back
+              {{ $t('Back') }}
             </v-btn>
           </template>
         </div>

@@ -270,11 +270,11 @@ const playLabel = computed(() => [
           />
           <v-card-actions>
             <v-btn :prepend-icon="mdiOpenInNew" size="small" variant="text" @click="openTrailer">
-              Open on YouTube
+              {{ $t('Open on YouTube') }}
             </v-btn>
             <v-spacer />
             <v-btn size="small" variant="text" @click="trailer = false">
-              Close
+              {{ $t('Close') }}
             </v-btn>
           </v-card-actions>
         </v-card>

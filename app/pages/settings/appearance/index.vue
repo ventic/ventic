@@ -119,7 +119,9 @@ const spectrum = `linear-gradient(to right, ${Array.from({ length: 13 }, (_, i) 
               class="absolute right-1 top-1 rounded-full bg-primary text-on-primary"
             />
           </span>
-          <span class="text-label-large truncate px-1">{{ theme.title }}</span>
+          <!-- Preset names are product names and stay as they are; the generated
+               pair is a description, so it is the one title that translates. -->
+          <span class="text-label-large truncate px-1">{{ theme.generated ? $t('Your colour') : theme.title }}</span>
         </button>
       </div>
     </section>

@@ -33,13 +33,13 @@ const custom = ref(model.value || props.colours[0]!)
     <v-menu v-model="open" :close-on-content-click="false" location="bottom start">
       <template #activator="{ props: menu }">
         <v-btn v-bind="menu" :prepend-icon="mdiPaletteSwatch" variant="tonal" size="small">
-          Custom
+          {{ $t('Custom') }}
         </v-btn>
       </template>
       <v-card rounded="xl" class="p-3">
         <v-color-picker v-model="custom" mode="hex" hide-inputs width="260" />
         <v-btn block class="mt-3" @click="model = custom; open = false">
-          Use this colour
+          {{ $t('Use this colour') }}
         </v-btn>
       </v-card>
     </v-menu>

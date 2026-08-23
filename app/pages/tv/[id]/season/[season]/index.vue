@@ -28,7 +28,7 @@ const others = computed(() => show.value?.seasons.filter(s => s.number !== numbe
       <v-icon :icon="mdiAlertCircleOutline" color="error" size="40" />
       <span class="text-body-medium opacity-70">{{ $t('Couldn\'t load this season.') }}</span>
       <v-btn variant="tonal" :to="localePath(`/tv/${id}`)">
-        Back to show
+        {{ $t('Back to show') }}
       </v-btn>
     </div>
 
@@ -45,12 +45,12 @@ const others = computed(() => show.value?.seasons.filter(s => s.number !== numbe
 
           <div class="flex min-w-0 flex-1 flex-col gap-3">
             <h1 class="text-headline-large font-bold drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)]">
-              {{ season?.name ?? `Season ${number}` }}
+              {{ season?.name ?? $t('Season {number}', { number }) }}
             </h1>
 
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-body-small opacity-75">
               <span v-if="season?.air">{{ dateText(season.air) }}</span>
-              <span v-if="season?.episodes.length">{{ season.episodes.length }} episodes</span>
+              <span v-if="season?.episodes.length">{{ $t('{count} episodes', { count: season.episodes.length }) }}</span>
               <span v-if="show?.certification" class="rounded border border-outline-variant px-1.5 py-0.5 text-label-small">
                 {{ show.certification }}
               </span>

@@ -119,7 +119,7 @@ const reserve = computed(() =>
                 {{ media.title }}
               </div>
               <div class="text-body-small opacity-70">
-                {{ media.year || 'unknown' }}
+                {{ media.year || $t('unknown') }}
               </div>
             </div>
             <v-spacer v-else />
@@ -153,7 +153,7 @@ const reserve = computed(() =>
         {{ media.title }}
       </div>
       <div class="truncate text-body-small opacity-55">
-        {{ media.year || 'unknown' }}
+        {{ media.year || $t('unknown') }}
       </div>
     </div>
   </nuxt-link>

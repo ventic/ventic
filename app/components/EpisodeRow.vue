@@ -56,7 +56,7 @@ function play() {
     <div class="flex w-full shrink-0 items-center justify-end gap-1 sm:mt-1 sm:w-auto">
       <!-- The row opens the episode page; only this button starts playback. -->
       <v-btn :prepend-icon="mdiPlay" size="small" variant="tonal" @click.stop.prevent="play">
-        Play
+        {{ $t('Play') }}
       </v-btn>
 
       <!-- Says you've seen it without playing it, which is what moves the show

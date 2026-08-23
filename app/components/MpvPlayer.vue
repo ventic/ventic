@@ -2026,17 +2026,17 @@ defineExpose({ osd })
       <template v-if="centre === 'error'">
         <v-icon :icon="mdiAlertCircleOutline" size="30" color="error" />
         <div class="text-title-small">
-          Playback failed
+          {{ $t('Playback failed') }}
         </div>
         <pre class="max-h-32.5 max-w-full overflow-auto whitespace-pre-wrap text-left text-label-small font-mono opacity-70">{{ errorMsg }}</pre>
         <button :class="BTN" :disabled="busy" @click="startPlayer">
-          <v-icon :icon="mdiReload" size="18" /> Retry
+          <v-icon :icon="mdiReload" size="18" /> {{ $t('Retry') }}
         </button>
       </template>
 
       <template v-else-if="centre === 'ended'">
         <div class="text-title-small">
-          Playback finished
+          {{ $t('Playback finished') }}
         </div>
         <div class="flex gap-2">
           <!-- First in the DOM so it is where the d-pad lands, and where Enter
@@ -2045,7 +2045,7 @@ defineExpose({ osd })
             <v-icon :icon="mdiSkipNext" size="18" /> {{ next.label }}
           </nuxt-link>
           <button :class="BTN" :disabled="busy" @click="startPlayer">
-            <v-icon :icon="mdiReload" size="18" /> Play again
+            <v-icon :icon="mdiReload" size="18" /> {{ $t('Play again') }}
           </button>
         </div>
       </template>
