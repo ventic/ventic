@@ -21,7 +21,12 @@ const title = computed(() => SECTIONS.find(s => s.value === section.value)?.titl
 </script>
 
 <template>
-  <div class="h-full overflow-y-auto">
+  <!-- A settings page changes height as switches appear and sections open, so
+       an `auto` scrollbar comes and goes and the centred column under it steps
+       sideways. `scroll` holds the track open instead — `scrollbar-gutter:
+       stable` does the same in Chrome but is ignored by the WebKitGTK webview
+       the Linux app actually runs in. -->
+  <div class="h-full overflow-y-scroll">
     <div class="mx-auto max-w-3xl px-4 pb-16 md:px-8">
       <div class="flex items-center gap-2 pb-5 pt-3">
         <!-- Always-on way out of the settings shell — on a phone the menu button

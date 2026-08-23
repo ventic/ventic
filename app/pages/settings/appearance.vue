@@ -11,9 +11,8 @@ import { mdiImageOutline, mdiMonitorScreenshot, mdiPaletteOutline } from '@mdi/j
  */
 const route = useRoute()
 
-// The value is the path: the segment control is really a set of links, and
-// matching a route against `localePath` is what saves a second table mapping
-// the two.
+// The value is the path: the tab bar is really a set of links, and matching a
+// route against `localePath` is what saves a second table mapping the two.
 const TABS = [
   { value: '/settings/appearance', title: () => $t('Theme'), icon: mdiPaletteOutline },
   { value: '/settings/appearance/background', title: () => $t('Background'), icon: mdiImageOutline },
@@ -28,8 +27,9 @@ const tab = computed({
 
 <template>
   <div class="flex flex-col gap-6">
-    <settings-segment v-model="tab" :options="TABS" />
-
+    <v-tabs v-model="tab" inset grow color="primary">
+      <v-tab v-for="t in TABS" :key="t.value" :ripple="false" :value="t.value" :prepend-icon="t.icon" :text="t.title()" />
+    </v-tabs>
     <nuxt-page />
   </div>
 </template>
