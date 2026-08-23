@@ -40,9 +40,10 @@ const translated = computed(() =>
       :title="$t('Language')"
       :hint="$t('What language the app is in, and what language film and show descriptions are fetched in.')"
     >
-      <v-select
+      <v-autocomplete
         v-model="current"
         :items="items"
+        variant="solo-filled"
         item-props
         :label="$t('Language')"
         hide-details
