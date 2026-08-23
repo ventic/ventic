@@ -25,14 +25,21 @@ const current = computed({
  */
 const english = new Intl.DisplayNames(['en'], { type: 'language' })
 
-const items = computed(() => locales.value.map(l => ({
-  value: l.code,
-  title: l.name ?? l.code,
-  subtitle: english.of(l.code) === l.name ? undefined : english.of(l.code),
-  // Derived, not stored: see app/utils/flag.ts. Esperanto has no country and
-  // so no flag, which is why every use of it is guarded.
-  flag: flag(l.language ?? l.code),
-})))
+const items = computed(() => {
+  // The catalog is ordered by locale code, which is alphabetical in nothing
+  // anyone reads — the labels are endonyms. Collate in the language the app is
+  // currently in, so the alphabet doing the sorting is the reader's own.
+  const collator = new Intl.Collator(locale.value)
+
+  return locales.value.map(l => ({
+    value: l.code,
+    title: l.name ?? l.code,
+    subtitle: english.of(l.code) === l.name ? undefined : english.of(l.code),
+    // Derived, not stored: see app/utils/flag.ts. Esperanto has no country and
+    // so no flag, which is why every use of it is guarded.
+    flag: flag(l.language ?? l.code),
+  })).sort((a, b) => collator.compare(a.title, b.title))
+})
 
 const translated = computed(() =>
   locales.value.find(l => l.code === locale.value)?.language ?? 'en-US')
