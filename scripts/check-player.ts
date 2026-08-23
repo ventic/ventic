@@ -1,3 +1,6 @@
+import assert from 'node:assert'
+import { deviceCodecs, exoEngine, hasNativePlayer, hasVideoOverlay, videoEngine } from '../app/utils/htmlvideo'
+import { nearestFrame, walkOrder } from '../app/utils/thumbs'
 // Self-check for the <video> player backend: `bun scripts/check-player.ts`.
 //
 // The shim answers mpv's command/property protocol so one component drives
@@ -5,9 +8,7 @@
 // translation itself — a volume that's out by 100x or a `sid` that doesn't
 // stick shows up as a silent film or missing subtitles, neither of which says
 // which side got it wrong.
-import assert from 'node:assert'
-import { deviceCodecs, exoEngine, hasNativePlayer, hasVideoOverlay, videoEngine } from '../app/utils/htmlvideo'
-import { nearestFrame, walkOrder } from '../app/utils/thumbs'
+import './i18n-stub'
 
 /** Just the surface `videoEngine` touches — a DOM would be a dependency for six properties. */
 function fakeVideo() {

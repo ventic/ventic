@@ -55,13 +55,32 @@ export interface Subtitle {
 }
 
 /** The codes Intl doesn't know, because OpenSubtitles invented them. */
-const EXTRA_NAMES: Record<string, string> = {
-  pob: 'Portuguese (Brazil)',
-  zht: 'Chinese (traditional)',
-  zhe: 'Chinese (bilingual)',
+const EXTRA_NAMES: Record<string, () => string> = {
+  pob: () => $t('Portuguese (Brazil)'),
+  zht: () => $t('Chinese (traditional)'),
+  zhe: () => $t('Chinese (bilingual)'),
 }
 
-const NAMES = new Intl.DisplayNames(['en'], { type: 'language' })
+/**
+ * One `Intl.DisplayNames` per UI language, built on first use.
+ *
+ * The locale comes off `<html lang>` rather than from `useI18n`, because this
+ * file is also loaded outside Nuxt by `bun run check:subtitles` — and because
+ * `langName` is called while *matching* a downloaded file against a muxed
+ * track, which is not always inside a component. Either way both sides of a
+ * comparison go through here, so they agree whatever the language is.
+ */
+const NAMES = new Map<string, Intl.DisplayNames>()
+
+function displayNames() {
+  const locale = globalThis.document?.documentElement.lang || 'en'
+  let names = NAMES.get(locale)
+  if (!names) {
+    names = new Intl.DisplayNames([locale], { type: 'language' })
+    NAMES.set(locale, names)
+  }
+  return names
+}
 
 /**
  * "eng" -> "English". Also how a downloaded subtitle is matched against a track
@@ -71,9 +90,9 @@ const NAMES = new Intl.DisplayNames(['en'], { type: 'language' })
 export function langName(code: string) {
   const c = code.toLowerCase()
   if (EXTRA_NAMES[c])
-    return EXTRA_NAMES[c]
+    return EXTRA_NAMES[c]()
   try {
-    const name = NAMES.of(c)
+    const name = displayNames().of(c)
     return name && name !== c ? name : code
   }
   catch {
@@ -118,7 +137,7 @@ export function releaseSubtitle(path: string, video: string, url: string): Subti
 
   const label = (w: string) => NOT_LANGUAGES.test(w) ? w : langName(w)
   const code = words.findLast(w => w.length <= 3 && label(w) !== w) ?? ''
-  const name = words.map(label).join(' ') || 'Subtitles'
+  const name = words.map(label).join(' ') || $t('Subtitles')
   // The trimmed words are the menu's label; the file's own name is kept whole so
   // the row underneath can show what it actually is on disk.
   return { code, name, files: [{ id: url, url, lang: code, name: file }] }
@@ -449,19 +468,19 @@ export function fileLabel(f: SubtitleFile) {
   if (f.name)
     return f.name
   if (!f.cues.length)
-    return 'Unreadable'
-  return f.captions ? 'Captions (SDH)' : 'Dialogue only'
+    return $t('Unreadable')
+  return f.captions ? $t('Captions (SDH)') : $t('Dialogue only')
 }
 
 /** The dim second line: the facts that tell two files of one language apart. */
 export function fileNote(f: SubtitleFile) {
   if (!f.cues.length)
-    return 'Unreadable'
+    return $t('Unreadable')
   return [
     // Already said by the label when there is no name to show instead.
-    f.name && f.captions ? 'SDH' : '',
+    f.name && f.captions ? $t('SDH') : '',
     runtimeText(Math.round(subRuntime(f) / 60)),
-    `${f.cues.length} lines`,
+    $t('{count} lines', { count: f.cues.length }),
   ].filter(Boolean).join(' · ')
 }
 

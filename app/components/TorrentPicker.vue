@@ -48,11 +48,11 @@ const configured = computed(() => settings.sources.length > 0)
 
 async function load() {
   if (!configured.value) {
-    error.value = NO_SOURCES
+    error.value = NO_SOURCES()
     return
   }
   if (!props.imdbId) {
-    error.value = 'TMDB has no IMDb id for this title, so there is nothing to look it up with.'
+    error.value = $t('TMDB has no IMDb id for this title, so there is nothing to look it up with.')
     return
   }
   pending.value = true
@@ -134,19 +134,19 @@ async function download(t: Release) {
 
 <template>
   <v-btn :prepend-icon="mdiFormatListBulletedType" variant="tonal" :disabled="!imdbId" @click="open = true">
-    Releases
+    {{ $t('Releases') }}
 
     <v-dialog v-model="open" max-width="1000" scrollable>
       <v-card rounded="xl">
         <v-card-title class="flex items-center gap-3 text-title-medium">
-          <span>Pick a release</span>
+          <span>{{ $t('Pick a release') }}</span>
           <span v-if="torrents.length" class="text-body-small opacity-55">
-            {{ list.length }} of {{ torrents.length }}
+            {{ $t('{shown} of {total}', { shown: list.length, total: torrents.length }) }}
           </span>
           <v-spacer />
           <v-btn icon size="small" variant="text" color="on-surface" :loading="pending" @click="load">
             <v-icon :icon="mdiReload" size="20" />
-            <v-tooltip activator="parent" text="Search again" />
+            <v-tooltip activator="parent" :text="$t('Search again')" />
           </v-btn>
         </v-card-title>
 
@@ -159,7 +159,7 @@ async function download(t: Release) {
           <v-text-field
             v-model="query"
             :prepend-inner-icon="mdiMagnify"
-            placeholder="Release or origin"
+            :placeholder="$t('Release or origin')"
             variant="solo-filled"
             density="compact"
             rounded="lg"
@@ -171,8 +171,8 @@ async function download(t: Release) {
           <v-select
             v-model="sort"
             :items="[
-              { value: 'seeders', title: 'Most seeders' },
-              { value: 'size', title: 'Smallest' },
+              { value: 'seeders', title: $t('Most seeders') },
+              { value: 'size', title: $t('Smallest') },
             ]"
             density="compact"
             hide-details
@@ -184,11 +184,10 @@ async function download(t: Release) {
           <div v-if="!configured" class="flex flex-col items-center gap-3 py-10 text-center">
             <v-icon :icon="mdiPowerPlugOutline" size="36" class="opacity-40" />
             <span class="max-w-md text-body-medium opacity-70">
-              Ventic has no sources configured, so there is nowhere to search. You can still
-              play a magnet or a torrent file you open yourself.
+              {{ $t('Ventic has no sources configured, so there is nowhere to search. You can still play a magnet or a torrent file you open yourself.') }}
             </span>
-            <v-btn variant="tonal" size="small" to="/settings" @click="settings.section = 'sources'">
-              Open source settings
+            <v-btn variant="tonal" size="small" :to="localePath('/settings/sources')">
+              {{ $t('Open source settings') }}
             </v-btn>
           </div>
 
@@ -199,11 +198,11 @@ async function download(t: Release) {
 
           <div v-else-if="pending && !torrents.length" class="flex flex-col items-center gap-2 py-10">
             <v-progress-circular indeterminate color="primary" />
-            <span class="text-body-small opacity-55">Searching your sources…</span>
+            <span class="text-body-small opacity-55">{{ $t('Searching your sources…') }}</span>
           </div>
 
           <div v-else-if="!list.length" class="py-10 text-center text-body-medium opacity-60">
-            Nothing matches.
+            {{ $t('Nothing matches.') }}
           </div>
 
           <div v-else class="flex flex-col gap-1">
@@ -219,7 +218,7 @@ async function download(t: Release) {
               <div class="min-w-0 flex-1 basis-full sm:basis-0">
                 <div class="flex items-center gap-2">
                   <span class="truncate text-body-medium" :title="t.name">{{ t.name }}</span>
-                  <v-chip v-if="best && releaseKey(t) === releaseKey(best)" size="x-small" color="primary" text="Best" class="shrink-0" />
+                  <v-chip v-if="best && releaseKey(t) === releaseKey(best)" size="x-small" color="primary" :text="$t('Best')" class="shrink-0" />
                 </div>
                 <!-- Season packs name the episode here and nowhere else. -->
                 <div v-if="t.file" class="truncate text-body-small opacity-50" :title="t.file">
@@ -227,7 +226,7 @@ async function download(t: Release) {
                 </div>
               </div>
 
-              <v-chip size="x-small" :text="t.quality || 'unknown'" class="shrink-0" />
+              <v-chip size="x-small" :text="t.quality || $t('unknown')" class="shrink-0" />
 
               <!-- Amber is "costs more than it's worth", error is "will not fit
                    at all" — the second has to outrank the first, since a bloated
@@ -240,9 +239,9 @@ async function download(t: Release) {
                 <v-tooltip
                   v-if="tooBig(t)"
                   activator="parent"
-                  :text="`Over the ${bytesText(downloads.fileLimit)} single-file limit of the drive downloads go to — reformat it in Settings → Storage to use releases this big`"
+                  :text="$t('Over the {limit} single-file limit of the drive downloads go to — reformat it in Settings → Storage to use releases this big', { limit: bytesText(downloads.fileLimit) })"
                 />
-                <v-tooltip v-else-if="isBloated(t)" activator="parent" text="Bigger than this quality needs — may not keep up while streaming" />
+                <v-tooltip v-else-if="isBloated(t)" activator="parent" :text="$t('Bigger than this quality needs — may not keep up while streaming')" />
               </span>
 
               <!-- A link has no swarm, so this column says what it is instead. -->
@@ -251,8 +250,8 @@ async function download(t: Release) {
                 :class="t.url ? 'text-primary' : 'opacity-70'"
               >
                 <template v-if="t.url">
-                  <v-icon :icon="mdiFlashOutline" size="13" />Direct
-                  <v-tooltip activator="parent" text="The source fetched this already — it plays at once and keeps nothing on this device" />
+                  <v-icon :icon="mdiFlashOutline" size="13" />{{ $t('Direct') }}
+                  <v-tooltip activator="parent" :text="$t('The source fetched this already — it plays at once and keeps nothing on this device')" />
                 </template>
                 <template v-else>
                   <v-icon :icon="mdiAccountGroup" size="13" />{{ t.seeders }}
@@ -273,7 +272,7 @@ async function download(t: Release) {
                   :to="tooBig(t) ? undefined : playLink(t)"
                 >
                   <v-icon :icon="mdiPlay" size="20" />
-                  <v-tooltip activator="parent" :text="tooBig(t) ? 'Too big for the download drive' : 'Play this source'" />
+                  <v-tooltip activator="parent" :text="tooBig(t) ? $t('Too big for the download drive') : $t('Play this source')" />
                 </v-btn>
                 <!-- Nothing to hand the engine for a link, and nothing it could
                      keep — the file lives on the source's server, not in a swarm. -->
@@ -289,7 +288,7 @@ async function download(t: Release) {
                   <v-icon :icon="added.includes(releaseKey(t)) ? mdiCheck : mdiDownload" size="20" />
                   <v-tooltip
                     activator="parent"
-                    :text="tooBig(t) ? 'Too big for the download drive' : added.includes(releaseKey(t)) ? 'In downloads' : 'Download'"
+                    :text="tooBig(t) ? $t('Too big for the download drive') : added.includes(releaseKey(t)) ? $t('In downloads') : $t('Download')"
                   />
                 </v-btn>
               </div>
@@ -304,20 +303,20 @@ async function download(t: Release) {
                explanation reads as the app being broken. -->
           <span v-if="list.some(tooBig)" class="flex items-center gap-1 pl-2 text-body-small text-error">
             <v-icon :icon="mdiAlertCircleOutline" size="14" />
-            Dimmed rows are over the {{ bytesText(downloads.fileLimit) }} file limit of the download drive.
+            {{ $t('Dimmed rows are over the {limit} file limit of the download drive.', { limit: bytesText(downloads.fileLimit) }) }}
           </span>
           <!-- The legend is the first thing to go when the row gets tight; the
                amber itself still carries a tooltip. -->
           <span v-else class="hidden items-center gap-1 pl-2 text-body-small opacity-45 sm:flex">
             <v-icon :icon="mdiWeightLifter" size="14" />
-            Sizes in amber cost more bandwidth than the picture is worth.
+            {{ $t('Sizes in amber cost more bandwidth than the picture is worth.') }}
           </span>
           <v-spacer />
-          <v-btn variant="text" size="small" to="/downloads">
-            Downloads
+          <v-btn variant="text" size="small" :to="localePath('/downloads')">
+            {{ $t('Downloads') }}
           </v-btn>
           <v-btn variant="text" size="small" @click="open = false">
-            Close
+            {{ $t('Close') }}
           </v-btn>
         </v-card-actions>
       </v-card>

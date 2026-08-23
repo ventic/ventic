@@ -9,7 +9,12 @@
  * `text-primary`. Real buttons are also what a d-pad can walk along.
  */
 defineProps<{
-  options: readonly { value: T, title: string, icon?: string }[]
+  /**
+   * `title` is a function, not a string: every options table in the app is
+   * built when its module loads, before `$t` has a locale — see SECTIONS in
+   * the settings store.
+   */
+  options: readonly { value: T, title: () => string, icon?: string }[]
   /** Sized to its labels rather than the page — a filter under a heading, not a tab bar. */
   inline?: boolean
 }>()
@@ -36,7 +41,7 @@ const model = defineModel<T>({ required: true })
       @click="model = option.value"
     >
       <v-icon v-if="option.icon" :icon="option.icon" size="20" />
-      {{ option.title }}
+      {{ option.title() }}
     </button>
   </div>
 </template>

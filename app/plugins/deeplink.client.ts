@@ -20,8 +20,7 @@ export default defineNuxtPlugin(() => {
       return
 
     ui.pendingSource = source
-    settings.section = 'sources'
-    navigateTo('/settings')
+    navigateTo(localePath('/settings/sources'))
   }
 
   // Both paths happen: `getCurrent` is the link that launched the app, and

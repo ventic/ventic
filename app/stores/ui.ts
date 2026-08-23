@@ -9,15 +9,19 @@ export type Layout = 'grid-detail' | 'list'
 /** Poster art, one picture the user chose, or nothing at all — a theme names one. */
 export type { BackdropMode }
 
-export const BACKDROP_MODES: { value: BackdropMode, title: string }[] = [
-  { value: 'art', title: 'Poster art' },
-  { value: 'custom', title: 'My own image' },
-  { value: 'off', title: 'None' },
+// `title` is a function for the same reason SECTIONS' is — see the settings
+// store: built at module load, before `$t` has a locale to read.
+export const BACKDROP_MODES: { value: BackdropMode, title: () => string }[] = [
+  { value: 'art', title: () => $t('Poster art') },
+  { value: 'custom', title: () => $t('My own image') },
+  { value: 'off', title: () => $t('None') },
 ]
 
-export const LAYOUTS: { value: Layout, title: string, icon: string }[] = [
-  { value: 'grid-detail', title: 'Grid', icon: mdiViewGrid },
-  { value: 'list', title: 'List', icon: mdiFormatListBulleted },
+// `title` is a function for the same reason SECTIONS' is — see the settings
+// store: built at module load, before `$t` has a locale to read.
+export const LAYOUTS: { value: Layout, title: () => string, icon: string }[] = [
+  { value: 'grid-detail', title: () => $t('Grid'), icon: mdiViewGrid },
+  { value: 'list', title: () => $t('List'), icon: mdiFormatListBulleted },
 ]
 
 // One layout/size preference shared by every browse page instead of
@@ -49,7 +53,7 @@ export const useUiStore = defineStore('ui', () => {
 
   /** Where the art behind the app comes from, if anywhere. */
   const backdropMode = useLocalStorage<BackdropMode>('ventic.backdropMode', 'art')
-  /** The user's own picture, already downscaled — see `settings/Appearance.vue`. */
+  /** The user's own picture, already downscaled — see `pages/settings/appearance/background.vue`. */
   const backdropImage = useLocalStorage('ventic.backdropImage', '')
   /**
    * Whether pointing at or focusing a card swaps the art, rather than only

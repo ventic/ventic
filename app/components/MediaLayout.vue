@@ -86,16 +86,16 @@ const loadingFirstPage = computed(() => props.pending && !props.items.length)
         <v-icon :icon="mdiAlertCircleOutline" color="error" />
         <span class="text-body-medium opacity-70">{{ error }}</span>
         <v-btn :prepend-icon="mdiRefresh" variant="tonal" size="small" @click="emit('load')">
-          Retry
+          {{ $t('Retry') }}
         </v-btn>
       </template>
 
       <template v-else-if="!items.length && !pending">
         <v-icon :icon="mdiMovieOpenOutline" size="40" class="opacity-30" />
-        <span class="text-body-medium opacity-70">Nothing here.</span>
+        <span class="text-body-medium opacity-70">{{ $t('Nothing here.') }}</span>
       </template>
 
-      <span v-else-if="done" class="text-body-small opacity-45">That's everything.</span>
+      <span v-else-if="done" class="text-body-small opacity-45">{{ $t('That\'s everything.') }}</span>
     </div>
   </div>
 </template>

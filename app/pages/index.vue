@@ -28,10 +28,10 @@ watch(featured, media => media && ui.ambient(media), { immediate: true })
 // ponytail: no auto-advance. It moves the thing under a remote's focus ring,
 // and it is a `useIntervalFn` plus a pause-on-focus rule away if it's missed.
 
-const rows = [
-  { title: 'Popular movies', request: { path: '/movie/popular', type: 'movie' as const } },
-  { title: 'Popular shows', request: { path: '/tv/popular', type: 'tv' as const } },
-]
+const rows = computed(() => [
+  { title: $t('Popular movies'), request: { path: '/movie/popular', type: 'movie' as const } },
+  { title: $t('Popular shows'), request: { path: '/tv/popular', type: 'tv' as const } },
+])
 
 // Enough room for a poster row so v-lazy doesn't collapse before it mounts.
 const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
@@ -65,7 +65,7 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
             {{ featured.rating.toFixed(1) }}
           </v-chip>
           <span class="text-label-medium uppercase opacity-80">
-            {{ featured.type === 'movie' ? 'Movie' : 'TV Show' }} · {{ featured.year || 'unknown' }}
+            {{ featured.type === 'movie' ? $t('Movie') : $t('TV Show') }} · {{ featured.year || $t('unknown') }}
           </span>
         </div>
 
@@ -81,18 +81,18 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
              gap-2 leaves them touching. -->
         <div class="flex flex-wrap items-end gap-x-2 gap-y-3 pt-1">
           <v-btn :prepend-icon="mdiPlay" size="large" :to="library.resumeLink(featured)">
-            Play
+            {{ $t('Play') }}
           </v-btn>
           <v-btn :prepend-icon="mdiInformationOutline" size="large" variant="tonal" :to="mediaLink(featured)">
-            Details
+            {{ $t('Details') }}
           </v-btn>
           <v-btn icon variant="text" color="white" size="large" @click="library.toggleWatchlist(featured)">
             <v-icon :icon="library.inWatchlist(featured) ? mdiBookmark : mdiBookmarkOutline" :color="library.inWatchlist(featured) ? 'primary' : undefined" />
-            <v-tooltip activator="parent" :text="library.inWatchlist(featured) ? 'Remove from watchlist' : 'Add to watchlist'" />
+            <v-tooltip activator="parent" :text="library.inWatchlist(featured) ? $t('Remove from watchlist') : $t('Add to watchlist')" />
           </v-btn>
           <v-btn icon variant="text" color="white" size="large" @click="library.toggleFavourite(featured)">
             <v-icon :icon="library.isFavourite(featured) ? mdiHeart : mdiHeartOutline" :color="library.isFavourite(featured) ? 'primary' : undefined" />
-            <v-tooltip activator="parent" :text="library.isFavourite(featured) ? 'Remove from favourites' : 'Favourite'" />
+            <v-tooltip activator="parent" :text="library.isFavourite(featured) ? $t('Remove from favourites') : $t('Favourite')" />
           </v-btn>
 
           <v-spacer />
@@ -128,7 +128,7 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
       <!-- Straight back into playback, not to the detail page: this row exists
            to save you the two clicks. Not lazy — it comes out of localStorage,
            and it's the first thing you should see. -->
-      <scroll-row v-if="library.resumeRow.length" title="Continue watching">
+      <scroll-row v-if="library.resumeRow.length" :title="$t('Continue watching')">
         <media-card
           v-for="entry in library.resumeRow"
           :key="entry.key"

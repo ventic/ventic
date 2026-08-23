@@ -38,16 +38,16 @@ const hover = ref(false)
 
     <div class="min-w-0 flex-1">
       <div class="flex items-center gap-2">
-        <v-icon v-if="watched" :icon="mdiCheck" size="16" color="primary" title="Watched" />
+        <v-icon v-if="watched" :icon="mdiCheck" size="16" color="primary" :title="$t('Watched')" />
         <span class="truncate text-title-small">{{ media.title }}</span>
-        <span class="shrink-0 text-body-small opacity-55">{{ media.year || 'unknown' }}</span>
+        <span class="shrink-0 text-body-small opacity-55">{{ media.year || $t('unknown') }}</span>
         <span v-if="media.rating" class="flex shrink-0 items-center gap-0.5 text-body-small opacity-80">
           <svg viewBox="0 0 24 24" class="size-3 fill-amber-400"><path :d="mdiStar" /></svg>
           {{ media.rating.toFixed(1) }}
         </span>
       </div>
       <div class="line-clamp-2 pt-0.5 text-body-small opacity-65">
-        {{ media.overview || 'No overview.' }}
+        {{ media.overview || $t('No overview.') }}
       </div>
     </div>
 

@@ -2,7 +2,7 @@
 import { mdiAlertCircleOutline, mdiArrowLeft, mdiMovieOpenOutline } from '@mdi/js'
 
 definePageMeta({
-  validate: route => /^\d+$/.test(String(route.params.season)),
+  validate: ({ params }) => 'season' in params && /^\d+$/.test(params.season),
 })
 
 const route = useRoute()
@@ -26,16 +26,16 @@ const others = computed(() => show.value?.seasons.filter(s => s.number !== numbe
   <div class="h-full overflow-y-auto pb-12">
     <div v-if="error" class="flex h-full flex-col items-center justify-center gap-2">
       <v-icon :icon="mdiAlertCircleOutline" color="error" size="40" />
-      <span class="text-body-medium opacity-70">Couldn't load this season.</span>
-      <v-btn variant="tonal" :to="`/tv/${id}`">
-        Back to show
+      <span class="text-body-medium opacity-70">{{ $t('Couldn\'t load this season.') }}</span>
+      <v-btn variant="tonal" :to="localePath(`/tv/${id}`)">
+        {{ $t('Back to show') }}
       </v-btn>
     </div>
 
     <template v-else>
       <section class="px-4 pb-8 pt-4 md:px-6">
-        <v-btn :prepend-icon="mdiArrowLeft" variant="text" size="small" class="mb-3 -ml-2" :to="`/tv/${id}`">
-          {{ show?.title ?? 'Back to show' }}
+        <v-btn :prepend-icon="mdiArrowLeft" variant="text" size="small" class="mb-3 -ml-2" :to="localePath(`/tv/${id}`)">
+          {{ show?.title ?? $t('Back to show') }}
         </v-btn>
 
         <div class="flex flex-col gap-6 sm:flex-row sm:items-end">
@@ -45,12 +45,12 @@ const others = computed(() => show.value?.seasons.filter(s => s.number !== numbe
 
           <div class="flex min-w-0 flex-1 flex-col gap-3">
             <h1 class="text-headline-large font-bold drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)]">
-              {{ season?.name ?? `Season ${number}` }}
+              {{ season?.name ?? $t('Season {number}', { number }) }}
             </h1>
 
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-body-small opacity-75">
               <span v-if="season?.air">{{ dateText(season.air) }}</span>
-              <span v-if="season?.episodes.length">{{ season.episodes.length }} episodes</span>
+              <span v-if="season?.episodes.length">{{ $t('{count} episodes', { count: season.episodes.length }) }}</span>
               <span v-if="show?.certification" class="rounded border border-outline-variant px-1.5 py-0.5 text-label-small">
                 {{ show.certification }}
               </span>
@@ -91,7 +91,7 @@ const others = computed(() => show.value?.seasons.filter(s => s.number !== numbe
 
         <div v-if="!pending && !season?.episodes.length" class="flex flex-col items-center gap-2 py-8">
           <v-icon :icon="mdiMovieOpenOutline" size="40" class="opacity-30" />
-          <span class="text-body-medium opacity-70">No episodes listed.</span>
+          <span class="text-body-medium opacity-70">{{ $t('No episodes listed.') }}</span>
         </div>
       </section>
     </template>

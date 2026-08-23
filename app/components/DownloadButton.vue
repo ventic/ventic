@@ -56,12 +56,12 @@ async function download() {
     :prepend-icon="done ? mdiCheck : mdiDownload"
     :loading="state === 'busy'"
     :color="error ? 'error' : undefined"
-    :to="done ? '/downloads' : undefined"
+    :to="done ? localePath('/downloads') : undefined"
     :disabled="!imdbId"
     variant="tonal"
     @click="done || download()"
   >
-    {{ done ? 'In downloads' : error ? 'Retry download' : 'Download' }}
+    {{ done ? $t('In downloads') : error ? $t('Retry download') : $t('Download') }}
     <v-tooltip v-if="error" activator="parent" :text="error" />
   </v-btn>
 </template>

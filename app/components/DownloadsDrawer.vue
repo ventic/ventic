@@ -37,7 +37,7 @@ async function add() {
 }
 
 function mbps(value: number) {
-  return `${value.toFixed(1)} MiB/s`
+  return $t('{rate} MiB/s', { rate: value.toFixed(1) })
 }
 </script>
 
@@ -49,9 +49,9 @@ function mbps(value: number) {
     :temporary="mobile"
     class="panel border-none"
   >
-    <nuxt-link to="/" class="flex items-center gap-3 px-4 py-5">
+    <nuxt-link :to="localePath('/')" class="flex items-center gap-3 px-4 py-5">
       <v-icon :icon="mdiArrowLeft" size="22" />
-      <span class="text-title-medium whitespace-nowrap">Transfers</span>
+      <span class="text-title-medium whitespace-nowrap">{{ $t('Transfers') }}</span>
     </nuxt-link>
 
     <v-list nav density="comfortable" class="px-2">
@@ -59,7 +59,7 @@ function mbps(value: number) {
         v-for="item in FILTERS"
         :key="item.value"
         :prepend-icon="item.icon"
-        :title="item.title"
+        :title="item.title()"
         :active="downloads.filter === item.value"
         color="primary"
         rounded="lg"
@@ -82,7 +82,7 @@ function mbps(value: number) {
           </span>
         </div>
         <v-btn :prepend-icon="mdiMagnetOn" block variant="tonal" @click="adding = true">
-          Add magnet
+          {{ $t('Add magnet') }}
         </v-btn>
       </div>
     </template>
@@ -90,7 +90,7 @@ function mbps(value: number) {
     <v-dialog v-model="adding" max-width="560">
       <v-card rounded="xl" class="p-2">
         <v-card-title class="text-title-medium">
-          Add magnet
+          {{ $t('Add magnet') }}
         </v-card-title>
         <v-card-text>
           <v-textarea
@@ -107,7 +107,7 @@ function mbps(value: number) {
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" size="small" @click="adding = false">
-            Cancel
+            {{ $t('Cancel') }}
           </v-btn>
           <v-btn
             variant="tonal"
@@ -116,7 +116,7 @@ function mbps(value: number) {
             :disabled="!magnet.trim()"
             @click="add"
           >
-            Add
+            {{ $t('Add') }}
           </v-btn>
         </v-card-actions>
       </v-card>

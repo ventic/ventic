@@ -61,25 +61,29 @@ function markEarlier() {
     @click.stop.prevent="toggle"
   >
     <v-icon :icon="watched ? mdiEye : mdiEyeOutline" :color="watched ? 'primary' : undefined" />
-    <v-tooltip activator="parent" :text="watched ? 'Mark unwatched' : 'Mark watched'" />
+    <v-tooltip activator="parent" :text="watched ? $t('Mark unwatched') : $t('Mark watched')" />
   </v-btn>
 
   <v-dialog v-model="asking" max-width="420">
     <v-card>
       <v-card-title class="text-title-medium">
-        Mark the earlier ones too?
+        {{ $t('Mark the earlier ones too?') }}
       </v-card-title>
+      <!-- One sentence, not three fragments: which words agree with the count
+           is the translator's problem to solve, and in most languages it is not
+           solved by swapping "is" for "are". -->
       <v-card-text class="text-body-medium opacity-80">
-        {{ earlier.length === 1 ? 'One earlier episode' : `${earlier.length} earlier episodes` }}
-        in this season {{ earlier.length === 1 ? 'is' : 'are' }} still unwatched.
+        {{ earlier.length === 1
+          ? $t('One earlier episode in this season is still unwatched.')
+          : $t('{count} earlier episodes in this season are still unwatched.', { count: earlier.length }) }}
       </v-card-text>
       <v-card-actions>
         <v-spacer />
         <v-btn variant="text" @click="asking = false">
-          No
+          {{ $t('No') }}
         </v-btn>
         <v-btn autofocus variant="tonal" @click="markEarlier">
-          Mark watched
+          {{ $t('Mark watched') }}
         </v-btn>
       </v-card-actions>
     </v-card>

@@ -65,7 +65,7 @@ const roomy = computed(() => width.value ? width.value >= (props.needs ?? 740) :
       class="shrink-0"
       @click="sheet = true"
     >
-      Filters
+      {{ $t('Filters') }}
       <v-chip v-if="active" size="x-small" color="primary" class="ml-1.5" :text="String(active)" />
     </v-btn>
 
@@ -83,7 +83,7 @@ const roomy = computed(() => width.value ? width.value >= (props.needs ?? 740) :
         :max="300"
         :step="10"
         :prepend-icon="mdiImageSizeSelectSmall"
-        title="Poster size"
+        :title="$t('Poster size')"
       />
     </div>
 
@@ -96,7 +96,7 @@ const roomy = computed(() => width.value ? width.value >= (props.needs ?? 740) :
     >
       <v-btn v-for="option in LAYOUTS" :key="option.value" :value="option.value" size="42" icon>
         <v-icon :icon="option.icon" size="24" />
-        <v-tooltip activator="parent" :text="option.title" />
+        <v-tooltip activator="parent" :text="option.title()" />
       </v-btn>
     </v-btn-toggle>
   </div>
@@ -112,7 +112,7 @@ const roomy = computed(() => width.value ? width.value >= (props.needs ?? 740) :
          is unchanged. -->
     <v-card rounded="t-xl" class="mx-auto w-full max-w-140 pb-[var(--safe-bottom)]">
       <v-card-title class="text-title-medium">
-        Filters
+        {{ $t('Filters') }}
       </v-card-title>
       <!-- The widths a caller puts on a control are the *bar's* — a 160px
            dropdown in a column is neither one thing nor the other, so in here
@@ -123,7 +123,7 @@ const roomy = computed(() => width.value ? width.value >= (props.needs ?? 740) :
       <v-card-actions>
         <v-spacer />
         <v-btn variant="tonal" @click="sheet = false">
-          Done
+          {{ $t('Done') }}
         </v-btn>
       </v-card-actions>
     </v-card>

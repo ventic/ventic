@@ -59,7 +59,7 @@ async function setIncluded(index: number, included: boolean) {
 
 async function copyMagnet() {
   await navigator.clipboard.writeText(magnetForHash(props.torrent.info_hash))
-  emit('notify', 'Magnet link copied.')
+  emit('notify', $t('Magnet link copied.'))
 }
 </script>
 
@@ -68,15 +68,15 @@ async function copyMagnet() {
     <div class="flex flex-wrap items-center gap-2 text-body-small opacity-55">
       <span class="min-w-0 flex-1 truncate">{{ torrent.output_folder }}</span>
       <v-btn v-if="canReveal" :prepend-icon="mdiFolderOpenOutline" size="x-small" variant="text" @click="emit('open')">
-        Open folder
+        {{ $t('Open folder') }}
       </v-btn>
       <v-btn :prepend-icon="mdiContentCopy" size="x-small" variant="text" @click="copyMagnet">
-        Copy magnet
+        {{ $t('Copy magnet') }}
       </v-btn>
     </div>
 
     <div v-if="!files.length" class="py-2 text-body-small opacity-55">
-      Waiting for metadata…
+      {{ $t('Waiting for metadata…') }}
     </div>
 
     <!-- Two shapes: a phone stacks the name over its own stats, a desktop puts
@@ -106,11 +106,11 @@ async function copyMagnet() {
         </span>
         <v-btn icon size="x-small" variant="text" color="on-surface" @click="emit('play', index)">
           <v-icon :icon="mdiPlayCircleOutline" size="18" />
-          <v-tooltip activator="parent" text="Play this file" />
+          <v-tooltip activator="parent" :text="$t('Play this file')" />
         </v-btn>
         <v-btn v-if="canReveal" icon size="x-small" variant="text" color="on-surface" @click="emit('open', file)">
           <v-icon :icon="mdiFolderOpenOutline" size="18" />
-          <v-tooltip activator="parent" text="Open containing folder" />
+          <v-tooltip activator="parent" :text="$t('Open containing folder')" />
         </v-btn>
       </div>
     </div>

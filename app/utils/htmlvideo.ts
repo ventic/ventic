@@ -22,6 +22,7 @@
  * which is also what mpv does for a property it can't produce.
  */
 import { platform } from '@tauri-apps/plugin-os'
+import { isDesktop } from './platform'
 
 /**
  * Is mpv behind the controls? True on exactly the three targets `lib.rs`
@@ -30,14 +31,8 @@ import { platform } from '@tauri-apps/plugin-os'
  * `<video>` element below.
  */
 export function hasNativePlayer() {
-  try {
-    const os = platform()
-    return os === 'linux' || os === 'windows' || os === 'macos'
-  }
-  catch {
-    // Not running under Tauri at all, so there is no native player either.
-    return false
-  }
+  // Not running under Tauri at all counts as no, which `isDesktop` already says.
+  return isDesktop()
 }
 
 /**
@@ -167,19 +162,15 @@ function externalSubs() {
 function mediaError(e: MediaError | null) {
   switch (e?.code) {
     case 1:
-      return 'Playback was stopped before it started.'
+      return $t('Playback was stopped before it started.')
     case 2:
-      return 'The connection to the torrent engine dropped mid-stream.'
+      return $t('The connection to the torrent engine dropped mid-stream.')
     case 3:
-      return 'This device\'s decoder gave up on the file. That is usually the audio: '
-        + 'Dolby (AC-3, E-AC-3, TrueHD) and DTS are not licensed into the system '
-        + 'webview, so a release carrying one plays as a picture with no sound, or '
-        + 'not at all. An x264 release with AAC audio will play.'
+      return $t('This device\'s decoder gave up on the file. That is usually the audio: Dolby (AC-3, E-AC-3, TrueHD) and DTS are not licensed into the system webview, so a release carrying one plays as a picture with no sound, or not at all. An x264 release with AAC audio will play.')
     case 4:
-      return 'Nothing on this device can open that file. HEVC/x265 and AV1 depend on '
-        + 'the hardware decoder, and older boxes have neither — try a 1080p x264 release.'
+      return $t('Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.')
     default:
-      return 'Playback stopped and the webview gave no reason.'
+      return $t('Playback stopped and the webview gave no reason.')
   }
 }
 

@@ -6,21 +6,32 @@ import {
   mdiPaletteOutline,
   mdiPowerPlugOutline,
   mdiSubtitlesOutline,
+  mdiTranslate,
   mdiWifi,
 } from '@mdi/js'
 import { DEFAULT_SOURCE } from '~/theme/presets'
 
-export type SectionKey = 'appearance' | 'sources' | 'subtitles' | 'network' | 'storage' | 'account' | 'about'
+export type SectionKey = 'appearance' | 'language' | 'sources' | 'subtitles' | 'network' | 'storage' | 'account' | 'about'
 
-/** The sidebar of the settings layout, in the order it lists them. */
-export const SECTIONS: { value: SectionKey, title: string, icon: string }[] = [
-  { value: 'appearance', title: 'Appearance', icon: mdiPaletteOutline },
-  { value: 'sources', title: 'Sources', icon: mdiPowerPlugOutline },
-  { value: 'subtitles', title: 'Subtitles', icon: mdiSubtitlesOutline },
-  { value: 'network', title: 'Network', icon: mdiWifi },
-  { value: 'storage', title: 'Storage', icon: mdiFolderOutline },
-  { value: 'account', title: 'Account', icon: mdiAccountCircleOutline },
-  { value: 'about', title: 'About', icon: mdiInformationOutline },
+/**
+ * The sidebar of the settings layout, in the order it lists them. A `value` is
+ * also the route the section lives at (`/settings/<value>`), so this table is
+ * the whole registry: the sidebar, the heading and the URLs all come off it.
+ *
+ * `title` is a function because this list is built when the module loads, which
+ * is before there is a Nuxt context for `$t` to read a locale from — and
+ * because the labels have to change when the language does, which a string
+ * baked in at import time never would.
+ */
+export const SECTIONS: { value: SectionKey, title: () => string, icon: string }[] = [
+  { value: 'appearance', title: () => $t('Appearance'), icon: mdiPaletteOutline },
+  { value: 'language', title: () => $t('Language'), icon: mdiTranslate },
+  { value: 'sources', title: () => $t('Sources'), icon: mdiPowerPlugOutline },
+  { value: 'subtitles', title: () => $t('Subtitles'), icon: mdiSubtitlesOutline },
+  { value: 'network', title: () => $t('Network'), icon: mdiWifi },
+  { value: 'storage', title: () => $t('Storage'), icon: mdiFolderOutline },
+  { value: 'account', title: () => $t('Account'), icon: mdiAccountCircleOutline },
+  { value: 'about', title: () => $t('About'), icon: mdiInformationOutline },
 ]
 
 /**
@@ -33,10 +44,18 @@ export const SECTIONS: { value: SectionKey, title: string, icon: string }[] = [
  * changes.
  */
 export const useSettingsStore = defineStore('settings', () => {
-  // Which section the drawer has open. Deliberately not a route and not
-  // persisted: Back should leave settings, not walk through every section that
-  // was opened on the way in, and a fresh visit starts at the top.
-  const section = ref<SectionKey>('appearance')
+  /**
+   * The UI language, as the bare code the locale list is keyed by: `sl`, not
+   * `sl-SI`. Empty means "whatever the app opened in", which is the default
+   * locale.
+   *
+   * This is only where the choice is *remembered* — @nuxtjs/i18n owns the live
+   * one. app.vue is what marries the two: it restores this at boot and writes
+   * it back whenever the locale changes. The module's own memory is a cookie,
+   * which a `tauri://` origin does not reliably keep — and a `ventic.` key
+   * travels in a backup, which a cookie also would not.
+   */
+  const locale = useLocalStorage('ventic.locale', '')
 
   // --- Appearance ---
   const theme = useLocalStorage('ventic.theme', 'dark')
@@ -107,5 +126,5 @@ export const useSettingsStore = defineStore('settings', () => {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { section, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, tmdbKey, downLimit, upLimit, wifiOnly, downloadDir, subs, resetSubs }
+  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, tmdbKey, downLimit, upLimit, wifiOnly, downloadDir, subs, resetSubs }
 })

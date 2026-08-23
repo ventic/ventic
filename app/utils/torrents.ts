@@ -20,7 +20,9 @@ import { deviceCodecs, hasNativePlayer } from './htmlvideo'
  */
 let sources: string[] = []
 
-export const NO_SOURCES = 'No sources configured. Add one in Settings → Sources.'
+// A function, not a constant: it is built when this module loads, before `$t`
+// has a locale to read — see SECTIONS in the settings store.
+export const NO_SOURCES = () => $t('No sources configured. Add one in Settings → Sources.')
 
 export function setSources(urls: string[]) {
   // Trailing slashes would produce `//stream/…`, which some servers 404.
@@ -317,7 +319,7 @@ async function searchOne(base: string, path: string): Promise<Release[]> {
  */
 export async function findReleases(imdbId: string, season = 0, episode = 0): Promise<Release[]> {
   if (!sources.length)
-    throw new Error(NO_SOURCES)
+    throw new Error(NO_SOURCES())
 
   const series = season > 0 && episode > 0
   const id = series ? `${imdbId}:${season}:${episode}` : imdbId
@@ -328,7 +330,7 @@ export async function findReleases(imdbId: string, season = 0, episode = 0): Pro
   // One source down out of several is not worth an error. All of them is — and
   // it reads the same as "nothing found" unless we say so.
   if (failed.length === results.length)
-    throw new Error(`No source answered — ${failed[0]}`)
+    throw new Error($t('No source answered — {reason}', { reason: failed[0]! }))
 
   // Two sources drawing on the same origins hand back the same release twice;
   // first one wins, so the order sources were added in is the preference order.
@@ -403,13 +405,13 @@ export async function addTorrent(magnet: string) {
   const folder = downloadDir ? `&output_folder=${encodeURIComponent(downloadDir)}` : ''
   const res = await fetch(`${ENGINE}/torrents?overwrite=true${folder}`, { method: 'POST', body: magnet })
   if (!res.ok)
-    throw new Error(`Torrent engine said ${res.status}: ${await res.text()}`)
+    throw new Error($t('Torrent engine said {status}: {reason}', { status: res.status, reason: await res.text() }))
   const added = await res.json() as {
     id: number | null
     details: { name: string | null, info_hash: string, files: EngineFile[] | null }
   }
   if (added.id == null)
-    throw new Error('The torrent engine accepted the magnet but gave it no id.')
+    throw new Error($t('The torrent engine accepted the magnet but gave it no id.'))
   return { ...added, id: added.id }
 }
 
@@ -675,7 +677,7 @@ export function haveAt(map: PieceMap, haves: Uint8Array, fraction: number) {
 export async function listTorrents(): Promise<EngineTorrent[]> {
   const res = await fetch(`${ENGINE}/torrents?with_stats=true`)
   if (!res.ok)
-    throw new Error(`Torrent engine said ${res.status}.`)
+    throw new Error($t('Torrent engine said {status}.', { status: res.status }))
   const data = await res.json() as { torrents: EngineTorrent[] }
   return data.torrents
 }
@@ -725,7 +727,7 @@ export function uploadLimit(peakBps: number, watching: boolean, probing: boolean
 export async function torrentAction(id: number, action: 'pause' | 'start' | 'forget' | 'delete') {
   const res = await fetch(`${ENGINE}/torrents/${id}/${action}`, { method: 'POST' })
   if (!res.ok)
-    throw new Error(`Torrent engine said ${res.status}: ${await res.text()}`)
+    throw new Error($t('Torrent engine said {status}: {reason}', { status: res.status, reason: await res.text() }))
 }
 
 export interface Started {
@@ -915,15 +917,15 @@ export async function startTorrent(options: {
     }
     else {
       if (!imdbId)
-        throw new Error('TMDB has no IMDb id for this title, so there is nothing to look it up with.')
+        throw new Error($t('TMDB has no IMDb id for this title, so there is nothing to look it up with.'))
 
-      step('Searching your sources…')
+      step($t('Searching your sources…'))
       const found = await findReleases(imdbId, options.season, options.episode)
       picked = pickBest(found, options.maxBytes, options.compatible ?? !hasNativePlayer())
       if (!picked) {
         throw new Error(found.length
-          ? `All ${found.length} releases found were cams, dead, or too big for this device.`
-          : 'Your sources have nothing for this title.')
+          ? $t('All {count} releases found were cams, dead, or too big for this device.', { count: found.length })
+          : $t('Your sources have nothing for this title.'))
       }
       // The source resolved this one itself — there is no torrent to add.
       if (picked.url)
@@ -942,12 +944,12 @@ export async function startTorrent(options: {
   if (already?.ready)
     return playHeld(already, picked)
 
-  step('Fetching metadata from peers…')
+  step($t('Fetching metadata from peers…'))
   const added = await addTorrent(magnet)
   const files = added.details.files ?? []
   const index = options.fileIndex ?? pickVideoFile(files, hint, options)
   if (index == null)
-    throw new Error('That torrent holds no video file.')
+    throw new Error($t('That torrent holds no video file.'))
 
   // Adding a magnet the engine already holds hands back its current selection,
   // so a pack you're part-way through keeps downloading what it was told to and

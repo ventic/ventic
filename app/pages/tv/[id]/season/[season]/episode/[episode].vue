@@ -2,7 +2,7 @@
 import { mdiAlertCircleOutline, mdiArrowLeft, mdiPlay, mdiStar } from '@mdi/js'
 
 definePageMeta({
-  validate: route => /^\d+$/.test(String(route.params.season)) && /^\d+$/.test(String(route.params.episode)),
+  validate: ({ params }) => 'episode' in params && /^\d+$/.test(params.season) && /^\d+$/.test(params.episode),
 })
 
 const route = useRoute()
@@ -25,8 +25,8 @@ const credits = computed(() => {
   if (!e)
     return []
   return [
-    { label: e.directors.length > 1 ? 'Directors' : 'Director', value: e.directors.join(', ') },
-    { label: e.writers.length > 1 ? 'Writers' : 'Writer', value: e.writers.join(', ') },
+    { label: e.directors.length > 1 ? $t('Directors') : $t('Director'), value: e.directors.join(', ') },
+    { label: e.writers.length > 1 ? $t('Writers') : $t('Writer'), value: e.writers.join(', ') },
   ].filter(row => row.value)
 })
 </script>
@@ -35,21 +35,21 @@ const credits = computed(() => {
   <div class="h-full overflow-y-auto pb-12">
     <div v-if="error" class="flex h-full flex-col items-center justify-center gap-2">
       <v-icon :icon="mdiAlertCircleOutline" color="error" size="40" />
-      <span class="text-body-medium opacity-70">Couldn't load this episode.</span>
+      <span class="text-body-medium opacity-70">{{ $t('Couldn\'t load this episode.') }}</span>
       <v-btn variant="tonal" :to="seasonLink(id, seasonNumber)">
-        Back to season
+        {{ $t('Back to season') }}
       </v-btn>
     </div>
 
     <template v-else>
       <section class="px-4 pb-8 pt-4 md:px-6">
         <div class="mb-3 flex flex-wrap items-center gap-1 -ml-2">
-          <v-btn :prepend-icon="mdiArrowLeft" variant="text" size="small" :to="`/tv/${id}`">
-            {{ show?.title ?? 'Show' }}
+          <v-btn :prepend-icon="mdiArrowLeft" variant="text" size="small" :to="localePath(`/tv/${id}`)">
+            {{ show?.title ?? $t('Show') }}
           </v-btn>
           <span class="opacity-40">/</span>
           <v-btn variant="text" size="small" :to="seasonLink(id, seasonNumber)">
-            Season {{ seasonNumber }}
+            {{ $t('Season {number}', { number: seasonNumber }) }}
           </v-btn>
         </div>
 
@@ -64,21 +64,21 @@ const credits = computed(() => {
               S{{ seasonNumber }} E{{ episodeNumber }}
             </div>
             <h1 class="text-headline-large font-bold drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)]">
-              {{ episode.name || `Episode ${episodeNumber}` }}
+              {{ episode.name || $t('Episode {number}', { number: episodeNumber }) }}
             </h1>
 
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-body-small opacity-75">
               <span v-if="episode.rating" class="flex items-center gap-1 opacity-100">
                 <v-icon :icon="mdiStar" size="14" class="text-amber-400" />
                 <span class="font-medium">{{ episode.rating.toFixed(1) }}</span>
-                <span class="opacity-60">({{ episode.votes.toLocaleString() }})</span>
+                <span class="opacity-60">({{ episode.votes.toLocaleString(uiLocale()) }})</span>
               </span>
               <span v-if="episode.air">{{ dateText(episode.air) }}</span>
               <span v-if="episode.runtime">{{ runtimeText(episode.runtime) }}</span>
             </div>
 
             <p class="max-w-3xl text-body-medium opacity-85">
-              {{ episode.overview || 'No overview.' }}
+              {{ episode.overview || $t('No overview.') }}
             </p>
 
             <dl v-if="credits.length" class="grid grid-cols-1 gap-x-6 gap-y-1 text-body-small sm:grid-cols-2">
@@ -94,7 +94,7 @@ const credits = computed(() => {
 
             <div class="flex flex-wrap items-center gap-2 pt-2">
               <v-btn :prepend-icon="mdiPlay" size="large" :to="watchLink('tv', id, seasonNumber, episodeNumber)">
-                Play
+                {{ $t('Play') }}
               </v-btn>
               <download-button
                 :id="id"
@@ -130,7 +130,7 @@ const credits = computed(() => {
         </div>
       </section>
 
-      <cast-row v-if="!pending && episode?.guests.length" title="Guest stars" :people="episode.guests" />
+      <cast-row v-if="!pending && episode?.guests.length" :title="$t('Guest stars')" :people="episode.guests" />
     </template>
   </div>
 </template>

@@ -95,15 +95,15 @@ const reserve = computed(() =>
           <div class="flex justify-end">
             <v-btn icon size="small" variant="text" color="white" tabindex="-1" @click.stop.prevent="library.toggleFavourite(media)">
               <v-icon :icon="library.isFavourite(media) ? mdiHeart : mdiHeartOutline" size="18" :color="library.isFavourite(media) ? 'primary' : undefined" />
-              <v-tooltip activator="parent" :text="library.isFavourite(media) ? 'Remove from favourites' : 'Favourite'" />
+              <v-tooltip activator="parent" :text="library.isFavourite(media) ? $t('Remove from favourites') : $t('Favourite')" />
             </v-btn>
             <v-btn icon size="small" variant="text" color="white" tabindex="-1" @click.stop.prevent="library.toggleWatchlist(media)">
               <v-icon :icon="library.inWatchlist(media) ? mdiBookmark : mdiBookmarkOutline" size="18" :color="library.inWatchlist(media) ? 'primary' : undefined" />
-              <v-tooltip activator="parent" :text="library.inWatchlist(media) ? 'Remove from watchlist' : 'Add to watchlist'" />
+              <v-tooltip activator="parent" :text="library.inWatchlist(media) ? $t('Remove from watchlist') : $t('Add to watchlist')" />
             </v-btn>
             <v-btn icon size="small" variant="text" color="white" tabindex="-1" @click.stop.prevent="library.toggleWatched(media)">
               <v-icon :icon="watched ? mdiEye : mdiEyeOutline" size="18" :color="watched ? 'primary' : undefined" />
-              <v-tooltip activator="parent" :text="watched ? 'Mark unwatched' : 'Mark watched'" />
+              <v-tooltip activator="parent" :text="watched ? $t('Mark unwatched') : $t('Mark watched')" />
             </v-btn>
           </div>
 
@@ -119,7 +119,7 @@ const reserve = computed(() =>
                 {{ media.title }}
               </div>
               <div class="text-body-small opacity-70">
-                {{ media.year || 'unknown' }}
+                {{ media.year || $t('unknown') }}
               </div>
             </div>
             <v-spacer v-else />
@@ -153,7 +153,7 @@ const reserve = computed(() =>
         {{ media.title }}
       </div>
       <div class="truncate text-body-small opacity-55">
-        {{ media.year || 'unknown' }}
+        {{ media.year || $t('unknown') }}
       </div>
     </div>
   </nuxt-link>

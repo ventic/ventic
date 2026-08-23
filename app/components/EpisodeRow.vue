@@ -36,7 +36,7 @@ function play() {
     <div class="min-w-0 flex-1 basis-40 py-1">
       <div class="flex items-baseline gap-2">
         <span class="text-body-small shrink-0 opacity-50">{{ episode.number }}</span>
-        <v-icon v-if="progress?.watched" :icon="mdiCheck" size="16" color="primary" title="Watched" />
+        <v-icon v-if="progress?.watched" :icon="mdiCheck" size="16" color="primary" :title="$t('Watched')" />
         <span class="truncate text-title-small">{{ episode.name }}</span>
         <v-spacer />
         <span v-if="episode.rating" class="flex shrink-0 items-center gap-0.5 text-body-small opacity-70">
@@ -49,14 +49,14 @@ function play() {
         <span v-if="episode.runtime">· {{ runtimeText(episode.runtime) }}</span>
       </div>
       <p class="line-clamp-2 pt-1 text-body-small opacity-70">
-        {{ episode.overview || 'No overview.' }}
+        {{ episode.overview || $t('No overview.') }}
       </p>
     </div>
 
     <div class="flex w-full shrink-0 items-center justify-end gap-1 sm:mt-1 sm:w-auto">
       <!-- The row opens the episode page; only this button starts playback. -->
       <v-btn :prepend-icon="mdiPlay" size="small" variant="tonal" @click.stop.prevent="play">
-        Play
+        {{ $t('Play') }}
       </v-btn>
 
       <!-- Says you've seen it without playing it, which is what moves the show

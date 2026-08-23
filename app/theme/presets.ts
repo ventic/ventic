@@ -64,7 +64,7 @@ export interface Preset {
 /** The colour the "Your colour" themes start from — the logo's red. */
 export const DEFAULT_SOURCE = '#ff5555'
 
-export const PRESETS = {
+const TABLE = {
   /* --- Dark ---------------------------------------------------------------- */
 
   generated: {
@@ -206,9 +206,17 @@ export const PRESETS = {
   mint: { title: 'Mint', dark: false, surface: '#eef4f0', accent: '#0c6b4f' },
   blossom: { title: 'Blossom', dark: false, surface: '#fdf0f4', accent: '#b4326a' },
   lavender: { title: 'Lavender', dark: false, surface: '#f3f0fa', accent: '#6b4fbb' },
-} as const satisfies Record<string, Preset>
+} satisfies Record<string, Preset>
 
-export type ThemeName = keyof typeof PRESETS
+export type ThemeName = keyof typeof TABLE
+
+/**
+ * `satisfies` alone keeps each entry to the keys it wrote down, so reading
+ * `.backdrop` off one picked by name is a type error on the entries that have
+ * none — every read here is by a name only known at runtime, so the table is
+ * handed out widened.
+ */
+export const PRESETS: Record<ThemeName, Preset> = TABLE
 
 /** The table as a plain list, in the order the settings page shows them. */
 export const PRESET_LIST = Object.entries(PRESETS) as [ThemeName, Preset][]

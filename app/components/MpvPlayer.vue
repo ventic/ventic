@@ -407,7 +407,7 @@ const subsOn = computed(() => sid.value !== 'no')
 
 function trackLabel(t: Track) {
   const lang = t.lang ? langName(t.lang) : ''
-  return [lang, t.title].filter(Boolean).join(' — ') || `Track ${t.id}`
+  return [lang, t.title].filter(Boolean).join(' — ') || $t('Track {id}', { id: t.id })
 }
 
 async function refreshTracks() {
@@ -452,7 +452,7 @@ async function fetchExternals() {
     const { title, year, season, episode } = searchBy.value
     const id = props.imdbId || await findImdbId(title, season > 0, year)
     if (!id)
-      throw new Error(`Couldn't match "${title}" to a title OpenSubtitles knows.`)
+      throw new Error($t('Couldn\'t match “{title}” to a title OpenSubtitles knows.', { title }))
     externals.value = await findSubtitles(id, season, episode, videoName.value)
     subsFetched = true
   }
@@ -474,13 +474,13 @@ function useTrack(t: Track) {
   setSid(t.id)
   if (t.lang)
     subLang.value = t.lang
-  osd(`Subtitles: ${trackLabel(t)}`)
+  osd($t('Subtitles: {name}', { name: trackLabel(t) }))
 }
 
 function subsOff() {
   setSid('no')
   subLang.value = ''
-  osd('Subtitles off')
+  osd($t('Subtitles off'))
 }
 
 /**
@@ -528,7 +528,7 @@ async function loadFile(file: Subtitle, lang: SubtitleLanguage) {
   syncNote.value = ''
   guess.value = null
   await refreshTracks()
-  osd(`Subtitles: ${lang.name}`)
+  osd($t('Subtitles: {name}', { name: lang.name }))
 }
 
 async function useLanguage(lang: SubtitleLanguage) {
@@ -730,7 +730,7 @@ async function autoSync() {
       // worth offering though: a file a minute out is unwatchable, and one wrong
       // button is cheaper than six hundred taps of the nudge.
       guess.value = fit.score > 0.05 ? fit : null
-      syncNote.value = 'Couldn\'t tell — the audio doesn\'t line up clearly with this file. Try a different subtitle file, or nudge the delay by hand.'
+      syncNote.value = $t('Couldn\'t tell — the audio doesn\'t line up clearly with this file. Try a different subtitle file, or nudge the delay by hand.')
       return
     }
 
@@ -751,8 +751,12 @@ async function autoSync() {
 // ---------------------------------------------------------------------------
 type Menu = '' | 'subs' | 'audio' | 'speed'
 const menu = ref<Menu>('')
-const MENU_TITLES: Record<Exclude<Menu, ''>, string> = { subs: 'Subtitles', audio: 'Audio', speed: 'Playback speed' }
-const menuTitle = computed(() => menu.value ? MENU_TITLES[menu.value] : '')
+const MENU_TITLES: Record<Exclude<Menu, ''>, () => string> = {
+  subs: () => $t('Subtitles'),
+  audio: () => $t('Audio'),
+  speed: () => $t('Playback speed'),
+}
+const menuTitle = computed(() => menu.value ? MENU_TITLES[menu.value]() : '')
 const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
 
 function openMenu(name: Exclude<Menu, ''>) {
@@ -767,7 +771,7 @@ function openMenu(name: Exclude<Menu, ''>) {
 function setSpeed(v: number) {
   speed.value = v
   ipc(['set_property', 'speed', v])
-  osd(v === 1 ? 'Normal speed' : `Speed ${v}×`)
+  osd(v === 1 ? $t('Normal speed') : $t('Speed {rate}×', { rate: v }))
 }
 
 // ---------------------------------------------------------------------------
@@ -807,19 +811,32 @@ function toggleFullscreen() {
 interface Rect { x: number, y: number, width: number, height: number }
 
 /**
- * CSS px → physical px, for an element and its already-measured box.
+ * CSS px → physical px, measured rather than worked out.
  *
- * App scale is a `zoom` on the root, and engines disagree on whether
- * getBoundingClientRect already has it folded in (standardised zoom does, the
- * older WebKit/Blink behaviour divides it back out). Guessing wrong parks
- * mpv's native window in the wrong place, so measure it: offsetWidth is always
- * in the element's own unzoomed px, and the ratio says which convention the
- * rect follows.
+ * Only mpv needs this, and app scale on every target mpv runs on is the
+ * webview's own page zoom (`app.vue`) — which the engines fold into
+ * `devicePixelRatio` or leave beside it, and disagree about. Getting it wrong
+ * parks mpv's window in the wrong place, so nothing here reasons about it: ask
+ * the platform how many real pixels wide this webview is and divide by how many
+ * the page thinks it is.
+ *
+ * Re-measured whenever the CSS viewport changes width, which is what a resize
+ * and a change of zoom both do — no listener, and no round trip per frame. The
+ * value it starts at is right for the ordinary case of no zoom at all, so the
+ * frame or two before the first answer lands is not a jump.
  */
-function pxRatio(el: HTMLElement, r: DOMRect) {
-  const zoom = settings.uiScale || 1
-  const inRect = el.offsetWidth ? r.width / el.offsetWidth : zoom
-  return (window.devicePixelRatio || 1) * zoom / inRect
+let pxRatio = window.devicePixelRatio || 1
+let measuredAt = 0
+
+function measurePx() {
+  const css = window.innerWidth
+  if (css === measuredAt || !css)
+    return
+  measuredAt = css
+  useTauriWebviewWindowGetCurrentWebviewWindow().size().then(size => (pxRatio = size.width / css)).catch(() => {
+    // No answer to be had — `devicePixelRatio` is what it keeps, which is
+    // right for the only case that reaches here with mpv running: no zoom.
+  })
 }
 
 /**
@@ -907,7 +924,8 @@ function frame(now: number) {
   if (!el)
     return
   const r = el.getBoundingClientRect()
-  const dpr = pxRatio(el, r)
+  measurePx()
+  const dpr = pxRatio
   // Hide the native surface when the box is off-screen or not laid out —
   // otherwise it keeps painting over whatever the page scrolls under it.
   const visible = r.width >= 16 && r.height >= 16
@@ -1022,7 +1040,7 @@ async function startPlayer() {
       return
 
     if (!await waitForBox()) {
-      errorMsg.value = 'The player area never got a size, so playback was not started.'
+      errorMsg.value = $t('The player area never got a size, so playback was not started.')
       return
     }
 
@@ -1033,15 +1051,15 @@ async function startPlayer() {
     if (!probe.ok) {
       if (fromEngine.value) {
         errorMsg.value = probe.status
-          ? `The torrent stream isn't ready yet (engine replied HTTP ${probe.status}). It may still be fetching metadata from peers.`
-          : 'Could not reach the torrent engine on 127.0.0.1:3030.'
+          ? $t('The torrent stream isn\'t ready yet (engine replied HTTP {status}). It may still be fetching metadata from peers.', { status: probe.status })
+          : $t('Could not reach the torrent engine on 127.0.0.1:3030.')
       }
       else {
         // Debrid links are minted per request and go stale; searching again is
         // what mints a fresh one, so that's what the message has to ask for.
         errorMsg.value = probe.status
-          ? `The link this source gave answered HTTP ${probe.status}. It may have expired — search the sources again for a fresh one.`
-          : 'The link this source gave could not be reached.'
+          ? $t('The link this source gave answered HTTP {status}. It may have expired — search the sources again for a fresh one.', { status: probe.status })
+          : $t('The link this source gave could not be reached.')
       }
       return
     }
@@ -1049,7 +1067,8 @@ async function startPlayer() {
     if (native) {
       // Re-measure: the window may have been resized while the probe ran.
       const b = boxEl.value!.getBoundingClientRect()
-      const dpr = pxRatio(boxEl.value!, b)
+      measurePx()
+      const dpr = pxRatio
       await invoke('player_start', {
         url: props.src,
         ...viewport(dpr),
@@ -1154,7 +1173,7 @@ async function poll() {
           library.finish(props.media, props.season, props.episode)
       }
       else {
-        errorMsg.value = st.log_tail?.trim() || (native ? 'mpv exited unexpectedly.' : 'Playback stopped unexpectedly.')
+        errorMsg.value = st.log_tail?.trim() || (native ? $t('mpv exited unexpectedly.') : $t('Playback stopped unexpectedly.'))
       }
       return
     }
@@ -1166,8 +1185,7 @@ async function poll() {
     if (!native && !exo && !silentSaid && position.value > 5) {
       silentSaid = !!(await readProps<{ silent: boolean }>(['silent']))?.silent
       if (silentSaid) {
-        osd('No sound — this device can\'t decode this release\'s audio (Dolby or DTS). '
-          + 'A release with AAC audio will play.', 7000)
+        osd($t('No sound — this device can\'t decode this release\'s audio (Dolby or DTS). A release with AAC audio will play.'), 7000)
       }
     }
   }
@@ -1267,7 +1285,7 @@ function setVolume(v: number) {
 function toggleMute() {
   muted.value = !muted.value
   ipc(['set_property', 'mute', muted.value])
-  osd(muted.value ? 'Muted' : `Volume ${volume.value}%`)
+  osd(muted.value ? $t('Muted') : $t('Volume {level}%', { level: volume.value }))
 }
 
 const volumeIcon = computed(() => {
@@ -1819,6 +1837,10 @@ watch(() => behind && started.value, on => {
 
 onMounted(() => {
   window.addEventListener('keydown', onKey, true)
+  // Ahead of the first geometry push rather than alongside it, so the window
+  // mpv opens is already the right size at any scale but 100%.
+  if (native)
+    measurePx()
   rafId = requestAnimationFrame(frame)
   listenToNativeMouse()
   if (props.fullscreen)
@@ -1971,19 +1993,19 @@ defineExpose({ osd })
       @pointerenter="hovering = true"
       @pointerleave="hovering = false"
     >
-      <button v-tooltip:top="'Back 10s (j)'" :class="SEEK_BTN" :disabled="!started" @click="seekBy(-10)">
+      <button v-tooltip:top="$t('Back 10s (j)')" :class="SEEK_BTN" :disabled="!started" @click="seekBy(-10)">
         <v-icon :icon="mdiRewind10" size="26" />
       </button>
       <button
         ref="playBtn"
-        v-tooltip:top="paused ? 'Play (space)' : 'Pause (space)'"
+        v-tooltip:top="paused ? $t('Play (space)') : $t('Pause (space)')"
         :class="PLAY_BTN"
         :disabled="!started"
         @click="togglePlay"
       >
         <v-icon :icon="paused ? mdiPlay : mdiPause" size="38" />
       </button>
-      <button v-tooltip:top="'Forward 10s (l)'" :class="SEEK_BTN" :disabled="!started" @click="seekBy(10)">
+      <button v-tooltip:top="$t('Forward 10s (l)')" :class="SEEK_BTN" :disabled="!started" @click="seekBy(10)">
         <v-icon :icon="mdiFastForward10" size="26" />
       </button>
     </div>
@@ -2004,17 +2026,17 @@ defineExpose({ osd })
       <template v-if="centre === 'error'">
         <v-icon :icon="mdiAlertCircleOutline" size="30" color="error" />
         <div class="text-title-small">
-          Playback failed
+          {{ $t('Playback failed') }}
         </div>
         <pre class="max-h-32.5 max-w-full overflow-auto whitespace-pre-wrap text-left text-label-small font-mono opacity-70">{{ errorMsg }}</pre>
         <button :class="BTN" :disabled="busy" @click="startPlayer">
-          <v-icon :icon="mdiReload" size="18" /> Retry
+          <v-icon :icon="mdiReload" size="18" /> {{ $t('Retry') }}
         </button>
       </template>
 
       <template v-else-if="centre === 'ended'">
         <div class="text-title-small">
-          Playback finished
+          {{ $t('Playback finished') }}
         </div>
         <div class="flex gap-2">
           <!-- First in the DOM so it is where the d-pad lands, and where Enter
@@ -2023,7 +2045,7 @@ defineExpose({ osd })
             <v-icon :icon="mdiSkipNext" size="18" /> {{ next.label }}
           </nuxt-link>
           <button :class="BTN" :disabled="busy" @click="startPlayer">
-            <v-icon :icon="mdiReload" size="18" /> Play again
+            <v-icon :icon="mdiReload" size="18" /> {{ $t('Play again') }}
           </button>
         </div>
       </template>
@@ -2031,7 +2053,7 @@ defineExpose({ osd })
       <template v-else-if="centre === 'loading'">
         <v-progress-circular indeterminate color="primary" size="28" width="3" />
         <div class="text-title-small">
-          {{ waiting ? 'Waiting for the torrent stream…' : native ? 'Starting mpv…' : 'Opening the stream…' }}
+          {{ waiting ? $t('Waiting for the torrent stream…') : native ? $t('Starting mpv…') : $t('Opening the stream…') }}
         </div>
         <div v-if="status" class="text-body-small opacity-60">
           {{ status }}
@@ -2040,7 +2062,7 @@ defineExpose({ osd })
 
       <template v-else>
         <v-progress-circular indeterminate color="primary" size="20" width="2" />
-        <span>Buffering<template v-if="status"> · {{ status }}</template></span>
+        <span>{{ $t('Buffering') }}<template v-if="status"> · {{ status }}</template></span>
       </template>
     </div>
 
@@ -2064,7 +2086,7 @@ defineExpose({ osd })
       >
         <header class="flex items-center justify-between border-b border-white/9 py-2 pl-3.5 pr-2 text-title-small">
           <span>{{ menuTitle }}</span>
-          <button v-tooltip:top="'Close'" class="!h-7 !min-w-7" :class="ICO" @click="menu = ''">
+          <button v-tooltip:top="$t('Close')" class="!h-7 !min-w-7" :class="ICO" @click="menu = ''">
             <v-icon :icon="mdiClose" size="16" />
           </button>
         </header>
@@ -2072,7 +2094,7 @@ defineExpose({ osd })
         <div class="overflow-y-auto p-1.5">
           <template v-if="menu === 'speed'">
             <button v-for="v in SPEEDS" :key="v" :class="[MENU_ROW, speed === v && 'text-primary']" @click="setSpeed(v)">
-              <span>{{ v === 1 ? 'Normal' : `${v}×` }}</span>
+              <span>{{ v === 1 ? $t('Normal') : `${v}×` }}</span>
               <v-icon v-if="speed === v" :icon="mdiCheck" size="16" />
             </button>
           </template>
@@ -2088,19 +2110,19 @@ defineExpose({ osd })
               <v-icon v-if="aid === t.id" :icon="mdiCheck" size="16" />
             </button>
             <p v-if="!audioTracks.length" :class="NOTE">
-              This file has one audio track.
+              {{ $t('This file has one audio track.') }}
             </p>
           </template>
 
           <template v-else>
             <button :class="[MENU_ROW, !subsOn && 'text-primary']" @click="subsOff">
-              <span>Off</span>
+              <span>{{ $t('Off') }}</span>
               <v-icon v-if="!subsOn" :icon="mdiCheck" size="16" />
             </button>
 
             <template v-if="embedded.length">
               <p :class="MENU_GROUP">
-                In this file
+                {{ $t('In this file') }}
               </p>
               <button
                 v-for="t in embedded"
@@ -2116,7 +2138,7 @@ defineExpose({ osd })
             <!-- Shipped inside the torrent, so they need no lookup and no net. -->
             <template v-if="release.length">
               <p :class="MENU_GROUP">
-                In this release
+                {{ $t('In this release') }}
               </p>
               <button
                 v-for="r in release"
@@ -2137,16 +2159,16 @@ defineExpose({ osd })
               OpenSubtitles
             </p>
             <p v-if="subLoading" :class="NOTE">
-              Searching…
+              {{ $t('Searching…') }}
             </p>
             <p v-else-if="subError" class="text-error !opacity-100" :class="NOTE">
               {{ subError }}
             </p>
             <p v-else-if="unsearchable" :class="NOTE">
-              No title or IMDb id for this stream, so nothing to search by.
+              {{ $t('No title or IMDb id for this stream, so nothing to search by.') }}
             </p>
             <p v-else-if="!subLanguages.length" :class="NOTE">
-              No subtitles found.
+              {{ $t('No subtitles found.') }}
             </p>
 
             <!-- The name plays the best file; the chevron shows the rest of them. -->
@@ -2163,7 +2185,7 @@ defineExpose({ osd })
                 </button>
                 <button
                   v-if="l.files.length > 1"
-                  v-tooltip:top="expanded === l.name ? 'Hide versions' : 'Show all versions'"
+                  v-tooltip:top="expanded === l.name ? $t('Hide versions') : $t('Show all versions')"
                   class="!h-8 !min-w-8" :class="ICO"
                   @click="expand(l)"
                 >
@@ -2185,42 +2207,42 @@ defineExpose({ osd })
                     <span class="block truncate opacity-80">{{ fileLabel(f) }}</span>
                     <span class="block truncate text-label-small opacity-45">{{ fileNote(f) }}</span>
                     <span v-if="!fits(f)" class="block truncate text-label-small text-error opacity-90">
-                      Doesn't match this video's length
+                      {{ $t('Doesn\'t match this video\'s length') }}
                     </span>
                   </span>
                   <v-icon v-if="activeUrl === f.url" class="shrink-0" :icon="mdiCheck" size="16" />
                 </button>
                 <p v-if="probing === l.name" :class="NOTE">
-                  Reading the files…
+                  {{ $t('Reading the files…') }}
                 </p>
               </template>
             </template>
 
             <template v-if="subsOn">
               <p :class="MENU_GROUP">
-                Text
+                {{ $t('Text') }}
               </p>
               <button :class="MENU_ROW" @click="settings.subs.hideCaptions = !settings.subs.hideCaptions">
                 <span class="flex items-center gap-2">
-                  <v-icon :icon="mdiEarHearing" size="16" /> Hide sound descriptions
+                  <v-icon :icon="mdiEarHearing" size="16" /> {{ $t('Hide sound descriptions') }}
                 </span>
                 <v-icon v-if="settings.subs.hideCaptions" :icon="mdiCheck" size="16" />
               </button>
               <p :class="NOTE">
-                Drops “(electricity buzzing)” and “MAN:” from subtitles written for the hard of hearing.
+                {{ $t('Drops “(electricity buzzing)” and “MAN:” from subtitles written for the hard of hearing.') }}
               </p>
 
               <p :class="MENU_GROUP">
-                Timing
+                {{ $t('Timing') }}
               </p>
               <div class="flex items-center justify-between px-2.5 py-1">
-                <span class="text-label-large opacity-70">Delay</span>
+                <span class="text-label-large opacity-70">{{ $t('Delay') }}</span>
                 <div class="flex items-center gap-0.5">
-                  <button v-tooltip:top="'Earlier (z)'" class="!h-7 !min-w-7" :class="ICO" @click="nudgeDelay(-0.1)">
+                  <button v-tooltip:top="$t('Earlier (z)')" class="!h-7 !min-w-7" :class="ICO" @click="nudgeDelay(-0.1)">
                     <v-icon :icon="mdiMinus" size="14" />
                   </button>
                   <span class="w-16 text-center text-label-large tabular-nums">{{ delayText }}</span>
-                  <button v-tooltip:top="'Later (Z)'" class="!h-7 !min-w-7" :class="ICO" @click="nudgeDelay(0.1)">
+                  <button v-tooltip:top="$t('Later (Z)')" class="!h-7 !min-w-7" :class="ICO" @click="nudgeDelay(0.1)">
                     <v-icon :icon="mdiPlus" size="14" />
                   </button>
                 </div>
@@ -2232,12 +2254,12 @@ defineExpose({ osd })
                 @click="autoSync"
               >
                 <span class="flex items-center gap-2">
-                  <v-icon :icon="mdiAutoFix" size="16" /> Sync to the audio
+                  <v-icon :icon="mdiAutoFix" size="16" /> {{ $t('Sync to the audio') }}
                 </span>
                 <v-progress-circular v-if="syncing" indeterminate size="13" width="2" />
               </button>
               <p v-if="syncing" :class="NOTE">
-                {{ syncWide ? 'Nothing certain in the last twenty minutes — listening to the whole film…' : 'Listening to what has played…' }}
+                {{ syncWide ? $t('Nothing certain in the last twenty minutes — listening to the whole film…') : $t('Listening to what has played…') }}
               </p>
               <template v-else-if="syncNote">
                 <p :class="NOTE">
@@ -2245,15 +2267,15 @@ defineExpose({ osd })
                 </p>
                 <button v-if="guess" :class="MENU_ROW" @click="applyFit(guess)">
                   <span class="flex items-center gap-2">
-                    <v-icon :icon="mdiAutoFix" size="16" /> Shift by {{ guessText }} anyway
+                    <v-icon :icon="mdiAutoFix" size="16" /> {{ $t('Shift by {offset} anyway', { offset: guessText }) }}
                   </span>
                 </button>
               </template>
               <p v-else-if="!native" :class="NOTE">
-                Auto-sync listens to the audio with ffmpeg, which this build can't run. Nudge the delay above instead.
+                {{ $t('Auto-sync listens to the audio with ffmpeg, which this build can\'t run. Nudge the delay above instead.') }}
               </p>
               <p v-else-if="!syncable" :class="NOTE">
-                Only downloaded subtitles can be synced; the file's own tracks already match it.
+                {{ $t('Only downloaded subtitles can be synced; the file\'s own tracks already match it.') }}
               </p>
             </template>
           </template>
@@ -2299,17 +2321,17 @@ defineExpose({ osd })
           <template v-if="barTransport">
             <button
               ref="playBtn"
-              v-tooltip:top="paused ? 'Play (space)' : 'Pause (space)'"
+              v-tooltip:top="paused ? $t('Play (space)') : $t('Pause (space)')"
               :class="ICO"
               :disabled="!started"
               @click="togglePlay"
             >
               <v-icon :icon="paused ? mdiPlay : mdiPause" size="26" />
             </button>
-            <button v-tooltip:top="'Back 10s (j)'" :class="ICO" :disabled="!started" @click="seekBy(-10)">
+            <button v-tooltip:top="$t('Back 10s (j)')" :class="ICO" :disabled="!started" @click="seekBy(-10)">
               <v-icon :icon="mdiRewind10" size="22" />
             </button>
-            <button v-tooltip:top="'Forward 10s (l)'" :class="ICO" :disabled="!started" @click="seekBy(10)">
+            <button v-tooltip:top="$t('Forward 10s (l)')" :class="ICO" :disabled="!started" @click="seekBy(10)">
               <v-icon :icon="mdiFastForward10" size="22" />
             </button>
           </template>
@@ -2318,7 +2340,7 @@ defineExpose({ osd })
                stays quiet the rest of the time. Nothing hovers on a phone or a
                TV, and both have a volume rocker of their own. -->
           <div v-if="!touch" class="group/volume flex items-center">
-            <button v-tooltip:top="muted ? 'Unmute (m)' : 'Mute (m)'" :class="ICO" :disabled="!started" @click="toggleMute">
+            <button v-tooltip:top="muted ? $t('Unmute (m)') : $t('Mute (m)')" :class="ICO" :disabled="!started" @click="toggleMute">
               <v-icon :icon="volumeIcon" size="22" />
             </button>
             <player-slider
@@ -2338,7 +2360,7 @@ defineExpose({ osd })
           <span v-if="remaining" class="opacity-55" :class="TIME">{{ remaining }}</span>
 
           <button
-            v-tooltip:top="'Playback speed ([ / ])'"
+            v-tooltip:top="$t('Playback speed ([ / ])')"
             class="px-2" :class="[ICO, menu === 'speed' && '!text-primary !opacity-100']"
             :disabled="!started"
             @click="openMenu('speed')"
@@ -2348,21 +2370,21 @@ defineExpose({ osd })
           </button>
           <button
             v-if="audioTracks.length > 1"
-            v-tooltip:top="'Audio track'"
+            v-tooltip:top="$t('Audio track')"
             :class="[ICO, menu === 'audio' && '!text-primary !opacity-100']"
             @click="openMenu('audio')"
           >
             <v-icon :icon="mdiSurroundSound" size="20" />
           </button>
           <button
-            v-tooltip:top="'Subtitles (s)'"
+            v-tooltip:top="$t('Subtitles (s)')"
             :class="[ICO, menu === 'subs' && '!text-primary !opacity-100']"
             :disabled="!started"
             @click="openMenu('subs')"
           >
             <v-icon :icon="subsOn ? mdiSubtitles : mdiSubtitlesOutline" size="22" />
           </button>
-          <button v-tooltip:top="windowFullscreen ? 'Exit fullscreen (f)' : 'Fullscreen (f)'" :class="ICO" @click="toggleFullscreen">
+          <button v-tooltip:top="windowFullscreen ? $t('Exit fullscreen (f)') : $t('Fullscreen (f)')" :class="ICO" @click="toggleFullscreen">
             <v-icon :icon="windowFullscreen ? mdiFullscreenExit : mdiFullscreen" size="22" />
           </button>
         </div>

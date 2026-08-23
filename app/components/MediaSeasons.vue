@@ -52,7 +52,7 @@ function markEarlier() {
 </script>
 
 <template>
-  <scroll-row title="Seasons">
+  <scroll-row :title="$t('Seasons')">
     <nuxt-link
       v-for="season in seasons"
       :key="season.number"
@@ -86,11 +86,13 @@ function markEarlier() {
            the posters so walking sideways still steps card to card. -->
       <div class="flex items-center gap-1">
         <span class="min-w-0 flex-1 truncate text-body-small opacity-55">
-          {{ seen(season) ? `${seen(season)}/${season.episodes} watched` : `${season.episodes} episodes` }}
+          {{ seen(season)
+            ? $t('{seen}/{total} watched', { seen: seen(season), total: season.episodes })
+            : $t('{count} episodes', { count: season.episodes }) }}
         </span>
         <v-btn icon size="small" variant="text" color="on-surface" @click.stop.prevent="toggle(season)">
           <v-icon :icon="done(season) ? mdiEye : mdiEyeOutline" size="20" :color="done(season) ? 'primary' : undefined" />
-          <v-tooltip activator="parent" :text="done(season) ? 'Mark season unwatched' : 'Mark season watched'" />
+          <v-tooltip activator="parent" :text="done(season) ? $t('Mark season unwatched') : $t('Mark season watched')" />
         </v-btn>
       </div>
     </nuxt-link>
@@ -99,19 +101,22 @@ function markEarlier() {
   <v-dialog :model-value="!!asked" max-width="420" @update:model-value="asked = null">
     <v-card>
       <v-card-title class="text-title-medium">
-        Mark the earlier seasons too?
+        {{ $t('Mark the earlier seasons too?') }}
       </v-card-title>
+      <!-- One sentence per count, not a fragment plus a verb: which words agree
+           with the number is the translator's to solve. -->
       <v-card-text class="text-body-medium opacity-80">
-        {{ earlier.length === 1 ? 'One earlier season' : `${earlier.length} earlier seasons` }}
-        {{ earlier.length === 1 ? 'is' : 'are' }} still unwatched.
+        {{ earlier.length === 1
+          ? $t('One earlier season is still unwatched.')
+          : $t('{count} earlier seasons are still unwatched.', { count: earlier.length }) }}
       </v-card-text>
       <v-card-actions>
         <v-spacer />
         <v-btn variant="text" @click="asked = null">
-          No
+          {{ $t('No') }}
         </v-btn>
         <v-btn autofocus variant="tonal" @click="markEarlier">
-          Mark watched
+          {{ $t('Mark watched') }}
         </v-btn>
       </v-card-actions>
     </v-card>
