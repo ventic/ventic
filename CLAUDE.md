@@ -255,8 +255,12 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
 - Vuetify's own labels come through vue-i18n once `@nuxtjs/i18n` is installed
   (vuetify-nuxt-module swaps its locale adapter), so each generated catalog
   *imports* them — `import { sl as $vuetify } from 'vuetify/locale'` — rather
-  than inlining 200 strings 72 times. Vuetify ships 43 of the 72; the rest fall
-  back to English. Nothing there is ever translated by hand.
+  than inlining 200 strings 72 times. Vuetify ships 39 of the 72, and the other
+  33 rendered a raw `$vuetify.close` on screen: those import `i18n/vuetify/<code>.ts`
+  instead, which is hand-written and which the script only ever *imports* — it
+  never reads, rewrites or deletes one. Those are deliberately partial (the keys
+  the components we actually mount can render, and no more), because a missing
+  key falls back to English one at a time; see `i18n/vuetify/README.md`.
 - `app/utils/*` and `app/composables/*` are auto-imported; so are Vuetify
   components and the Tauri wrappers in `app/modules/tauri.ts`.
 - The `check:*` scripts run these files under `bun` with no Nuxt around them, so
