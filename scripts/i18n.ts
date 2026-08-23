@@ -72,7 +72,9 @@ function stripComments(source: string) {
   return source
     .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/\/\/[^\n]*/g, '')
+    // Not preceded by a colon, or `https://` inside a key ends the string
+    // early and the rest of the sentence is never scanned.
+    .replace(/(^|[^:])\/\/[^\n]*/gm, '$1')
 }
 
 /**

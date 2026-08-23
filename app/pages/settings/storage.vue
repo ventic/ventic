@@ -184,7 +184,7 @@ async function openFolder() {
         type="info"
         variant="tonal"
         density="compact"
-        :text="$t('In the screen that just opened, choose the drive, then “Erase &amp; format as removable storage”. Come back here afterwards and it will be in the list.')"
+        :text="$t('In the screen that just opened, choose the drive, then “Erase & format as removable storage”. Come back here afterwards and it will be in the list.')"
       />
 
       <!-- Not while a drive is sitting there unreadable: "plug one in" is the
