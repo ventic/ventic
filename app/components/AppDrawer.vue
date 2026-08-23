@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import type { SectionKey } from '~/stores/settings'
 import { mdiAccountCircleOutline, mdiAnimationPlayOutline, mdiBookmarkOutline, mdiCogOutline, mdiFilmstrip, mdiHeartOutline, mdiHistory, mdiHomeOutline, mdiTelevisionClassic, mdiTrayArrowDown } from '@mdi/js'
 
 const ui = useUiStore()
-const settings = useSettingsStore()
 const downloads = useDownloadsStore()
 const route = useRoute()
 const { mobile } = useDisplay()
@@ -39,12 +37,8 @@ const library = computed(() => [
   { title: $t('History'), icon: mdiHistory, to: localePath('/history') },
 ])
 
-// Both settings items land on /settings and only pick which section opens.
 // On a phone the toolbar keeps only the downloads badge, so this drawer is the
 // only place Settings and Account can be reached.
-function openSettings(section: SectionKey) {
-  settings.section = section
-}
 </script>
 
 <template>
@@ -105,18 +99,16 @@ function openSettings(section: SectionKey) {
         <v-list-item
           :prepend-icon="mdiCogOutline"
           :title="$t('Settings')"
-          :to="$localePath('/settings')"
+          :to="$localePath('/settings/appearance')"
           color="primary"
           rounded="lg"
-          @click="openSettings('appearance')"
         />
         <v-list-item
           :prepend-icon="mdiAccountCircleOutline"
           :title="$t('Account')"
-          :to="$localePath('/settings')"
+          :to="$localePath('/settings/account')"
           color="primary"
           rounded="lg"
-          @click="openSettings('account')"
         />
       </v-list>
     </template>

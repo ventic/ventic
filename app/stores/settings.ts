@@ -14,7 +14,9 @@ import { DEFAULT_SOURCE } from '~/theme/presets'
 export type SectionKey = 'appearance' | 'language' | 'sources' | 'subtitles' | 'network' | 'storage' | 'account' | 'about'
 
 /**
- * The sidebar of the settings layout, in the order it lists them.
+ * The sidebar of the settings layout, in the order it lists them. A `value` is
+ * also the route the section lives at (`/settings/<value>`), so this table is
+ * the whole registry: the sidebar, the heading and the URLs all come off it.
  *
  * `title` is a function because this list is built when the module loads, which
  * is before there is a Nuxt context for `$t` to read a locale from — and
@@ -42,11 +44,6 @@ export const SECTIONS: { value: SectionKey, title: () => string, icon: string }[
  * changes.
  */
 export const useSettingsStore = defineStore('settings', () => {
-  // Which section the drawer has open. Deliberately not a route and not
-  // persisted: Back should leave settings, not walk through every section that
-  // was opened on the way in, and a fresh visit starts at the top.
-  const section = ref<SectionKey>('appearance')
-
   /**
    * The UI language, as the URL prefix it becomes: `sl`, not `sl-SI`. Empty
    * means "whatever the app opened in", which is the default locale.
@@ -129,5 +126,5 @@ export const useSettingsStore = defineStore('settings', () => {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { section, locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, tmdbKey, downLimit, upLimit, wifiOnly, downloadDir, subs, resetSubs }
+  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, tmdbKey, downLimit, upLimit, wifiOnly, downloadDir, subs, resetSubs }
 })

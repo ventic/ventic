@@ -2,7 +2,7 @@
 import { mdiArrowLeft } from '@mdi/js'
 
 const ui = useUiStore()
-const settings = useSettingsStore()
+const route = useRoute()
 const { mobile } = useDisplay()
 
 const open = computed({
@@ -11,7 +11,7 @@ const open = computed({
 })
 
 // Picking a section on mobile should get the overlay out of the way.
-watch(() => settings.section, () => {
+watch(() => route.path, () => {
   if (mobile.value)
     ui.drawer = false
 })
@@ -34,12 +34,11 @@ watch(() => settings.section, () => {
       <v-list-item
         v-for="item in SECTIONS"
         :key="item.value"
+        :to="$localePath(`/settings/${item.value}`)"
         :prepend-icon="item.icon"
         :title="item.title()"
-        :active="settings.section === item.value"
         color="primary"
         rounded="lg"
-        @click="settings.section = item.value"
       />
     </v-list>
   </v-navigation-drawer>

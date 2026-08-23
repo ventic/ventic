@@ -99,7 +99,7 @@ for (const field of ['name', 'path', 'free', 'writable', 'maxFile']) {
 assert.ok(activity.includes('storageVolumes'), 'MainActivity also asks StorageManager for every volume')
 assert.ok(activity.includes('isRemovable'), 'to catch the removable ones it got no folder on')
 const storageScreen = readFileSync(
-  new URL('../app/components/settings/Storage.vue', import.meta.url),
+  new URL('../app/pages/settings/storage.vue', import.meta.url),
   'utf8',
 )
 assert.ok(storageScreen.includes('v.writable'), 'and the storage screen splits the list on it')

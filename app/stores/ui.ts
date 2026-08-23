@@ -53,7 +53,7 @@ export const useUiStore = defineStore('ui', () => {
 
   /** Where the art behind the app comes from, if anywhere. */
   const backdropMode = useLocalStorage<BackdropMode>('ventic.backdropMode', 'art')
-  /** The user's own picture, already downscaled — see `settings/Appearance.vue`. */
+  /** The user's own picture, already downscaled — see `pages/settings/appearance/background.vue`. */
   const backdropImage = useLocalStorage('ventic.backdropImage', '')
   /**
    * Whether pointing at or focusing a card swaps the art, rather than only

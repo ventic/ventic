@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import type { SectionKey } from '~/stores/settings'
 import { mdiAccountCircle, mdiArrowLeft, mdiCogOutline, mdiDownload, mdiMenu, mdiUpdate } from '@mdi/js'
 
 const ui = useUiStore()
-const settings = useSettingsStore()
 const downloads = useDownloadsStore()
 const updates = useUpdatesStore()
 const route = useRoute()
@@ -38,11 +36,6 @@ function toggleNav() {
     ui.drawer = !ui.drawer
   else
     ui.rail = !ui.rail
-}
-
-/** Both buttons land on /settings; which one was pressed picks the section. */
-function open(section: SectionKey) {
-  settings.section = section
 }
 </script>
 
@@ -92,7 +85,7 @@ function open(section: SectionKey) {
         offset-x="10"
         offset-y="10"
       >
-        <v-btn icon variant="text" color="on-surface" :to="$localePath('/settings')" @click="open('about')">
+        <v-btn icon variant="text" color="on-surface" :to="$localePath('/settings/about')">
           <v-icon :icon="mdiUpdate" />
           <v-tooltip activator="parent" :text="$t('Ventic {version} is out', { version: updates.available.version })" />
         </v-btn>
@@ -110,11 +103,11 @@ function open(section: SectionKey) {
           <v-tooltip activator="parent" :text="downloads.active ? $t('{count} downloading', { count: downloads.active }) : $t('Downloads')" />
         </v-btn>
       </v-badge>
-      <v-btn icon variant="text" color="on-surface" class="hidden sm:flex" :to="$localePath('/settings')" @click="open('appearance')">
+      <v-btn icon variant="text" color="on-surface" class="hidden sm:flex" :to="$localePath('/settings/appearance')">
         <v-icon :icon="mdiCogOutline" />
         <v-tooltip activator="parent" :text="$t('Settings')" />
       </v-btn>
-      <v-btn icon variant="text" color="on-surface" class="hidden sm:flex" :to="$localePath('/settings')" @click="open('account')">
+      <v-btn icon variant="text" color="on-surface" class="hidden sm:flex" :to="$localePath('/settings/account')">
         <v-icon :icon="mdiAccountCircle" />
         <v-tooltip activator="parent" :text="$t('Account')" />
       </v-btn>

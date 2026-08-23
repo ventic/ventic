@@ -27,7 +27,7 @@ const card = read('app/components/MediaCard.vue')
 const layers = read('app/assets/css/layers.css')
 const background = read('app/components/AppBackground.vue')
 const settings = read('app/stores/settings.ts')
-const appearance = read('app/components/settings/appearance/Display.vue')
+const appearance = read('app/pages/settings/appearance/display.vue')
 const app = read('app/app.vue')
 const row = read('app/components/ScrollRow.vue')
 

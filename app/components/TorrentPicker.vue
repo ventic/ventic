@@ -186,7 +186,7 @@ async function download(t: Release) {
             <span class="max-w-md text-body-medium opacity-70">
               {{ $t('Ventic has no sources configured, so there is nowhere to search. You can still play a magnet or a torrent file you open yourself.') }}
             </span>
-            <v-btn variant="tonal" size="small" :to="$localePath('/settings')" @click="settings.section = 'sources'">
+            <v-btn variant="tonal" size="small" :to="$localePath('/settings/sources')">
               {{ $t('Open source settings') }}
             </v-btn>
           </div>

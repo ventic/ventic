@@ -1,13 +1,23 @@
 <script setup lang="ts">
 import { mdiArrowLeft, mdiMenu } from '@mdi/js'
 
+/**
+ * The shell every section renders into: the sidebar's counterpart, holding the
+ * way out and the heading. The sections themselves are child routes, so Back
+ * walks them, a reload lands where the user was, and the drawer is a list of
+ * links rather than a switch over a ref.
+ */
 definePageMeta({ layout: 'settings' })
 
 const ui = useUiStore()
-const settings = useSettingsStore()
+const route = useRoute()
+const routeName = useRouteBaseName()
 const { mobile } = useDisplay()
 
-const title = computed(() => SECTIONS.find(s => s.value === settings.section)?.title() ?? '')
+// `settings-language`, `settings-appearance-background` — the section is the
+// segment after `settings`, which is exactly a SECTIONS value.
+const section = computed(() => routeName(route)?.split('-')[1])
+const title = computed(() => SECTIONS.find(s => s.value === section.value)?.title() ?? $t('Settings'))
 </script>
 
 <template>
@@ -26,14 +36,7 @@ const title = computed(() => SECTIONS.find(s => s.value === settings.section)?.t
         </h1>
       </div>
 
-      <settings-appearance v-if="settings.section === 'appearance'" />
-      <settings-language v-else-if="settings.section === 'language'" />
-      <settings-sources v-else-if="settings.section === 'sources'" />
-      <settings-subtitles v-else-if="settings.section === 'subtitles'" />
-      <settings-network v-else-if="settings.section === 'network'" />
-      <settings-storage v-else-if="settings.section === 'storage'" />
-      <settings-account v-else-if="settings.section === 'account'" />
-      <settings-about v-else-if="settings.section === 'about'" />
+      <nuxt-page />
     </div>
   </div>
 </template>

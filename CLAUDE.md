@@ -223,6 +223,14 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   literal wants `useRouteBaseName()` instead. The choice is remembered in
   `ventic.locale` and restored in `app.vue` — not in this module's cookie, which
   a `tauri://` origin does not reliably keep, and which no backup would carry.
+- **A settings section is a page, not a branch.** Every section under
+  *Settings* is a route (`pages/settings/<value>.vue`, and Appearance's three
+  tabs one level further down), so Back walks them and a reload comes back to
+  the one that was open. `SECTIONS` in the settings store is still the whole
+  registry — a `value` is the route segment, so adding a section is an entry
+  there plus the page file. `pages/settings.vue` is the shell that holds the
+  heading and `<nuxt-page>`; `pages/settings/index.vue` only redirects to the
+  first section, because a section with two URLs is a section with none.
 - Vuetify's own labels come through vue-i18n once `@nuxtjs/i18n` is installed
   (vuetify-nuxt-module swaps its locale adapter), so each generated catalog
   *imports* them — `import { sl as $vuetify } from 'vuetify/locale'` — rather
@@ -253,7 +261,7 @@ be published:
   and adds an RCE surface.
 - `ventic://` deep links stage a source and **always ask before adding it**
   (`plugins/deeplink.client.ts` → `ui.pendingSource` → the dialog in
-  `settings/Sources.vue`). Never add one straight from a link: a web page must
+  `pages/settings/sources.vue`). Never add one straight from a link: a web page must
   not be able to change what the app searches. Publishing such a link is for
   *other people's* sites — don't add one to this repo.
 - Naming: a **source** is a configured server; a **release** is one result it
