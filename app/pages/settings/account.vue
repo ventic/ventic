@@ -173,7 +173,7 @@ function apply() {
               {{ $t('Restoring changes which servers Ventic searches — a backup carries its own source list, and it wins.') }}
             </p>
             <p v-if="pending?.at" class="text-body-small opacity-60">
-              {{ $t('Written {at}.', { at: new Date(pending.at).toLocaleString() }) }}
+              {{ $t('Written {at}.', { at: new Date(pending.at).toLocaleString(uiLocale()) }) }}
             </p>
           </v-card-text>
           <v-card-actions>

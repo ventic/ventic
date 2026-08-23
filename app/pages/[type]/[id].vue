@@ -140,7 +140,7 @@ const playLabel = computed(() => [
               <span class="flex items-center gap-1 opacity-100">
                 <v-icon :icon="mdiStar" size="14" class="text-amber-400" />
                 <span class="font-medium">{{ media.rating.toFixed(1) }}</span>
-                <span class="opacity-60">({{ media.votes.toLocaleString() }})</span>
+                <span class="opacity-60">({{ media.votes.toLocaleString(uiLocale()) }})</span>
               </span>
               <span v-if="media.certification" class="rounded border border-outline-variant px-1.5 py-0.5 text-label-small">
                 {{ media.certification }}

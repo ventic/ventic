@@ -164,7 +164,7 @@ const next = computed(() => {
     return null
   return {
     to: watchLink('tv', id.value, target.season, target.episode),
-    label: `Next · S${target.season} E${target.episode}`,
+    label: $t('Next · S{season} E{episode}', { season: target.season, episode: target.episode }),
   }
 })
 

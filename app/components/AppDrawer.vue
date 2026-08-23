@@ -20,9 +20,10 @@ watch(() => route.fullPath, () => {
     ui.drawer = false
 })
 
-// The browse feeds. Computed rather than a plain array because both halves of
-// an entry move with the language: the label is translated, and the path
-// carries the locale as a prefix (`/sl/movies`).
+// The browse feeds. Computed rather than a plain array because the labels are
+// translated, so the list has to be rebuilt when the language changes — and
+// because `localePath` is what the paths would move through if the language
+// ever went back into the URL.
 const links = computed(() => [
   { title: $t('Home'), icon: mdiHomeOutline, to: localePath('/') },
   { title: $t('Movies'), icon: mdiFilmstrip, to: localePath('/movies') },

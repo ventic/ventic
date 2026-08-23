@@ -8,8 +8,8 @@
 // It returns 144 *regional* tags (22 flavours of English, 15 of Spanish),
 // which is a metadata distinction, not a UI one — nobody wants to pick between
 // en-AG and en-BB to read a menu. So the tags are folded to one entry per
-// language and the URL prefix is the bare subtag (`/sl/downloads`), while the
-// full tag is kept as `language` and sent to TMDB as its `language` param
+// language, keyed by the bare subtag (`sl`), while the full tag is kept as
+// `language` and sent to TMDB as its `language` param
 // (see `tmdb()` in app/utils/tmdb.ts). Picking which region represents a
 // language is CLDR's job, not ours: `Intl.Locale#maximize` answers it (pt →
 // pt-BR, zh → zh-CN, en → en-US), and `Intl` gives the endonym and the writing

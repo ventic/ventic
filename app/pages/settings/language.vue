@@ -9,10 +9,16 @@ const { locale, locales, setLocale } = useNuxtApp().$i18n
  *
  * app.vue is what writes the choice to `settings.locale`, off the locale
  * itself, so a language restored at boot is remembered the same way.
+ *
+ * Guarded because the field can hand back `null` — clearing its text is not a
+ * request to have the app in no language at all.
  */
 const current = computed({
   get: () => locale.value,
-  set: (code: string) => setLocale(code as typeof locale.value),
+  set: (code: string | null) => {
+    if (code)
+      setLocale(code as typeof locale.value)
+  },
 })
 
 /**
@@ -55,8 +61,6 @@ const translated = computed(() =>
       <v-autocomplete
         v-model="current"
         autofocus
-        clearable
-        clear-on-select
         auto-select-first
         :items="items"
         :filter-keys="['title', 'value', 'raw.subtitle']"
@@ -67,14 +71,14 @@ const translated = computed(() =>
         <template #item="{ item, props: itemProps }">
           <v-list-item v-bind="itemProps" :subtitle="item.subtitle">
             <template #prepend>
-              <icon v-if="item.flag" :name="item.flag" size="24" class="mr-3" />
-              <span v-else class="mr-3 inline-block w-24px" />
+              <icon v-if="item.flag" :name="item.flag" size="24" class="me-3" />
+              <span v-else class="me-3 inline-block w-24px" />
             </template>
           </v-list-item>
         </template>
 
         <template #selection="{ item }">
-          <icon v-if="item.flag" :name="item.flag" size="20" class="mr-2" />
+          <icon v-if="item.flag" :name="item.flag" size="20" class="me-2" />
           {{ item.title }}
         </template>
       </v-autocomplete>

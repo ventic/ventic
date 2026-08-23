@@ -2,7 +2,7 @@
 //
 // You write `$t('Some text')` anywhere in app/ — template, script, .ts util,
 // store — and run this. It scans every key out of the source and rebuilds
-// i18n/locales/<code>.json for all 72 languages. Nothing here is edited by hand
+// i18n/locales/<code>.ts for all 72 languages. Nothing here is edited by hand
 // and nothing has to be imported: `$t` is auto-imported from app/utils/i18n.ts
 // in script, and vue-i18n injects it into every template, so a call site is
 // finished the moment it is typed.

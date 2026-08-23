@@ -45,15 +45,15 @@ export const SECTIONS: { value: SectionKey, title: () => string, icon: string }[
  */
 export const useSettingsStore = defineStore('settings', () => {
   /**
-   * The UI language, as the URL prefix it becomes: `sl`, not `sl-SI`. Empty
-   * means "whatever the app opened in", which is the default locale.
+   * The UI language, as the bare code the locale list is keyed by: `sl`, not
+   * `sl-SI`. Empty means "whatever the app opened in", which is the default
+   * locale.
    *
    * This is only where the choice is *remembered* — @nuxtjs/i18n owns the live
-   * one, because switching a language is a navigation (every route carries its
-   * prefix). app.vue is what marries the two: it restores this at boot and
-   * writes it back whenever the route's locale changes. Its own memory is a
-   * cookie, which a `tauri://` origin does not reliably keep — and a `ventic.`
-   * key travels in a backup, which a cookie also would not.
+   * one. app.vue is what marries the two: it restores this at boot and writes
+   * it back whenever the locale changes. The module's own memory is a cookie,
+   * which a `tauri://` origin does not reliably keep — and a `ventic.` key
+   * travels in a backup, which a cookie also would not.
    */
   const locale = useLocalStorage('ventic.locale', '')
 

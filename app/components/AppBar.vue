@@ -7,9 +7,9 @@ const updates = useUpdatesStore()
 const route = useRoute()
 const router = useRouter()
 const { mobile } = useDisplay()
-// The route's name without its language suffix — `search`, not `search___sl`.
-// Every path carries a locale prefix, so comparing `route.path` to a literal
-// stopped meaning anything the day the app grew a second language.
+// Which page this is, by name rather than by path. `no_prefix` means a route
+// name carries no language today, but comparing a name is what stays true if
+// the prefix ever comes back — see localePath in app/utils/i18n.ts.
 const routeName = useRouteBaseName()
 
 const query = ref((route.query.q as string) ?? '')

@@ -71,7 +71,7 @@ const credits = computed(() => {
               <span v-if="episode.rating" class="flex items-center gap-1 opacity-100">
                 <v-icon :icon="mdiStar" size="14" class="text-amber-400" />
                 <span class="font-medium">{{ episode.rating.toFixed(1) }}</span>
-                <span class="opacity-60">({{ episode.votes.toLocaleString() }})</span>
+                <span class="opacity-60">({{ episode.votes.toLocaleString(uiLocale()) }})</span>
               </span>
               <span v-if="episode.air">{{ dateText(episode.air) }}</span>
               <span v-if="episode.runtime">{{ runtimeText(episode.runtime) }}</span>

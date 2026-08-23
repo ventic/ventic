@@ -8,10 +8,10 @@ import { applyBackup, backupSummary, makeBackup, readBackup } from '../app/utils
 import { arrange, continuing, finished, fraction, kindOf, nextEpisode, parseKey, placeholder, playedTitles, progressKey, remainingText, resumable, showEntries, slim, UNKNOWN_TITLE, watchedInSeason } from '../app/utils/library'
 import { mediaLink } from '../app/utils/tmdb'
 
-// `mediaLink` prefixes its path with the current language (`/sl/movie/603`)
-// through Nuxt's auto-imported `localePath`, which does not exist out here
-// either — see ./i18n-stub for the same idea. The identity keeps these asserts
-// about the *shape* of the route, which is what they were ever checking.
+// `mediaLink` runs its path through Nuxt's auto-imported `localePath`, which
+// does not exist out here either — see ./i18n-stub for the same idea. The app
+// itself makes that call the identity (`strategy: 'no_prefix'`), so this stub
+// is what the route actually looks like, not an approximation of it.
 
 import './i18n-stub';
 

@@ -330,7 +330,7 @@ export async function findReleases(imdbId: string, season = 0, episode = 0): Pro
   // One source down out of several is not worth an error. All of them is — and
   // it reads the same as "nothing found" unless we say so.
   if (failed.length === results.length)
-    throw new Error(`No source answered — ${failed[0]}`)
+    throw new Error($t('No source answered — {reason}', { reason: failed[0]! }))
 
   // Two sources drawing on the same origins hand back the same release twice;
   // first one wins, so the order sources were added in is the preference order.
@@ -405,7 +405,7 @@ export async function addTorrent(magnet: string) {
   const folder = downloadDir ? `&output_folder=${encodeURIComponent(downloadDir)}` : ''
   const res = await fetch(`${ENGINE}/torrents?overwrite=true${folder}`, { method: 'POST', body: magnet })
   if (!res.ok)
-    throw new Error(`Torrent engine said ${res.status}: ${await res.text()}`)
+    throw new Error($t('Torrent engine said {status}: {reason}', { status: res.status, reason: await res.text() }))
   const added = await res.json() as {
     id: number | null
     details: { name: string | null, info_hash: string, files: EngineFile[] | null }
@@ -677,7 +677,7 @@ export function haveAt(map: PieceMap, haves: Uint8Array, fraction: number) {
 export async function listTorrents(): Promise<EngineTorrent[]> {
   const res = await fetch(`${ENGINE}/torrents?with_stats=true`)
   if (!res.ok)
-    throw new Error(`Torrent engine said ${res.status}.`)
+    throw new Error($t('Torrent engine said {status}.', { status: res.status }))
   const data = await res.json() as { torrents: EngineTorrent[] }
   return data.torrents
 }
@@ -727,7 +727,7 @@ export function uploadLimit(peakBps: number, watching: boolean, probing: boolean
 export async function torrentAction(id: number, action: 'pause' | 'start' | 'forget' | 'delete') {
   const res = await fetch(`${ENGINE}/torrents/${id}/${action}`, { method: 'POST' })
   if (!res.ok)
-    throw new Error(`Torrent engine said ${res.status}: ${await res.text()}`)
+    throw new Error($t('Torrent engine said {status}: {reason}', { status: res.status, reason: await res.text() }))
 }
 
 export interface Started {

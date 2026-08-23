@@ -452,7 +452,7 @@ async function fetchExternals() {
     const { title, year, season, episode } = searchBy.value
     const id = props.imdbId || await findImdbId(title, season > 0, year)
     if (!id)
-      throw new Error(`Couldn't match "${title}" to a title OpenSubtitles knows.`)
+      throw new Error($t('Couldn\'t match “{title}” to a title OpenSubtitles knows.', { title }))
     externals.value = await findSubtitles(id, season, episode, videoName.value)
     subsFetched = true
   }
@@ -474,7 +474,7 @@ function useTrack(t: Track) {
   setSid(t.id)
   if (t.lang)
     subLang.value = t.lang
-  osd(`Subtitles: ${trackLabel(t)}`)
+  osd($t('Subtitles: {name}', { name: trackLabel(t) }))
 }
 
 function subsOff() {
@@ -528,7 +528,7 @@ async function loadFile(file: Subtitle, lang: SubtitleLanguage) {
   syncNote.value = ''
   guess.value = null
   await refreshTracks()
-  osd(`Subtitles: ${lang.name}`)
+  osd($t('Subtitles: {name}', { name: lang.name }))
 }
 
 async function useLanguage(lang: SubtitleLanguage) {
@@ -1051,14 +1051,14 @@ async function startPlayer() {
     if (!probe.ok) {
       if (fromEngine.value) {
         errorMsg.value = probe.status
-          ? `The torrent stream isn't ready yet (engine replied HTTP ${probe.status}). It may still be fetching metadata from peers.`
+          ? $t('The torrent stream isn\'t ready yet (engine replied HTTP {status}). It may still be fetching metadata from peers.', { status: probe.status })
           : $t('Could not reach the torrent engine on 127.0.0.1:3030.')
       }
       else {
         // Debrid links are minted per request and go stale; searching again is
         // what mints a fresh one, so that's what the message has to ask for.
         errorMsg.value = probe.status
-          ? `The link this source gave answered HTTP ${probe.status}. It may have expired — search the sources again for a fresh one.`
+          ? $t('The link this source gave answered HTTP {status}. It may have expired — search the sources again for a fresh one.', { status: probe.status })
           : $t('The link this source gave could not be reached.')
       }
       return

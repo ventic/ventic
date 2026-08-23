@@ -16,7 +16,7 @@ const TODO = 'TODO_TRANSLATION: '
 export default () => ({
   legacy: false,
   /**
-   * Vuetify ships translations for 43 of the 72 languages and this app for
+   * Vuetify ships translations for 39 of the 72 languages and this app for
    * however many have been through a translation pass — the rest of both resolve
    * here, one key at a time, rather than rendering blank.
    *

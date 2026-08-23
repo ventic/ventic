@@ -186,7 +186,7 @@ export function toMedia(item: TmdbItem, type?: MediaType): Media | null {
   return {
     id: item.id,
     type: mediaType,
-    title: item.title ?? item.name ?? 'Untitled',
+    title: item.title ?? item.name ?? $t('Untitled'),
     year: (item.release_date ?? item.first_air_date ?? '').slice(0, 4),
     poster: item.poster_path ?? null,
     backdrop: item.backdrop_path ?? null,
