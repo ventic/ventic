@@ -39,8 +39,13 @@ export default defineNuxtConfig({
   i18n: {
     defaultLocale: i18nLocales.defaultLocale,
     locales: i18nLocales.locales,
-    // Every path carries its language, the default included: /en/downloads.
-    strategy: 'prefix',
+    // No language in the URL. Prefixed routes exist so a search engine can
+    // index one page per language and a person can share a localised link —
+    // this app is a bundle behind a Tauri webview, with no canonical URL, no
+    // crawler and no address bar, so it paid the cost and got nothing. The cost
+    // was the Back button: every history entry carried a language, so stepping
+    // back past a switch switched the language back.
+    strategy: 'no_prefix',
     // Off because the app remembers the choice itself, in `ventic.locale` —
     // this module's own memory is a cookie, and a cookie on a `tauri://` origin
     // is not reliably kept. localStorage is where every other preference lives

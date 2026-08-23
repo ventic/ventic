@@ -28,8 +28,10 @@ export function $t(
 }
 
 /**
- * `/downloads` → `/en/downloads`. Every route carries its language, so a path
- * written by hand has to be run through this or it matches nothing.
+ * A path, localised for the current routing strategy. Under `no_prefix` — what
+ * this app uses — that is the path back unchanged, so these calls are a no-op
+ * today; they are what makes putting the language back into the URL a config
+ * change rather than a sweep of every `:to` in the app.
  *
  * Auto-imported for `.ts` files and for scripts; in a template the same
  * function is already there as `$localePath` (@nuxtjs/i18n provides it), which

@@ -2,14 +2,12 @@
 const { locale, locales, setLocale } = useI18n()
 
 /**
- * Switching a language is a *navigation* — every route carries its prefix
- * (`/sl/downloads`), so `setLocale` replaces the current route with the same
- * page in the new language rather than swapping a string. Nothing is lost:
- * the user stays exactly where they were.
+ * `setLocale` swaps the catalog in place and nothing navigates — the URL
+ * carries no language (`strategy: 'no_prefix'` in nuxt.config), so the page
+ * stays where it is and the history stack is untouched. Back means back.
  *
  * app.vue is what writes the choice to `settings.locale`, off the locale
- * itself, so arriving here by any other route — a deep link, a restored
- * session — is remembered the same way.
+ * itself, so a language restored at boot is remembered the same way.
  */
 const current = computed({
   get: () => locale.value,

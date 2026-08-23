@@ -120,10 +120,10 @@ export function logoUrl(path?: string | null, size: 'w300' | 'w500' = 'w500') {
 /**
  * Route to a media detail page. Also the shape `[type]/[id].vue` validates.
  *
- * Every link helper here runs its path through `localePath`, because a route
- * only exists under its language prefix (`/en/movie/603`) — an unprefixed path
- * matches nothing and renders as a dead link. Doing it in the helpers rather
- * than at the ~40 call sites is also what keeps the call sites unchanged.
+ * Every link helper here runs its path through `localePath`, which is the
+ * identity under the app's `no_prefix` strategy — it is the one place that
+ * would have to change if the language ever went back into the URL, instead of
+ * the ~40 call sites.
  */
 export function mediaLink(media: Pick<Media, 'id' | 'type'>) {
   return localePath(`/${media.type}/${media.id}`)

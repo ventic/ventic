@@ -22,31 +22,18 @@ watch(painted, value => applyTheme(theme, value), { immediate: true })
 /**
  * The other global preference that only takes effect here: the UI language.
  *
- * @nuxtjs/i18n owns the live locale, because a language is part of every path
- * (`/sl/downloads`) and switching one is a navigation. The store only remembers
- * the choice — its own memory would be a cookie, and a cookie on a `tauri://`
- * origin is not reliably kept.
- *
- * So: restore once, then follow. Restoring is one client-side route change at
- * boot, on a webview with no address bar to see it in. Following means a deep
- * link into another language is remembered as if it had been picked here.
+ * @nuxtjs/i18n owns the live locale, the store only remembers the choice — its
+ * own memory would be a cookie, and a cookie on a `tauri://` origin is not
+ * reliably kept. The URL carries no language (`strategy: 'no_prefix'`), so this
+ * is the only thing that decides which one the app opens in: restore it once at
+ * boot, then follow whatever the settings page switches to.
  */
-const { locale, locales, setLocale, defaultLocale } = useI18n()
+const { locale, setLocale, locales } = useI18n()
 
-/**
- * Only restore *out of* the default language. The app always opens at `/`,
- * which the i18n redirect turns into `/en` before this runs — so being on the
- * default locale is what "no language was asked for" looks like, and is the one
- * case where the remembered choice should take over. A path that already names
- * a language was asked for by something (a deep link, a reload after a switch)
- * and is left alone, and recorded, rather than yanked back.
- */
-if (settings.locale && locale.value === defaultLocale && settings.locale !== locale.value)
+if (settings.locale && settings.locale !== locale.value)
   setLocale(settings.locale as typeof locale.value)
-else
-  settings.locale = locale.value
 
-watch(locale, code => (settings.locale = code))
+watch(locale, code => (settings.locale = code), { immediate: true })
 
 /**
  * `<html lang>` and, for Arabic/Farsi/Hebrew/Urdu, `<html dir="rtl">`.

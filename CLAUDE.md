@@ -215,14 +215,17 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   is called in itself, and which four are right-to-left, so no table of language
   names is hand-kept. The full tag survives as `language` and is what `tmdb()`
   asks for, so film data arrives in the reader's language.
-- **Every route carries its language** (`strategy: 'prefix'` — `/sl/downloads`),
-  so a path written by hand matches nothing. The link helpers in `utils/tmdb.ts`
-  already run through `localePath`, which is why their ~40 call sites are
-  unchanged; a literal path needs `$localePath('/settings')` in a template or
-  the auto-imported `localePath()` in script, and comparing `route.path` to a
-  literal wants `useRouteBaseName()` instead. The choice is remembered in
-  `ventic.locale` and restored in `app.vue` — not in this module's cookie, which
-  a `tauri://` origin does not reliably keep, and which no backup would carry.
+- **No language in the URL** (`strategy: 'no_prefix'`), so a path is just a
+  path and `setLocale` swaps the catalog in place without navigating. Prefixed
+  routes are for crawlers and shareable localised links; a bundle behind a Tauri
+  webview has neither, and the one thing they did buy was a Back button that
+  undid a language switch — every history entry named a language, so stepping
+  back past the switch switched it back. The `localePath()`/`$localePath()`
+  calls and `useRouteBaseName()` are left in place: they are the identity today
+  and are what would make putting the prefix back a config change. The choice is
+  remembered in `ventic.locale` and restored in `app.vue` — not in this module's
+  cookie, which a `tauri://` origin does not reliably keep, and which no backup
+  would carry.
 - **A settings section is a page, not a branch.** Every section under
   *Settings* is a route (`pages/settings/<value>.vue`, and Appearance's three
   tabs one level further down), so Back walks them and a reload comes back to
