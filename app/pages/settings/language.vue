@@ -18,7 +18,10 @@ const current = computed({
  * Native name first, English name after it — someone who has the app in a
  * language they can't read has to find their own in the list, and "Deutsch"
  * is the only label that helps them do it. The English half is what makes it
- * searchable for everyone else.
+ * searchable for everyone else — but only once `filter-keys` names it: the
+ * default filter walks the *internal* item, where the whole original object is
+ * one `raw` key it stringifies to "[object Object]", so "german" matched
+ * nothing.
  */
 const english = new Intl.DisplayNames(['en'], { type: 'language' })
 
@@ -48,6 +51,7 @@ const translated = computed(() =>
         clear-on-select
         auto-select-first
         :items="items"
+        :filter-keys="['title', 'value', 'raw.subtitle']"
         variant="solo-filled"
         :label="$t('Language')"
         hide-details
