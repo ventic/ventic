@@ -9,6 +9,10 @@ const updates = useUpdatesStore()
 const route = useRoute()
 const router = useRouter()
 const { mobile } = useDisplay()
+// The route's name without its language suffix — `search`, not `search___sl`.
+// Every path carries a locale prefix, so comparing `route.path` to a literal
+// stopped meaning anything the day the app grew a second language.
+const routeName = useRouteBaseName()
 
 const query = ref((route.query.q as string) ?? '')
 
@@ -16,14 +20,14 @@ function search(replace = true) {
   const q = query.value.trim()
   if (!q || route.query.q === q)
     return
-  navigateTo({ path: '/search', query: { q } }, { replace: replace && route.path === '/search' })
+  navigateTo({ path: localePath('/search'), query: { q } }, { replace: replace && route.path === localePath('/search') })
 }
 
 watchDebounced(query, () => search(), { debounce: 400 })
 
 // Leaving search clears the field, so the box always matches what's on screen.
-watch(() => route.path, path => {
-  if (path !== '/search')
+watch(() => route.path, () => {
+  if (routeName(route) !== 'search')
     query.value = ''
 })
 
@@ -47,7 +51,7 @@ function open(section: SectionKey) {
     <v-btn :icon="mdiMenu" variant="text" color="on-surface" @click="toggleNav" />
 
     <v-btn
-      v-if="route.path !== '/'"
+      v-if="routeName(route) !== 'index'"
       icon
       variant="text"
       color="on-surface"
@@ -55,7 +59,7 @@ function open(section: SectionKey) {
       @click="router.back()"
     >
       <v-icon :icon="mdiArrowLeft" />
-      <v-tooltip activator="parent" text="Back" />
+      <v-tooltip activator="parent" :text="$t('Back')" />
     </v-btn>
 
     <!-- The search fills the row on a phone: `flex-1` grows it, `max-w-120` caps
@@ -64,7 +68,7 @@ function open(section: SectionKey) {
          half-width with dead space beside it. -->
     <search-field
       v-model="query"
-      :placeholder="mobile ? 'Search' : 'Search movies and shows'"
+      :placeholder="mobile ? $t('Search') : $t('Search movies and shows')"
       :density="mobile ? 'default' : 'compact'"
       class="max-w-120 flex-1"
       @enter="search(false)"
@@ -88,9 +92,9 @@ function open(section: SectionKey) {
         offset-x="10"
         offset-y="10"
       >
-        <v-btn icon variant="text" color="on-surface" to="/settings" @click="open('about')">
+        <v-btn icon variant="text" color="on-surface" :to="$localePath('/settings')" @click="open('about')">
           <v-icon :icon="mdiUpdate" />
-          <v-tooltip activator="parent" :text="`Ventic ${updates.available.version} is out`" />
+          <v-tooltip activator="parent" :text="$t('Ventic {version} is out', { version: updates.available.version })" />
         </v-btn>
       </v-badge>
 
@@ -101,18 +105,18 @@ function open(section: SectionKey) {
         offset-x="8"
         offset-y="8"
       >
-        <v-btn icon variant="text" color="on-surface" to="/downloads">
+        <v-btn icon variant="text" color="on-surface" :to="$localePath('/downloads')">
           <v-icon :icon="mdiDownload" />
-          <v-tooltip activator="parent" :text="downloads.active ? `${downloads.active} downloading` : 'Downloads'" />
+          <v-tooltip activator="parent" :text="downloads.active ? $t('{count} downloading', { count: downloads.active }) : $t('Downloads')" />
         </v-btn>
       </v-badge>
-      <v-btn icon variant="text" color="on-surface" class="hidden sm:flex" to="/settings" @click="open('appearance')">
+      <v-btn icon variant="text" color="on-surface" class="hidden sm:flex" :to="$localePath('/settings')" @click="open('appearance')">
         <v-icon :icon="mdiCogOutline" />
-        <v-tooltip activator="parent" text="Settings" />
+        <v-tooltip activator="parent" :text="$t('Settings')" />
       </v-btn>
-      <v-btn icon variant="text" color="on-surface" class="hidden sm:flex" to="/settings" @click="open('account')">
+      <v-btn icon variant="text" color="on-surface" class="hidden sm:flex" :to="$localePath('/settings')" @click="open('account')">
         <v-icon :icon="mdiAccountCircle" />
-        <v-tooltip activator="parent" text="Account" />
+        <v-tooltip activator="parent" :text="$t('Account')" />
       </v-btn>
     </div>
   </header>

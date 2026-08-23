@@ -35,7 +35,7 @@ const credits = computed(() => {
   <div class="h-full overflow-y-auto pb-12">
     <div v-if="error" class="flex h-full flex-col items-center justify-center gap-2">
       <v-icon :icon="mdiAlertCircleOutline" color="error" size="40" />
-      <span class="text-body-medium opacity-70">Couldn't load this episode.</span>
+      <span class="text-body-medium opacity-70">{{ $t('Couldn\'t load this episode.') }}</span>
       <v-btn variant="tonal" :to="seasonLink(id, seasonNumber)">
         Back to season
       </v-btn>
@@ -44,7 +44,7 @@ const credits = computed(() => {
     <template v-else>
       <section class="px-4 pb-8 pt-4 md:px-6">
         <div class="mb-3 flex flex-wrap items-center gap-1 -ml-2">
-          <v-btn :prepend-icon="mdiArrowLeft" variant="text" size="small" :to="`/tv/${id}`">
+          <v-btn :prepend-icon="mdiArrowLeft" variant="text" size="small" :to="$localePath(`/tv/${id}`)">
             {{ show?.title ?? 'Show' }}
           </v-btn>
           <span class="opacity-40">/</span>
@@ -78,7 +78,7 @@ const credits = computed(() => {
             </div>
 
             <p class="max-w-3xl text-body-medium opacity-85">
-              {{ episode.overview || 'No overview.' }}
+              {{ episode.overview || $t('No overview.') }}
             </p>
 
             <dl v-if="credits.length" class="grid grid-cols-1 gap-x-6 gap-y-1 text-body-small sm:grid-cols-2">
@@ -130,7 +130,7 @@ const credits = computed(() => {
         </div>
       </section>
 
-      <cast-row v-if="!pending && episode?.guests.length" title="Guest stars" :people="episode.guests" />
+      <cast-row v-if="!pending && episode?.guests.length" :title="$t('Guest stars')" :people="episode.guests" />
     </template>
   </div>
 </template>

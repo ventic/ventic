@@ -12,18 +12,18 @@ const { lgAndUp } = useDisplay()
 
 const isMovie = props.type === 'movie'
 
-const categories = [
-  { value: 'popular', title: 'Popular' },
+const categories = computed(() => [
+  { value: 'popular', title: $t('Popular') },
   // /trending takes no filters at all, so it can't be narrowed to anime.
-  ...props.anime ? [] : [{ value: 'trending', title: 'Trending' }],
-  { value: 'top_rated', title: 'Top rated' },
+  ...props.anime ? [] : [{ value: 'trending', title: $t('Trending') }],
+  { value: 'top_rated', title: $t('Top rated') },
   isMovie
-    ? { value: 'upcoming', title: 'Upcoming' }
-    : { value: 'on_the_air', title: 'On the air' },
+    ? { value: 'upcoming', title: $t('Upcoming') }
+    : { value: 'on_the_air', title: $t('On the air') },
   isMovie
-    ? { value: 'now_playing', title: 'In cinemas' }
-    : { value: 'airing_today', title: 'Airing today' },
-]
+    ? { value: 'now_playing', title: $t('In cinemas') }
+    : { value: 'airing_today', title: $t('Airing today') },
+])
 
 const category = ref('popular')
 const genre = ref<number | null>(null)
@@ -117,7 +117,7 @@ const { items, pending, error, done, loadMore } = useMediaFeed(request)
           :items="genres"
           item-title="name"
           item-value="id"
-          label="Genre"
+          :label="$t('Genre')"
           clearable
           class="w-52 shrink-0"
         />

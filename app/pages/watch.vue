@@ -43,7 +43,7 @@ const { data: media, error: mediaError } = useMediaDetail(type, id)
 const known = computed(() => library.media[titleKey(type.value, id.value)] ?? null)
 const title = computed(() => media.value ?? known.value)
 
-const step = ref('Loading title…')
+const step = ref($t('Loading title…'))
 const errorMsg = ref('')
 const torrent = ref<Release | null>(null)
 const torrentId = ref<number | null>(null)
@@ -73,7 +73,7 @@ async function start() {
       // already on disk plays with TMDB unreachable, and hanging on this lookup
       // first is what used to make a downloaded film slow to start.
       imdbId: async () => {
-        step.value = 'Loading title…'
+        step.value = $t('Loading title…')
         await until(() => !!media.value || !!mediaError.value).toBe(true, { timeout: 20_000 })
         return media.value?.imdbId
       },
@@ -99,7 +99,7 @@ async function start() {
     // the whole connection. Nothing to pause for a finished torrent — see `focus`.
     await downloads.focus(started.id)
 
-    step.value = 'Buffering…'
+    step.value = $t('Buffering…')
     src.value = started.url || streamUrl(started.id, started.index)
   }
   catch (e) {
@@ -129,11 +129,11 @@ onBeforeUnmount(() => {
 // only a failure to play when the sources were the plan.
 const failure = computed(() => errorMsg.value
   || (mediaError.value && !magnet.value && !link.value && !downloaded.value
-    ? 'Couldn\'t load this title from TMDB.'
+    ? $t('Couldn\'t load this title from TMDB.')
     : ''))
 
 const heading = computed(() => {
-  const name = title.value?.title ?? (route.query.title as string) ?? 'Loading…'
+  const name = title.value?.title ?? (route.query.title as string) ?? $t('Loading…')
   return season.value && episode.value ? `${name} · S${season.value}E${episode.value}` : name
 })
 
@@ -172,7 +172,7 @@ function leave() {
   if (router.options.history.state.back)
     router.back()
   else
-    navigateTo('/')
+    navigateTo(localePath('/'))
 }
 
 // preventDefault marks the press as used up, which is how the remote's back key
@@ -260,7 +260,7 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
         fullscreen
       >
         <template #start>
-          <v-btn icon variant="text" density="comfortable" title="Back (Esc)" @click="leave">
+          <v-btn icon variant="text" density="comfortable" :title="$t('Back (Esc)')" @click="leave">
             <v-icon :icon="mdiArrowLeft" />
           </v-btn>
         </template>
@@ -280,13 +280,13 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
 
             <!-- Swarm figures, so only while a torrent is what's playing. -->
             <div v-if="stats" class="flex shrink-0 items-center gap-3 text-body-small opacity-70">
-              <span class="flex items-center gap-1" title="Download speed">
+              <span class="flex items-center gap-1" :title="$t('Download speed')">
                 <v-icon :icon="mdiDownload" size="14" />{{ speed }}
               </span>
-              <span class="flex items-center gap-1" title="Connected peers">
+              <span class="flex items-center gap-1" :title="$t('Connected peers')">
                 <v-icon :icon="mdiAccountGroup" size="14" />{{ peers }}
               </span>
-              <span class="tabular-nums" title="Downloaded">{{ progressPct.toFixed(0) }}%</span>
+              <span class="tabular-nums" :title="$t('Downloaded')">{{ progressPct.toFixed(0) }}%</span>
               <span class="hidden opacity-50 xl:inline">
                 {{ bytesText(stats.progress_bytes) }} / {{ bytesText(stats.total_bytes) }}
               </span>

@@ -6,21 +6,24 @@ export type StatusKey = 'downloading' | 'done' | 'paused' | 'error' | 'checking'
 export type FilterKey = 'all' | StatusKey
 
 /** Chip label + colour for whatever the engine says a torrent is doing. */
-export const TORRENT_STATUS: Record<StatusKey, { text: string, color: string }> = {
-  downloading: { text: 'Downloading', color: 'primary' },
-  done: { text: 'Completed', color: 'success' },
-  paused: { text: 'Paused', color: 'warning' },
-  checking: { text: 'Metadata', color: 'info' },
-  error: { text: 'Error', color: 'error' },
+export const TORRENT_STATUS: Record<StatusKey, { text: () => string, color: string }> = {
+  downloading: { text: () => $t('Downloading'), color: 'primary' },
+  done: { text: () => $t('Completed'), color: 'success' },
+  paused: { text: () => $t('Paused'), color: 'warning' },
+  checking: { text: () => $t('Metadata'), color: 'info' },
+  error: { text: () => $t('Error'), color: 'error' },
 }
 
 /** The left rail, qBittorrent-style: one row per state with a live count. */
-export const FILTERS: { value: FilterKey, title: string, icon: string }[] = [
-  { value: 'all', title: 'All', icon: mdiFormatListBulleted },
-  { value: 'downloading', title: 'Downloading', icon: mdiTrayArrowDown },
-  { value: 'done', title: 'Completed', icon: mdiCheckCircleOutline },
-  { value: 'paused', title: 'Paused', icon: mdiPauseCircleOutline },
-  { value: 'error', title: 'Errored', icon: mdiAlertCircleOutline },
+// `title` is a function for the same reason SECTIONS' is: this list is built
+// when the module loads, before `$t` has a locale to read — and the label has
+// to change when the language does.
+export const FILTERS: { value: FilterKey, title: () => string, icon: string }[] = [
+  { value: 'all', title: () => $t('All'), icon: mdiFormatListBulleted },
+  { value: 'downloading', title: () => $t('Downloading'), icon: mdiTrayArrowDown },
+  { value: 'done', title: () => $t('Completed'), icon: mdiCheckCircleOutline },
+  { value: 'paused', title: () => $t('Paused'), icon: mdiPauseCircleOutline },
+  { value: 'error', title: () => $t('Errored'), icon: mdiAlertCircleOutline },
 ]
 
 export function torrentStatus(t: EngineTorrent): StatusKey {

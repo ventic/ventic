@@ -16,14 +16,14 @@ const ui = useUiStore()
 const filter = ref<'all' | 'dark' | 'light'>(PRESETS[settings.theme as ThemeName]?.dark === false ? 'light' : 'dark')
 
 const FILTERS = [
-  { value: 'dark', title: 'Dark' },
-  { value: 'light', title: 'Light' },
-  { value: 'all', title: 'All' },
+  { value: 'dark', title: () => $t('Dark') },
+  { value: 'light', title: () => $t('Light') },
+  { value: 'all', title: () => $t('All') },
 ] as const
 
 const groups = computed(() => {
-  const dark = { title: 'Dark', items: PRESET_LIST.filter(([, p]) => p.dark) }
-  const light = { title: 'Light', items: PRESET_LIST.filter(([, p]) => !p.dark) }
+  const dark = { title: $t('Dark'), items: PRESET_LIST.filter(([, p]) => p.dark) }
+  const light = { title: $t('Light'), items: PRESET_LIST.filter(([, p]) => !p.dark) }
   return filter.value === 'dark' ? [dark] : filter.value === 'light' ? [light] : [dark, light]
 })
 
@@ -128,8 +128,8 @@ const spectrum = `linear-gradient(to right, ${Array.from({ length: 13 }, (_, i) 
          otherwise, and picking a theme is the way back to a fixed one. -->
     <settings-section
       v-if="isGenerated(settings.theme)"
-      title="Your colour"
-      hint="One colour, and Material's own generator works out the rest of the palette from it."
+      :title="$t('Your colour')"
+      :hint="$t('One colour, and Material\'s own generator works out the rest of the palette from it.')"
     >
       <v-slider
         v-model="hue"
@@ -144,16 +144,15 @@ const spectrum = `linear-gradient(to right, ${Array.from({ length: 13 }, (_, i) 
     </settings-section>
 
     <settings-section
-      title="Follow the artwork"
-      hint="Builds the palette from whatever is on screen instead, so the interface shifts as you move
-        between titles. Your theme comes back the moment you turn it off."
+      :title="$t('Follow the artwork')"
+      :hint="$t('Builds the palette from whatever is on screen instead, so the interface shifts as you move between titles. Your theme comes back the moment you turn it off.')"
     >
       <v-switch
         v-model="settings.themeFromArt"
         color="primary"
         density="comfortable"
         hide-details
-        label="Take the colour from what's on screen"
+        :label="$t('Take the colour from what\'s on screen')"
       />
       <template v-if="settings.themeFromArt && ui.backdropMode === 'custom'">
         <v-switch
@@ -161,11 +160,10 @@ const spectrum = `linear-gradient(to right, ${Array.from({ length: 13 }, (_, i) 
           color="primary"
           density="comfortable"
           hide-details
-          label="Take it from my own picture too"
+          :label="$t('Take it from my own picture too')"
         />
         <p class="text-body-medium opacity-70">
-          Off, your own background is left out of it: the theme keeps its own colours while the
-          picture is up, and only moves when a title's artwork covers it.
+          {{ $t('Off, your own background is left out of it: the theme keeps its own colours while the picture is up, and only moves when a title\'s artwork covers it.') }}
         </p>
       </template>
     </settings-section>

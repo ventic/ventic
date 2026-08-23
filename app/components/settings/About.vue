@@ -27,11 +27,11 @@ const downloadUrl = computed(() =>
 // Naming the licence is half the point of this list. Windows builds carry an
 // mpv.exe, which makes handing one out redistribution of GPL software — the
 // notice and offer of source ride along beside it (see scripts/build/mpv.ts).
-const credits = [
-  { title: 'mpv', text: 'The player itself — decoding, subtitles and audio. GPLv2 or later.', url: 'https://mpv.io' },
-  { title: 'librqbit', text: 'The torrent engine, embedded in the app. MIT licensed.', url: 'https://github.com/ikatson/rqbit' },
-  { title: 'OpenSubtitles', text: 'Subtitles, reached through public addons Stremio operates.', url: 'https://www.opensubtitles.org' },
-]
+const credits = computed(() => [
+  { title: 'mpv', text: $t('The player itself — decoding, subtitles and audio. GPLv2 or later.'), url: 'https://mpv.io' },
+  { title: 'librqbit', text: $t('The torrent engine, embedded in the app. MIT licensed.'), url: 'https://github.com/ikatson/rqbit' },
+  { title: 'OpenSubtitles', text: $t('Subtitles, reached through public addons Stremio operates.'), url: 'https://www.opensubtitles.org' },
+])
 
 // Same escape hatch as the trailer button: the shell plugin has no Android
 // implementation and fails with ENOENT looking for `xdg-open`, so a link there
@@ -48,10 +48,10 @@ function open(url: string) {
         <img src="/logo.svg" alt="" class="size-14">
         <div>
           <div class="text-title-medium">
-            Version {{ updates.current || 'unknown' }}
+            {{ $t('Version {version}', { version: updates.current || $t('unknown') }) }}
           </div>
           <div class="text-body-small opacity-70">
-            A media library and BitTorrent player, on the desktop and on Android TV.
+            {{ $t('A media library and BitTorrent player, on the desktop and on Android TV.') }}
             <template v-if="platform">
               · {{ platform }}
             </template>
@@ -60,13 +60,13 @@ function open(url: string) {
       </div>
     </settings-section>
 
-    <settings-section title="Updates">
+    <settings-section :title="$t('Updates')">
       <!-- Three outcomes, and which one shows has nothing to do with which
            platform this is: `capable` is about how the app was *installed*.
            See can_self_update in src-tauri/src/lib.rs. -->
       <template v-if="updates.available">
         <p class="text-body-medium">
-          Ventic {{ updates.available.version }} is out.
+          {{ $t('Ventic {version} is out', { version: updates.available.version }) }}
         </p>
 
         <!-- The release body, as GitHub markdown. Nothing renders it and nothing
@@ -78,21 +78,17 @@ function open(url: string) {
         >{{ updates.available.notes }}</pre>
 
         <p v-if="!updates.capable && platform === 'android'" class="text-body-medium opacity-70">
-          Android installs from the package itself — download it and open it. It is signed
-          with the same key as the copy you have, so it upgrades in place and keeps your
-          library.
+          {{ $t('Android installs from the package itself — download it and open it. It is signed with the same key as the copy you have, so it upgrades in place and keeps your library.') }}
         </p>
         <p v-else-if="!updates.capable" class="text-body-medium opacity-70">
-          This copy wasn't installed by Ventic's own installer — a package manager, or a
-          build from source — so whatever put it there is what updates it. Replacing the
-          files from in here would only confuse it.
+          {{ $t('This copy wasn\'t installed by Ventic\'s own installer — a package manager, or a build from source — so whatever put it there is what updates it. Replacing the files from in here would only confuse it.') }}
         </p>
 
         <!-- Failing over to the download link rather than dead-ending: the
              manifest can be missing this platform even when everything else
              about the install is fine. -->
         <p v-if="updates.status === 'failed'" class="text-body-medium text-error">
-          The update couldn't be installed: {{ updates.error }}
+          {{ $t('The update couldn\'t be installed: {error}', { error: updates.error }) }}
         </p>
 
         <v-progress-linear
@@ -112,7 +108,7 @@ function open(url: string) {
             color="primary"
             @click="updates.restart()"
           >
-            Restart to finish
+            {{ $t('Restart to finish') }}
           </v-btn>
           <v-btn
             v-else-if="updates.capable"
@@ -122,7 +118,7 @@ function open(url: string) {
             color="primary"
             @click="updates.install()"
           >
-            Update now
+            {{ $t('Update now') }}
           </v-btn>
           <v-btn
             v-if="!updates.capable || updates.status === 'failed'"
@@ -130,25 +126,25 @@ function open(url: string) {
             variant="tonal"
             @click="open(downloadUrl)"
           >
-            {{ platform === 'android' ? 'Download the APK' : 'Open the release' }}
+            {{ platform === 'android' ? $t('Download the APK') : $t('Open the release') }}
           </v-btn>
           <v-btn
             v-if="updates.status !== 'downloading' && updates.status !== 'ready' && !updates.dismissed"
             variant="text"
             @click="updates.dismiss()"
           >
-            Not now
+            {{ $t('Not now') }}
           </v-btn>
         </div>
 
         <p v-if="updates.status === 'ready'" class="text-body-small opacity-70">
-          Installed. It takes effect the next time Ventic starts.
+          {{ $t('Installed. It takes effect the next time Ventic starts.') }}
         </p>
       </template>
 
       <template v-else>
         <p class="text-body-medium opacity-70">
-          {{ updates.current ? 'Ventic is up to date.' : 'Updates are checked in the installed app, not here.' }}
+          {{ updates.current ? $t('Ventic is up to date.') : $t('Updates are checked in the installed app, not here.') }}
         </p>
         <div>
           <v-btn
@@ -158,27 +154,26 @@ function open(url: string) {
             size="small"
             @click="updates.check()"
           >
-            Check again
+            {{ $t('Check again') }}
           </v-btn>
         </div>
       </template>
 
       <p class="text-body-small opacity-70">
-        Checked once each time Ventic starts, against this project's GitHub releases.
-        Nothing else is sent — there is no account and no telemetry behind it.
+        {{ $t('Checked once each time Ventic starts, against this project\'s GitHub releases. Nothing else is sent — there is no account and no telemetry behind it.') }}
       </p>
     </settings-section>
 
-    <settings-section title="Film and TV data">
+    <settings-section :title="$t('Film and TV data')">
       <!-- TMDB's terms: their logo, and a plain statement that they haven't
            endorsed any of this. Both have to stay. -->
       <img src="/tmdb.svg" alt="The Movie Database" class="h-5 w-auto self-start">
+      <!-- TMDB require this sentence verbatim, so it is not translated. -->
       <p class="text-body-medium">
         This product uses the TMDB API but is not endorsed or certified by TMDB.
       </p>
       <p class="text-body-small opacity-70">
-        Every poster, backdrop, cast list, rating and synopsis in the app comes from
-        The Movie Database.
+        {{ $t('Every poster, backdrop, cast list, rating and synopsis in the app comes from The Movie Database.') }}
       </p>
       <div>
         <v-btn :append-icon="mdiOpenInNew" variant="tonal" size="small" @click="open('https://www.themoviedb.org')">
@@ -190,20 +185,20 @@ function open(url: string) {
            Empty is the normal state — nobody should need this to use the app. -->
       <v-text-field
         v-model.trim="settings.tmdbKey"
-        label="Your own TMDB read token"
-        placeholder="Leave empty to use the built-in one"
+        :label="$t('Your own TMDB read token')"
+        :placeholder="$t('Leave empty to use the built-in one')"
         variant="solo-filled"
         density="comfortable"
         rounded="lg"
         flat
         autocomplete="off"
         spellcheck="false"
-        hint="Only needed if the app stops loading artwork and titles. Create one free under your TMDB account settings, API, “API Read Access Token”. It is kept out of backup files."
+        :hint="$t('Only needed if the app stops loading artwork and titles. Create one free under your TMDB account settings, API, “API Read Access Token”. It is kept out of backup files.')"
         persistent-hint
       />
     </settings-section>
 
-    <settings-section title="Built on">
+    <settings-section :title="$t('Built on')">
       <v-list bg-color="transparent" class="rounded-lg bg-surface-container/40">
         <v-list-item
           v-for="item in credits"
@@ -216,33 +211,26 @@ function open(url: string) {
       </v-list>
     </settings-section>
 
-    <settings-section title="Support">
+    <settings-section :title="$t('Support')">
       <p class="text-body-small opacity-70">
-        Ventic is free and always will be. If it earned one, you can buy me a coffee.
+        {{ $t('Ventic is free and always will be. If it earned one, you can buy me a coffee.') }}
       </p>
       <div>
         <v-btn :prepend-icon="mdiCoffee" variant="tonal" size="small" @click="open('https://buymeacoffee.com/tilenpirih')">
-          Buy me a coffee
+          {{ $t('Buy me a coffee') }}
         </v-btn>
       </div>
     </settings-section>
 
-    <settings-section title="Legal">
+    <settings-section :title="$t('Legal')">
       <p class="text-body-medium">
-        Ventic hosts no content, indexes no content, and ships with no sources configured.
-        It is a BitTorrent client with a player attached: it fetches only what you point it
-        at, from servers you added yourself.
+        {{ $t('Ventic hosts no content, indexes no content, and ships with no sources configured. It is a BitTorrent client with a player attached: it fetches only what you point it at, from servers you added yourself.') }}
       </p>
       <p class="text-body-small opacity-70">
-        Copyright in what you play is unaffected by the tool you play it with. Whether you
-        have the right to download a given title is yours to answer, under the law where you
-        are. Reports about a source belong with whoever operates it — the project has no
-        control over, and no relationship with, any of them.
+        {{ $t('Copyright in what you play is unaffected by the tool you play it with. Whether you have the right to download a given title is yours to answer, under the law where you are. Reports about a source belong with whoever operates it — the project has no control over, and no relationship with, any of them.') }}
       </p>
       <p class="text-body-small opacity-70">
-        Ventic is MIT licensed. The components it is built on keep their own terms, listed
-        above; on Windows the bundled mpv is GPL software and its licence and offer of
-        source sit next to the application's executable.
+        {{ $t('Ventic is MIT licensed. The components it is built on keep their own terms, listed above; on Windows the bundled mpv is GPL software and its licence and offer of source sit next to the application\'s executable.') }}
       </p>
     </settings-section>
   </div>

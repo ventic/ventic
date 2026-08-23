@@ -7,11 +7,11 @@ const route = useRoute()
 
 const query = computed(() => ((route.query.q as string) ?? '').trim())
 
-const scopes = [
-  { value: 'multi', title: 'All' },
-  { value: 'movie', title: 'Movies' },
-  { value: 'tv', title: 'TV Shows' },
-]
+const scopes = computed(() => [
+  { value: 'multi', title: $t('All') },
+  { value: 'movie', title: $t('Movies') },
+  { value: 'tv', title: $t('TV Shows') },
+])
 
 const scope = ref('multi')
 
@@ -53,14 +53,14 @@ const { items, pending, error, done, loadMore } = useMediaFeed(request)
              screen there; this is for the desktop bar, where it isn't obvious
              which search these results belong to. -->
         <span v-if="query" class="hidden truncate text-body-small opacity-60 md:inline">
-          Results for “{{ query }}”
+          {{ $t('Results for “{query}”', { query }) }}
         </span>
       </div>
     </options-bar>
 
     <div v-if="!query" class="flex flex-1 flex-col items-center justify-center gap-2 opacity-60">
       <v-icon :icon="mdiMagnify" size="40" />
-      <span class="text-body-medium">Type in the search box to find movies and shows.</span>
+      <span class="text-body-medium">{{ $t('Type in the search box to find movies and shows.') }}</span>
     </div>
 
     <div v-else class="min-h-0 flex-1">

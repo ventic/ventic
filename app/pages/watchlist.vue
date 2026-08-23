@@ -3,5 +3,5 @@ const library = useLibraryStore()
 </script>
 
 <template>
-  <library-browser title="Watchlist" :items="library.watchlistItems" recent="Recently added" />
+  <library-browser :title="$t('Watchlist')" :items="library.watchlistItems" :recent="$t('Recently added')" />
 </template>

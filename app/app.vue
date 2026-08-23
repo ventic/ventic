@@ -19,6 +19,58 @@ const painted = computed(() => paintedTheme(settings, ui.shownArt, ui.backdropIm
 
 watch(painted, value => applyTheme(theme, value), { immediate: true })
 
+/**
+ * The other global preference that only takes effect here: the UI language.
+ *
+ * @nuxtjs/i18n owns the live locale, because a language is part of every path
+ * (`/sl/downloads`) and switching one is a navigation. The store only remembers
+ * the choice — its own memory would be a cookie, and a cookie on a `tauri://`
+ * origin is not reliably kept.
+ *
+ * So: restore once, then follow. Restoring is one client-side route change at
+ * boot, on a webview with no address bar to see it in. Following means a deep
+ * link into another language is remembered as if it had been picked here.
+ */
+const { locale, locales, setLocale, defaultLocale } = useI18n()
+
+/**
+ * Only restore *out of* the default language. The app always opens at `/`,
+ * which the i18n redirect turns into `/en` before this runs — so being on the
+ * default locale is what "no language was asked for" looks like, and is the one
+ * case where the remembered choice should take over. A path that already names
+ * a language was asked for by something (a deep link, a reload after a switch)
+ * and is left alone, and recorded, rather than yanked back.
+ */
+if (settings.locale && locale.value === defaultLocale && settings.locale !== locale.value)
+  setLocale(settings.locale as typeof locale.value)
+else
+  settings.locale = locale.value
+
+watch(locale, code => (settings.locale = code))
+
+/**
+ * `<html lang>` and, for Arabic/Farsi/Hebrew/Urdu, `<html dir="rtl">`.
+ *
+ * The `dir` is what flips the whole layout, and vuetify-nuxt-module reads the
+ * same `dir` off the locale list to flip Vuetify's own components (see
+ * `createAdapter` in its i18n plugin). The `lang` is the full tag — `sl-SI`,
+ * not `sl` — which is what `uiLocale()` reads back to format dates and money.
+ *
+ * Set by hand rather than through `useLocaleHead`, which is really an SEO tag
+ * generator: it also writes canonical and hreflang links, and warns on every
+ * render about the `baseUrl` it would need for them. This app is a bundle
+ * behind a Tauri webview — it has no canonical URL and nothing to be indexed
+ * by, so these two attributes are the whole of what it wants.
+ */
+const current = computed(() => locales.value.find(l => l.code === locale.value))
+
+useHead({
+  htmlAttrs: {
+    lang: computed(() => current.value?.language ?? locale.value),
+    dir: computed(() => current.value?.dir ?? 'ltr'),
+  },
+})
+
 // Whether the webview is one of the engines that implements `zoom` itself
 // rather than the standard property — see the shim further down for what that
 // costs, and `--frame-zoom` right here for the other half of it.

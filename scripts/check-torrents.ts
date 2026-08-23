@@ -1,9 +1,10 @@
-// Self-check for the torrent parser/ranker: `bun scripts/check-torrents.ts`.
-// The fixture is the response shape a source answers with, filled in with a
-// public-domain film. `--live <source-url> <imdb-id>` also searches for real.
 import assert from 'node:assert'
 import process from 'node:process'
 import { diskBudget, ENGINE, findReleases, haveAt, isAwkward, normalizeSource, parseRelease, pickBest, pickSubtitleFiles, pickVideoFile, planEviction, planNetwork, releaseKey, setSources, startTorrent, streamParts, toRelease, uploadLimit, usedBytes } from '../app/utils/torrents'
+// Self-check for the torrent parser/ranker: `bun scripts/check-torrents.ts`.
+// The fixture is the response shape a source answers with, filled in with a
+// public-domain film. `--live <source-url> <imdb-id>` also searches for real.
+import './i18n-stub'
 
 const streams = [
   {

@@ -12,9 +12,9 @@ import { mdiImageOutline, mdiMonitorScreenshot, mdiPaletteOutline } from '@mdi/j
 const tab = ref<'theme' | 'background' | 'display'>('theme')
 
 const TABS = [
-  { value: 'theme', title: 'Theme', icon: mdiPaletteOutline },
-  { value: 'background', title: 'Background', icon: mdiImageOutline },
-  { value: 'display', title: 'Display', icon: mdiMonitorScreenshot },
+  { value: 'theme', title: () => $t('Theme'), icon: mdiPaletteOutline },
+  { value: 'background', title: () => $t('Background'), icon: mdiImageOutline },
+  { value: 'display', title: () => $t('Display'), icon: mdiMonitorScreenshot },
 ] as const
 </script>
 

@@ -28,7 +28,11 @@ const meta = computed(() => {
     return []
   return [
     m.year,
-    m.type === 'movie' ? runtimeText(m.runtime) : m.episodeCount ? `${m.seasons.length} seasons · ${m.episodeCount} episodes` : '',
+    m.type === 'movie'
+      ? runtimeText(m.runtime)
+      : m.episodeCount
+        ? $t('{seasons} seasons · {episodes} episodes', { seasons: m.seasons.length, episodes: m.episodeCount })
+        : '',
     m.status,
     m.companies.join(', '),
   ].filter(Boolean)
@@ -39,10 +43,10 @@ const credits = computed(() => {
   if (!m)
     return []
   return [
-    { label: m.directors.length > 1 ? 'Directors' : 'Director', value: m.directors.join(', ') },
-    { label: m.writers.length > 1 ? 'Writers' : 'Writer', value: m.writers.slice(0, 3).join(', ') },
-    { label: 'Budget', value: moneyText(m.budget) },
-    { label: 'Revenue', value: moneyText(m.revenue) },
+    { label: m.directors.length > 1 ? $t('Directors') : $t('Director'), value: m.directors.join(', ') },
+    { label: m.writers.length > 1 ? $t('Writers') : $t('Writer'), value: m.writers.slice(0, 3).join(', ') },
+    { label: $t('Budget'), value: moneyText(m.budget) },
+    { label: $t('Revenue'), value: moneyText(m.revenue) },
   ].filter(row => row.value)
 })
 
@@ -92,7 +96,7 @@ const started = computed(() => {
 })
 
 const playLabel = computed(() => [
-  started.value ? 'Resume' : 'Play',
+  started.value ? $t('Resume') : $t('Play'),
   targetText.value,
   remainingText(started.value) && `· ${remainingText(started.value)}`,
 ].filter(Boolean).join(' '))
@@ -102,9 +106,9 @@ const playLabel = computed(() => [
   <div class="h-full overflow-y-auto pb-12">
     <div v-if="error" class="flex h-full flex-col items-center justify-center gap-2">
       <v-icon :icon="mdiAlertCircleOutline" color="error" size="40" />
-      <span class="text-body-medium opacity-70">Couldn't load this title.</span>
-      <v-btn variant="tonal" to="/">
-        Go home
+      <span class="text-body-medium opacity-70">{{ $t('Couldn\'t load this title.') }}</span>
+      <v-btn variant="tonal" :to="$localePath('/')">
+        {{ $t('Go home') }}
       </v-btn>
     </div>
 
@@ -149,7 +153,7 @@ const playLabel = computed(() => [
             </div>
 
             <p class="max-w-3xl text-body-medium opacity-85">
-              {{ media.overview || 'No overview.' }}
+              {{ media.overview || $t('No overview.') }}
             </p>
 
             <dl v-if="credits.length" class="grid grid-cols-1 gap-x-6 gap-y-1 text-body-small sm:grid-cols-2 lg:max-w-2xl">
@@ -201,7 +205,7 @@ const playLabel = computed(() => [
                 variant="tonal"
                 @click="trailer = true"
               >
-                Trailer
+                {{ $t('Trailer') }}
               </v-btn>
               <v-spacer v-if="mobile" />
               <!-- Whole-title mark. For a show that's a manual override — the
@@ -209,15 +213,15 @@ const playLabel = computed(() => [
                    fetch, and the per-episode ticks already say it. -->
               <v-btn icon variant="text" color="on-surface" :size="mobile ? 'default' : 'large'" @click="library.toggleWatched(media)">
                 <v-icon :icon="library.isWatched(media) ? mdiEye : mdiEyeOutline" :color="library.isWatched(media) ? 'primary' : undefined" />
-                <v-tooltip activator="parent" :text="library.isWatched(media) ? 'Mark unwatched' : 'Mark watched'" />
+                <v-tooltip activator="parent" :text="library.isWatched(media) ? $t('Mark unwatched') : $t('Mark watched')" />
               </v-btn>
               <v-btn icon variant="text" color="on-surface" :size="mobile ? 'default' : 'large'" @click="library.toggleWatchlist(media)">
                 <v-icon :icon="library.inWatchlist(media) ? mdiBookmark : mdiBookmarkOutline" :color="library.inWatchlist(media) ? 'primary' : undefined" />
-                <v-tooltip activator="parent" :text="library.inWatchlist(media) ? 'Remove from watchlist' : 'Add to watchlist'" />
+                <v-tooltip activator="parent" :text="library.inWatchlist(media) ? $t('Remove from watchlist') : $t('Add to watchlist')" />
               </v-btn>
               <v-btn icon variant="text" color="on-surface" :size="mobile ? 'default' : 'large'" @click="library.toggleFavourite(media)">
                 <v-icon :icon="library.isFavourite(media) ? mdiHeart : mdiHeartOutline" :color="library.isFavourite(media) ? 'primary' : undefined" />
-                <v-tooltip activator="parent" :text="library.isFavourite(media) ? 'Remove from favourites' : 'Favourite'" />
+                <v-tooltip activator="parent" :text="library.isFavourite(media) ? $t('Remove from favourites') : $t('Favourite')" />
               </v-btn>
             </div>
           </div>
@@ -243,11 +247,11 @@ const playLabel = computed(() => [
           :show="media"
         />
 
-        <cast-row v-if="media?.cast.length" title="Cast" :people="media.cast" />
+        <cast-row v-if="media?.cast.length" :title="$t('Cast')" :people="media.cast" />
 
         <media-slider
           v-if="status !== 'pending'"
-          title="More like this"
+          :title="$t('More like this')"
           :request="{ path: `/${type}/${id}/recommendations`, type }"
         />
       </div>

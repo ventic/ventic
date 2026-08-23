@@ -22,20 +22,22 @@ watch(() => route.fullPath, () => {
     ui.drawer = false
 })
 
-// The browse feeds.
-const links = [
-  { title: 'Home', icon: mdiHomeOutline, to: '/' },
-  { title: 'Movies', icon: mdiFilmstrip, to: '/movies' },
-  { title: 'TV Shows', icon: mdiTelevisionClassic, to: '/tv' },
-  { title: 'Anime', icon: mdiAnimationPlayOutline, to: '/anime' },
-]
+// The browse feeds. Computed rather than a plain array because both halves of
+// an entry move with the language: the label is translated, and the path
+// carries the locale as a prefix (`/sl/movies`).
+const links = computed(() => [
+  { title: $t('Home'), icon: mdiHomeOutline, to: localePath('/') },
+  { title: $t('Movies'), icon: mdiFilmstrip, to: localePath('/movies') },
+  { title: $t('TV Shows'), icon: mdiTelevisionClassic, to: localePath('/tv') },
+  { title: $t('Anime'), icon: mdiAnimationPlayOutline, to: localePath('/anime') },
+])
 
 // "My stuff" — kept apart from the feeds above and the app controls below.
-const library = [
-  { title: 'Favourites', icon: mdiHeartOutline, to: '/favourites' },
-  { title: 'Watchlist', icon: mdiBookmarkOutline, to: '/watchlist' },
-  { title: 'History', icon: mdiHistory, to: '/history' },
-]
+const library = computed(() => [
+  { title: $t('Favourites'), icon: mdiHeartOutline, to: localePath('/favourites') },
+  { title: $t('Watchlist'), icon: mdiBookmarkOutline, to: localePath('/watchlist') },
+  { title: $t('History'), icon: mdiHistory, to: localePath('/history') },
+])
 
 // Both settings items land on /settings and only pick which section opens.
 // On a phone the toolbar keeps only the downloads badge, so this drawer is the
@@ -54,7 +56,7 @@ function openSettings(section: SectionKey) {
     :temporary="mobile"
     class="panel border-none"
   >
-    <nuxt-link to="/" class="flex items-center gap-3 px-4 py-5">
+    <nuxt-link :to="$localePath('/')" class="flex items-center gap-3 px-4 py-5">
       <img src="/logo.svg" alt="Ventic" class="size-26px shrink-0">
       <span v-if="!rail" class="text-title-large whitespace-nowrap font-bold">Ventic</span>
     </nuxt-link>
@@ -91,8 +93,8 @@ function openSettings(section: SectionKey) {
       <v-list v-if="mobile" nav density="comfortable" class="px-2 pb-2">
         <v-list-item
           :prepend-icon="mdiTrayArrowDown"
-          title="Downloads"
-          to="/downloads"
+          :title="$t('Downloads')"
+          :to="$localePath('/downloads')"
           color="primary"
           rounded="lg"
         >
@@ -102,16 +104,16 @@ function openSettings(section: SectionKey) {
         </v-list-item>
         <v-list-item
           :prepend-icon="mdiCogOutline"
-          title="Settings"
-          to="/settings"
+          :title="$t('Settings')"
+          :to="$localePath('/settings')"
           color="primary"
           rounded="lg"
           @click="openSettings('appearance')"
         />
         <v-list-item
           :prepend-icon="mdiAccountCircleOutline"
-          title="Account"
-          to="/settings"
+          :title="$t('Account')"
+          :to="$localePath('/settings')"
           color="primary"
           rounded="lg"
           @click="openSettings('account')"

@@ -47,9 +47,8 @@ async function choose(event: Event) {
 <template>
   <div class="flex flex-col gap-6">
     <settings-section
-      title="What sits behind the app"
-      hint="Artwork from whatever you're looking at, a picture of your own, or nothing at all. A theme
-        that comes with its own background sets this when you pick it."
+      :title="$t('What sits behind the app')"
+      :hint="$t('Artwork from whatever you\'re looking at, a picture of your own, or nothing at all. A theme that comes with its own background sets this when you pick it.')"
     >
       <settings-segment v-model="ui.backdropMode" :options="BACKDROP_MODES" inline />
 
@@ -67,32 +66,31 @@ async function choose(event: Event) {
           <img
             v-if="ui.backdropImage"
             :src="ui.backdropImage"
-            alt="The picture currently behind the app"
+            :alt="$t('The picture currently behind the app')"
             class="h-16 w-28 rounded-lg object-cover"
           >
           <v-btn :prepend-icon="mdiImageOutline" variant="tonal" color="primary" @click="picker?.click()">
-            {{ ui.backdropImage ? 'Change picture' : 'Choose a picture' }}
+            {{ ui.backdropImage ? $t('Change picture') : $t('Choose a picture') }}
           </v-btn>
           <v-btn v-if="ui.backdropImage" variant="text" @click="ui.backdropImage = ''">
-            Remove
+            {{ $t('Remove') }}
           </v-btn>
         </div>
         <p v-if="tooBig" class="text-body-medium text-error">
-          That picture couldn't be saved. Try a smaller one, or a JPEG or PNG.
+          {{ $t('That picture couldn\'t be saved. Try a smaller one, or a JPEG or PNG.') }}
         </p>
         <p v-else-if="!ui.backdropImage" class="text-body-medium opacity-70">
-          Nothing chosen yet, so the background is a flat colour for now.
+          {{ $t('Nothing chosen yet, so the background is a flat colour for now.') }}
         </p>
         <v-switch
           v-model="ui.artOverCustom"
           color="primary"
           density="comfortable"
           hide-details
-          label="Let artwork take over on a title"
+          :label="$t('Let artwork take over on a title')"
         />
         <p class="text-body-medium opacity-70">
-          On, your picture is what the app rests on and the artwork covers it while you're on a film
-          or show. Off, the picture stays put and nothing ever covers it.
+          {{ $t('On, your picture is what the app rests on and the artwork covers it while you\'re on a film or show. Off, the picture stays put and nothing ever covers it.') }}
         </p>
       </template>
 
@@ -102,21 +100,19 @@ async function choose(event: Event) {
           color="primary"
           density="comfortable"
           hide-details
-          label="Change as you browse"
+          :label="$t('Change as you browse')"
         />
         <p class="text-body-medium opacity-70">
-          On, the background follows whichever card you're pointing at or have selected. Off, it only
-          changes when you actually open something — steadier on a long list, where sweeping across a
-          row otherwise repaints the whole window card by card.
+          {{ $t('On, the background follows whichever card you\'re pointing at or have selected. Off, it only changes when you actually open something — steadier on a long list, where sweeping across a row otherwise repaints the whole window card by card.') }}
         </p>
       </template>
     </settings-section>
 
-    <settings-section v-if="ui.backdropMode !== 'off'" title="Blur and tint">
-      <settings-row label="Blur">
+    <settings-section v-if="ui.backdropMode !== 'off'" :title="$t('Blur and tint')">
+      <settings-row :label="$t('Blur')">
         <v-slider v-model="ui.blur" :min="0" :max="80" :step="2" thumb-label />
       </settings-row>
-      <settings-row label="Tint">
+      <settings-row :label="$t('Tint')">
         <v-slider v-model="ui.tint" :min="0.2" :max="1" :step="0.02" thumb-label />
       </settings-row>
     </settings-section>

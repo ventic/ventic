@@ -35,16 +35,16 @@ const sortBy = ref<{ key: string, order?: boolean | 'asc' | 'desc' }[]>([])
  */
 const headers = computed<DataTableHeader<EngineTorrent>[]>(() => [
   { key: 'data-table-expand', width: 44 },
-  { key: 'name', title: 'Name', value: t => t.name ?? t.info_hash },
-  { key: 'size', title: 'Size', value: t => t.stats?.total_bytes ?? 0, align: 'end', width: 88, nowrap: true },
-  { key: 'progress', title: 'Progress', value: percentOf, width: 176, nowrap: true },
-  { key: 'status', title: 'Status', value: torrentStatus, width: 116 },
+  { key: 'name', title: $t('Name'), value: t => t.name ?? t.info_hash },
+  { key: 'size', title: $t('Size'), value: t => t.stats?.total_bytes ?? 0, align: 'end', width: 88, nowrap: true },
+  { key: 'progress', title: $t('Progress'), value: percentOf, width: 176, nowrap: true },
+  { key: 'status', title: $t('Status'), value: torrentStatus, width: 116 },
   ...lgAndUp.value
     ? [
-        { key: 'speed', title: 'Down', value: (t: EngineTorrent) => t.stats?.live?.download_speed.mbps ?? 0, align: 'end', width: 100, nowrap: true },
-        { key: 'peers', title: 'Peers', value: (t: EngineTorrent) => t.stats?.live?.snapshot.peer_stats.live ?? 0, align: 'end', width: 84 },
+        { key: 'speed', title: $t('Down'), value: (t: EngineTorrent) => t.stats?.live?.download_speed.mbps ?? 0, align: 'end', width: 100, nowrap: true },
+        { key: 'peers', title: $t('Peers'), value: (t: EngineTorrent) => t.stats?.live?.snapshot.peer_stats.live ?? 0, align: 'end', width: 84 },
         // The engine only gives ETA as prose ("1h 20m"), so there's nothing to sort on.
-        { key: 'eta', title: 'ETA', sortable: false, align: 'end', width: 100, nowrap: true },
+        { key: 'eta', title: $t('ETA'), sortable: false, align: 'end', width: 100, nowrap: true },
       ] as DataTableHeader<EngineTorrent>[]
     : [],
   { key: 'actions', title: '', sortable: false, align: 'end', width: 168 },
@@ -68,7 +68,7 @@ function stats(t: EngineTorrent) {
 /** The player takes it from the engine by hash, so nothing is re-downloaded. */
 function play(t: EngineTorrent, index?: number) {
   navigateTo({
-    path: '/watch',
+    path: localePath('/watch'),
     query: {
       magnet: magnetForHash(t.info_hash),
       title: t.name ?? '',
@@ -102,7 +102,7 @@ async function openFolder(t: EngineTorrent, file?: EngineFile) {
     await useTauriShellOpen([t.output_folder, ...parts].join(sep))
   }
   catch (e) {
-    toast.value = `Couldn't open the folder: ${e instanceof Error ? e.message : e}`
+    toast.value = $t('Couldn\'t open the folder: {error}', { error: e instanceof Error ? e.message : String(e) })
   }
 }
 
@@ -138,9 +138,9 @@ function liveText(t: EngineTorrent) {
     <div class="shrink-0 flex items-center gap-2 px-3 py-3 sm:px-4">
       <!-- Always-on way out of the transfers shell — the menu button beside it
            only opens the state filters, so this is the only exit on a phone. -->
-      <v-btn icon variant="text" color="on-surface" to="/">
+      <v-btn icon variant="text" color="on-surface" :to="$localePath('/')">
         <v-icon :icon="mdiArrowLeft" />
-        <v-tooltip activator="parent" text="Back" />
+        <v-tooltip activator="parent" :text="$t('Back')" />
       </v-btn>
       <v-btn v-if="mobile" :icon="mdiMenu" variant="text" color="on-surface" @click="ui.drawer = true" />
 
@@ -148,7 +148,7 @@ function liveText(t: EngineTorrent) {
         <v-text-field
           v-model="downloads.query"
           :prepend-inner-icon="mdiMagnify"
-          placeholder="Filter torrents"
+          :placeholder="$t('Filter torrents')"
           :density="mobile ? 'comfortable' : 'compact'"
           variant="solo-filled"
           rounded="lg"
@@ -164,13 +164,13 @@ function liveText(t: EngineTorrent) {
            this margin only takes what's left over to pin the group right. -->
       <div class="ml-auto flex items-center gap-2">
         <span class="hidden text-body-small opacity-55 sm:inline">
-          {{ downloads.list.length }} shown · {{ downloads.active }} active
+          {{ $t('{shown} shown · {active} active', { shown: downloads.list.length, active: downloads.active }) }}
         </span>
 
         <!-- Why a film you watched last month is no longer here. -->
         <span v-if="isFinite(downloads.budget)" class="hidden text-body-small opacity-55 md:inline">
           · {{ bytesText(downloads.used) }} / {{ bytesText(downloads.budget) }}
-          <v-tooltip activator="parent" text="Cache limit for this device. Over it, the least recently played torrents are deleted." />
+          <v-tooltip activator="parent" :text="$t('Cache limit for this device. Over it, the least recently played torrents are deleted.')" />
         </span>
 
         <!-- Icon-only on a phone: the words do not fit beside a search box that
@@ -180,11 +180,11 @@ function liveText(t: EngineTorrent) {
           :icon="paused ? mdiPlay : mdiPause"
           variant="text"
           color="on-surface"
-          :title="paused ? 'Resume all' : 'Pause all'"
+          :title="paused ? $t('Resume all') : $t('Pause all')"
           @click="all(paused ? 'start' : 'pause')"
         />
         <v-btn v-else :prepend-icon="paused ? mdiPlay : mdiPause" variant="text" size="small" @click="all(paused ? 'start' : 'pause')">
-          {{ paused ? 'Resume all' : 'Pause all' }}
+          {{ paused ? $t('Resume all') : $t('Pause all') }}
         </v-btn>
       </div>
     </div>
@@ -226,7 +226,7 @@ function liveText(t: EngineTorrent) {
             <v-chip
               size="x-small"
               :color="TORRENT_STATUS[torrentStatus(item)].color"
-              :text="TORRENT_STATUS[torrentStatus(item)].text"
+              :text="TORRENT_STATUS[torrentStatus(item)].text()"
             />
             <span class="tabular-nums">{{ bytesText(stats(item)?.total_bytes ?? 0) }}</span>
             <span v-if="liveText(item)" class="tabular-nums">· {{ liveText(item) }}</span>
@@ -234,7 +234,7 @@ function liveText(t: EngineTorrent) {
         </button>
 
         <div class="flex items-center justify-end gap-1">
-          <v-btn icon variant="text" color="on-surface" density="comfortable" title="Play" @click="play(item)">
+          <v-btn icon variant="text" color="on-surface" density="comfortable" :title="$t('Play')" @click="play(item)">
             <v-icon :icon="mdiPlayCircleOutline" size="22" />
           </v-btn>
           <v-btn
@@ -243,15 +243,15 @@ function liveText(t: EngineTorrent) {
             color="on-surface"
             density="comfortable"
             :disabled="stats(item)?.finished"
-            :title="stats(item)?.state === 'paused' ? 'Resume' : 'Pause'"
+            :title="stats(item)?.state === 'paused' ? $t('Resume') : $t('Pause')"
             @click="toggle(item)"
           >
             <v-icon :icon="stats(item)?.state === 'paused' ? mdiPlay : mdiPause" size="22" />
           </v-btn>
-          <v-btn v-if="canReveal" icon variant="text" color="on-surface" density="comfortable" title="Open folder" @click="openFolder(item)">
+          <v-btn v-if="canReveal" icon variant="text" color="on-surface" density="comfortable" :title="$t('Open folder')" @click="openFolder(item)">
             <v-icon :icon="mdiFolderOpenOutline" size="22" />
           </v-btn>
-          <v-btn icon variant="text" color="on-surface" density="comfortable" title="Remove" @click="removing = item">
+          <v-btn icon variant="text" color="on-surface" density="comfortable" :title="$t('Remove')" @click="removing = item">
             <v-icon :icon="mdiDeleteOutline" size="22" />
           </v-btn>
         </div>
@@ -268,16 +268,16 @@ function liveText(t: EngineTorrent) {
       <div v-if="!downloads.list.length" class="flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center">
         <template v-if="downloads.offline">
           <v-icon :icon="mdiAlertCircleOutline" color="error" size="40" />
-          <span class="text-body-medium opacity-70">Torrent engine offline.</span>
+          <span class="text-body-medium opacity-70">{{ $t('Torrent engine offline.') }}</span>
         </template>
         <template v-else-if="downloads.torrents.length">
           <v-icon :icon="mdiMagnify" size="40" class="opacity-30" />
-          <span class="text-body-medium opacity-70">No torrents match this filter.</span>
+          <span class="text-body-medium opacity-70">{{ $t('No torrents match this filter.') }}</span>
         </template>
         <template v-else>
           <v-icon :icon="mdiTrayArrowDown" size="40" class="opacity-30" />
-          <span class="text-body-medium opacity-70">Nothing downloading.</span>
-          <span class="text-body-small opacity-50">Hit Download on a movie or an episode, or paste a magnet.</span>
+          <span class="text-body-medium opacity-70">{{ $t('Nothing downloading.') }}</span>
+          <span class="text-body-small opacity-50">{{ $t('Hit Download on a movie or an episode, or paste a magnet.') }}</span>
         </template>
       </div>
     </div>
@@ -333,7 +333,7 @@ function liveText(t: EngineTorrent) {
         <v-chip
           size="x-small"
           :color="TORRENT_STATUS[torrentStatus(item)].color"
-          :text="TORRENT_STATUS[torrentStatus(item)].text"
+          :text="TORRENT_STATUS[torrentStatus(item)].text()"
         />
       </template>
 
@@ -353,7 +353,7 @@ function liveText(t: EngineTorrent) {
         <div class="flex items-center justify-end">
           <v-btn icon size="small" variant="text" color="on-surface" @click="play(item)">
             <v-icon :icon="mdiPlayCircleOutline" size="20" />
-            <v-tooltip activator="parent" text="Play" />
+            <v-tooltip activator="parent" :text="$t('Play')" />
           </v-btn>
           <v-btn
             icon
@@ -364,15 +364,15 @@ function liveText(t: EngineTorrent) {
             @click="toggle(item)"
           >
             <v-icon :icon="stats(item)?.state === 'paused' ? mdiPlay : mdiPause" size="20" />
-            <v-tooltip activator="parent" :text="stats(item)?.state === 'paused' ? 'Resume' : 'Pause'" />
+            <v-tooltip activator="parent" :text="stats(item)?.state === 'paused' ? $t('Resume') : $t('Pause')" />
           </v-btn>
           <v-btn v-if="canReveal" icon size="small" variant="text" color="on-surface" @click="openFolder(item)">
             <v-icon :icon="mdiFolderOpenOutline" size="20" />
-            <v-tooltip activator="parent" text="Open folder" />
+            <v-tooltip activator="parent" :text="$t('Open folder')" />
           </v-btn>
           <v-btn icon size="small" variant="text" color="on-surface" @click="removing = item">
             <v-icon :icon="mdiDeleteOutline" size="20" />
-            <v-tooltip activator="parent" text="Remove" />
+            <v-tooltip activator="parent" :text="$t('Remove')" />
           </v-btn>
         </div>
       </template>
@@ -397,16 +397,16 @@ function liveText(t: EngineTorrent) {
         <div class="flex flex-col items-center gap-2 py-16">
           <template v-if="downloads.offline">
             <v-icon :icon="mdiAlertCircleOutline" color="error" size="40" />
-            <span class="text-body-medium opacity-70">Torrent engine offline.</span>
+            <span class="text-body-medium opacity-70">{{ $t('Torrent engine offline.') }}</span>
           </template>
           <template v-else-if="downloads.torrents.length">
             <v-icon :icon="mdiMagnify" size="40" class="opacity-30" />
-            <span class="text-body-medium opacity-70">No torrents match this filter.</span>
+            <span class="text-body-medium opacity-70">{{ $t('No torrents match this filter.') }}</span>
           </template>
           <template v-else>
             <v-icon :icon="mdiTrayArrowDown" size="40" class="opacity-30" />
-            <span class="text-body-medium opacity-70">Nothing downloading.</span>
-            <span class="text-body-small opacity-50">Hit Download on a movie or an episode, or paste a magnet.</span>
+            <span class="text-body-medium opacity-70">{{ $t('Nothing downloading.') }}</span>
+            <span class="text-body-small opacity-50">{{ $t('Hit Download on a movie or an episode, or paste a magnet.') }}</span>
           </template>
         </div>
       </template>
@@ -416,21 +416,21 @@ function liveText(t: EngineTorrent) {
     <v-dialog :model-value="!!removing" max-width="460" @update:model-value="removing = null">
       <v-card rounded="xl" class="p-2">
         <v-card-title class="text-title-medium">
-          Remove torrent
+          {{ $t('Remove torrent') }}
         </v-card-title>
         <v-card-text class="text-body-medium opacity-70">
           {{ removing?.name ?? removing?.info_hash }}
         </v-card-text>
         <v-card-actions>
           <v-btn variant="text" size="small" @click="removing = null">
-            Cancel
+            {{ $t('Cancel') }}
           </v-btn>
           <v-spacer />
           <v-btn variant="text" size="small" @click="remove(removing!, true)">
-            Keep files
+            {{ $t('Keep files') }}
           </v-btn>
           <v-btn variant="tonal" size="small" color="error" @click="remove(removing!, false)">
-            Delete files
+            {{ $t('Delete files') }}
           </v-btn>
         </v-card-actions>
       </v-card>

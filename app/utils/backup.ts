@@ -69,14 +69,14 @@ export function readBackup(text: string): Backup {
     raw = JSON.parse(text)
   }
   catch {
-    return fail('That file isn\'t JSON, so it isn\'t a backup.')
+    return fail($t('That file isn\'t JSON, so it isn\'t a backup.'))
   }
 
   const b = raw as Partial<Backup> | null
   if (!b || typeof b !== 'object' || b.app !== 'ventic' || !b.keys || typeof b.keys !== 'object')
-    return fail('That isn\'t a Ventic backup.')
+    return fail($t('That isn\'t a Ventic backup.'))
   if (b.version !== 1)
-    return fail(`That backup is in format ${b.version}, which this build doesn't know how to read.`)
+    return fail($t('That backup is in format {version}, which this build doesn\'t know how to read.', { version: b.version }))
 
   // A backup is a file, and a file can come from anywhere. Nothing outside our
   // own prefix is written back, whatever the file asks for — and nothing a
@@ -86,7 +86,7 @@ export function readBackup(text: string): Backup {
       .filter(([key, value]) => key.startsWith(PREFIX) && !SECRET.has(key) && typeof value === 'string'),
   )
   if (!Object.keys(keys).length)
-    return fail('That backup is empty.')
+    return fail($t('That backup is empty.'))
 
   return { app: 'ventic', version: 1, at: Number(b.at) || 0, keys }
 }

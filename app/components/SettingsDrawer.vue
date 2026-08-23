@@ -25,9 +25,9 @@ watch(() => settings.section, () => {
     :temporary="mobile"
     class="panel border-none"
   >
-    <nuxt-link to="/" class="flex items-center gap-3 px-4 py-5">
+    <nuxt-link :to="$localePath('/')" class="flex items-center gap-3 px-4 py-5">
       <v-icon :icon="mdiArrowLeft" size="22" />
-      <span class="text-title-medium whitespace-nowrap">Settings</span>
+      <span class="text-title-medium whitespace-nowrap">{{ $t('Settings') }}</span>
     </nuxt-link>
 
     <v-list nav density="comfortable" class="px-2">
@@ -35,7 +35,7 @@ watch(() => settings.section, () => {
         v-for="item in SECTIONS"
         :key="item.value"
         :prepend-icon="item.icon"
-        :title="item.title"
+        :title="item.title()"
         :active="settings.section === item.value"
         color="primary"
         rounded="lg"

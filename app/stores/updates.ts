@@ -73,7 +73,7 @@ export const useUpdatesStore = defineStore('updates', () => {
     try {
       const update = await useTauriUpdaterCheck()
       if (!update)
-        throw new Error('The release carries no update for this platform.')
+        throw new Error($t('The release carries no update for this platform.'))
 
       let total = 0
       let done = 0

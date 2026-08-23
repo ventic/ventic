@@ -165,6 +165,12 @@ export function playedTitles(progress: Record<string, Progress>) {
 }
 
 /** What a card stands in with when this device knows nothing but the id. */
+/**
+ * Deliberately NOT translated. This is a sentinel as much as a label: it is
+ * written into the stored card (`slim`) and read back by the library store to
+ * tell a placeholder from a title the app actually learned. Translating it
+ * would make that test depend on which language the placeholder was saved in.
+ */
 export const UNKNOWN_TITLE = 'Unknown title'
 
 /**

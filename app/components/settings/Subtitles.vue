@@ -34,14 +34,14 @@ const cue = computed(() => {
 })
 
 /** Two lines, like the subtitles it stands in for. */
-const SAMPLE = 'It was the fall that killed him.\nNot the drop — the sudden stop.'
+const SAMPLE = computed(() => $t('It was the fall that killed him.\nNot the drop — the sudden stop.'))
 </script>
 
 <template>
   <div class="flex flex-col gap-8">
     <settings-section
-      title="Preview"
-      hint="Roughly what a 720p frame looks like. Changes reach a running player straight away."
+      :title="$t('Preview')"
+      :hint="$t('Roughly what a 720p frame looks like. Changes reach a running player straight away.')"
     >
       <div
         class="relative overflow-hidden rounded-xl bg-gradient-to-br from-#2a3340 via-#141a22 to-#0b0e13"
@@ -51,12 +51,12 @@ const SAMPLE = 'It was the fall that killed him.\nNot the drop — the sudden st
       </div>
     </settings-section>
 
-    <settings-section title="Text">
-      <v-select v-model="settings.subs.font" :items="SUBTITLE_FONTS" label="Font" />
+    <settings-section :title="$t('Text')">
+      <v-select v-model="settings.subs.font" :items="SUBTITLE_FONTS" :label="$t('Font')" />
 
       <div>
         <div class="text-label-medium opacity-70">
-          Size
+          {{ $t('Size') }}
         </div>
         <v-slider
           v-model="settings.subs.size"
@@ -68,35 +68,35 @@ const SAMPLE = 'It was the fall that killed him.\nNot the drop — the sudden st
         />
       </div>
 
-      <v-switch v-model="settings.subs.bold" label="Bold" color="primary" hide-details density="compact" />
+      <v-switch v-model="settings.subs.bold" :label="$t('Bold')" color="primary" hide-details density="compact" />
 
       <div class="text-label-medium pt-1 opacity-70">
-        Colour
+        {{ $t('Colour') }}
       </div>
       <settings-swatches v-model="settings.subs.color" :colours="COLOURS" />
     </settings-section>
 
     <settings-section
-      title="Legibility"
-      hint="An outline keeps white text on a white shot readable; a background box does it more bluntly."
+      :title="$t('Legibility')"
+      :hint="$t('An outline keeps white text on a white shot readable; a background box does it more bluntly.')"
     >
       <div>
         <div class="text-label-medium opacity-70">
-          Outline
+          {{ $t('Outline') }}
         </div>
         <v-slider v-model="settings.subs.outline" :min="0" :max="5" :step="0.05" thumb-label />
       </div>
 
       <div>
         <div class="text-label-medium opacity-70">
-          Background
+          {{ $t('Background') }}
         </div>
         <v-slider v-model="settings.subs.background" :min="0" :max="1" :step="0.05" thumb-label />
       </div>
 
       <div>
         <div class="text-label-medium opacity-70">
-          Vertical position
+          {{ $t('Vertical position') }}
         </div>
         <v-slider v-model="settings.subs.position" :min="50" :max="120" :step="1" thumb-label />
       </div>
@@ -104,7 +104,7 @@ const SAMPLE = 'It was the fall that killed him.\nNot the drop — the sudden st
 
     <div>
       <v-btn :prepend-icon="mdiRestore" variant="tonal" @click="settings.resetSubs()">
-        Reset to mpv defaults
+        {{ $t('Reset to mpv defaults') }}
       </v-btn>
     </div>
   </div>

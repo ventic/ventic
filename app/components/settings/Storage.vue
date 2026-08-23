@@ -74,7 +74,7 @@ function format() {
   if (openStorageSettings())
     formatHint.value = true
   else
-    error.value = 'No storage settings on this device. Format the drive as FAT32 on a computer — every Android box accepts it.'
+    error.value = $t('No storage settings on this device. Format the drive as FAT32 on a computer — every Android box accepts it.')
 }
 
 const confirmClear = ref(false)
@@ -100,7 +100,7 @@ const usedShare = computed(() =>
 async function browse() {
   error.value = ''
   try {
-    const picked = await useTauriDialogOpen({ directory: true, multiple: false, title: 'Where to keep downloads' })
+    const picked = await useTauriDialogOpen({ directory: true, multiple: false, title: $t('Where to keep downloads') })
     if (typeof picked === 'string')
       settings.downloadDir = picked
   }
@@ -120,17 +120,15 @@ async function openFolder() {
 <template>
   <div class="flex flex-col gap-8">
     <settings-section
-      :title="volumes ? 'Where downloads go' : 'Download folder'"
+      :title="volumes ? $t('Where downloads go') : $t('Download folder')"
       :hint="volumes
-        ? `Which drive films and episodes are written to — a plugged-in stick usually holds far more
-          than the box itself. Uninstalling the app still removes them. Torrents already downloaded
-          stay where they are.`
-        : 'Where films and episodes are written. Torrents already downloaded stay where they are.'"
+        ? $t('Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.')
+        : $t('Where films and episodes are written. Torrents already downloaded stay where they are.')"
     >
       <v-text-field
         v-model="settings.downloadDir"
-        label="Folder"
-        placeholder="Default: the app's own cache folder"
+        :label="$t('Folder')"
+        :placeholder="$t('Default: the app\'s own cache folder')"
         persistent-placeholder
         hide-details
         :readonly="!!volumes"
@@ -148,7 +146,7 @@ async function openFolder() {
           class="justify-start"
           @click="settings.downloadDir = volume.path"
         >
-          {{ volume.name }} · {{ bytesText(volume.free) }} free
+          {{ $t('{drive} · {free} free', { drive: volume.name, free: bytesText(volume.free) }) }}
         </v-btn>
       </div>
 
@@ -160,9 +158,7 @@ async function openFolder() {
         type="info"
         variant="tonal"
         density="compact"
-        :text="`${target.name} is formatted FAT32, which can't hold a single file over
-          ${bytesText(target.maxFile)}. Bigger releases are dimmed in the source list and are never
-          picked automatically — everything smaller works normally.`"
+        :text="$t('{drive} is formatted FAT32, which can\'t hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.', { drive: target.name, limit: bytesText(target.maxFile) })"
       />
 
       <!-- The fix is one screen away, so the alert carries the way to it rather
@@ -174,13 +170,11 @@ async function openFolder() {
         variant="tonal"
         density="compact"
       >
-        {{ volume.name }} is plugged in, but nothing can be written to it — this device doesn't
-        support the format the drive is in. Formatting it here fixes that, and erases whatever is
-        on the drive.
+        {{ $t('{drive} is plugged in, but nothing can be written to it — this device doesn\'t support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.', { drive: volume.name }) }}
 
         <template #append>
           <v-btn v-if="canFormat" :prepend-icon="mdiUsbFlashDrive" variant="tonal" @click="format">
-            Format drive…
+            {{ $t('Format drive…') }}
           </v-btn>
         </template>
       </v-alert>
@@ -190,8 +184,7 @@ async function openFolder() {
         type="info"
         variant="tonal"
         density="compact"
-        text="In the screen that just opened, choose the drive, then “Erase & format as removable
-          storage”. Come back here afterwards and it will be in the list."
+        :text="$t('In the screen that just opened, choose the drive, then “Erase &amp; format as removable storage”. Come back here afterwards and it will be in the list.')"
       />
 
       <!-- Not while a drive is sitting there unreadable: "plug one in" is the
@@ -201,13 +194,12 @@ async function openFolder() {
         type="info"
         variant="tonal"
         density="compact"
-        text="There is barely room for one film here. Plug a USB drive into the box — formatted
-          FAT32, which every Android box accepts — and it appears above to download onto instead."
+        :text="$t('There is barely room for one film here. Plug a USB drive into the box — formatted FAT32, which every Android box accepts — and it appears above to download onto instead.')"
       />
 
       <div class="flex flex-wrap items-center gap-2">
         <v-btn v-if="!volumes" :prepend-icon="mdiFolderSearchOutline" variant="tonal" @click="browse">
-          Browse…
+          {{ $t('Browse…') }}
         </v-btn>
         <v-btn
           v-if="canReveal"
@@ -216,7 +208,7 @@ async function openFolder() {
           :disabled="!settings.downloadDir"
           @click="openFolder"
         >
-          Open
+          {{ $t('Open') }}
         </v-btn>
         <v-btn
           v-if="settings.downloadDir"
@@ -224,7 +216,7 @@ async function openFolder() {
           variant="text"
           @click="settings.downloadDir = ''"
         >
-          Use default
+          {{ $t('Use default') }}
         </v-btn>
       </div>
 
@@ -232,24 +224,23 @@ async function openFolder() {
     </settings-section>
 
     <settings-section
-      title="Cache limit"
-      hint="Everything watched is kept on disk until the space is needed, then the least recently
-        played titles are deleted. Zero lets that grow into whatever the drive has spare."
+      :title="$t('Cache limit')"
+      :hint="$t('Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.')"
     >
       <div class="text-label-medium opacity-70">
-        {{ capGb > 0 ? `${capGb} GiB` : 'Whatever the disk allows' }}
+        {{ capGb > 0 ? $t('{size} GiB', { size: capGb }) : $t('Whatever the disk allows') }}
       </div>
       <v-slider v-model="capGb" :min="0" :max="500" :step="5" thumb-label />
 
       <div class="flex flex-col gap-1">
         <v-progress-linear :model-value="usedShare" />
         <div class="text-body-small opacity-70">
-          {{ bytesText(downloads.used) }} used
+          {{ $t('{used} used', { used: bytesText(downloads.used) }) }}
           <template v-if="isFinite(downloads.budget)">
-            of {{ bytesText(downloads.budget) }} available
+            {{ $t('of {total} available', { total: bytesText(downloads.budget) }) }}
           </template>
           <template v-if="downloads.disk">
-            · {{ bytesText(downloads.disk.free) }} free on the drive
+            · {{ $t('{free} free on the drive', { free: bytesText(downloads.disk.free) }) }}
           </template>
         </div>
       </div>
@@ -262,23 +253,22 @@ async function openFolder() {
           :disabled="!downloads.torrents.length"
           @click="confirmPrune = true"
         >
-          Delete all downloads
+          {{ $t('Delete all downloads') }}
         </v-btn>
       </div>
 
       <v-dialog v-model="confirmPrune" max-width="420">
         <v-card
-          title="Delete all downloads?"
-          :text="`All ${downloads.torrents.length} torrents and their files are removed from the disk,
-            freeing ${bytesText(downloads.used)}. Anything still playing stops. Watch history is kept.`"
+          :title="$t('Delete all downloads?')"
+          :text="$t('All {count} torrents and their files are removed from the disk, freeing {size}. Anything still playing stops. Watch history is kept.', { count: downloads.torrents.length, size: bytesText(downloads.used) })"
         >
           <v-card-actions>
             <v-spacer />
             <v-btn variant="text" @click="confirmPrune = false">
-              Cancel
+              {{ $t('Cancel') }}
             </v-btn>
             <v-btn variant="tonal" color="error" @click="prune">
-              Delete
+              {{ $t('Delete') }}
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -286,13 +276,15 @@ async function openFolder() {
     </settings-section>
 
     <settings-section
-      title="Watch history"
-      hint="Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing
-        them here clears them for good — Account has a backup file if you want one first."
+      :title="$t('Watch history')"
+      :hint="$t('Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.')"
     >
       <div class="text-body-small opacity-70">
-        {{ library.history.length }} titles watched · {{ library.favouriteList.length }} favourites ·
-        {{ library.watchlistItems.length }} on the watchlist
+        {{ $t('{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist', {
+          titles: library.history.length,
+          favourites: library.favouriteList.length,
+          watchlist: library.watchlistItems.length,
+        }) }}
       </div>
       <div>
         <v-btn
@@ -302,22 +294,22 @@ async function openFolder() {
           :disabled="!library.history.length && !library.favouriteList.length && !library.watchlistItems.length"
           @click="confirmClear = true"
         >
-          Clear watch history
+          {{ $t('Clear watch history') }}
         </v-btn>
       </div>
 
       <v-dialog v-model="confirmClear" max-width="420">
         <v-card
-          title="Clear watch history?"
-          text="Every progress bar, watched mark, favourite and watchlist entry goes. This can't be undone."
+          :title="$t('Clear watch history?')"
+          :text="$t('Every progress bar, watched mark, favourite and watchlist entry goes. This can\'t be undone.')"
         >
           <v-card-actions>
             <v-spacer />
             <v-btn variant="text" @click="confirmClear = false">
-              Cancel
+              {{ $t('Cancel') }}
             </v-btn>
             <v-btn variant="tonal" color="error" @click="library.clear(); confirmClear = false">
-              Clear
+              {{ $t('Clear') }}
             </v-btn>
           </v-card-actions>
         </v-card>

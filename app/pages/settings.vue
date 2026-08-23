@@ -7,7 +7,7 @@ const ui = useUiStore()
 const settings = useSettingsStore()
 const { mobile } = useDisplay()
 
-const title = computed(() => SECTIONS.find(s => s.value === settings.section)?.title ?? '')
+const title = computed(() => SECTIONS.find(s => s.value === settings.section)?.title() ?? '')
 </script>
 
 <template>
@@ -16,9 +16,9 @@ const title = computed(() => SECTIONS.find(s => s.value === settings.section)?.t
       <div class="flex items-center gap-2 pb-5 pt-3">
         <!-- Always-on way out of the settings shell — on a phone the menu button
              beside it only switches sections, so this is the only exit there. -->
-        <v-btn icon variant="text" color="on-surface" to="/">
+        <v-btn icon variant="text" color="on-surface" :to="$localePath('/')">
           <v-icon :icon="mdiArrowLeft" />
-          <v-tooltip activator="parent" text="Back" />
+          <v-tooltip activator="parent" :text="$t('Back')" />
         </v-btn>
         <v-btn v-if="mobile" :icon="mdiMenu" variant="text" color="on-surface" @click="ui.drawer = true" />
         <h1 class="text-headline-medium font-bold">
@@ -27,6 +27,7 @@ const title = computed(() => SECTIONS.find(s => s.value === settings.section)?.t
       </div>
 
       <settings-appearance v-if="settings.section === 'appearance'" />
+      <settings-language v-else-if="settings.section === 'language'" />
       <settings-sources v-else-if="settings.section === 'sources'" />
       <settings-subtitles v-else-if="settings.section === 'subtitles'" />
       <settings-network v-else-if="settings.section === 'network'" />

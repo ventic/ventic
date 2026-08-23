@@ -21,12 +21,12 @@ const props = defineProps<{
 const { lgAndUp } = useDisplay()
 
 /** The three the sidebar already splits the app into, plus everything. */
-const KINDS: { value: LibraryKind, title: string }[] = [
-  { value: 'all', title: 'All' },
-  { value: 'movie', title: 'Movies' },
-  { value: 'tv', title: 'TV Shows' },
-  { value: 'anime', title: 'Anime' },
-]
+const KINDS = computed<{ value: LibraryKind, title: string }[]>(() => [
+  { value: 'all', title: $t('All') },
+  { value: 'movie', title: $t('Movies') },
+  { value: 'tv', title: $t('TV Shows') },
+  { value: 'anime', title: $t('Anime') },
+])
 
 const query = ref('')
 const kind = ref<LibraryKind>('all')
@@ -37,9 +37,9 @@ const reverse = ref(false)
 // for all of them and no label has to lie about which way it is pointing.
 const sorts = computed(() => [
   { value: 'recent', title: props.recent },
-  { value: 'title', title: 'Title' },
-  { value: 'year', title: 'Year' },
-  { value: 'rating', title: 'Rating' },
+  { value: 'title', title: $t('Title') },
+  { value: 'year', title: $t('Year') },
+  { value: 'rating', title: $t('Rating') },
 ])
 
 const shown = computed(() => arrange(props.items, {
@@ -100,13 +100,13 @@ const active = computed(() =>
           :items="KINDS"
           item-title="title"
           item-value="value"
-          label="Show"
+          :label="$t('Show')"
           class="w-40 shrink-0"
         />
 
         <search-field
           v-model="query"
-          placeholder="Filter by title"
+          :placeholder="$t('Filter by title')"
           class="w-48 shrink-0"
         />
 
@@ -115,7 +115,7 @@ const active = computed(() =>
           :items="sorts"
           item-title="title"
           item-value="value"
-          label="Sort by"
+          :label="$t('Sort by')"
           class="w-40 shrink-0"
         />
 
@@ -126,7 +126,7 @@ const active = computed(() =>
           class="shrink-0"
           @click="reverse = !reverse"
         >
-          Reverse
+          {{ $t('Reverse') }}
         </v-btn>
       </template>
     </options-bar>

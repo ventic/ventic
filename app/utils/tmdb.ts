@@ -60,7 +60,11 @@ export function tmdb<T>(path: string, params?: Record<string, unknown>) {
 
   return $fetch<T>(path, {
     baseURL: 'https://api.themoviedb.org/3',
-    params: { language: 'en-US', ...params },
+    // Titles and overviews come back in whatever the app is set to, as the
+    // regional tag TMDB wants (`pt-BR` for the `pt` the URL carries) — see
+    // `tmdbLanguage`. TMDB falls back to English per field, so a language it
+    // has nothing in still returns a usable record.
+    params: { language: tmdbLanguage(), ...params },
     headers: { Authorization: `Bearer ${key}` },
   })
 }
@@ -113,13 +117,20 @@ export function logoUrl(path?: string | null, size: 'w300' | 'w500' = 'w500') {
   return path ? `${IMAGE_BASE}/${size}${path}` : null
 }
 
-/** Route to a media detail page. Also the shape `[type]/[id].vue` validates. */
+/**
+ * Route to a media detail page. Also the shape `[type]/[id].vue` validates.
+ *
+ * Every link helper here runs its path through `localePath`, because a route
+ * only exists under its language prefix (`/en/movie/603`) — an unprefixed path
+ * matches nothing and renders as a dead link. Doing it in the helpers rather
+ * than at the ~40 call sites is also what keeps the call sites unchanged.
+ */
 export function mediaLink(media: Pick<Media, 'id' | 'type'>) {
-  return `/${media.type}/${media.id}`
+  return localePath(`/${media.type}/${media.id}`)
 }
 
 export function seasonLink(showId: string | number, season: number) {
-  return `/tv/${showId}/season/${season}`
+  return localePath(`/tv/${showId}/season/${season}`)
 }
 
 export function episodeLink(showId: string | number, season: number, episode: number) {
@@ -137,7 +148,7 @@ export function watchLink(type: MediaType, id: string | number, season?: number,
     query.set('s', String(season))
     query.set('e', String(episode))
   }
-  return `/watch?${query}`
+  return `${localePath('/watch')}?${query}`
 }
 
 /** 148 -> "2h 28m". */
@@ -145,19 +156,21 @@ export function runtimeText(minutes?: number) {
   if (!minutes)
     return ''
   const h = Math.floor(minutes / 60)
-  return h ? `${h}h ${minutes % 60}m` : `${minutes}m`
+  return h ? $t('{hours}h {minutes}m', { hours: h, minutes: minutes % 60 }) : $t('{minutes}m', { minutes })
 }
 
 export function moneyText(amount?: number) {
   if (!amount)
     return ''
-  return amount.toLocaleString('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 })
+  // Currency stays USD — it is TMDB's figure, not a converted one — but the
+  // grouping and the compact suffix follow the reader's language.
+  return amount.toLocaleString(uiLocale(), { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 })
 }
 
 export function dateText(date?: string) {
   if (!date)
     return ''
-  return new Date(date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+  return new Date(date).toLocaleDateString(uiLocale(), { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 /**

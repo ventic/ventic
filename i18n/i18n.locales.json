@@ -1,0 +1,441 @@
+{
+  "defaultLocale": "en",
+  "locales": [
+    {
+      "code": "en",
+      "name": "English",
+      "language": "en-US",
+      "file": "en.ts"
+    },
+    {
+      "code": "af",
+      "name": "Afrikaans",
+      "language": "af-ZA",
+      "file": "af.ts"
+    },
+    {
+      "code": "ar",
+      "name": "العربية",
+      "language": "ar-EG",
+      "dir": "rtl",
+      "file": "ar.ts"
+    },
+    {
+      "code": "be",
+      "name": "беларуская",
+      "language": "be-BY",
+      "file": "be.ts"
+    },
+    {
+      "code": "bg",
+      "name": "български",
+      "language": "bg-BG",
+      "file": "bg.ts"
+    },
+    {
+      "code": "bn",
+      "name": "বাংলা",
+      "language": "bn-BD",
+      "file": "bn.ts"
+    },
+    {
+      "code": "br",
+      "name": "brezhoneg",
+      "language": "br-FR",
+      "file": "br.ts"
+    },
+    {
+      "code": "ca",
+      "name": "català",
+      "language": "ca-ES",
+      "file": "ca.ts"
+    },
+    {
+      "code": "ch",
+      "name": "Chamorro",
+      "language": "ch-GU",
+      "file": "ch.ts"
+    },
+    {
+      "code": "cs",
+      "name": "Čeština",
+      "language": "cs-CZ",
+      "file": "cs.ts"
+    },
+    {
+      "code": "cy",
+      "name": "Cymraeg",
+      "language": "cy-GB",
+      "file": "cy.ts"
+    },
+    {
+      "code": "da",
+      "name": "dansk",
+      "language": "da-DK",
+      "file": "da.ts"
+    },
+    {
+      "code": "de",
+      "name": "Deutsch",
+      "language": "de-DE",
+      "file": "de.ts"
+    },
+    {
+      "code": "el",
+      "name": "Ελληνικά",
+      "language": "el-GR",
+      "file": "el.ts"
+    },
+    {
+      "code": "eo",
+      "name": "Esperanto",
+      "language": "eo-EO",
+      "file": "eo.ts"
+    },
+    {
+      "code": "es",
+      "name": "Español",
+      "language": "es-ES",
+      "file": "es.ts"
+    },
+    {
+      "code": "et",
+      "name": "eesti",
+      "language": "et-EE",
+      "file": "et.ts"
+    },
+    {
+      "code": "eu",
+      "name": "euskara",
+      "language": "eu-ES",
+      "file": "eu.ts"
+    },
+    {
+      "code": "fa",
+      "name": "فارسی",
+      "language": "fa-IR",
+      "dir": "rtl",
+      "file": "fa.ts"
+    },
+    {
+      "code": "fi",
+      "name": "suomi",
+      "language": "fi-FI",
+      "file": "fi.ts"
+    },
+    {
+      "code": "fr",
+      "name": "français",
+      "language": "fr-FR",
+      "file": "fr.ts"
+    },
+    {
+      "code": "ga",
+      "name": "Gaeilge",
+      "language": "ga-IE",
+      "file": "ga.ts"
+    },
+    {
+      "code": "gd",
+      "name": "Gàidhlig",
+      "language": "gd-GB",
+      "file": "gd.ts"
+    },
+    {
+      "code": "gl",
+      "name": "galego",
+      "language": "gl-ES",
+      "file": "gl.ts"
+    },
+    {
+      "code": "he",
+      "name": "עברית",
+      "language": "he-IL",
+      "dir": "rtl",
+      "file": "he.ts"
+    },
+    {
+      "code": "hi",
+      "name": "हिन्दी",
+      "language": "hi-IN",
+      "file": "hi.ts"
+    },
+    {
+      "code": "hr",
+      "name": "Hrvatski",
+      "language": "hr-HR",
+      "file": "hr.ts"
+    },
+    {
+      "code": "hu",
+      "name": "magyar",
+      "language": "hu-HU",
+      "file": "hu.ts"
+    },
+    {
+      "code": "hy",
+      "name": "հայերեն",
+      "language": "hy-AM",
+      "file": "hy.ts"
+    },
+    {
+      "code": "id",
+      "name": "Indonesia",
+      "language": "id-ID",
+      "file": "id.ts"
+    },
+    {
+      "code": "it",
+      "name": "Italiano",
+      "language": "it-IT",
+      "file": "it.ts"
+    },
+    {
+      "code": "ja",
+      "name": "日本語",
+      "language": "ja-JP",
+      "file": "ja.ts"
+    },
+    {
+      "code": "ka",
+      "name": "ქართული",
+      "language": "ka-GE",
+      "file": "ka.ts"
+    },
+    {
+      "code": "kk",
+      "name": "қазақ тілі",
+      "language": "kk-KZ",
+      "file": "kk.ts"
+    },
+    {
+      "code": "kn",
+      "name": "ಕನ್ನಡ",
+      "language": "kn-IN",
+      "file": "kn.ts"
+    },
+    {
+      "code": "ko",
+      "name": "한국어",
+      "language": "ko-KR",
+      "file": "ko.ts"
+    },
+    {
+      "code": "ku",
+      "name": "kurdî (kurmancî)",
+      "language": "ku-TR",
+      "file": "ku.ts"
+    },
+    {
+      "code": "ky",
+      "name": "кыргызча",
+      "language": "ky-KG",
+      "file": "ky.ts"
+    },
+    {
+      "code": "lt",
+      "name": "lietuvių",
+      "language": "lt-LT",
+      "file": "lt.ts"
+    },
+    {
+      "code": "lv",
+      "name": "latviešu",
+      "language": "lv-LV",
+      "file": "lv.ts"
+    },
+    {
+      "code": "ml",
+      "name": "മലയാളം",
+      "language": "ml-IN",
+      "file": "ml.ts"
+    },
+    {
+      "code": "mr",
+      "name": "मराठी",
+      "language": "mr-IN",
+      "file": "mr.ts"
+    },
+    {
+      "code": "ms",
+      "name": "Melayu",
+      "language": "ms-MY",
+      "file": "ms.ts"
+    },
+    {
+      "code": "nb",
+      "name": "norsk bokmål",
+      "language": "nb-NO",
+      "file": "nb.ts"
+    },
+    {
+      "code": "ne",
+      "name": "नेपाली",
+      "language": "ne-NP",
+      "file": "ne.ts"
+    },
+    {
+      "code": "nl",
+      "name": "Nederlands",
+      "language": "nl-NL",
+      "file": "nl.ts"
+    },
+    {
+      "code": "no",
+      "name": "norsk",
+      "language": "no-NO",
+      "file": "no.ts"
+    },
+    {
+      "code": "oc",
+      "name": "occitan",
+      "language": "oc-FR",
+      "file": "oc.ts"
+    },
+    {
+      "code": "pa",
+      "name": "ਪੰਜਾਬੀ",
+      "language": "pa-IN",
+      "file": "pa.ts"
+    },
+    {
+      "code": "pl",
+      "name": "polski",
+      "language": "pl-PL",
+      "file": "pl.ts"
+    },
+    {
+      "code": "pt",
+      "name": "Português",
+      "language": "pt-BR",
+      "file": "pt.ts"
+    },
+    {
+      "code": "ro",
+      "name": "română",
+      "language": "ro-RO",
+      "file": "ro.ts"
+    },
+    {
+      "code": "ru",
+      "name": "Русский",
+      "language": "ru-RU",
+      "file": "ru.ts"
+    },
+    {
+      "code": "si",
+      "name": "සිංහල",
+      "language": "si-LK",
+      "file": "si.ts"
+    },
+    {
+      "code": "sk",
+      "name": "Slovenčina",
+      "language": "sk-SK",
+      "file": "sk.ts"
+    },
+    {
+      "code": "sl",
+      "name": "slovenščina",
+      "language": "sl-SI",
+      "file": "sl.ts"
+    },
+    {
+      "code": "so",
+      "name": "Soomaali",
+      "language": "so-SO",
+      "file": "so.ts"
+    },
+    {
+      "code": "sq",
+      "name": "shqip",
+      "language": "sq-AL",
+      "file": "sq.ts"
+    },
+    {
+      "code": "sr",
+      "name": "српски",
+      "language": "sr-RS",
+      "file": "sr.ts"
+    },
+    {
+      "code": "sv",
+      "name": "Svenska",
+      "language": "sv-SE",
+      "file": "sv.ts"
+    },
+    {
+      "code": "sw",
+      "name": "Kiswahili",
+      "language": "sw-TZ",
+      "file": "sw.ts"
+    },
+    {
+      "code": "ta",
+      "name": "தமிழ்",
+      "language": "ta-IN",
+      "file": "ta.ts"
+    },
+    {
+      "code": "te",
+      "name": "తెలుగు",
+      "language": "te-IN",
+      "file": "te.ts"
+    },
+    {
+      "code": "th",
+      "name": "ไทย",
+      "language": "th-TH",
+      "file": "th.ts"
+    },
+    {
+      "code": "tl",
+      "name": "Tagalog",
+      "language": "tl-PH",
+      "file": "tl.ts"
+    },
+    {
+      "code": "tr",
+      "name": "Türkçe",
+      "language": "tr-TR",
+      "file": "tr.ts"
+    },
+    {
+      "code": "uk",
+      "name": "Українська",
+      "language": "uk-UA",
+      "file": "uk.ts"
+    },
+    {
+      "code": "ur",
+      "name": "اردو",
+      "language": "ur-PK",
+      "dir": "rtl",
+      "file": "ur.ts"
+    },
+    {
+      "code": "uz",
+      "name": "o‘zbek",
+      "language": "uz-UZ",
+      "file": "uz.ts"
+    },
+    {
+      "code": "vi",
+      "name": "Tiếng Việt",
+      "language": "vi-VN",
+      "file": "vi.ts"
+    },
+    {
+      "code": "zh",
+      "name": "中文",
+      "language": "zh-CN",
+      "file": "zh.ts"
+    },
+    {
+      "code": "zu",
+      "name": "isiZulu",
+      "language": "zu-ZA",
+      "file": "zu.ts"
+    }
+  ]
+}

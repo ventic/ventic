@@ -26,6 +26,7 @@ import {
   subtitleProps,
   synced,
 } from '../app/utils/subtitles'
+import './i18n-stub'
 
 const subtitles = [
   { id: '1', url: 'https://subs5.strem.io/a', lang: 'eng' },

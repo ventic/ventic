@@ -45,17 +45,17 @@ async function save() {
     const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }))
     Object.assign(document.createElement('a'), { href: url, download: FILE }).click()
     URL.revokeObjectURL(url)
-    note.value = `Downloaded as ${FILE}.`
+    note.value = $t('Downloaded as {file}.', { file: FILE })
     return
   }
 
   try {
     await useTauriFsWriteTextFile(FILE, text, { baseDir: DOCUMENTS })
     folder.value = await documentDir().catch(() => '')
-    note.value = `Saved to your documents folder as ${FILE}.`
+    note.value = $t('Saved to your documents folder as {file}.', { file: FILE })
   }
   catch (e) {
-    error.value = `Couldn't write the backup: ${e}`
+    error.value = $t('Couldn\'t write the backup: {error}', { error: String(e) })
   }
 }
 
@@ -81,7 +81,7 @@ async function restore() {
     stage(await useTauriFsReadTextFile(FILE, { baseDir: DOCUMENTS }))
   }
   catch {
-    error.value = `There's no ${FILE} in your documents folder. Copy one there and try again.`
+    error.value = $t('There\'s no {file} in your documents folder. Copy one there and try again.', { file: FILE })
   }
 }
 
@@ -104,42 +104,39 @@ function apply() {
 <template>
   <div class="flex flex-col gap-8">
     <settings-section
-      title="Sync"
-      hint="Ventic keeps your library on this device. Carrying it to another screen is the backup
-        file below."
+      :title="$t('Sync')"
+      :hint="$t('Ventic keeps your library on this device. Carrying it to another screen is the backup file below.')"
     >
       <!-- Text only, so nothing here for the d-pad to walk into. -->
       <v-card rounded="xl" class="panel flex flex-col items-start gap-3 p-6">
         <v-icon :icon="mdiAccountCircleOutline" size="48" class="opacity-40" />
         <div class="text-title-medium">
-          Not supported yet
+          {{ $t('Not supported yet') }}
         </div>
         <p class="text-body-medium max-w-prose opacity-70">
-          There is no account to sign in to and nothing syncs to a server. What you watch, how far
-          you got, your favourites and your watchlist are all stored on this device and never leave
-          it. Syncing between screens is planned; until then, the backup below is how a library
-          moves.
+          {{ $t('There is no account to sign in to and nothing syncs to a server. What you watch, how far you got, your favourites and your watchlist are all stored on this device and never leave it. Syncing between screens is planned; until then, the backup below is how a library moves.') }}
         </p>
       </v-card>
     </settings-section>
 
     <settings-section
-      title="Backup"
-      :hint="`Your watch history, favourites, watchlist, sources and every preference here, written
-        to a single ${FILE}. Carry it to another device and restore it there, or keep one against
-        the day this one is wiped.`"
+      :title="$t('Backup')"
+      :hint="$t('Your watch history, favourites, watchlist, sources and every preference here, written to a single {file}. Carry it to another device and restore it there, or keep one against the day this one is wiped.', { file: FILE })"
     >
       <div class="text-body-small opacity-70">
-        {{ library.history.length }} titles watched · {{ library.favouriteList.length }} favourites ·
-        {{ library.watchlistItems.length }} on the watchlist
+        {{ $t('{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist', {
+          titles: library.history.length,
+          favourites: library.favouriteList.length,
+          watchlist: library.watchlistItems.length,
+        }) }}
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
         <v-btn :prepend-icon="mdiContentSaveOutline" variant="tonal" @click="save">
-          Save a backup
+          {{ $t('Save a backup') }}
         </v-btn>
         <v-btn :prepend-icon="mdiRestore" variant="text" @click="restore">
-          Restore…
+          {{ $t('Restore…') }}
         </v-btn>
         <!-- The browser path, and the only one on a machine with no Tauri
              around it. Hidden rather than absent so `restore` can click it. -->
@@ -160,36 +157,32 @@ function apply() {
             :prepend-icon="mdiFolderOpenOutline"
             @click="useTauriShellOpen(folder)"
           >
-            Show
+            {{ $t('Show') }}
           </v-btn>
         </template>
       </v-alert>
       <v-alert v-if="error" type="warning" variant="tonal" density="compact" :text="error" />
 
       <v-dialog :model-value="!!pending" max-width="460" @update:model-value="pending = null">
-        <v-card v-if="summary" rounded="xl" title="Restore this backup?">
+        <v-card v-if="summary" rounded="xl" :title="$t('Restore this backup?')">
           <v-card-text class="flex flex-col gap-3">
             <p class="text-body-medium opacity-80">
-              Everything it holds replaces what is on this device: {{ summary.titles }} titles,
-              {{ summary.watched }} watch positions, {{ summary.favourites }} favourites,
-              {{ summary.watchlist }} on the watchlist and {{ summary.sources }} sources.
-              Downloads on the disk are untouched.
+              {{ $t('Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.', summary) }}
             </p>
             <p v-if="summary.sources" class="text-body-small opacity-60">
-              Restoring changes which servers Ventic searches — a backup carries its own
-              source list, and it wins.
+              {{ $t('Restoring changes which servers Ventic searches — a backup carries its own source list, and it wins.') }}
             </p>
             <p v-if="pending?.at" class="text-body-small opacity-60">
-              Written {{ new Date(pending.at).toLocaleString() }}.
+              {{ $t('Written {at}.', { at: new Date(pending.at).toLocaleString() }) }}
             </p>
           </v-card-text>
           <v-card-actions>
             <v-spacer />
             <v-btn variant="text" @click="pending = null">
-              Cancel
+              {{ $t('Cancel') }}
             </v-btn>
             <v-btn variant="tonal" color="primary" @click="apply">
-              Restore and reload
+              {{ $t('Restore and reload') }}
             </v-btn>
           </v-card-actions>
         </v-card>
