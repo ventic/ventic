@@ -114,7 +114,7 @@ export function parseUpdate(data: unknown): Update | null {
   const version = r?.tag_name?.trim().replace(/^v/, '') ?? ''
   // `/releases/latest` filters both out already; this is the belt to that
   // braces, since a wrong endpoint would otherwise offer people a draft.
-  if (!version || r?.draft || r?.prerelease)
+  if (!r || !version || r.draft || r.prerelease)
     return null
 
   return {

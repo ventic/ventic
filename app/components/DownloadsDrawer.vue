@@ -49,7 +49,7 @@ function mbps(value: number) {
     :temporary="mobile"
     class="panel border-none"
   >
-    <nuxt-link :to="$localePath('/')" class="flex items-center gap-3 px-4 py-5">
+    <nuxt-link :to="localePath('/')" class="flex items-center gap-3 px-4 py-5">
       <v-icon :icon="mdiArrowLeft" size="22" />
       <span class="text-title-medium whitespace-nowrap">{{ $t('Transfers') }}</span>
     </nuxt-link>

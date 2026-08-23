@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const { locale, locales, setLocale } = useI18n()
+// See app.vue for why this isn't `useI18n()`.
+const { locale, locales, setLocale } = useNuxtApp().$i18n
 
 /**
  * `setLocale` swaps the catalog in place and nothing navigates — the URL

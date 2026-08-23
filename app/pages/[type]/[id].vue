@@ -4,7 +4,7 @@ import { mdiAlertCircleOutline, mdiBookmark, mdiBookmarkOutline, mdiEye, mdiEyeO
 
 // Keeps /foo/123 out of here; anything else 404s instead of asking TMDB.
 definePageMeta({
-  validate: route => route.params.type === 'movie' || route.params.type === 'tv',
+  validate: ({ params }) => 'type' in params && (params.type === 'movie' || params.type === 'tv'),
 })
 
 const route = useRoute()
@@ -107,7 +107,7 @@ const playLabel = computed(() => [
     <div v-if="error" class="flex h-full flex-col items-center justify-center gap-2">
       <v-icon :icon="mdiAlertCircleOutline" color="error" size="40" />
       <span class="text-body-medium opacity-70">{{ $t('Couldn\'t load this title.') }}</span>
-      <v-btn variant="tonal" :to="$localePath('/')">
+      <v-btn variant="tonal" :to="localePath('/')">
         {{ $t('Go home') }}
       </v-btn>
     </div>

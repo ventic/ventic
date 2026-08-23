@@ -31,7 +31,7 @@ const title = computed(() => SECTIONS.find(s => s.value === section.value)?.titl
       <div class="flex items-center gap-2 pb-5 pt-3">
         <!-- Always-on way out of the settings shell — on a phone the menu button
              beside it only switches sections, so this is the only exit there. -->
-        <v-btn icon variant="text" color="on-surface" :to="$localePath('/')">
+        <v-btn icon variant="text" color="on-surface" :to="localePath('/')">
           <v-icon :icon="mdiArrowLeft" />
           <v-tooltip activator="parent" :text="$t('Back')" />
         </v-btn>

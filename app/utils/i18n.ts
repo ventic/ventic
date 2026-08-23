@@ -33,12 +33,12 @@ export function $t(
  * today; they are what makes putting the language back into the URL a config
  * change rather than a sweep of every `:to` in the app.
  *
- * Auto-imported for `.ts` files and for scripts; in a template the same
- * function is already there as `$localePath` (@nuxtjs/i18n provides it), which
- * is what the `:to` bindings use.
+ * Auto-imported, so scripts and templates alike just call it — the module's own
+ * `$localePath` is typed for route *names*, and this is the one place that hands
+ * it the `{ path }` form it wants.
  */
 export function localePath(path: string) {
-  return useNuxtApp().$localePath(path)
+  return useNuxtApp().$localePath({ path })
 }
 
 /**

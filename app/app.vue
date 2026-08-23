@@ -28,7 +28,11 @@ watch(painted, value => applyTheme(theme, value), { immediate: true })
  * is the only thing that decides which one the app opens in: restore it once at
  * boot, then follow whatever the settings page switches to.
  */
-const { locale, setLocale, locales } = useI18n()
+// `useNuxtApp().$i18n` rather than `useI18n()`: the same composer, but typed
+// flat as `Composer` instead of re-inferring vue-i18n's message-schema generics
+// over all 72 locale codes, which alone costs more than TypeScript's
+// instantiation budget for the whole app.
+const { locale, setLocale, locales } = useNuxtApp().$i18n
 
 if (settings.locale && settings.locale !== locale.value)
   setLocale(settings.locale as typeof locale.value)

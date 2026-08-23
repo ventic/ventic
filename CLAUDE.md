@@ -81,7 +81,12 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   (`check:dpad`, `check:torrents`, `check:subtitles`, `check:theme`,
   `check:library`, `check:player`, `check:swipe`, `check:boot`,
   `check:perf`, `check:android-downloads`, `check:updates`, `check:i18n`).
-  Add to those rather than pulling in a test framework.
+  Add to those rather than pulling in a test framework. `bun run check:types` is
+  the odd one out: a whole-app `vue-tsc` pass, which is the only thing that
+  reads a template's bindings against its script's types — eslint never does.
+  It needs a real `typescript` in `node_modules`, which is what the
+  `resolutions` pin in package.json is for; vue-tsc patches `tsc.js` at load and
+  a stripped redistribution has nothing to patch.
 - **Every theme is generated, then contradicted.** `scheme()` in
   `app/theme/palette.ts` turns one colour into the whole MD3 token set with
   Google's own generator (`@material/material-color-utilities`), and `build()` in
@@ -230,9 +235,12 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   routes are for crawlers and shareable localised links; a bundle behind a Tauri
   webview has neither, and the one thing they did buy was a Back button that
   undid a language switch — every history entry named a language, so stepping
-  back past the switch switched it back. The `localePath()`/`$localePath()`
-  calls and `useRouteBaseName()` are left in place: they are the identity today
-  and are what would make putting the prefix back a config change. The choice is
+  back past the switch switched it back. The `localePath()` calls and
+  `useRouteBaseName()` are left in place: they are the identity today and are
+  what would make putting the prefix back a config change. Scripts and
+  templates both call the auto-imported `localePath()` from `app/utils/i18n.ts`
+  rather than the module's `$localePath` — that one is typed for route *names*,
+  and the wrapper is the single place that hands it a path. The choice is
   remembered in `ventic.locale` and restored in `app.vue` — not in this module's
   cookie, which a `tauri://` origin does not reliably keep, and which no backup
   would carry.

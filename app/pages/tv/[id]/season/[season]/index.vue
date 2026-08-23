@@ -2,7 +2,7 @@
 import { mdiAlertCircleOutline, mdiArrowLeft, mdiMovieOpenOutline } from '@mdi/js'
 
 definePageMeta({
-  validate: route => /^\d+$/.test(String(route.params.season)),
+  validate: ({ params }) => 'season' in params && /^\d+$/.test(params.season),
 })
 
 const route = useRoute()
@@ -27,14 +27,14 @@ const others = computed(() => show.value?.seasons.filter(s => s.number !== numbe
     <div v-if="error" class="flex h-full flex-col items-center justify-center gap-2">
       <v-icon :icon="mdiAlertCircleOutline" color="error" size="40" />
       <span class="text-body-medium opacity-70">{{ $t('Couldn\'t load this season.') }}</span>
-      <v-btn variant="tonal" :to="$localePath(`/tv/${id}`)">
+      <v-btn variant="tonal" :to="localePath(`/tv/${id}`)">
         Back to show
       </v-btn>
     </div>
 
     <template v-else>
       <section class="px-4 pb-8 pt-4 md:px-6">
-        <v-btn :prepend-icon="mdiArrowLeft" variant="text" size="small" class="mb-3 -ml-2" :to="$localePath(`/tv/${id}`)">
+        <v-btn :prepend-icon="mdiArrowLeft" variant="text" size="small" class="mb-3 -ml-2" :to="localePath(`/tv/${id}`)">
           {{ show?.title ?? $t('Back to show') }}
         </v-btn>
 

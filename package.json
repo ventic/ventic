@@ -16,6 +16,7 @@
     "i18n": "bun scripts/i18n.ts",
     "i18n:locales": "bun scripts/i18n-locales.ts",
     "check:i18n": "bun scripts/i18n.ts --check",
+    "check:types": "vue-tsc --noEmit",
     "check:android-downloads": "bun scripts/check-android-downloads.ts",
     "check:boot": "bun scripts/check-boot.ts",
     "check:dpad": "bun scripts/check-dpad.ts",
@@ -75,10 +76,11 @@
     "eslint": "^10.7.0",
     "sass": "^1.101.6",
     "typescript": "^7.0.2",
-    "unocss": "^66.7.5"
+    "unocss": "^66.7.5",
+    "vue-tsc": "^3.3.11"
   },
   "resolutions": {
-    "typescript": "npm:tslite@latest"
+    "typescript": "npm:typescript@~5.9.3"
   },
   "trustedDependencies": [
     "@parcel/watcher",

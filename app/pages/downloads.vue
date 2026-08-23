@@ -138,7 +138,7 @@ function liveText(t: EngineTorrent) {
     <div class="shrink-0 flex items-center gap-2 px-3 py-3 sm:px-4">
       <!-- Always-on way out of the transfers shell — the menu button beside it
            only opens the state filters, so this is the only exit on a phone. -->
-      <v-btn icon variant="text" color="on-surface" :to="$localePath('/')">
+      <v-btn icon variant="text" color="on-surface" :to="localePath('/')">
         <v-icon :icon="mdiArrowLeft" />
         <v-tooltip activator="parent" :text="$t('Back')" />
       </v-btn>

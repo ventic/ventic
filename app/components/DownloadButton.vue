@@ -56,7 +56,7 @@ async function download() {
     :prepend-icon="done ? mdiCheck : mdiDownload"
     :loading="state === 'busy'"
     :color="error ? 'error' : undefined"
-    :to="done ? $localePath('/downloads') : undefined"
+    :to="done ? localePath('/downloads') : undefined"
     :disabled="!imdbId"
     variant="tonal"
     @click="done || download()"

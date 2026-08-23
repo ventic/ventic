@@ -50,7 +50,7 @@ const library = computed(() => [
     :temporary="mobile"
     class="panel border-none"
   >
-    <nuxt-link :to="$localePath('/')" class="flex items-center gap-3 px-4 py-5">
+    <nuxt-link :to="localePath('/')" class="flex items-center gap-3 px-4 py-5">
       <img src="/logo.svg" alt="Ventic" class="size-26px shrink-0">
       <span v-if="!rail" class="text-title-large whitespace-nowrap font-bold">Ventic</span>
     </nuxt-link>
@@ -88,7 +88,7 @@ const library = computed(() => [
         <v-list-item
           :prepend-icon="mdiTrayArrowDown"
           :title="$t('Downloads')"
-          :to="$localePath('/downloads')"
+          :to="localePath('/downloads')"
           color="primary"
           rounded="lg"
         >
@@ -99,14 +99,14 @@ const library = computed(() => [
         <v-list-item
           :prepend-icon="mdiCogOutline"
           :title="$t('Settings')"
-          :to="$localePath('/settings/appearance')"
+          :to="localePath('/settings/appearance')"
           color="primary"
           rounded="lg"
         />
         <v-list-item
           :prepend-icon="mdiAccountCircleOutline"
           :title="$t('Account')"
-          :to="$localePath('/settings/account')"
+          :to="localePath('/settings/account')"
           color="primary"
           rounded="lg"
         />

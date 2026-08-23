@@ -2,7 +2,7 @@
 import { mdiAlertCircleOutline, mdiArrowLeft, mdiPlay, mdiStar } from '@mdi/js'
 
 definePageMeta({
-  validate: route => /^\d+$/.test(String(route.params.season)) && /^\d+$/.test(String(route.params.episode)),
+  validate: ({ params }) => 'episode' in params && /^\d+$/.test(params.season) && /^\d+$/.test(params.episode),
 })
 
 const route = useRoute()
@@ -44,7 +44,7 @@ const credits = computed(() => {
     <template v-else>
       <section class="px-4 pb-8 pt-4 md:px-6">
         <div class="mb-3 flex flex-wrap items-center gap-1 -ml-2">
-          <v-btn :prepend-icon="mdiArrowLeft" variant="text" size="small" :to="$localePath(`/tv/${id}`)">
+          <v-btn :prepend-icon="mdiArrowLeft" variant="text" size="small" :to="localePath(`/tv/${id}`)">
             {{ show?.title ?? 'Show' }}
           </v-btn>
           <span class="opacity-40">/</span>

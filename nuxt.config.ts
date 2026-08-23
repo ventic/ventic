@@ -1,3 +1,4 @@
+import type { LocaleObject } from '@nuxtjs/i18n'
 import { readFileSync } from 'node:fs'
 import process from 'node:process'
 import { flag } from './app/utils/flag'
@@ -6,6 +7,11 @@ import { version } from './package.json'
 import vuetifyConfig from './vuetify.config'
 
 const host = process.env.TAURI_DEV_HOST
+
+// The list is generated (`bun run i18n:locales`) and read back as JSON, so the
+// codes and text directions arrive as plain strings; the module's own types
+// name them exactly.
+const { defaultLocale, locales } = i18nLocales as { defaultLocale: LocaleObject['code'], locales: LocaleObject[] }
 
 /**
  * Inlined rather than imported, because it has to run on a webview that
@@ -39,8 +45,8 @@ export default defineNuxtConfig({
    * film data has nothing to say in).
    */
   i18n: {
-    defaultLocale: i18nLocales.defaultLocale,
-    locales: i18nLocales.locales,
+    defaultLocale,
+    locales,
     // No language in the URL. Prefixed routes exist so a search engine can
     // index one page per language and a person can share a localised link —
     // this app is a bundle behind a Tauri webview, with no canonical URL, no
@@ -54,9 +60,9 @@ export default defineNuxtConfig({
     // and is what `app/utils/backup.ts` carries between machines. The restore
     // happens in app.vue.
     detectBrowserLanguage: false,
-    // 72 catalogs is 71 too many to ship in the bundle; only the one in use is
-    // fetched. `bun run build` writes them as separate chunks.
-    lazy: true,
+    // No `lazy` here: v10 dropped the option and lazy-loads unconditionally, so
+    // `bun run build` still writes the 72 catalogs as separate chunks and only
+    // the one in use is fetched.
   },
   runtimeConfig: {
     public: {
@@ -105,7 +111,7 @@ export default defineNuxtConfig({
     provider: 'none',
     serverBundle: false,
     clientBundle: {
-      icons: i18nLocales.locales.map(l => flag(l.language)).filter(i => !!i),
+      icons: locales.flatMap(l => flag(l.language ?? '') || []),
     },
   },
 
@@ -190,7 +196,7 @@ export default defineNuxtConfig({
      * because `tauri.localhost` has no port for Vite to reuse.
      */
     'vite:configResolved': config => {
-      if (host && config.server.ws)
+      if (host && config.server?.ws)
         Object.assign(config.server.ws, { host, clientPort: 3000 })
     },
   },
