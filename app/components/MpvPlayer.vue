@@ -112,6 +112,9 @@ const exo = hasExoPlayer()
  */
 const behind = exo || (native && !overlay)
 
+/** Watched from across a room, driven by a remote. Fixed for the session. */
+const tv = isTv() === true
+
 /**
  * Does play/pause live in the bottom bar rather than dead centre?
  *
@@ -123,14 +126,25 @@ const behind = exo || (native && !overlay)
  * transport there costs nothing and stops the picture being covered by the one
  * control that is up the longest, on the one screen watched from across a room.
  */
-const barTransport = computed(() => overlay || isTv() === true)
+const barTransport = computed(() => overlay || tv)
 
 /**
- * A finger, not a pointer. Controls get thumb-sized, the volume slider goes
- * away (a phone's own buttons own volume), and a tap on the picture shows the
- * chrome rather than pausing — which is what every other player on a phone does.
+ * A finger, not a pointer: a tap on the picture shows the chrome rather than
+ * pausing, and two taps on a side seek — which is what every other player on a
+ * phone does. How big anything is drawn is `big` below, not this.
  */
 const touch = useMediaQuery('(pointer: coarse)')
+
+/**
+ * Sized for a thumb, or for a room. A television answers `pointer: fine` — it
+ * has no pointer at all, and Android calls that fine — so it was getting the
+ * 38px desktop buttons, aimed at from three metres away with a d-pad. Everything
+ * a finger needs bigger, a remote needs bigger for the other reason, and volume
+ * belongs to the set's own remote there exactly as it belongs to a phone's own
+ * buttons. Only the *sizes* follow this; the tap gestures still follow `touch`,
+ * because a remote has no fingers to double-tap with.
+ */
+const big = computed(() => touch.value || tv)
 
 // Every overlay surface is opaque and hairline-bordered on purpose: it sits in a
 // hole punched out of the native window, so what's behind it is the page, never
@@ -142,7 +156,7 @@ const touch = useMediaQuery('(pointer: coarse)')
 const SURFACE = computed(() => overlay ? 'bg-[#0e0f11] border-white/9' : 'bg-[#0e0f11]/85 border-white/9')
 
 /** Square icon button in the bars and the menu head. */
-const ICO = computed(() => `inline-flex items-center justify-center border-0 bg-transparent text-white opacity-86 transition-colors transition-opacity duration-120 hover:bg-white/12 hover:opacity-100 disabled:pointer-events-none disabled:opacity-30 rounded-lg ${touch.value ? 'h-11 min-w-11' : 'h-9.5 min-w-9.5'}`)
+const ICO = computed(() => `inline-flex items-center justify-center border-0 bg-transparent text-white opacity-86 transition-colors transition-opacity duration-120 hover:bg-white/12 hover:opacity-100 disabled:pointer-events-none disabled:opacity-30 rounded-lg ${big.value ? 'h-11 min-w-11' : 'h-9.5 min-w-9.5'}`)
 
 /**
  * The transport, dead centre. Play is where a remote lands and where a thumb
@@ -151,14 +165,14 @@ const ICO = computed(() => `inline-flex items-center justify-center border-0 bg-
  * film and hunting for the button that would.
  */
 const ROUND = 'inline-flex items-center justify-center border-0 rounded-full bg-white/10 text-white transition-colors duration-120 hover:bg-white/22 disabled:pointer-events-none disabled:opacity-30'
-const SEEK_BTN = computed(() => `${ROUND} ${touch.value ? 'h-13 w-13' : 'h-12 w-12'}`)
-const PLAY_BTN = computed(() => `${ROUND} ${touch.value ? 'h-17 w-17' : 'h-16 w-16'}`)
+const SEEK_BTN = computed(() => `${ROUND} ${big.value ? 'h-13 w-13' : 'h-12 w-12'}`)
+const PLAY_BTN = computed(() => `${ROUND} ${big.value ? 'h-17 w-17' : 'h-16 w-16'}`)
 
 /** Filled button in the centre notice. */
 const BTN = 'inline-flex items-center gap-1.5 border-0 rounded-lg bg-white/12 px-3.5 py-1.75 text-label-large transition-colors duration-120 hover:bg-white/20'
 
 /** One choice inside the speed / audio / subtitle menu. */
-const MENU_ROW = 'flex w-full items-center justify-between gap-2.5 border-0 bg-transparent rounded-lg px-2.5 py-2 text-left text-label-large transition-colors duration-100 hover:bg-white/9'
+const MENU_ROW = computed(() => `flex w-full items-center justify-between gap-2.5 border-0 bg-transparent rounded-lg text-left text-label-large transition-colors duration-100 hover:bg-white/9 ${big.value ? 'px-3 py-3' : 'px-2.5 py-2'}`)
 
 /** Section heading between groups of menu rows. */
 const MENU_GROUP = 'px-2.5 pb-1 pt-2.5 text-label-small uppercase opacity-45'
@@ -312,7 +326,7 @@ const { height: boxHeight } = useElementSize(boxEl)
 const menuEl = ref<HTMLElement | null>(null)
 const { height: menuHeight } = useElementSize(menuEl)
 /** Its own gap from the bottom of the frame — the bottom bar plus a little. */
-const menuBottom = computed(() => touch.value ? 112 : 106)
+const menuBottom = computed(() => big.value ? 112 : 106)
 /** Is the chrome up? Declared here because `subPos` measures against it. */
 const ui = ref(true)
 /**
@@ -323,7 +337,10 @@ const ui = ref(true)
  */
 const subPos = computed(() => subtitleLift(
   settings.subs.position,
-  menuHeight.value ? menuBottom.value + menuHeight.value + 8 : ui.value ? menuBottom.value : 0,
+  // A television's panel is full height and off to the right, so it is beside
+  // the subtitles rather than over them; lifting for it would push the line to
+  // the top of the picture to clear something that was never in the way.
+  !tv && menuHeight.value ? menuBottom.value + menuHeight.value + 8 : ui.value ? menuBottom.value : 0,
   boxHeight.value,
 ))
 
@@ -2073,13 +2090,22 @@ defineExpose({ osd })
       leave-to-class="translate-y-[115%]"
     >
       <!-- bottom: the bottom bar (h-24) plus a 10px gap. Bound rather than a
-           class because `subPos` measures the subtitles against it. -->
+           class because `subPos` measures the subtitles against it.
+
+           On a television it runs the whole height of the frame instead of
+           being a 300x188 popup in the corner: the subtitle menu is far taller
+           than 44vh once a film has tracks and settings under them, and a
+           remote had no way to reach the bottom of it — the press past the last
+           row left for the bottom bar rather than scrolling. `data-dpad-scope`
+           is the other half of that (see plugins/dpad.client.ts); Back closes
+           the panel, as it closes any dialog. -->
       <section
         v-if="menu"
         ref="menuEl"
         data-cut
-        class="absolute right-4 max-h-[44vh] w-75 flex flex-col overflow-hidden border rounded-xl"
-        :class="SURFACE"
+        data-dpad-scope
+        class="absolute right-4 flex flex-col overflow-hidden border rounded-xl"
+        :class="[SURFACE, tv ? 'top-4 w-100' : 'max-h-[44vh] w-75']"
         :style="{ bottom: `${menuBottom}px` }"
         @pointerenter="hovering = true"
         @pointerleave="hovering = false"
@@ -2295,7 +2321,7 @@ defineExpose({ osd })
         v-show="ui"
         data-cut
         class="absolute inset-x-0 bottom-0 border-t px-5 pb-3 pt-5.5"
-        :class="[SURFACE, touch ? 'h-25.5' : 'h-24']"
+        :class="[SURFACE, big ? 'h-25.5' : 'h-24']"
         @pointerenter="hovering = true"
         @pointerleave="hovering = false"
       >
@@ -2339,7 +2365,7 @@ defineExpose({ osd })
           <!-- The slider only unrolls while the group is hovered, so the bar
                stays quiet the rest of the time. Nothing hovers on a phone or a
                TV, and both have a volume rocker of their own. -->
-          <div v-if="!touch" class="group/volume flex items-center">
+          <div v-if="!big" class="group/volume flex items-center">
             <button v-tooltip:top="muted ? $t('Unmute (m)') : $t('Mute (m)')" :class="ICO" :disabled="!started" @click="toggleMute">
               <v-icon :icon="volumeIcon" size="22" />
             </button>

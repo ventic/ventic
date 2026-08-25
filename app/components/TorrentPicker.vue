@@ -8,7 +8,6 @@ import {
   mdiDownload,
   mdiFlashOutline,
   mdiFormatListBulletedType,
-  mdiMagnify,
   mdiPlay,
   mdiPowerPlugOutline,
   mdiReload,
@@ -156,16 +155,12 @@ async function download(t: Release) {
               <v-chip v-for="value in tiers" :key="value" :value="value" :text="value" size="small" />
             </v-chip-group>
           </div>
-          <v-text-field
+          <!-- Parked behind a press like every other filter box: a remote walks
+               this row to reach the sort dropdown, and a field that merely has
+               focus raises Android's keyboard over the whole dialog. -->
+          <search-field
             v-model="query"
-            :prepend-inner-icon="mdiMagnify"
             :placeholder="$t('Release or origin')"
-            variant="solo-filled"
-            density="compact"
-            rounded="lg"
-            flat
-            hide-details
-            clearable
             class="min-w-40 flex-1 shrink-0 sm:w-56 sm:flex-none sm:grow-0"
           />
           <v-select

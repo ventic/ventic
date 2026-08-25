@@ -61,10 +61,14 @@ function edit() {
     </div>
 
     <!-- Transparent and exactly over the field, so the box a remote sees is
-         the box everyone else sees (see `typing`). -->
+         the box everyone else sees (see `typing`) — and so the focus ring is
+         drawn round the whole field rather than round the input inside it.
+         `bg-transparent border-0` is not decoration: nothing here resets a
+         bare <button>, so without them Android paints its own grey ButtonFace
+         over the entire search box, which is all a television ever showed. -->
     <button
       v-if="!typing"
-      class="absolute inset-0 rounded-lg"
+      class="absolute inset-0 border-0 rounded-lg bg-transparent"
       :aria-label="placeholder"
       @click="edit"
     />

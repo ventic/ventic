@@ -44,7 +44,12 @@ export default defineNuxtPlugin(() => {
   /** A dialog owns the screen: without this the d-pad walks out of it into the page behind. */
   function scope(): ParentNode {
     const open = document.querySelectorAll<HTMLElement>(`${MODAL} .v-overlay__content`)
-    return open[open.length - 1] ?? document
+    // A panel that owns the screen without being an overlay. The player's track
+    // and subtitle menus can't be Vuetify dialogs — they are holes cut out of a
+    // native window — and without this the first press past their last row left
+    // for the bottom bar, so the rest of a menu taller than the panel could
+    // never be scrolled to. Back closes them, exactly as it closes a dialog.
+    return open[open.length - 1] ?? document.querySelector('[data-dpad-scope]') ?? document
   }
 
   // Rects for every focusable on every press. A browse page holds a
@@ -56,7 +61,13 @@ export default defineNuxtPlugin(() => {
       // Vuetify's lists rove the tabindex across their items and park -2 on the
       // ones that aren't current — which is every drawer link, all of which are
       // perfectly good places for a remote to land.
-      if (el.getAttribute('tabindex') === '-1')
+      //
+      // A slide group (tabs, chip rows) roves the same way but parks a real -1,
+      // so every tab but the open one looked like an opt-out: the group appeared
+      // to hold a single item, `trapped` read that as "already at the end" and
+      // took left/right away from the component that would have moved between
+      // them — which is why Appearance could never reach Background or Display.
+      if (el.getAttribute('tabindex') === '-1' && !el.parentElement?.classList.contains('v-slide-group__content'))
         return false
       // A closed temporary drawer (narrow windows only) is slid off screen
       // rather than hidden, so its links would otherwise still be targets.

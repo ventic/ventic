@@ -483,8 +483,23 @@ class MainActivity : TauriActivity() {
     }
   }
 
-  // TauriActivity switches wry's own back handling off, so BACK is ours to
-  // answer — see `backToPage` below for where that happens now.
+  /**
+   * Wry's own BACK handling, off — this is the line that makes `backToPage`
+   * below mean anything.
+   *
+   * `WryActivity.setWebView` registers a second `OnBackPressedCallback` of its
+   * own whenever this is true, and it does one thing: `webView.goBack()`. The
+   * dispatcher runs the *last* enabled callback added, and ours goes on in
+   * `onCreate` while wry's goes on when the webview is created — later, so it
+   * won. `window.__tvBack` was therefore never called with anything open: BACK
+   * popped a history entry instead of closing the dialog, the select or the
+   * player's subtitle panel in front of it. It only looked right because a
+   * history pop and a page-level back are the same thing when there is nothing
+   * open, and because at the root `canGoBack()` is false — which is the one case
+   * wry hands on, and so the one case that worked.
+   */
+  override val handleBackNavigation: Boolean = false
+
   /**
    * OK is the other key the page can't see for itself. The WebView turns
    * DPAD_CENTER into a click on a link or a button, and drops it entirely for

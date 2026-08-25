@@ -407,9 +407,14 @@ assert.equal(normalizeSource('ventic://a.example/opt=x,y/manifest.json'), 'https
 assert.equal(normalizeSource('https://a.example/opt=x,y/manifest.json'), 'https://a.example/opt=x,y')
 assert.equal(normalizeSource('https://a.example/opt=x/manifest.json?v=2'), 'https://a.example/opt=x')
 assert.equal(normalizeSource('http://192.168.1.9:11470'), 'http://192.168.1.9:11470')
+// A bare host is assumed to be https — that is what gets copied out of a forum
+// post, and what a TV keyboard makes expensive to type in full.
+assert.equal(normalizeSource('a.example'), 'https://a.example')
+assert.equal(normalizeSource('a.example/opt=x/manifest.json'), 'https://a.example/opt=x')
 // Not URLs.
 assert.equal(normalizeSource(''), '')
-assert.equal(normalizeSource('a.example'), '')
+assert.equal(normalizeSource('   '), '')
+// A scheme that was given and isn't one we speak is an answer, not an omission.
 assert.equal(normalizeSource('ftp://a.example'), '')
 assert.equal(normalizeSource('https://'), '')
 

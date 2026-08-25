@@ -165,6 +165,18 @@ assert.match(
   'declared, so API 33 and 34 take the same path as 35 rather than the other one',
 )
 
+// Answering on the dispatcher is not enough on its own: wry adds a callback of
+// its own to the same dispatcher unless this is off, and it wins — it is
+// registered when the webview is created, ours in onCreate, and the dispatcher
+// runs the last one added. All wry's does is `webView.goBack()`, so BACK popped
+// a history entry rather than closing whatever was open in front of it, and
+// `__tvBack` was only ever reached at the root, where `canGoBack()` is false.
+assert.match(
+  activity,
+  /override val handleBackNavigation: Boolean = false/,
+  'and wry\'s own goBack() callback is off, or it takes the key before ours',
+)
+
 // Back at the root must not finish the activity. Finishing leaves the process
 // alive, wry runs the Rust side once per process and never again, and the next
 // launch attaches a new activity to an event loop whose webview is already gone

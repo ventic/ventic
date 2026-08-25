@@ -44,15 +44,20 @@ export function configuredSources() {
  * bare origin: an addon hands out a scheme link or a `…/manifest.json` URL, and
  * a configured one carries its settings in the path
  * (`https://host/opt=a,b/manifest.json`), which is part of the base and has to
- * survive.
+ * survive. A bare host is taken as https, which is the form someone typing it
+ * from memory produces.
  *
  * Returns '' for anything that isn't a URL, so the caller can say so.
  */
 export function normalizeSource(input: string): string {
-  const url = input.trim()
-    // `ventic://` is our own deep link, `stremio://` is what addon pages
-    // already publish; both name an https server in the same shape.
-    .replace(/^(?:ventic|stremio):\/\//i, 'https://')
+  // `ventic://` is our own deep link, `stremio://` is what addon pages
+  // already publish; both name an https server in the same shape.
+  const typed = input.trim().replace(/^(?:ventic|stremio):\/\//i, 'https://')
+
+  // A bare host is what people actually have in front of them, and typing
+  // "https://" on a TV keyboard costs eight presses of a d-pad. https is the
+  // only scheme this accepts anyway, so assume it rather than refuse the input.
+  const url = (/^[a-z][a-z0-9+.-]*:\/\//i.test(typed) ? typed : `https://${typed}`)
     .replace(/\/manifest\.json(?:[?#].*)?$/i, '')
     .replace(/\/+$/, '')
 

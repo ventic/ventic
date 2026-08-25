@@ -44,9 +44,16 @@ pages get remote support for free as long as they follow the rules below.
   Vuetify's list items and chips handle Enter/Space too.
 - **Back** is `window.__tvBack()`: close the top dialog, else let the page claim
   Escape (the player's menus, then leaving playback), else `router.back()`, else
-  return `false`, at which point `MainActivity` backgrounds the task. Without an
-  override the app exits from any screen, because `TauriActivity` turns wry's own
-  back handling off — but the override has to sit on
+  return `false`, at which point `MainActivity` backgrounds the task. Two things
+  have to be true for any of that to run. `handleBackNavigation` must be
+  **`false`** — `WryActivity.setWebView` otherwise adds a callback of its own
+  that does nothing but `webView.goBack()`, and it wins, because the dispatcher
+  runs the last callback added and ours goes on in `onCreate` while wry's goes on
+  when the webview is created. That is a silent failure with a plausible face:
+  popping a history entry looks exactly like a page-level back until something is
+  open in front of it, and at the root `canGoBack()` is false, so the one case
+  that ever reached `__tvBack` was the one that backgrounds the app. And the
+  override has to sit on
   **`OnBackPressedDispatcher`**, not on `onKeyDown`. An app targeting API 35+ gets
   predictive back, where BACK arrives through `OnBackInvokedDispatcher` and
   `onKeyDown` is never called at all; the manifest declares
@@ -108,7 +115,8 @@ Run `bun run check:dpad` after touching the geometry.
   category, and `android:banner` — a TV launcher shows a blank tile without one
   (`res/drawable-xhdpi/tv_banner.png`, 320×180).
 - `gen/android` is committed, so edits there survive; regenerating the project
-  will clobber them, so re-apply the BACK callback, the **OK forward**
+  will clobber them, so re-apply the BACK callback and the
+  `handleBackNavigation = false` beside it, the **OK forward**
   (`dispatchKeyEvent` → `window.__tvOk`), the `VenticScreen` JS interface
   (fullscreen, orientation, metered network, `tv()`), the **wide viewport**
   settings, `mediaPlaybackRequiresUserGesture = false`, `Downloads.kt` with its

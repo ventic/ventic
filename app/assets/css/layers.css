@@ -189,9 +189,40 @@
      as visible, and in d-pad mode every focus is. It has to sit in the last
      layer because `.v-btn` sets `outline: none` in Vuetify's own; the exclusions
      are the components that draw their own ring, which `outline-none` marks.
-     The inset offset matters — a scroller clips anything drawn outside a card. */
-  html.dpad :focus:not([tabindex='-1'], .outline-none) {
+     The inset offset matters — a scroller clips anything drawn outside a card.
+
+     The second selector is Vuetify's slide group (tabs, chip rows), which roves
+     the tabindex across its items and parks -1 on the ones that aren't current:
+     those are real targets, and the exclusion above would leave the tab a remote
+     is standing on with no ring at all. */
+  html.dpad :focus:not([tabindex='-1'], .outline-none),
+  html.dpad .v-slide-group__content > :focus {
     outline: 2px solid rgb(var(--v-theme-primary));
     outline-offset: -2px;
+  }
+
+  /* A text field's focus really lands on the bare <input>, which is a 24px strip
+     inside a 56px box — so the ring drew a sliver across the middle of the field
+     with the search icon and the clear button outside it. Put it round the field
+     and take it off what's inside. */
+  html.dpad .v-field:focus-within {
+    outline: 2px solid rgb(var(--v-theme-primary));
+    outline-offset: -2px;
+  }
+
+  html.dpad .v-field :focus {
+    outline: none;
+  }
+
+  /* A tooltip is a hover affordance and a television cannot hover — but the
+     webview opens them there anyway and then has nothing to close them with: a
+     `pointerenter` arrives with no `pointerleave` behind it, and blurring the
+     activator does not dismiss one (measured on the set). The label is
+     teleported to the body, so it outlives the bar it belongs to and sits over
+     the film for the rest of the picture — which is what "the player controls
+     never go away on TV" actually was. A tooltip nothing can summon on purpose
+     and nothing can dismiss is worth less than the picture it covers. */
+  html.tv .v-tooltip {
+    display: none;
   }
 }

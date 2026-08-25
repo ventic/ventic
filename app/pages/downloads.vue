@@ -144,19 +144,15 @@ function liveText(t: EngineTorrent) {
       </v-btn>
       <v-btn v-if="mobile" :icon="mdiMenu" variant="text" color="on-surface" @click="ui.drawer = true" />
 
-      <div class="max-w-100 min-w-0 flex-1">
-        <v-text-field
-          v-model="downloads.query"
-          :prepend-inner-icon="mdiMagnify"
-          :placeholder="$t('Filter torrents')"
-          :density="mobile ? 'comfortable' : 'compact'"
-          variant="solo-filled"
-          rounded="lg"
-          flat
-          hide-details
-          clearable
-        />
-      </div>
+      <!-- The same parked field the app bar uses, for the same reason: a remote
+           crosses this box on its way along the row, and a text field that
+           merely has focus puts the on-screen keyboard over the whole screen. -->
+      <search-field
+        v-model="downloads.query"
+        :placeholder="$t('Filter torrents')"
+        :density="mobile ? 'default' : 'compact'"
+        class="max-w-100 flex-1"
+      />
 
       <!-- ml-auto, not a v-spacer: a spacer also grows, so on a narrow window it
            and the search field's flex-1 split the row 50/50. Flexbox resolves

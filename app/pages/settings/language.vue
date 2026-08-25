@@ -1,6 +1,39 @@
 <script setup lang="ts">
+import type { Component } from 'vue'
+// The narrow paths, not the `vuetify/components` barrel: that one pulls every
+// component in the library into the graph, which in dev is a rebuild long enough
+// for the boot screen to give up on itself.
+import { VAutocomplete } from 'vuetify/components/VAutocomplete'
+import { VSelect } from 'vuetify/components/VSelect'
+
 // See app.vue for why this isn't `useI18n()`.
 const { locale, locales, setLocale } = useNuxtApp().$i18n
+
+/**
+ * Type to narrow the list, or open it and walk it?
+ *
+ * A television gets the second. Its field is readonly, so OK opens the menu and
+ * the d-pad walks it — where an autocomplete's field can be typed into, and
+ * Android puts the on-screen keyboard over the whole screen the moment one has
+ * focus. With `autofocus` on top of that, arriving at this page raised the
+ * keyboard before anything had been asked for, and OK went to the keyboard
+ * rather than to the list nobody could see behind it.
+ *
+ * The list is the same either way and it is sorted in the reader's own alphabet,
+ * so walking it is no worse than a phone's language picker — and it is the only
+ * one of the two a remote can actually drive.
+ */
+const tv = isTv() === true
+// Cast one at a time: the *union* of two Vuetify component types is deep enough
+// that vue-tsc gives up on it, and `<component :is>` type-checks nothing anyway.
+const picker: Component = tv ? (VSelect as Component) : (VAutocomplete as Component)
+/**
+ * Whichever half is not shared: one filters as you type, the other just has to
+ * be big enough to be read and walked from a sofa.
+ */
+const pickerProps = tv
+  ? { menuProps: { maxHeight: 480 } }
+  : { autofocus: true, autoSelectFirst: true, filterKeys: ['title', 'value', 'raw.subtitle'] }
 
 /**
  * `setLocale` swaps the catalog in place and nothing navigates — the URL
@@ -63,12 +96,11 @@ const translated = computed(() =>
       :title="$t('Language')"
       :hint="$t('What language the app is in, and what language film and show descriptions are fetched in.')"
     >
-      <v-autocomplete
+      <component
+        :is="picker"
+        v-bind="pickerProps"
         v-model="current"
-        autofocus
-        auto-select-first
         :items="items"
-        :filter-keys="['title', 'value', 'raw.subtitle']"
         variant="solo-filled"
         :label="$t('Language')"
         hide-details
@@ -86,7 +118,7 @@ const translated = computed(() =>
           <icon v-if="item.flag" :name="item.flag" size="20" class="me-2" />
           {{ item.title }}
         </template>
-      </v-autocomplete>
+      </component>
       <p class="text-body-medium opacity-70">
         {{ $t('Descriptions, titles and artwork come from TMDB in {language} — the language list is TMDB\'s own, so anything offered here is a language it can answer in.', { language: translated }) }}
       </p>
