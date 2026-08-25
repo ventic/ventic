@@ -85,6 +85,10 @@ tauri-plugin-single-instance = { version = "2.4.3", features = ["deep-link"] }
 tauri-plugin-updater = "2"
 # Nothing but `relaunch()` after an update lands. Core has no equivalent.
 tauri-plugin-process = "2"
+# Remembers where the window was. Desktop-only crate, and the reason it is a
+# crate rather than three lines: it checks the saved position still lands on a
+# monitor that exists before restoring it.
+tauri-plugin-window-state = "2"
 
 # rustls, not the default native-tls: openssl-sys can't cross-compile to
 # aarch64-linux-android without a sysroot, and it comes in twice — via reqwest

@@ -638,6 +638,24 @@ pub fn run() {
 		.plugin(tauri_plugin_updater::Builder::new().build())
 		.plugin(tauri_plugin_process::init());
 
+	// Reopen where it was closed. Not FULLSCREEN: that flag is the *player's*
+	// (MpvPlayer.vue toggles it), so quitting mid-film would otherwise reopen a
+	// fullscreen window with nothing playing in it. Not VISIBLE either — with a
+	// tray icon, restoring "hidden" is a launch that appears to do nothing.
+	// A saved position on a monitor that is no longer plugged in is dropped by
+	// the plugin, which leaves the window wherever the config put it — hence
+	// `"center": true` in tauri.conf.json.
+	#[cfg(desktop)]
+	let builder = builder.plugin(
+		tauri_plugin_window_state::Builder::new()
+			.with_state_flags(
+				tauri_plugin_window_state::StateFlags::SIZE
+					| tauri_plugin_window_state::StateFlags::POSITION
+					| tauri_plugin_window_state::StateFlags::MAXIMIZED,
+			)
+			.build(),
+	);
+
 	builder
 		.plugin(tauri_plugin_deep_link::init())
 		.manage(player::PlayerState::default())

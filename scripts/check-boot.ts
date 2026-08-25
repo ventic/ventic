@@ -416,5 +416,33 @@ function wordmark(hint: any) {
   }
 }
 
+// Where the window opens is the other half of a launch, and it is split across
+// the same two files: the plugin restores the last position, and the config is
+// the fallback for when it refuses to (a monitor that is no longer plugged in).
+{
+  const tauri = JSON.parse(
+    readFileSync(new URL('../src-tauri/tauri.conf.json', import.meta.url), 'utf8'),
+  )
+  const lib = readFileSync(new URL('../src-tauri/src/lib.rs', import.meta.url), 'utf8')
+
+  assert.equal(
+    tauri.app.windows[0].center,
+    true,
+    'a window whose saved monitor is gone falls back to the config — centred, not the OS default (which is behind the Windows taskbar)',
+  )
+  assert.equal(
+    tauri.app.windows[0].preventOverflow,
+    true,
+    'and it is shrunk to the work area first — 1366x768 logical is taller than a 1080p screen at 150% DPI, which would centre the title bar off the top',
+  )
+  const flags = lib.match(/with_state_flags\(([\s\S]*?)\)[\t\v\f\r \xA0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n\s*\.build/)?.[1]
+  assert.ok(flags, 'the window-state plugin is registered with explicit flags')
+  assert.doesNotMatch(
+    flags,
+    /FULLSCREEN|VISIBLE/,
+    'fullscreen belongs to the player and hidden belongs to the tray — neither should survive a restart',
+  )
+}
+
 // eslint-disable-next-line no-console
 console.log('boot diagnostics ok')

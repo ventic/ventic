@@ -59,6 +59,8 @@
 		"windows": [
 			{
 				"title": "Ventic",
+				"center": true,
+				"preventOverflow": true,
 				"width": 1366,
 				"height": 768,
 				"minWidth": 480,
