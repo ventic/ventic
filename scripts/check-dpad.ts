@@ -1,8 +1,10 @@
 import type { Box } from '../app/utils/dpad'
 // Self-check for the d-pad picker: `bun scripts/check-dpad.ts`.
 // The boxes below are the three layouts a remote actually walks: a poster grid,
-// a horizontal row, and the player's control bar.
+// a horizontal row, and the player's control bar. After them comes the other
+// half of the remote — BACK, which is Kotlin's to catch and the page's to answer.
 import assert from 'node:assert'
+import { readFileSync } from 'node:fs'
 import { pickDirection } from '../app/utils/dpad'
 
 function box(left: number, top: number, width: number, height: number): Box {
@@ -108,5 +110,77 @@ const actions = [box(426, 396, 84, 34), box(614, 396, 106, 34), box(730, 396, 12
 for (const dir of ['up', 'down', 'left', 'right'] as const)
   assert.strictEqual(pickDirection(dialog, actions, dir), -1, `a wrapper has nothing ${dir} of it`)
 assert.strictEqual(pickDirection(actions[0]!, actions.slice(1), 'right'), 0, 'while its buttons walk normally')
+
+/* --- BACK, which is a contract between two languages ---------------------- */
+
+/**
+ * Kotlin with its comments taken out.
+ *
+ * Every rule below is about what the file *does*, and the comments explaining
+ * why it does it name the very things being ruled out — the note above `leave()`
+ * says "deliberately not `finish()`", which is exactly the string that must not
+ * appear in the code. There are no `//` sequences inside string literals here,
+ * so nothing subtler than this is needed.
+ */
+function code(kotlin: string) {
+  return kotlin.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')
+}
+
+const activity = code(readFileSync(
+  new URL('../src-tauri/gen/android/app/src/main/java/com/ventic/app/MainActivity.kt', import.meta.url),
+  'utf8',
+))
+const manifest = readFileSync(
+  new URL('../src-tauri/gen/android/app/src/main/AndroidManifest.xml', import.meta.url),
+  'utf8',
+)
+const plugin = readFileSync(new URL('../app/plugins/dpad.client.ts', import.meta.url), 'utf8')
+
+// The name Kotlin evaluates is a string on one side and an assignment on the
+// other, so nothing but this notices when one of them is renamed. A miss is
+// silent and total: `window.__tvBack` comes back undefined, which reads as "the
+// page didn't handle it", and BACK leaves the app from every screen there is.
+for (const hook of ['__tvBack', '__tvOk']) {
+  assert.ok(activity.includes(`window.${hook}`), `MainActivity calls ${hook}`)
+  assert.ok(plugin.includes(`window.${hook} =`), `and dpad.client.ts still defines it`)
+}
+
+// BACK arrives by two different mechanisms and the app must not care which:
+// below API 33 as a KeyEvent, and from API 33 (declared) or 35 (whether declared
+// or not) through OnBackInvokedDispatcher, where `onKeyDown` is never called at
+// all. Both feed OnBackPressedDispatcher, so that is the only place to answer
+// it — catching the keycode instead is what left Android 15 phones closing the
+// app out of dialogs and out of the middle of a film.
+assert.ok(
+  activity.includes('OnBackPressedCallback') && activity.includes('onBackPressedDispatcher.addCallback'),
+  'BACK is answered on the dispatcher both mechanisms feed',
+)
+assert.ok(
+  !/override fun onKeyDown/.test(activity),
+  'and not on onKeyDown, which predictive back never calls',
+)
+assert.match(
+  manifest,
+  /android:enableOnBackInvokedCallback="true"/,
+  'declared, so API 33 and 34 take the same path as 35 rather than the other one',
+)
+
+// Back at the root must not finish the activity. Finishing leaves the process
+// alive, wry runs the Rust side once per process and never again, and the next
+// launch attaches a new activity to an event loop whose webview is already gone
+// — which aborts. Backgrounding the task has none of that and is what every
+// other Android app does with back at the root.
+assert.ok(activity.includes('moveTaskToBack(true)'), 'back at the root backgrounds the task')
+assert.ok(!/\bfinish\(\)/.test(activity), 'and never finishes the activity')
+
+// The other end of the same rule: an activity that really is going must take the
+// process with it, so that the next launch is the cold start `run()` is written
+// for. Anything less leaves port 3030 held by a librqbit session nobody can
+// reach.
+assert.match(
+  activity,
+  /if \(isFinishing[^)]*\) \{\s*Process\.killProcess\(Process\.myPid\(\)\)/,
+  'a finishing activity takes the process with it',
+)
 
 console.info('d-pad picker: ok')

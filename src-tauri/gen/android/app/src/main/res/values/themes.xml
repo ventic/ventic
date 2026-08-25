@@ -1,6 +1,13 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Theme.Ventic" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Customize your theme here. -->
+        <!-- The window shows through the webview, which is transparent so that
+             ExoPlayer's SurfaceView underneath it can (see MainActivity). So
+             whatever is set here is what the user looks at for as long as the
+             page has painted nothing — the whole of a cold start, and all of a
+             boot that fails. Left to the platform it is `?android:colorBackground`:
+             white on a phone in light mode, dark grey in dark mode, and neither
+             of them ours. Pinned to the app's own ground, a slow start reads as
+             the app arriving rather than as a flash of the wrong colour. -->
+        <item name="android:windowBackground">@color/ventic_ground</item>
     </style>
 </resources>

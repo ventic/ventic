@@ -69,6 +69,22 @@ export const themes = Object.fromEntries(
   Object.entries(PRESETS).map(([name, preset]) => [name, build(preset)]),
 ) as Record<ThemeName, ThemeDefinition>
 
+/**
+ * The colour every layer under the app paints while it has nothing to paint
+ * yet: the native window, the webview, and `html` before a stylesheet lands.
+ *
+ * It is the default theme's own ground, so a cold start is the app arriving
+ * rather than a flash of somebody else's white — see `ground` in nuxt.config.
+ * Three of the places that need it can't import it (tauri.conf.json,
+ * res/values/colors.xml, and the boot script's fallback), so `bun run
+ * check:boot` asserts all four still say the same thing.
+ */
+// Asserted as a string rather than proved as one: Vuetify types a palette slot
+// as anything a CSS colour can be, while `ramp` above only ever puts a hex there.
+// `bun run check:boot` holds it to that, and to matching the three files that
+// can't import it.
+export const GROUND = themes.dark.colors!.background as string
+
 /** True for the entries whose palette is computed rather than written down. */
 export function isGenerated(name: string) {
   return !!PRESETS[name as ThemeName]?.generated

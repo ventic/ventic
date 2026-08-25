@@ -7,4 +7,11 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- The ground the app is painted on: `background` in the default theme
+         (app/theme/presets.ts, walked out of its #141011 surface). It is here so
+         the window has the app's own colour under it from the first frame
+         instead of the platform's — see themes.xml. `bun run check:boot` keeps
+         this in step with the theme it comes from. -->
+    <color name="ventic_ground">#221e1f</color>
 </resources>

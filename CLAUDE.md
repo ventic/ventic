@@ -120,6 +120,18 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   class on `<html>` and one block in `assets/css/layers.css` — put new ones
   there rather than teaching a component about the setting. `bun run check:perf`
   holds the shape of it; the numbers are in that script's header.
+- **On Android the process is the app, and it gets exactly one `run()`.** wry
+  starts the Rust side from a `ProcessLifecycleOwner` observer that ignores being
+  added a second time, so a `finish()`ed activity in a process Android kept alive
+  meant the next launch attached a fresh activity to an event loop whose webview
+  was gone — an abort, reported as "I closed it and opened it again and it just
+  crashed". So BACK at the root calls `moveTaskToBack(true)`, and `onDestroy`
+  kills the process whenever the activity is genuinely finishing: `run()` binds
+  port 3030 and opens a librqbit session, and a cold start is the only state it
+  is written for. Nothing in `MainActivity` may call `finish()`. BACK itself is
+  answered on `OnBackPressedDispatcher` rather than `onKeyDown`, because
+  predictive back (declared in the manifest, and unconditional from API 35) never
+  calls the latter. `bun run check:dpad` covers all of it.
 - The engine runs *inside* the app process, so on Android "the user opened
   another app" means "the download stopped": the process is cached and then
   frozen. `DownloadService` (`gen/android/.../Downloads.kt`) is the foreground
@@ -188,9 +200,29 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   parses paints nothing, leaving the activity window behind the transparent
   webview. `app/boot-diagnostics.js` is inlined into the head by `nuxt.config.ts`
   to answer that: it is ES5 with no bundler anywhere near it *because* it has to
-  run where the app couldn't, and it takes the screen only when `#__nuxt` is
-  still empty. Every error also lands on `window.__venticBoot` for adb and
-  devtools. Keep `NEEDS` in it honest if the build target ever moves.
+  run where the app couldn't. It shows *two* screens, because a slow start and a
+  dead one look identical: "Starting…" with a moving ellipsis at 2.5s, and the
+  full diagnostic at 12s (or 1.2s after an error) — and only ever while `#__nuxt`
+  is still empty. The moving ellipsis is the diagnostic, not the decoration: it
+  separates "the webview runs our code and the bundle is slow" from "nothing here
+  runs at all", which is the one thing a photograph of a dark screen can't say.
+  Every error also lands on `window.__venticBoot` for adb and devtools. Keep
+  `NEEDS` in it honest if the build target ever moves.
+- **One colour, four files, none of which can import the other three.** Three
+  layers can be seen before the page paints anything — the native window, the
+  webview, and `html` before a stylesheet lands — and left alone all three are
+  white. That was two visible white flashes on Windows (the Win32 window, then
+  WebView2) and the platform's own colour on Android. `GROUND` in
+  `app/theme/themes.ts` is the default theme's background and the only place it
+  is worked out; `tauri.conf.json` (`backgroundColor`, which tauri hands to both
+  the window and WebView2), `res/values/colors.xml` and the head `<style>` in
+  `nuxt.config.ts` all have to say the same thing, and `bun run check:boot`
+  asserts they do. The static colour is only right for the *default* theme, so
+  `utils/ground.ts` writes whatever is actually on screen to `ventic.ground` and
+  the boot script puts it back before the first frame — otherwise a light theme
+  just trades a white flash for a dark one. Set it on `html` and never on `body`:
+  body's background belongs to the theme in the `app` layer, and an unlayered
+  rule would beat every layer for good.
 
 - **Every string on screen is `$t('the English text')`, and nothing else.** The
   key *is* the English sentence, so `en.ts` maps each key to itself and English
