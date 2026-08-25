@@ -47,9 +47,13 @@ export const useLibraryStore = defineStore('library', () => {
     const key = titleKey(m.type, m.id)
     const known = media.value[key]
     // The language clause backfills snapshots stored before it was kept — it is
-    // what tells an anime apart from any other cartoon (see `kindOf`).
-    if (known?.title !== m.title || known?.poster !== m.poster || (!known?.lang && m.lang))
+    // what tells an anime apart from any other cartoon (see `kindOf`); the
+    // seasons one does the same for the episode counts "Continue watching"
+    // rolls over on, which only a detail response ever carries.
+    if (known?.title !== m.title || known?.poster !== m.poster
+      || (!known?.lang && m.lang) || (!known?.seasons?.length && m.seasons?.length)) {
       media.value[key] = slim(m)
+    }
   }
 
   // --- Reads -----------------------------------------------------------------
@@ -133,7 +137,7 @@ export const useLibraryStore = defineStore('library', () => {
   // the Watchlist render, so dropping an entry here is watch state that exists and
   // is invisible — which is what a sync looks like when it appears to do nothing.
   const resumeRow = computed(() =>
-    continuing(progress.value).map(e => ({ ...e, media: media.value[e.title] ?? placeholder(e.title) })))
+    continuing(progress.value, media.value).map(e => ({ ...e, media: media.value[e.title] ?? placeholder(e.title) })))
 
   const history = computed(() =>
     playedTitles(progress.value).map(key => media.value[key] ?? placeholder(key)))

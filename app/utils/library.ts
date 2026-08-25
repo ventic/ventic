@@ -140,17 +140,44 @@ export function watchedInSeason(progress: Record<string, Progress>, showId: numb
  * and only one card per title — being six episodes into a show is one thing to
  * carry on with, not six.
  */
-export function continuing(progress: Record<string, Progress>) {
+export function continuing(progress: Record<string, Progress>, media: Record<string, Media> = {}) {
   const seen = new Set<string>()
   return Object.entries(progress)
-    .filter(([, p]) => resumable(p.position, p.duration))
     .sort((a, b) => b[1].at - a[1].at)
     .flatMap(([key, p]) => {
-      const { title, season, episode } = parseKey(key)
+      const { title, type, id, season, episode } = parseKey(key)
       if (seen.has(title))
         return []
+
+      if (resumable(p.position, p.duration)) {
+        seen.add(title)
+        return [{ key, title, season, episode, progress: p as Progress | null }]
+      }
+
+      // Finishing an episode is not finishing the show: what you carry on with
+      // is the next one, and across a season boundary that is the next season's
+      // first — which is the whole reason a show's snapshot keeps its episode
+      // counts. Without them (a library that predates the field, or a show only
+      // ever played from a magnet) there is nothing to roll over to, so the
+      // title falls through to whatever else it has, exactly as it used to.
+      if (type !== 'tv' || !p.watched)
+        return []
+
+      const up = nextEpisode(media[title]?.seasons ?? [], { season, episode, watched: true })
+      // Already seen the one that comes next — this is a rewatch working
+      // backwards, not a show waiting to be carried on with.
+      if (!up || progress[progressKey('tv', id, up.season, up.episode)]?.watched)
+        return []
+
       seen.add(title)
-      return [{ key, title, season, episode, progress: p }]
+      return [{
+        key: progressKey('tv', id, up.season, up.episode),
+        title,
+        season: up.season,
+        episode: up.episode,
+        // Nothing played yet, so there is no bar to draw.
+        progress: null as Progress | null,
+      }]
     })
 }
 
@@ -224,6 +251,11 @@ export function slim(m: Media): Media {
     rating: m.rating,
     genreIds: m.genreIds,
     lang: m.lang,
+    // Number and count only — a Season also carries a name, a poster and an
+    // overview, and none of that is ever read back off a stored snapshot.
+    ...(m.seasons?.length
+      ? { seasons: m.seasons.map(s => ({ number: s.number, episodes: s.episodes })) }
+      : {}),
   }
 }
 

@@ -1182,6 +1182,13 @@ async function poll() {
     if (st && !st.running) {
       stopPoll()
       started.value = false
+      // mpv renders into a window *this* side created and mapped, and that
+      // window outlives the process that was painting it: left up it is an
+      // opaque black rectangle over the whole picture, hiding the very notice
+      // that says what happened. The log tail is already in `st`, so there is
+      // nothing left to read off the corpse.
+      if (native)
+        invoke('player_stop').catch(() => {})
       // Exiting after real playback is just end-of-file, not a failure.
       if (position.value > 0 && (duration.value === 0 || position.value >= duration.value - 2)) {
         ended.value = true
@@ -1575,6 +1582,46 @@ watch([ui, started, duration], ([up]) => up ? warm() : cancelThumbs())
 /** Stalls flap on a torrent; wait a beat before punching a hole for the notice. */
 const stalled = ref(false)
 watchDebounced(() => buffering.value && started.value, v => (stalled.value = v), { debounce: 500 })
+
+/**
+ * Seconds the end-of-playback screen waits before rolling into the next
+ * episode. Short enough not to be a pause, long enough to catch and stop.
+ */
+const AUTO_NEXT = 10
+
+const countdown = ref(0)
+let nextTimer: ReturnType<typeof setInterval> | null = null
+// Resolved here rather than calling `navigateTo` from the timer: that one wants
+// a Nuxt instance, and a setInterval callback has none.
+const router = useRouter()
+
+function stopCountdown() {
+  if (nextTimer)
+    clearInterval(nextTimer)
+  nextTimer = null
+  countdown.value = 0
+}
+
+// The one thing anyone wants after an episode, and the one thing a remote
+// shouldn't have to ask for. Only ever runs on the ended screen, so "Play
+// again" (which clears `ended`) and Cancel both stop it.
+watch([ended, () => props.next?.to], ([done, to]) => {
+  stopCountdown()
+  if (!done || !to)
+    return
+  countdown.value = AUTO_NEXT
+  nextTimer = setInterval(() => {
+    if (--countdown.value <= 0) {
+      stopCountdown()
+      // `replace`, like the button below: rolling into the next episode is
+      // carrying on with the same thing, and a push would leave Back pointing
+      // at the episode you just sat through instead of out of the player.
+      router.replace(to)
+    }
+  }, 1000)
+})
+
+onBeforeUnmount(stopCountdown)
 
 const centre = computed(() => {
   if (errorMsg.value)
@@ -2058,9 +2105,12 @@ defineExpose({ osd })
         <div class="flex gap-2">
           <!-- First in the DOM so it is where the d-pad lands, and where Enter
                goes without moving: after an episode, next is what you want. -->
-          <nuxt-link v-if="next" :class="BTN" :to="next.to">
-            <v-icon :icon="mdiSkipNext" size="18" /> {{ next.label }}
+          <nuxt-link v-if="next" replace :class="BTN" :to="next.to">
+            <v-icon :icon="mdiSkipNext" size="18" /> {{ next.label }}<span v-if="countdown" class="tabular-nums opacity-70">&nbsp;· {{ countdown }}</span>
           </nuxt-link>
+          <button v-if="countdown" :class="BTN" @click="stopCountdown">
+            {{ $t('Cancel') }}
+          </button>
           <button :class="BTN" :disabled="busy" @click="startPlayer">
             <v-icon :icon="mdiReload" size="18" /> {{ $t('Play again') }}
           </button>

@@ -168,6 +168,45 @@ assert.equal(
   1,
 )
 
+// A finished episode is not a finished show: the row carries on at the next one,
+// and over a season boundary that is the next season's first — which is what a
+// show reported as vanishing off the home page after a season finale looks like.
+const shows: Record<string, Media> = {
+  'tv:1396': { ...(placeholder('tv:1396')), title: 'Breaking Bad', seasons },
+}
+const finale = { 'tv:1396:2:13': entry(HOUR, HOUR, 900, true) }
+assert.deepEqual(
+  continuing(finale, shows)[0],
+  { key: 'tv:1396:3:1', title: 'tv:1396', season: 3, episode: 1, progress: null },
+  'the season finale rolls over into the next season',
+)
+assert.deepEqual(
+  continuing({ 'tv:1396:2:3': entry(HOUR, HOUR, 900, true) }, shows)[0]?.key,
+  'tv:1396:2:4',
+  'mid-season, the next episode of the same season',
+)
+// The last episode there is: nothing left to carry on with.
+assert.deepEqual(continuing({ 'tv:1396:3:13': entry(HOUR, HOUR, 900, true) }, shows), [])
+// No snapshot, or one stored before the counts were kept — no rollover to work
+// out, and the title falls back to whatever else it has, as it always did.
+assert.deepEqual(continuing(finale), [])
+assert.deepEqual(
+  continuing({ ...finale, 'tv:1396:1:4': entry(600, HOUR, 100) }).map(e => e.key),
+  ['tv:1396:1:4'],
+)
+// The one that comes next has been watched too, so it is not what you are
+// waiting on — the row moves past it rather than offering it back.
+assert.deepEqual(
+  continuing({ ...finale, 'tv:1396:3:1': entry(HOUR, HOUR, 800, true) }, shows).map(e => e.key),
+  ['tv:1396:3:2'],
+)
+// Every episode there is: the show is done and drops out of the row.
+const whole = Object.fromEntries(seasons.flatMap(s =>
+  Array.from({ length: s.episodes }, (_, i) => [`tv:1396:${s.number}:${i + 1}`, entry(HOUR, HOUR, 900, true)])))
+assert.deepEqual(continuing(whole, shows), [])
+// A finished film has nowhere to roll over to.
+assert.deepEqual(continuing({ 'movie:27205': entry(HOUR, HOUR, 900, true) }, shows), [])
+
 assert.deepEqual(
   playedTitles(stored),
   ['tv:1396', 'movie:603', 'tv:1399', 'movie:27205'],
@@ -191,7 +230,7 @@ const detail = {
   genreIds: [18],
   lang: 'en',
   cast: Array.from({ length: 20 }, (_, i) => ({ id: i })),
-  seasons: [{ number: 1 }],
+  seasons: [{ number: 1, name: 'Season 1', episodes: 7, year: '2008', poster: '/s.jpg', overview: 'x' }],
 }
 assert.deepEqual(Object.keys(slim(detail as never)).sort(), [
   'backdrop',
@@ -201,10 +240,16 @@ assert.deepEqual(Object.keys(slim(detail as never)).sort(), [
   'overview',
   'poster',
   'rating',
+  'seasons',
   'title',
   'type',
   'year',
 ])
+// The counts and nothing else — a Season's name, poster and overview would sit
+// in localStorage forever and are never read back off a snapshot.
+assert.deepEqual(slim(detail as never).seasons, [{ number: 1, episodes: 7 }])
+// A film has no seasons key at all rather than an empty one.
+assert.equal('seasons' in slim({ ...detail, type: 'movie', seasons: undefined } as never), false)
 
 // --- Backup ------------------------------------------------------------------
 // The file is the only copy of a library that ever leaves the device, so it has

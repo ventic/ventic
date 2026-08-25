@@ -51,6 +51,14 @@ export interface Media {
    * it was kept has none — see `kindOf` for what stands in there.
    */
   lang?: string
+  /**
+   * Episode counts per season, and only on a *show's* snapshot. A list response
+   * carries none — only a detail one fills this in — but once it has, the
+   * library can work out which episode comes next without asking TMDB again,
+   * which is what keeps a show in "Continue watching" across a season boundary
+   * (see `continuing`).
+   */
+  seasons?: { number: number, episodes: number }[]
 }
 
 export function tmdb<T>(path: string, params?: Record<string, unknown>) {
