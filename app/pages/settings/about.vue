@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { mdiCoffee, mdiOpenInNew, mdiRestart, mdiTrayArrowDown, mdiUpdate } from '@mdi/js'
+import { mdiOpenInNew, mdiRestart, mdiTrayArrowDown, mdiUpdate } from '@mdi/js'
 
 const settings = useSettingsStore()
 const updates = useUpdatesStore()
@@ -217,17 +217,6 @@ function open(url: string) {
           @click="open(item.url)"
         />
       </v-list>
-    </settings-section>
-
-    <settings-section :title="$t('Support')">
-      <p class="text-body-small opacity-70">
-        {{ $t('Ventic is free and always will be. If it earned one, you can buy me a coffee.') }}
-      </p>
-      <div>
-        <v-btn :prepend-icon="mdiCoffee" variant="tonal" size="small" @click="open('https://buymeacoffee.com/tilenpirih')">
-          {{ $t('Buy me a coffee') }}
-        </v-btn>
-      </div>
     </settings-section>
 
     <settings-section :title="$t('Legal')">

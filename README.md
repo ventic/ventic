@@ -22,7 +22,7 @@ Nuxt and Tauri, driven as happily by a TV remote as by a mouse.
 
 <br/>
 
-<a href="https://buymeacoffee.com/tilenpirih"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+<a href="https://ko-fi.com/ventictv"><img src="https://storage.ko-fi.com/cdn/kofi3.png?v=6" alt="Support Ventic on Ko-fi" height="41"></a>
 
 <br/>
 
@@ -178,7 +178,7 @@ poster size, app scale and a global CSS box.</sub>
 | **Favourites** / **Watchlist** / **History** | The three local lists |
 | **Detail** | Backdrop, synopsis, cast, trailer, seasons and episodes with per-episode state |
 | **Downloads** | The engine's UI — add, pick files, pause, seed, limit, evict |
-| **Settings** | Appearance, Sources, Subtitles, Network, Storage, Account, About |
+| **Settings** | Appearance, Sources, Subtitles, Network, Storage, Account, Support, About |
 
 <p align="right"><a href="#readme-top">&#9650; back to top</a></p>
 
@@ -406,6 +406,7 @@ Besides the sources you add and the peers your torrents connect to, Ventic reach
 | **Stremio's public addons** | `opensubtitles-v3.strem.io` for the subtitle list, and `v3-cinemeta.strem.io` for the one case TMDB can't produce an IMDb id. A guest arrangement, not an agreement: if either stops answering, search reports it and playback carries on. |
 | **YouTube** (`youtube-nocookie.com`) | A title's trailer, in YouTube's own embedded player on its no-cookie domain. |
 | **GitHub** (`api.github.com`) | One request at startup asking whether a newer Ventic has been released — the public releases endpoint, unauthenticated, sending nothing but the request itself. |
+| **GitHub** (`raw.githubusercontent.com`) | `supporters.json` from this repository, when *Settings → Support* is opened. A static file; Ko-fi is never contacted by the app. |
 
 `app/utils/torrents.ts` additionally appends a handful of well-known public trackers to magnets
 that carry none, as every torrent client does.
@@ -895,7 +896,7 @@ distribution that includes mpv must carry mpv's licence and an offer of its sour
 <div align="center">
 <img src="public/logo.svg" width="40" alt="">
 <br/><br/>
-<sub>Built to be used from a sofa. &middot; <a href="https://buymeacoffee.com/tilenpirih">Buy me a coffee</a>
+<sub>Built to be used from a sofa. &middot; <a href="https://ko-fi.com/ventictv">Support it on Ko-fi</a>
 &middot; <a href="#readme-top">&#9650; back to top</a></sub>
 </div>
 

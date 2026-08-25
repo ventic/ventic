@@ -80,7 +80,8 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
 - Logic worth trusting has a `bun run check:*` script beside it
   (`check:dpad`, `check:torrents`, `check:subtitles`, `check:theme`,
   `check:library`, `check:player`, `check:swipe`, `check:boot`,
-  `check:perf`, `check:android-downloads`, `check:updates`, `check:i18n`).
+  `check:perf`, `check:android-downloads`, `check:updates`, `check:supporters`,
+  `check:i18n`).
   Add to those rather than pulling in a test framework. `bun run check:types` is
   the odd one out: a whole-app `vue-tsc` pass, which is the only thing that
   reads a template's bindings against its script's types — eslint never does.
@@ -167,6 +168,14 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
 - `app/utils/backup.ts` carries every `ventic.` localStorage key by design, so a
   new preference is in the backup the day it's added. A key holding a
   credential must go in its `SECRET` set.
+- **Ko-fi has no read API**, so the supporter list is `supporters.json` at the
+  repo root, read live off `raw.githubusercontent` by *Settings → Support*
+  (`app/utils/supporters.ts`). Edit that file on GitHub to thank someone — it
+  needs no release, and the app never talks to ko-fi.com. The parser drops
+  anything it can't read rather than failing the page, because a hand-edited
+  file reaches users before any build does; `bun run check:supporters` holds
+  that. Ko-fi's only machine-readable output is a webhook, and there is no
+  server to receive one.
 - **The updater is opt-in per install, and the default is no.** Two separate
   questions, answered in two places. *Is there a newer one* is
   `app/utils/updates.ts`: the GitHub API, which every build can reach — the

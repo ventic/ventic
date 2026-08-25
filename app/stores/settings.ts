@@ -2,6 +2,7 @@ import type { SubtitleStyle } from '~/utils/subtitles'
 import {
   mdiAccountCircleOutline,
   mdiFolderOutline,
+  mdiHeartOutline,
   mdiInformationOutline,
   mdiPaletteOutline,
   mdiPowerPlugOutline,
@@ -11,7 +12,7 @@ import {
 } from '@mdi/js'
 import { DEFAULT_SOURCE } from '~/theme/presets'
 
-export type SectionKey = 'appearance' | 'language' | 'sources' | 'subtitles' | 'network' | 'storage' | 'account' | 'about'
+export type SectionKey = 'appearance' | 'language' | 'sources' | 'subtitles' | 'network' | 'storage' | 'account' | 'support' | 'about'
 
 /**
  * The sidebar of the settings layout, in the order it lists them. A `value` is
@@ -31,6 +32,7 @@ export const SECTIONS: { value: SectionKey, title: () => string, icon: string }[
   { value: 'network', title: () => $t('Network'), icon: mdiWifi },
   { value: 'storage', title: () => $t('Storage'), icon: mdiFolderOutline },
   { value: 'account', title: () => $t('Account'), icon: mdiAccountCircleOutline },
+  { value: 'support', title: () => $t('Support'), icon: mdiHeartOutline },
   { value: 'about', title: () => $t('About'), icon: mdiInformationOutline },
 ]
 

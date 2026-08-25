@@ -25,6 +25,7 @@
     "check:player": "bun scripts/check-player.ts",
     "check:torrents": "bun scripts/check-torrents.ts",
     "check:updates": "bun scripts/check-updates.ts",
+    "check:supporters": "bun scripts/check-supporters.ts",
     "check:subtitles": "bun scripts/check-subtitles.ts",
     "check:swipe": "bun scripts/check-swipe.ts",
     "check:theme": "bun scripts/check-theme.ts",
