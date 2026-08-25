@@ -1,7 +1,39 @@
 <script setup lang="ts">
-import { mdiFormatSize, mdiRestore } from '@mdi/js'
+import { mdiEarHearing, mdiFormatSize, mdiRestore } from '@mdi/js'
 
 const settings = useSettingsStore()
+
+/**
+ * Languages to auto-pick from: the app's own locale list, which is TMDB's.
+ * Subtitle catalogues answer in ISO 639-2 ("slv") and this list is 639-1
+ * ("sl"), but nothing here compares codes — the player matches on the *name*
+ * both resolve to, which is what already lets an mkv's "ger" and
+ * OpenSubtitles' "deu" be the one language (see `langName`).
+ *
+ * A `v-select` rather than the autocomplete the UI-language picker uses on
+ * desktop: it has a typeahead of its own, and a field a remote can't type into
+ * is the only kind a television can drive at all (see that page for why).
+ */
+const { locale, locales } = useNuxtApp().$i18n
+
+const languages = computed(() => {
+  const collator = new Intl.Collator(locale.value)
+  return locales.value
+    .map(l => ({ value: l.code, title: langName(l.code) }))
+    .sort((a, b) => collator.compare(a.title, b.title))
+})
+
+/**
+ * The stored code is whatever last named the language — a track saying "eng",
+ * an addon saying "slv", this list saying "en" — so the field has to find its
+ * item the way everything else here compares languages: by the name the codes
+ * resolve to. Bound to the raw value instead, a player-set "eng" matched no
+ * item and the field showed the code itself.
+ */
+const language = computed({
+  get: () => languages.value.find(l => langName(l.value) === langName(settings.subLang))?.value ?? '',
+  set: (code: string) => (settings.subLang = code),
+})
 
 const COLOURS = ['#ffffff', '#f2e14c', '#9fd8ff', '#ffb787', '#c0c0c0']
 
@@ -39,6 +71,43 @@ const SAMPLE = computed(() => $t('It was the fall that killed him.\nNot the drop
 
 <template>
   <div class="flex flex-col gap-8">
+    <settings-section
+      :title="$t('Choosing subtitles')"
+      :hint="$t('Turn subtitles on by themselves whenever a film starts, in the language you pick here.')"
+    >
+      <v-switch
+        v-model="settings.autoSubs"
+        :label="$t('Choose subtitles automatically')"
+        color="primary"
+        hide-details
+        density="compact"
+      />
+      <v-select
+        v-model="language"
+        :items="languages"
+        :label="$t('Subtitle language')"
+        :disabled="!settings.autoSubs"
+        variant="solo-filled"
+        hide-details
+        :menu-props="{ maxHeight: 480 }"
+      />
+      <p class="text-body-medium opacity-70">
+        {{ $t('A track already inside the file is used first, then one that came with the download, and only then is OpenSubtitles searched. Picking a different language while watching changes this setting too.') }}
+      </p>
+
+      <v-switch
+        v-model="settings.subs.hideCaptions"
+        :label="$t('Hide sound descriptions')"
+        :prepend-icon="mdiEarHearing"
+        color="primary"
+        hide-details
+        density="compact"
+      />
+      <p class="text-body-medium opacity-70">
+        {{ $t('Drops “(electricity buzzing)” and “MAN:” from subtitles written for the hard of hearing.') }}
+      </p>
+    </settings-section>
+
     <settings-section
       :title="$t('Preview')"
       :hint="$t('Roughly what a 720p frame looks like. Changes reach a running player straight away.')"

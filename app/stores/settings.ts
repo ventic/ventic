@@ -124,9 +124,23 @@ export const useSettingsStore = defineStore('settings', () => {
   // of the copy stored by the build before it.
   const subs = useLocalStorage<SubtitleStyle>('ventic.subStyle', { ...SUBTITLE_DEFAULTS }, { mergeDefaults: true })
 
+  /**
+   * Turn subtitles on by themselves when a film starts, in `subLang`.
+   *
+   * The pair is one setting in two halves, and the player edits it as much as
+   * this page does: picking a language while watching is what the *next* film
+   * should open in, and turning subtitles off is how you say "not any more".
+   * That was already the behaviour — it lived in `ventic.subLang`, which the
+   * player cleared to mean off — this only gives it a name and a switch, so it
+   * can be chosen up front instead of discovered.
+   */
+  const autoSubs = useLocalStorage('ventic.autoSubs', true)
+  /** ISO 639 code, as the player last chose or the settings page last set. */
+  const subLang = useLocalStorage('ventic.subLang', '')
+
   function resetSubs() {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, tmdbKey, downLimit, upLimit, wifiOnly, downloadDir, subs, resetSubs }
+  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, tmdbKey, downLimit, upLimit, wifiOnly, downloadDir, subs, autoSubs, subLang, resetSubs }
 })

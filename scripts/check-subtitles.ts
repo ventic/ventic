@@ -3,6 +3,7 @@
 // The fixtures are trimmed real responses; pass --live to also hit the addons.
 
 import assert from 'node:assert'
+import { readFileSync } from 'node:fs'
 import process from 'node:process'
 import {
   bestSync,
@@ -363,6 +364,67 @@ assert.equal(cueAt(lines, 2.7), 'first\nsecond')
 assert.equal(cueAt(lines, 3), 'second', 'and off at its end, not one frame after')
 assert.equal(cueAt(lines, 6), '', 'a gap is a gap')
 assert.equal(cueAt([], 6), '')
+
+// The settings picker offers 639-1 codes (the app's locale list) while a track
+// or an addon names the same language in 639-2 — sometimes twice over, as
+// Intl's "bibliographic" and "terminological" pairs. Nothing anywhere compares
+// codes for exactly this reason; both sides go through `langName` and compare
+// the name. Bound to the raw code instead, a stored "eng" matched no item in
+// the list and the field showed the code itself.
+for (const [short, ...long] of [['en', 'eng'], ['sl', 'slv'], ['de', 'deu', 'ger'], ['fr', 'fra', 'fre']]) {
+  for (const code of long)
+    assert.equal(langName(code!), langName(short!), `${code} and ${short} are one language`)
+}
+
+// ---------------------------------------------------------------------------
+// The "choose subtitles for me" seam, which is a template and a store rather
+// than a function anything out here can call — three files that have to agree
+// about one pair of keys, and nothing but this notices when they stop.
+// ---------------------------------------------------------------------------
+const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8')
+const player = read('../app/components/MpvPlayer.vue')
+const store = read('../app/stores/settings.ts')
+const page = read('../app/pages/settings/subtitles.vue')
+
+// One value, one place. Two `useLocalStorage` refs on the same key do not see
+// each other inside a document — the storage event is for other tabs — so a
+// second one here would leave the settings page editing a copy that the running
+// player never reads.
+assert.ok(store.includes('useLocalStorage(\'ventic.subLang\''), 'the store owns the chosen language')
+assert.ok(store.includes('useLocalStorage(\'ventic.autoSubs\''), 'and whether to apply it at all')
+assert.ok(
+  !player.includes('useLocalStorage(\'ventic.subLang\''),
+  'and the player reads it off the store rather than keeping a second copy of the key',
+)
+for (const key of ['autoSubs', 'subLang'])
+  assert.ok(page.includes(`settings.${key}`), `the settings page edits ${key}`)
+
+// The switch is what decides whether a film opens with subtitles: without this
+// test, dropping the guard silently restores "whatever you last picked, always".
+assert.match(
+  player,
+  /applyPreferredSub\(\)\s*\{\s*if \(!settings\.autoSubs/,
+  'nothing is applied while the switch is off',
+)
+
+// The player edits the same setting the page does, so turning subtitles off
+// mid-film means off next time too — which is what clearing the remembered
+// language used to do, back when the language was the only state there was.
+assert.match(player, /function subsOff\(\)[\s\S]{0,120}settings\.autoSubs = false/, 'off means off next time')
+assert.match(player, /function prefer\(code: string\)[\s\S]{0,120}settings\.autoSubs = true/, 'and picking one turns it back on')
+
+// A remote opens the panel from the bottom bar and has to land inside it. The
+// marker and the query are in two files' worth of distance from each other.
+assert.ok(player.includes('data-menu-list'), 'the menu list is marked for the focus that follows an open')
+assert.match(player, /querySelector<HTMLElement>\('\[data-menu-list\] button'\)/, 'and openMenu focuses the first row in it')
+
+// The hard-of-hearing toggle sat under however many languages OpenSubtitles
+// answered with — forty rows of scrolling on a TV for a two-state switch.
+assert.ok(
+  player.indexOf('Hide sound descriptions') < player.lastIndexOf('OpenSubtitles'),
+  'the text and timing controls come before the language list, not after it',
+)
+assert.ok(page.includes('subs.hideCaptions'), 'and the same toggle is on the settings page')
 
 if (process.argv.includes('--live')) {
   const found = await findSubtitles('tt1375666')

@@ -316,14 +316,19 @@ let subsFetched = false
 /** Set once mpv has the file open, which is when tracks and a duration exist. */
 let loaded = false
 
-/** Remembered, so the next episode comes up in the same language — Plex-style. */
-const subLang = useLocalStorage('ventic.subLang', '')
-
 // mpv runs with --no-config, so how subtitles look is entirely ours to set.
 // Pushed once the file is open and again on every edit, which is what makes the
 // settings page's preview honest: change the size mid-film and it changes.
 const settings = useSettingsStore()
 const library = useLibraryStore()
+
+/**
+ * The language the next film should open in — the settings page's own value, so
+ * choosing here is choosing there. Two `useLocalStorage` refs on one key don't
+ * see each other inside a document (the storage event is for other tabs), which
+ * is why this is the store's ref rather than a second one.
+ */
+const subLang = toRef(settings, 'subLang')
 
 const { height: boxHeight } = useElementSize(boxEl)
 /** The track/speed panel, measured because the subtitles have to clear it. */
@@ -494,13 +499,24 @@ function setSid(id: number | 'no') {
 function useTrack(t: Track) {
   setSid(t.id)
   if (t.lang)
-    subLang.value = t.lang
+    prefer(t.lang)
   osd($t('Subtitles: {name}', { name: trackLabel(t) }))
+}
+
+/**
+ * Choosing a language here is choosing it in Settings — that was already true
+ * (the key the player wrote was the only memory there was), it is only visible
+ * now. Off means off next time as well, which is what clearing the remembered
+ * language used to do.
+ */
+function prefer(code: string) {
+  settings.autoSubs = true
+  subLang.value = code
 }
 
 function subsOff() {
   setSid('no')
-  subLang.value = ''
+  settings.autoSubs = false
   osd($t('Subtitles off'))
 }
 
@@ -533,7 +549,7 @@ function expand(lang: SubtitleLanguage) {
 async function loadFile(file: Subtitle, lang: SubtitleLanguage) {
   // A file whose name named no language must not wipe the remembered one.
   if (lang.code)
-    subLang.value = lang.code
+    prefer(lang.code)
   // Where the page draws the cues it has to hold them; mpv reads the URL itself
   // and only auto-sync wants a copy, which can arrive late. `probe` is cached,
   // so this costs nothing for a file the menu already listed.
@@ -553,7 +569,7 @@ async function loadFile(file: Subtitle, lang: SubtitleLanguage) {
 }
 
 async function useLanguage(lang: SubtitleLanguage) {
-  subLang.value = lang.code
+  prefer(lang.code)
   // A track already in the file needs no download and is cut to this release.
   const own = embedded.value.find(t => t.lang && langName(t.lang) === lang.name)
   if (own)
@@ -604,9 +620,9 @@ function releaseSub(want: string) {
     || r.lang.name.toLowerCase().includes(want.toLowerCase()))
 }
 
-/** Once per playback: honour the remembered language, file first, addon last. */
+/** Once per playback: honour the chosen language, file first, addon last. */
 async function applyPreferredSub() {
-  if (!subLang.value)
+  if (!settings.autoSubs || !subLang.value)
     return
   const want = langName(subLang.value)
   const own = embedded.value.find(t => t.lang && langName(t.lang) === want)
@@ -787,6 +803,16 @@ function openMenu(name: Exclude<Menu, ''>) {
   refreshTracks()
   if (name === 'subs')
     fetchExternals()
+  // A remote opened this from the bottom bar and, without this, was still down
+  // there: the panel was up but every arrow moved along the bar behind it, and
+  // reaching the first row meant up (which lands on the close cross in the
+  // header) and then down again. Land on the list, the way a dialog does.
+  //
+  // Only for the d-pad — `.dpad` is on <html> from the first arrow key (see
+  // plugins/dpad.client.ts). A mouse or a keyboard shortcut has no such trouble
+  // reaching a row, and taking focus there would hand them the space bar.
+  if (document.documentElement.classList.contains('dpad'))
+    nextTick(() => menuEl.value?.querySelector<HTMLElement>('[data-menu-list] button')?.focus({ preventScroll: true }))
 }
 
 function setSpeed(v: number) {
@@ -2174,7 +2200,7 @@ defineExpose({ osd })
           </button>
         </header>
 
-        <div class="overflow-y-auto p-1.5">
+        <div data-menu-list class="overflow-y-auto p-1.5">
           <template v-if="menu === 'speed'">
             <button v-for="v in SPEEDS" :key="v" :class="[MENU_ROW, speed === v && 'text-primary']" @click="setSpeed(v)">
               <span>{{ v === 1 ? $t('Normal') : `${v}×` }}</span>
@@ -2238,6 +2264,67 @@ defineExpose({ osd })
               </button>
             </template>
 
+            <template v-if="subsOn">
+              <p :class="MENU_GROUP">
+                {{ $t('Text') }}
+              </p>
+              <button :class="MENU_ROW" @click="settings.subs.hideCaptions = !settings.subs.hideCaptions">
+                <span class="flex items-center gap-2">
+                  <v-icon :icon="mdiEarHearing" size="16" /> {{ $t('Hide sound descriptions') }}
+                </span>
+                <v-icon v-if="settings.subs.hideCaptions" :icon="mdiCheck" size="16" />
+              </button>
+              <p :class="NOTE">
+                {{ $t('Drops “(electricity buzzing)” and “MAN:” from subtitles written for the hard of hearing.') }}
+              </p>
+
+              <p :class="MENU_GROUP">
+                {{ $t('Timing') }}
+              </p>
+              <div class="flex items-center justify-between px-2.5 py-1">
+                <span class="text-label-large opacity-70">{{ $t('Delay') }}</span>
+                <div class="flex items-center gap-0.5">
+                  <button v-tooltip:top="$t('Earlier (z)')" class="!h-7 !min-w-7" :class="ICO" @click="nudgeDelay(-0.1)">
+                    <v-icon :icon="mdiMinus" size="14" />
+                  </button>
+                  <span class="w-16 text-center text-label-large tabular-nums">{{ delayText }}</span>
+                  <button v-tooltip:top="$t('Later (Z)')" class="!h-7 !min-w-7" :class="ICO" @click="nudgeDelay(0.1)">
+                    <v-icon :icon="mdiPlus" size="14" />
+                  </button>
+                </div>
+              </div>
+              <button
+                class="disabled:pointer-events-none disabled:opacity-40"
+                :class="MENU_ROW"
+                :disabled="!syncable || syncing"
+                @click="autoSync"
+              >
+                <span class="flex items-center gap-2">
+                  <v-icon :icon="mdiAutoFix" size="16" /> {{ $t('Sync to the audio') }}
+                </span>
+                <v-progress-circular v-if="syncing" indeterminate size="13" width="2" />
+              </button>
+              <p v-if="syncing" :class="NOTE">
+                {{ syncWide ? $t('Nothing certain in the last twenty minutes — listening to the whole film…') : $t('Listening to what has played…') }}
+              </p>
+              <template v-else-if="syncNote">
+                <p :class="NOTE">
+                  {{ syncNote }}
+                </p>
+                <button v-if="guess" :class="MENU_ROW" @click="applyFit(guess)">
+                  <span class="flex items-center gap-2">
+                    <v-icon :icon="mdiAutoFix" size="16" /> {{ $t('Shift by {offset} anyway', { offset: guessText }) }}
+                  </span>
+                </button>
+              </template>
+              <p v-else-if="!native" :class="NOTE">
+                {{ $t('Auto-sync listens to the audio with ffmpeg, which this build can\'t run. Nudge the delay above instead.') }}
+              </p>
+              <p v-else-if="!syncable" :class="NOTE">
+                {{ $t('Only downloaded subtitles can be synced; the file\'s own tracks already match it.') }}
+              </p>
+            </template>
+
             <p :class="MENU_GROUP">
               OpenSubtitles
             </p>
@@ -2299,67 +2386,6 @@ defineExpose({ osd })
                   {{ $t('Reading the files…') }}
                 </p>
               </template>
-            </template>
-
-            <template v-if="subsOn">
-              <p :class="MENU_GROUP">
-                {{ $t('Text') }}
-              </p>
-              <button :class="MENU_ROW" @click="settings.subs.hideCaptions = !settings.subs.hideCaptions">
-                <span class="flex items-center gap-2">
-                  <v-icon :icon="mdiEarHearing" size="16" /> {{ $t('Hide sound descriptions') }}
-                </span>
-                <v-icon v-if="settings.subs.hideCaptions" :icon="mdiCheck" size="16" />
-              </button>
-              <p :class="NOTE">
-                {{ $t('Drops “(electricity buzzing)” and “MAN:” from subtitles written for the hard of hearing.') }}
-              </p>
-
-              <p :class="MENU_GROUP">
-                {{ $t('Timing') }}
-              </p>
-              <div class="flex items-center justify-between px-2.5 py-1">
-                <span class="text-label-large opacity-70">{{ $t('Delay') }}</span>
-                <div class="flex items-center gap-0.5">
-                  <button v-tooltip:top="$t('Earlier (z)')" class="!h-7 !min-w-7" :class="ICO" @click="nudgeDelay(-0.1)">
-                    <v-icon :icon="mdiMinus" size="14" />
-                  </button>
-                  <span class="w-16 text-center text-label-large tabular-nums">{{ delayText }}</span>
-                  <button v-tooltip:top="$t('Later (Z)')" class="!h-7 !min-w-7" :class="ICO" @click="nudgeDelay(0.1)">
-                    <v-icon :icon="mdiPlus" size="14" />
-                  </button>
-                </div>
-              </div>
-              <button
-                class="disabled:pointer-events-none disabled:opacity-40"
-                :class="MENU_ROW"
-                :disabled="!syncable || syncing"
-                @click="autoSync"
-              >
-                <span class="flex items-center gap-2">
-                  <v-icon :icon="mdiAutoFix" size="16" /> {{ $t('Sync to the audio') }}
-                </span>
-                <v-progress-circular v-if="syncing" indeterminate size="13" width="2" />
-              </button>
-              <p v-if="syncing" :class="NOTE">
-                {{ syncWide ? $t('Nothing certain in the last twenty minutes — listening to the whole film…') : $t('Listening to what has played…') }}
-              </p>
-              <template v-else-if="syncNote">
-                <p :class="NOTE">
-                  {{ syncNote }}
-                </p>
-                <button v-if="guess" :class="MENU_ROW" @click="applyFit(guess)">
-                  <span class="flex items-center gap-2">
-                    <v-icon :icon="mdiAutoFix" size="16" /> {{ $t('Shift by {offset} anyway', { offset: guessText }) }}
-                  </span>
-                </button>
-              </template>
-              <p v-else-if="!native" :class="NOTE">
-                {{ $t('Auto-sync listens to the audio with ffmpeg, which this build can\'t run. Nudge the delay above instead.') }}
-              </p>
-              <p v-else-if="!syncable" :class="NOTE">
-                {{ $t('Only downloaded subtitles can be synced; the file\'s own tracks already match it.') }}
-              </p>
             </template>
           </template>
         </div>

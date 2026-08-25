@@ -214,6 +214,11 @@ class VenticPlayer(private val activity: MainActivity) {
       useController = false
       resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
       setShutterBackgroundColor(Color.BLACK)
+      // The bars around a film that doesn't fill the screen. Without this the
+      // window's own background (@color/ventic_ground) shows there, so a 4:3
+      // film sat in two stripes of the app's grey. The view is GONE unless
+      // something is playing, so nothing else goes black.
+      setBackgroundColor(Color.BLACK)
       // The page draws every cue itself, in the size, colour and position the
       // user set under Settings → Subtitles. Two renderers would double them up.
       subtitleView?.visibility = View.GONE
