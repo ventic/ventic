@@ -2,7 +2,7 @@ import type { LocaleObject } from '@nuxtjs/i18n'
 import { readFileSync } from 'node:fs'
 import process from 'node:process'
 import { GROUND } from './app/theme/themes'
-import { flag } from './app/utils/flag'
+import { ESPERANTO, flag } from './app/utils/flag'
 import i18nLocales from './i18n/i18n.locales.json'
 import { version } from './package.json'
 import vuetifyConfig from './vuetify.config'
@@ -133,6 +133,9 @@ export default defineNuxtConfig({
   icon: {
     provider: 'none',
     serverBundle: false,
+    // Esperanto's flag is drawn in app/utils/flag.ts rather than borrowed;
+    // a custom collection is bundled whole, so it needs no entry below.
+    customCollections: [ESPERANTO],
     clientBundle: {
       icons: locales.flatMap(l => flag(l.language ?? '') || []),
     },
