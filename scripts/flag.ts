@@ -1,5 +1,11 @@
 /**
- * The flag for a locale, as an icon name.
+ * The flag for a locale, as an icon name — at *build* time, and only there.
+ *
+ * It lives outside app/ so it can't be auto-imported into a component, because
+ * calling it in the page is precisely the bug this had: the names it returns
+ * come from the calling runtime's own CLDR copy, and the bundle can only hold
+ * the ones the build machine's copy named. nuxt.config turns it into the
+ * `flags` map the page reads.
  *
  * Nothing here is hand-kept: the locale's `language` tag already carries the
  * region CLDR picked for it (`sl-SI`, `pt-BR`), and Twemoji names its flags

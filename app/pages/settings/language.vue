@@ -32,6 +32,11 @@ const current = computed({
  */
 const english = new Intl.DisplayNames(['en'], { type: 'language' })
 
+// Looked up, never derived: which flag a locale gets is worked out once at
+// build time, because the bundle inlines those exact icon names and nothing
+// else — see `flags` in nuxt.config.
+const { flags } = useRuntimeConfig().public
+
 const items = computed(() => {
   // The catalog is ordered by locale code, which is alphabetical in nothing
   // anyone reads — the labels are endonyms. Collate in the language the app is
@@ -42,9 +47,9 @@ const items = computed(() => {
     value: l.code,
     title: l.name ?? l.code,
     subtitle: english.of(l.code) === l.name ? undefined : english.of(l.code),
-    // Derived, not stored: see app/utils/flag.ts. Esperanto has no country and
-    // so no flag, which is why every use of it is guarded.
-    flag: flag(l.language ?? l.code),
+    // Guarded because a language TMDB adds is in the picker before the next
+    // build has drawn it a flag.
+    flag: flags[l.code],
   })).sort((a, b) => collator.compare(a.title, b.title))
 })
 

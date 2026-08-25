@@ -2,9 +2,9 @@ import type { LocaleObject } from '@nuxtjs/i18n'
 import { readFileSync } from 'node:fs'
 import process from 'node:process'
 import { GROUND } from './app/theme/themes'
-import { ESPERANTO, flag } from './app/utils/flag'
 import i18nLocales from './i18n/i18n.locales.json'
 import { version } from './package.json'
+import { ESPERANTO, flag } from './scripts/flag'
 import vuetifyConfig from './vuetify.config'
 
 const host = process.env.TAURI_DEV_HOST
@@ -40,6 +40,23 @@ const bootDiagnostics = readFileSync(new URL('app/boot-diagnostics.js', import.m
  * every layer and pin the app to one colour for good.
  */
 const ground = `html{background:${GROUND}}`
+
+/**
+ * Which flag each locale gets, decided here and shipped to the app as data.
+ *
+ * It has to be decided exactly once. `clientBundle` below inlines these icons
+ * and no others, and an icon asked for by any other name is not a fallback —
+ * it is a zero-width blank, because the width comes from the per-icon CSS rule
+ * that was never generated. `flag()` reads `Intl`'s English country names,
+ * which are the *runtime's own* CLDR copy: a page that called it again inside a
+ * webview would be looking a name up in a bundle some other ICU filled, and
+ * whoever's copy disagreed would silently lose a flag. Korea was the one that
+ * disagreed.
+ */
+const flags = Object.fromEntries(locales.flatMap(l => {
+  const name = flag(l.language ?? '')
+  return name ? [[l.code, name]] : []
+}))
 
 export default defineNuxtConfig({
   compatibilityDate: '2026-01-01',
@@ -87,6 +104,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       TMDB_API: process.env.TMDB_API,
+      // The language picker's flags, worked out at build time — see `flags`.
+      flags,
     },
   },
   css: [
@@ -127,17 +146,17 @@ export default defineNuxtConfig({
    * they are inlined into the bundle rather than fetched: there is no Nitro
    * server behind a `tauri://` origin to serve them and no promise of a network
    * to reach api.iconify.design over. `clientBundle.scan` can't find them —
-   * the name is computed per locale — so the list is built the same way the
-   * page builds it.
+   * the names are computed — so the list is the `flags` map above, which is
+   * also what the page looks them up by.
    */
   icon: {
     provider: 'none',
     serverBundle: false,
-    // Esperanto's flag is drawn in app/utils/flag.ts rather than borrowed;
+    // Esperanto's flag is drawn in scripts/flag.ts rather than borrowed;
     // a custom collection is bundled whole, so it needs no entry below.
     customCollections: [ESPERANTO],
     clientBundle: {
-      icons: locales.flatMap(l => flag(l.language ?? '') || []),
+      icons: Object.values(flags),
     },
   },
 
