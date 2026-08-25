@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "A tutti quelli che finora hanno offerto un caffè. Grazie.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Tutto ciò che contiene sostituisce quello che c'è su questo dispositivo: {titles} titoli, {watched} posizioni di visione, {favourites} preferiti, {watchlist} nella lista da vedere e {sources} fonti. I download sul disco non vengono toccati.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Tutto ciò che è stato guardato resta sul disco finché non serve lo spazio, poi vengono eliminati i titoli riprodotti da più tempo. Zero lascia che cresca fino a tutto lo spazio libero dell'unità.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "Esci da schermo intero (f)",
   "Favourite": "Aggiungi ai preferiti",
   "Favourites": "Preferiti",

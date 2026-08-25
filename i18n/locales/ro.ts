@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Tuturor celor care au făcut cinste cu o cafea până acum. Mulțumesc.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Tot ce conține înlocuiește ce se află pe acest dispozitiv: {titles} titluri, {watched} poziții de vizionare, {favourites} favorite, {watchlist} în lista de vizionat și {sources} surse. Descărcările de pe disc nu sunt atinse.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Tot ce a fost vizionat rămâne pe disc până când e nevoie de spațiu, apoi se șterg titlurile redate cel mai demult. Zero lasă asta să crească până la tot spațiul liber al discului.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "Ieși din ecran complet (f)",
   "Favourite": "Adaugă la favorite",
   "Favourites": "Favorite",

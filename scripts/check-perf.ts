@@ -46,6 +46,24 @@ assert.match(
   'content-visibility needs a size to reserve, or the scrollbar jumps as cards are drawn',
 )
 
+// WebKitGTK mispaints a content-visibility subtree while something inside it
+// animates, and again if the containment itself is switched — three separate
+// bugs came out of splitting these two across different elements (the overlay
+// blinking through the zoom, the title vanishing while hovered, the rating and
+// the tick vanishing on the way out). The skip and the transform have to name
+// the same element, and the badges and text have to stay outside both.
+const poster = card.match(/<media-poster[\s\S]*?\/>/)?.[0] ?? ''
+assert.match(
+  poster,
+  /\[content-visibility:auto\]/,
+  'the skip belongs on the poster — the element the hover zoom is on',
+)
+assert.match(
+  poster,
+  /group-hover:scale/,
+  'the hover zoom belongs on the same element as the skip, never inside it',
+)
+
 // One frame-buffer readback per card, twenty on screen at once. Comments are
 // stripped first — the one above the badge says the word to explain its absence.
 assert.doesNotMatch(
@@ -92,7 +110,7 @@ assert.match(
 // --- The rows ---
 
 // A card crossing under a stationary cursor mounts the hover overlay, moves the
-// backdrop and comes out of content-visibility — a whole row of that per flick
+// backdrop and starts the poster's zoom — a whole row of that per flick
 // of the wheel, which is what made paging a row flicker and shift+wheel stutter.
 // On the track, not the scroller: a scroller that ignores the pointer never sees
 // the wheel either, and the page would scroll instead of the row.

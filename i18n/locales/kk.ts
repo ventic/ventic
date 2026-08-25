@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Осы уақытқа дейін кофе сыйлағандардың барлығына рақмет.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Ондағының бәрі осы құрылғыдағыны алмастырады: {titles} атау, {watched} көру орны, {favourites} таңдаулы, көру тізімінде {watchlist} және {sources} дереккөз. Дискідегі жүктеулерге тиісілмейді.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Көрілгеннің бәрі орын қажет болғанша дискіде сақталады, содан кейін ең ұзақ ойнатылмаған атаулар жойылады. Нөл мұны дискідегі бос орынның бәріне дейін өсіруге мүмкіндік береді.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "Толық экраннан шығу (f)",
   "Favourite": "Таңдаулыларға қосу",
   "Favourites": "Таңдаулылар",

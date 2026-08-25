@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "இதுவரை ஒரு காபி வாங்கித் தந்த அனைவருக்கும் நன்றி.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "அதில் உள்ள அனைத்தும் இந்தச் சாதனத்தில் உள்ளதை மாற்றிவிடும்: {titles} தலைப்புகள், {watched} பார்வை நிலைகள், {favourites} பிடித்தவை, பார்வைப் பட்டியலில் {watchlist}, மற்றும் {sources} மூலங்கள். வட்டில் உள்ள பதிவிறக்கங்கள் தொடப்படமாட்டா.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "பார்த்த அனைத்தும் இடம் தேவைப்படும் வரை வட்டில் வைக்கப்படும், பிறகு நீண்ட நாட்களாக இயக்கப்படாத தலைப்புகள் நீக்கப்படும். பூஜ்ஜியம், வட்டில் மிச்சம் உள்ள அளவுக்கு அது வளர அனுமதிக்கிறது.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "முழுத்திரையிலிருந்து வெளியேறு (f)",
   "Favourite": "பிடித்தது",
   "Favourites": "பிடித்தவை",

@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Բոլորին, ովքեր մինչ այժմ սուրճ են հյուրասիրել։ Շնորհակալություն։",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Այն ամենը, ինչ պարունակում է, փոխարինում է այս սարքի պարունակությանը՝ {titles} վերնագիր, {watched} դիտման դիրք, {favourites} ընտրյալ, {watchlist} դիտելու ցանկում և {sources} աղբյուր։ Սկավառակի ներբեռնումներին չեն դիպչում։",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Դիտված ամեն ինչ մնում է սկավառակի վրա, մինչև տեղը հարկավոր լինի, ապա ջնջվում են ամենավաղ նվագարկված վերնագրերը։ Զրոն թույլ է տալիս դրան աճել մինչև սկավառակի ողջ ազատ տեղը։",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "Դուրս գալ լիաէկրանից (f)",
   "Favourite": "Ավելացնել ընտրյալներում",
   "Favourites": "Ընտրյալներ",

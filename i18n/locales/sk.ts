@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Všetkým, ktorí doteraz kúpili kávu. Ďakujem.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Všetko, čo obsahuje, nahradí to, čo je v tomto zariadení: {titles} titulov, {watched} pozícií pozerania, {favourites} obľúbených, {watchlist} v zozname na pozretie a {sources} zdrojov. Sťahovania na disku zostanú nedotknuté.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Všetko pozreté zostáva na disku, kým netreba miesto, potom sa zmažú tituly, ktoré neboli prehrávané najdlhšie. Nula necháva toto rásť až do všetkého voľného miesta na disku.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "Ukončiť celú obrazovku (f)",
   "Favourite": "Pridať do obľúbených",
   "Favourites": "Obľúbené",

@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "A totes los que an ofèrt un cafè fins ara. Mercés.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Tot çò que conten remplaça çò qu'es sus aqueste aparelh : {titles} títols, {watched} posicions de lectura, {favourites} favorits, {watchlist} dins la lista de visionatge e {sources} fonts. Los telecargaments sul disc son pas tocats.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Tot çò qu'es estat gaitat demòra sul disc fins que l'espaci siá necessari, puèi los títols legits lo mai temps a son suprimits. Zèro daissa aquò créisser fins a tot l'espaci liure del disc.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "Quitar lo plen ecran (f)",
   "Favourite": "Ajustar als favorits",
   "Favourites": "Favorits",

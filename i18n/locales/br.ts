@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "An holl re o deus prenet ur banne kafe betek-henn. Trugarez.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Kement tra a zalc'h a zilec'h ar pezh a zo war an trevnad-mañ: {titles} titl, {watched} lec'hiadur sellet, {favourites} pennroll, {watchlist} er roll sellet ha {sources} mammenn. Ne vo ket stoket ouzh ar pellgargadennoù war ar gantenn.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Miret e vez war ar gantenn kement tra sellet betek ma vo ezhomm eus al lec'h, ha neuze e vez diverket an titloù lennet ar pellañ zo. Zero a lez kement-se da greskiñ betek kement a chom dieub war ar gantenn.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "Kuitaat ar skramm a-bezh (f)",
   "Favourite": "Ouzhpennañ d'ar pennrolloù",
   "Favourites": "Pennrolloù",

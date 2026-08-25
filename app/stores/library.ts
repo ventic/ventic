@@ -87,15 +87,14 @@ export const useLibraryStore = defineStore('library', () => {
     return showEntries(progress.value, m.id)[0]?.[1] ?? progress.value[titleKey('tv', m.id)]
   }
 
-  /** "S2 E3" under a show's progress bar, so the bar says what it is measuring. */
-  function cardLabel(m: Pick<Media, 'id' | 'type'>) {
-    if (m.type !== 'tv')
-      return ''
-    const entry = showEntries(progress.value, m.id)[0]
-    if (!entry)
-      return ''
-    const { season, episode } = parseKey(entry[0])
-    return `S${season} E${episode}`
+  /**
+   * The strip across the bottom of a card — `watchBar` holds the rules. The
+   * stored snapshot is preferred over whatever the caller is rendering, because
+   * a card off a browse page carries no season list and the episode counts are
+   * the whole point of it for a show.
+   */
+  function cardBar(m: Pick<Media, 'id' | 'type'>) {
+    return watchBar(progress.value, media.value[titleKey(m.type, m.id)] ?? (m as Media))
   }
 
   /**
@@ -259,7 +258,7 @@ export const useLibraryStore = defineStore('library', () => {
     seasonWatched,
     lastEpisode,
     cardProgress,
-    cardLabel,
+    cardBar,
     isWatched,
     isFavourite,
     inWatchlist,

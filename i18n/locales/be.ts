@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Усе, хто дагэтуль купіў кубак кавы. Дзякуй.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Усё, што яна змяшчае, заменіць тое, што на гэтай прыладзе: {titles} загалоўкаў, {watched} пазіцый прагляду, {favourites} абраных, {watchlist} у спісе прагляду і {sources} крыніц. Спампоўкі на дыску застануцца некранутымі.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Усё прагледжанае захоўваецца на дыску, пакуль не спатрэбіцца месца, потым выдаляюцца загалоўкі, якія найдаўжэй не прайграваліся. Нуль дазваляе гэтаму расці на ўсё, што дыск мае вольнага.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "Выйсці з поўнага экрана (f)",
   "Favourite": "Дадаць у абранае",
   "Favourites": "Абранае",

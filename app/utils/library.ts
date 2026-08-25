@@ -181,6 +181,59 @@ export function continuing(progress: Record<string, Progress>, media: Record<str
     })
 }
 
+export interface WatchBar {
+  /** 0–1, how far across to paint it. */
+  fraction: number
+  /** What it is measuring, or '' when the bar speaks for itself. */
+  label: string
+}
+
+/**
+ * The strip across the bottom of a card: how far through, and what that is
+ * measuring.
+ *
+ * A film's bar is its position in the file. A show's is its position in the
+ * show* — episodes watched out of the episodes there are, plus the fraction of
+ * the one in hand — because once you have finished an episode the file position
+ * is 100% of something already seen, and says nothing about the forty that are
+ * left. That is also the moment the card has the most to say, so the label
+ * names the episode you would carry on with rather than the one just watched.
+ *
+ * `m` should be the *stored* snapshot: a card off a browse page carries no
+ * season list, and with no counts this falls back to the position in the last
+ * episode played, which is what it always did.
+ *
+ * Null when there is nothing to draw — never played, or played right out.
+ */
+export function watchBar(progress: Record<string, Progress>, m: Media): WatchBar | null {
+  if (m.type !== 'tv') {
+    const p = progress[titleKey('movie', m.id)]
+    return p && !p.watched && fraction(p) > 0 ? { fraction: fraction(p), label: '' } : null
+  }
+
+  const entries = showEntries(progress, m.id)
+  // A show marked watched by hand has no episode entry to measure against.
+  const [key, latest] = entries[0] ?? []
+  const at = latest ?? progress[titleKey('tv', m.id)]
+  // Only an unfinished episode is a part: a watched one is already in the count.
+  const part = at && !at.watched ? fraction(at) : 0
+
+  const up = key && latest ? nextEpisode(m.seasons ?? [], { ...parseKey(key), watched: latest.watched }) : null
+  const label = up ? `S${up.season} E${up.episode}` : ''
+
+  const total = (m.seasons ?? []).reduce((n, s) => n + s.episodes, 0)
+  if (!total)
+    return part > 0 ? { fraction: part, label } : null
+
+  const seen = entries.filter(([, p]) => p.watched).length
+  if (seen >= total)
+    return null // every episode there is — the tick says that, not a full bar
+  const done = Math.min(seen + part, total)
+  return done > 0
+    ? { fraction: done / total, label: label && `${label} · ${seen}/${total}` }
+    : null
+}
+
 /** Title keys of everything ever played, most recent first. */
 export function playedTitles(progress: Record<string, Progress>) {
   const latest = new Map<string, number>()

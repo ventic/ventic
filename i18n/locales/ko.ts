@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "지금까지 커피를 사 주신 모든 분께. 감사합니다.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "백업에 담긴 내용이 이 기기의 내용을 대체합니다: 작품 {titles}개, 시청 위치 {watched}개, 즐겨찾기 {favourites}개, 볼 목록 {watchlist}개, 소스 {sources}개. 디스크의 다운로드는 건드리지 않습니다.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "시청한 항목은 공간이 필요해질 때까지 디스크에 남고, 그다음에는 가장 오래 재생하지 않은 작품부터 삭제됩니다. 0으로 두면 드라이브의 남은 공간만큼 늘어납니다.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "전체 화면 종료 (f)",
   "Favourite": "즐겨찾기에 추가",
   "Favourites": "즐겨찾기",

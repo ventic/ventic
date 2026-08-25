@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Svima koji su dosad počastili kavom. Hvala.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Sve što sadrži zamjenjuje ono što je na ovom uređaju: {titles} naslova, {watched} položaja gledanja, {favourites} favorita, {watchlist} na popisu za gledanje i {sources} izvora. Preuzimanja na disku ostaju netaknuta.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Sve odgledano ostaje na disku dok prostor ne zatreba, a tada se brišu naslovi koji su najdulje bili nereproducirani. Nula pušta da to naraste do svega što je na disku slobodno.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "Izađi iz punog zaslona (f)",
   "Favourite": "Dodaj u favorite",
   "Favourites": "Favoriti",

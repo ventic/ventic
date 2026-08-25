@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "ขอบคุณทุกคนที่เลี้ยงกาแฟมาจนถึงตอนนี้",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "ทุกอย่างที่อยู่ในนั้นจะแทนที่สิ่งที่อยู่บนอุปกรณ์นี้: {titles} เรื่อง, ตำแหน่งการดู {watched} รายการ, รายการโปรด {favourites} รายการ, {watchlist} รายการในรายการที่จะดู และแหล่ง {sources} แห่ง ไฟล์ที่ดาวน์โหลดไว้บนดิสก์จะไม่ถูกแตะต้อง",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "ทุกเรื่องที่ดูแล้วจะถูกเก็บไว้บนดิสก์จนกว่าจะต้องใช้พื้นที่ จากนั้นเรื่องที่ไม่ได้เล่นมานานที่สุดจะถูกลบ ค่าศูนย์คือปล่อยให้ขยายได้เท่าที่ไดรฟ์ยังมีที่ว่าง",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "ออกจากเต็มจอ (f)",
   "Favourite": "เพิ่มในรายการโปรด",
   "Favourites": "รายการโปรด",

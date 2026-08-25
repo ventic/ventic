@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Kubo bonke abathenge ikhofi kuze kube manje. Ngiyabonga.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Konke okuqukethwe kuthatha indawo yalokho okukule divayisi: izihloko ezingu-{titles}, izindawo zokubuka ezingu-{watched}, izintandokazi ezingu-{favourites}, okungu-{watchlist} ohlwini lokubuka nemithombo engu-{sources}. Okulandiwe okusedisikini akuthintwa.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Konke okubukiwe kugcinwa kudiski kuze kudingeke indawo, bese kususwa izihloko ezisadlalwe kudala kakhulu. U-zero uvumela lokho kukhule kufike kuyo yonke indawo ekhona kudrayivu.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "Phuma esikrinini esigcwele (f)",
   "Favourite": "Yenza intandokazi",
   "Favourites": "Izintandokazi",

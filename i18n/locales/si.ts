@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "මේ දක්වා කෝපි එකක් අරන් දුන් හැමෝටම. ස්තූතියි.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "එහි ඇති සියල්ල මෙම උපාංගයේ ඇති දේ ප්‍රතිස්ථාපනය කරයි: මාතෘකා {titles}ක්, නැරඹීමේ ස්ථාන {watched}ක්, ප්‍රියතම {favourites}ක්, නැරඹීමේ ලැයිස්තුවේ {watchlist}ක් සහ මූලාශ්‍ර {sources}ක්. තැටියේ ඇති බාගැනීම් ස්පර්ශ නොකෙරේ.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "නැරඹූ සියල්ල ඉඩ අවශ්‍ය වන තෙක් තැටියේ රැඳේ, ඉන්පසු වඩාත්ම කලින් වාදනය කළ මාතෘකා මකා දමයි. බිංදුව මෙය ධාවකයේ ඉතිරි ඉඩ තරමට වර්ධනය වීමට ඉඩ දෙයි.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "පූර්ණ තිරයෙන් ඉවත් වන්න (f)",
   "Favourite": "ප්‍රියතමයන්ට එකතු කරන්න",
   "Favourites": "ප්‍රියතම",

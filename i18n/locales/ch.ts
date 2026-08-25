@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Todos ni manmamåhan kåfe asta på'go. Si Yu'os ma'åse'.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Todu ni gaige gi sanhalom-ña ha sustitui håfa gaige gi este na device: {titles} na titulu, {watched} na lugåt-egga', {favourites} na favorite, {watchlist} gi watchlist yan {sources} na source. I download gi disk ti ma pacha.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Todu ni maegga' ma adahi gi disk asta ki nesesita i espasio, ya despues ma dilete i titulu siha ni mås åmko' i pinlay-ñiha. Zero ha sedde este u dångkulo asta i tododu ni sopbla gi drive.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "Huyong gi fullscreen (f)",
   "Favourite": "Na'hålom gi favorite",
   "Favourites": "Favorite siha",

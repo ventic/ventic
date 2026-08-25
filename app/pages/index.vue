@@ -125,15 +125,17 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
     </section>
 
     <div class="flex flex-col gap-7 pt-7">
-      <!-- Straight back into playback, not to the detail page: this row exists
-           to save you the two clicks. Not lazy — it comes out of localStorage,
-           and it's the first thing you should see. -->
+      <!-- To the thing itself, not straight into playback: an episode you are
+           about to start deserves the page that says what it is, with Play on
+           it. A film's card already goes to its own page, which is the same
+           answer. Not lazy — it comes out of localStorage, and it's the first
+           thing you should see. -->
       <scroll-row v-if="library.resumeRow.length" :title="$t('Continue watching')">
         <media-card
           v-for="entry in library.resumeRow"
           :key="entry.key"
           :media="entry.media"
-          :to="watchLink(entry.media.type, entry.media.id, entry.season, entry.episode)"
+          :to="entry.season ? episodeLink(entry.media.id, entry.season, entry.episode) : undefined"
           :detail="ui.isDetailed"
           class="shrink-0"
           :style="{ width: `${ui.cardWidth}px` }"

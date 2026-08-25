@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Sa lahat ng nag-abot ng kape hanggang ngayon. Salamat.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Papalitan ng lahat ng laman nito ang nasa device na ito: {titles} pamagat, {watched} posisyon ng panonood, {favourites} paborito, {watchlist} sa watchlist at {sources} pinagmumulan. Hindi gagalawin ang mga download sa disk.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Nananatili sa disk ang lahat ng napanood hanggang sa kailanganin ang espasyo, pagkatapos ay buburahin ang mga pamagat na pinakamatagal nang hindi nape-play. Hinahayaan ng zero na lumaki iyon hanggang sa anumang libreng espasyo ng drive.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "Lumabas sa fullscreen (f)",
   "Favourite": "Gawing paborito",
   "Favourites": "Mga paborito",

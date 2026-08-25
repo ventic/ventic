@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "كل من اشترى قهوة حتى الآن. شكرًا لكم.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "كل ما تحتويه يحل محل ما على هذا الجهاز: {titles} عنوانًا، و{watched} موضع مشاهدة، و{favourites} مفضّلة، و{watchlist} في قائمة المشاهدة، و{sources} مصدرًا. أما التنزيلات على القرص فلا تُمسّ.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "كل ما شاهدته يبقى على القرص إلى أن تُحتاج المساحة، عندها تُحذف العناوين الأقدم تشغيلًا. الصفر يترك ذلك ينمو إلى ما يتيحه القرص من مساحة فارغة.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "إنهاء ملء الشاشة (f)",
   "Favourite": "إضافة إلى المفضلة",
   "Favourites": "المفضلة",

@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "ഇതുവരെ ഒരു കാപ്പി വാങ്ങിത്തന്ന എല്ലാവർക്കും നന്ദി.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "അതിലുള്ളതെല്ലാം ഈ ഉപകരണത്തിലുള്ളതിനെ മാറ്റിസ്ഥാപിക്കും: {titles} ശീർഷകങ്ങൾ, {watched} കാഴ്ചാ സ്ഥാനങ്ങൾ, {favourites} പ്രിയപ്പെട്ടവ, കാണാനുള്ള പട്ടികയിൽ {watchlist}, {sources} ഉറവിടങ്ങൾ. ഡിസ്കിലെ ഡൗൺലോഡുകളെ തൊടില്ല.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "കണ്ടതെല്ലാം സ്ഥലം ആവശ്യമാകുന്നതുവരെ ഡിസ്കിൽ നിലനിൽക്കും, പിന്നീട് ഏറ്റവും പണ്ട് പ്ലേ ചെയ്ത ശീർഷകങ്ങൾ ഇല്ലാതാക്കും. പൂജ്യം ഡ്രൈവിൽ എത്ര ഇടം ഒഴിവുണ്ടോ അത്രയും വളരാൻ അനുവദിക്കും.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "പൂർണ്ണസ്ക്രീനിൽ നിന്ന് പുറത്തുകടക്കുക (f)",
   "Favourite": "പ്രിയപ്പെട്ടവയിൽ ചേർക്കുക",
   "Favourites": "പ്രിയപ്പെട്ടവ",

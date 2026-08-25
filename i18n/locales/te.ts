@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "ఇప్పటివరకు ఒక కాఫీ కొనిపెట్టిన అందరికీ ధన్యవాదాలు.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "అందులో ఉన్నదంతా ఈ పరికరంలో ఉన్నదాన్ని భర్తీ చేస్తుంది: {titles} టైటిల్స్, {watched} చూసిన స్థానాలు, {favourites} ఇష్టమైనవి, చూడాల్సిన జాబితాలో {watchlist}, మరియు {sources} మూలాలు. డిస్క్‌లోని డౌన్‌లోడ్‌లు ముట్టుకోబడవు.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "చూసినదంతా స్థలం అవసరమయ్యే వరకు డిస్క్‌లో ఉంచబడుతుంది, తర్వాత చాలాకాలంగా ప్లే చేయని టైటిల్స్ తొలగించబడతాయి. సున్నా, డ్రైవ్‌లో ఖాళీగా ఉన్నంత వరకు అది పెరగనిస్తుంది.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "పూర్తి తెర నుండి బయటకు (f)",
   "Favourite": "ఇష్టమైనదిగా గుర్తించు",
   "Favourites": "ఇష్టమైనవి",

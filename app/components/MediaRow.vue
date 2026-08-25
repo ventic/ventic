@@ -7,8 +7,9 @@ const props = defineProps<{ media: Media }>()
 const ui = useUiStore()
 const library = useLibraryStore()
 
-const progress = computed(() => library.cardProgress(props.media))
-const played = computed(() => fraction(progress.value))
+// A show's is measured in episodes, a film's in the file — see `watchBar`.
+// No room for the label a card draws beside it; the bar alone is the point here.
+const bar = computed(() => library.cardBar(props.media))
 const watched = computed(() => library.isWatched(props.media))
 
 // Same reason as MediaCard: the action buttons only exist while hovered, so a
@@ -31,8 +32,8 @@ const hover = ref(false)
       <div v-if="hover" class="grid place-items-center absolute inset-0 bg-black/55">
         <v-icon :icon="mdiPlay" size="20" class="text-white" />
       </div>
-      <div v-if="played > 0 && !progress?.watched" class="absolute inset-x-0 bottom-0 h-1 bg-black/60">
-        <div class="h-full bg-primary" :style="{ width: `${played * 100}%` }" />
+      <div v-if="bar" class="absolute inset-x-0 bottom-0 h-1 bg-black/60">
+        <div class="h-full bg-primary" :style="{ width: `${bar.fraction * 100}%` }" />
       </div>
     </div>
 

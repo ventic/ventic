@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Visiem, kas līdz šim ir uzsaukuši kafiju. Paldies.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Viss, ko tas satur, aizstāj to, kas ir šajā ierīcē: {titles} nosaukumi, {watched} skatīšanās pozīcijas, {favourites} izlases vienumi, {watchlist} skatīšanās sarakstā un {sources} avoti. Lejupielādes diskā netiek skartas.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Viss noskatītais paliek diskā, līdz vajadzīga vieta, tad tiek dzēsti visilgāk neatskaņotie nosaukumi. Nulle ļauj tam augt līdz visai diska brīvajai vietai.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "Iziet no pilnekrāna (f)",
   "Favourite": "Pievienot izlasei",
   "Favourites": "Izlase",

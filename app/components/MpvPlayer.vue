@@ -11,6 +11,7 @@ import {
   mdiChevronUp,
   mdiClose,
   mdiEarHearing,
+  mdiExitToApp,
   mdiFastForward10,
   mdiFullscreen,
   mdiFullscreenExit,
@@ -73,6 +74,9 @@ const props = defineProps<{
   season?: number
   episode?: number
 }>()
+
+/** Leave the player. The page owns where that goes back to — see `leave`. */
+const emit = defineEmits<{ exit: [] }>()
 
 /**
  * Which backend is behind these controls. Where mpv can be embedded it is;
@@ -2108,11 +2112,14 @@ defineExpose({ osd })
           <nuxt-link v-if="next" replace :class="BTN" :to="next.to">
             <v-icon :icon="mdiSkipNext" size="18" /> {{ next.label }}<span v-if="countdown" class="tabular-nums opacity-70">&nbsp;· {{ countdown }}</span>
           </nuxt-link>
-          <button v-if="countdown" :class="BTN" @click="stopCountdown">
-            {{ $t('Cancel') }}
-          </button>
           <button :class="BTN" :disabled="busy" @click="startPlayer">
             <v-icon :icon="mdiReload" size="18" /> {{ $t('Play again') }}
+          </button>
+          <!-- Stops the clock by leaving, which is the only reason anyone wants
+               it stopped: a button that only cancelled a countdown would leave
+               you sat on a finished film with nothing to press. -->
+          <button :class="BTN" @click="stopCountdown(); emit('exit')">
+            <v-icon :icon="mdiExitToApp" size="18" /> {{ $t('Exit') }}
           </button>
         </div>
       </template>

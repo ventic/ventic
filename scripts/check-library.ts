@@ -5,7 +5,7 @@ import type { KeyStore } from '../app/utils/backup'
 import type { Media } from '../app/utils/tmdb'
 import assert from 'node:assert'
 import { applyBackup, backupSummary, makeBackup, readBackup } from '../app/utils/backup'
-import { arrange, continuing, finished, fraction, kindOf, nextEpisode, parseKey, placeholder, playedTitles, progressKey, remainingText, resumable, showEntries, slim, UNKNOWN_TITLE, watchedInSeason } from '../app/utils/library'
+import { arrange, continuing, finished, fraction, kindOf, nextEpisode, parseKey, placeholder, playedTitles, progressKey, remainingText, resumable, showEntries, slim, UNKNOWN_TITLE, watchBar, watchedInSeason } from '../app/utils/library'
 import { mediaLink } from '../app/utils/tmdb'
 
 // `mediaLink` runs its path through Nuxt's auto-imported `localePath`, which
@@ -206,6 +206,42 @@ const whole = Object.fromEntries(seasons.flatMap(s =>
 assert.deepEqual(continuing(whole, shows), [])
 // A finished film has nowhere to roll over to.
 assert.deepEqual(continuing({ 'movie:27205': entry(HOUR, HOUR, 900, true) }, shows), [])
+
+// --- The bar under a card -----------------------------------------------------
+// A film measures the file; a show measures the show. The second is the whole
+// point: after a finale the file position is 100% of something already seen.
+
+const show: Media = { ...placeholder('tv:1396'), title: 'Breaking Bad', seasons }
+const TOTAL = 33 // 7 + 13 + 13
+
+assert.deepEqual(
+  watchBar(stored, { ...placeholder('movie:603'), title: 'The Matrix' }),
+  { fraction: 0.5, label: '' },
+  'a film: halfway through the file, and nothing to label',
+)
+// Played right out, or never started: the tick says the first, nothing says the second.
+assert.equal(watchBar(stored, { ...placeholder('movie:27205'), title: 'Inception' }), null)
+assert.equal(watchBar({}, show), null)
+
+// One watched and one a sixth in: 1 + 1/6 episodes of 33, and the label names
+// the one still in hand rather than the one already finished.
+const bar = watchBar(stored, show)
+assert.equal(bar?.label, 'S2 E3 · 1/33')
+assert.ok(Math.abs(bar!.fraction - (1 + 1 / 6) / TOTAL) < 1e-9)
+
+// The finale of a season: the count says where you are, the label where you go.
+assert.deepEqual(
+  watchBar({ 'tv:1396:1:7': entry(HOUR, HOUR, 900, true) }, show),
+  { fraction: 1 / TOTAL, label: 'S2 E1 · 1/33' },
+)
+// Every episode there is — a full bar would only repeat the tick.
+assert.equal(watchBar(whole, show), null)
+// No season list stored, so there is nothing to count: the position inside the
+// last episode played, exactly as it was before the counts were kept.
+assert.deepEqual(
+  watchBar(stored, { ...placeholder('tv:1396'), title: 'Breaking Bad' }),
+  { fraction: 1 / 6, label: 'S2 E3' },
+)
 
 assert.deepEqual(
   playedTitles(stored),

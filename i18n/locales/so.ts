@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Dhammaan kuwa ilaa hadda koob qaxwo ah gatay. Waad mahadsan tihiin.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Wax kasta oo uu qabo wuxuu bedelayaa waxa qalabkan ku jira: {titles} cinwaan, {watched} meel daawasho, {favourites} kuwa la jecel yahay, {watchlist} liiska daawashada iyo {sources} il. Soo dejinta diskka lama taabanayo.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Wax kasta oo la daawaday wuxuu ku hadhaa diskka ilaa meel loo baahdo, kadibna waxaa la tirtiraa cinwaannada ugu muddada dheer aan la ciyaarin. Eber wuxuu u oggolaanayaa inay u korto inta diskku banaan yahay.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "Ka bax shaashadda buuxda (f)",
   "Favourite": "Ku dar kuwa la jecel yahay",
   "Favourites": "Kuwa la jecel yahay",

@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Mindenkinek, aki eddig meghívott egy kávéra. Köszönöm.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Minden, amit tartalmaz, felváltja azt, ami ezen az eszközön van: {titles} cím, {watched} lejátszási pozíció, {favourites} kedvenc, {watchlist} a megnézendőkön és {sources} forrás. A lemezen lévő letöltésekhez nem nyúl.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Minden megnézett tartalom a lemezen marad, amíg a hely szükségessé nem válik, ekkor a legrégebben lejátszott címek törlődnek. A nulla addig engedi ezt nőni, amennyi hely a meghajtón szabad.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "Kilépés a teljes képernyőből (f)",
   "Favourite": "Hozzáadás a kedvencekhez",
   "Favourites": "Kedvencek",

@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "A h-uile duine a cheannaich cofaidh gu ruige seo. Mòran taing.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Cuiridh a h-uile rud a tha na broinn an àite na tha air an uidheam seo: {titles} tiotal, {watched} àite-coimhid, {favourites} annsachd, {watchlist} air an liosta chòimhid agus {sources} tùs. Cha tèid beantainn ris na luchdaidhean air an diosga.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Cumar a h-uile rud a chaidh a choimhead air an diosga gus am bi feum air an rùm, agus an uair sin thèid na tiotalan as fhaide bho chaidh an cluich a sguabadh às. Leigidh neoni le sin fàs gu na tha saor air an draibh.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "Fàg an làn-sgrìn (f)",
   "Favourite": "Cuir ris na h-annsachdan",
   "Favourites": "Annsachdan",

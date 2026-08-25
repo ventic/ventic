@@ -168,8 +168,19 @@ const next = computed(() => {
   }
 })
 
+/**
+ * Out of the player, to the title's own page rather than back a step. An
+ * episode rolls over into the next one, so the entry behind this is whatever
+ * you launched from — the episode you *started* with, not the one on screen —
+ * and for a show the useful place to land is the show. `replace`, so Back from
+ * there carries on out rather than walking into a finished player.
+ *
+ * A bare magnet has no title and no page to land on; that one still steps back.
+ */
 function leave() {
-  if (router.options.history.state.back)
+  if (id.value)
+    navigateTo(mediaLink({ id: Number(id.value), type: type.value }), { replace: true })
+  else if (router.options.history.state.back)
     router.back()
   else
     navigateTo(localePath('/'))
@@ -258,6 +269,7 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
         :season="season"
         :episode="episode"
         fullscreen
+        @exit="leave"
       >
         <template #start>
           <v-btn icon variant="text" density="comfortable" :title="$t('Back (Esc)')" @click="leave">

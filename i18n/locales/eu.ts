@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Orain arte kafe bat ordaindu duten guztiei. Eskerrik asko.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Barruan duen guztiak gailu honetan dagoena ordezkatzen du: {titles} izenburu, {watched} ikuste-posizio, {favourites} gogoko, {watchlist} ikusteko zerrendan eta {sources} iturburu. Diskoko deskargak ez dira ukitzen.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Ikusitako guztia diskoan gordetzen da lekua behar den arte; orduan aspaldien erreproduzitutako izenburuak ezabatzen dira. Zeroak diskoak libre duen guztiraino haztea uzten dio.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "Irten pantaila osotik (f)",
   "Favourite": "Gehitu gogokoetara",
   "Favourites": "Gogokoak",

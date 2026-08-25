@@ -130,6 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Gach duine a cheannaigh caife go dtí seo. Go raibh maith agaibh.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Cuireann gach rud atá inti in ionad an rud atá ar an ngléas seo: {titles} teideal, {watched} suíomh féachana, {favourites} ceanán, {watchlist} ar an liosta faire agus {sources} foinse. Ní bhaintear leis na híoslódálacha ar an diosca.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Coinnítear gach rud a breathnaíodh ar an diosca go dtí go dteastaíonn an spás, agus ansin scriostar na teidil is faide ó seinneadh iad. Ligeann nialas dó sin fás go dtí cibé rud atá saor ag an diosca.",
+  "Exit": "TODO_TRANSLATION: Exit",
   "Exit fullscreen (f)": "Fág an scáileán iomlán (f)",
   "Favourite": "Cuir leis na ceanáin",
   "Favourites": "Ceanáin",
