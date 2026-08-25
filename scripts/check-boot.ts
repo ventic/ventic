@@ -414,6 +414,21 @@ function wordmark(hint: any) {
       `${name} uses it rather than the platform's colorBackground`,
     )
   }
+
+  // The same colour is handed to the *Android webview* by wry — and it is
+  // applied after MainActivity's onWebViewCreate hook has run (main_pipe.rs),
+  // so the plain call there is overwritten and the page is opaque for the life
+  // of the process. Nothing shows through to ExoPlayer's SurfaceView after
+  // that: a film plays with sound, subtitles and a clock, and no picture.
+  // Posting is what puts ours last, and no compiler on any platform sees it.
+  assert.match(
+    readFileSync(
+      new URL('../src-tauri/gen/android/app/src/main/java/com/ventic/app/MainActivity.kt', import.meta.url),
+      'utf8',
+    ),
+    /webView\.post \{ webView\.setBackgroundColor\(Color\.TRANSPARENT\) \}/,
+    'the Android webview is made transparent after wry applies backgroundColor, not before',
+  )
 }
 
 // Where the window opens is the other half of a launch, and it is split across

@@ -101,7 +101,15 @@ class MainActivity : TauriActivity() {
     // has to be able to show through to it. Only the player route ever makes
     // itself transparent (see MpvPlayer.vue); every other screen paints its own
     // background as before, so nothing else changes.
-    webView.setBackgroundColor(Color.TRANSPARENT)
+    //
+    // Posted, not called: wry hands the webview to this hook and only *then*
+    // applies `backgroundColor` from tauri.conf.json (main_pipe.rs), so a plain
+    // call here is overwritten by the ground colour a few lines later and the
+    // webview is opaque for the life of the process — a film plays with sound,
+    // subtitles and a clock, and the picture is never seen. The post runs after
+    // wry's whole create block. The window keeps its own ventic_ground behind
+    // the page, which is what the desktop asks `backgroundColor` for anyway.
+    webView.post { webView.setBackgroundColor(Color.TRANSPARENT) }
 
     // A TV reports a 960dp-wide display (1080p at density 2), so the page lays
     // itself out as if on a small laptop and every card, control and line of
