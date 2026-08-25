@@ -304,7 +304,9 @@ The app is driven by up, down, left, right, OK and back as often as by a mouse. 
 constraint on every screen, not a mode: real `<a>`/`<button>` elements throughout, a `focus`
 style anywhere there's a `hover` style, decorative overlay buttons taken out of the tab order,
 and nothing that depends on typing or pointing. Spatial navigation is handled centrally in
-`app/plugins/dpad.client.ts`, and its focus geometry has a check beside it (`bun run check:dpad`).
+`app/plugins/dpad.client.ts`, and its focus geometry has a check beside it (`bun run check:dpad`)
+— which also holds the BACK contract, where the page gets first refusal on every Android version
+and back at the root backgrounds the app rather than closing it.
 
 <p align="right"><a href="#readme-top">&#9650; back to top</a></p>
 
@@ -653,7 +655,8 @@ adb install -r src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-u
 Tauri there, so the app takes the same `<video>` player Android does, against a real engine.
 Chrome's device toolbar then gives you the phone layout, touch emulation and coarse-pointer
 controls. What it does *not* cover is the device's codecs, the immersive/landscape switch, or the
-BACK key — those need real hardware.
+BACK key — those need real hardware. Reopening after a back-out is worth trying on a device too:
+it is a different code path from a cold start, and it used to crash.
 
 </details>
 
@@ -773,11 +776,13 @@ with assertions, no fixtures, no runner:
 ```bash
 bun run check:torrents          # source fan-out, release ranking, disk budget, seeding
 bun run check:player            # the <video> backend's answers to mpv's protocol
-bun run check:dpad              # remote/d-pad focus geometry
+bun run check:dpad              # remote/d-pad focus geometry, and the Android BACK contract
 bun run check:library           # …including the backup file's round trip
 bun run check:subtitles
 bun run check:theme             # contrast of every generated colour pair
 bun run check:swipe
+bun run check:boot              # the two screens a failed or slow start puts up
+bun run check:perf
 bun run check:android-downloads
 bun run check:updates           # version ordering, and the GitHub release shape
 ```

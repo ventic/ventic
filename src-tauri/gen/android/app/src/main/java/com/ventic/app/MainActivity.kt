@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.Process
 import android.os.StatFs
 import android.os.storage.StorageManager
 import android.provider.Settings
@@ -16,6 +17,7 @@ import android.view.KeyEvent
 import android.view.WindowManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -45,6 +47,8 @@ class MainActivity : TauriActivity() {
     ) {
       requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 0)
     }
+
+    onBackPressedDispatcher.addCallback(this, backToPage)
   }
 
   /**
@@ -120,6 +124,20 @@ class MainActivity : TauriActivity() {
     // engine resumes every torrent where it left off on the next launch anyway.
     runCatching { stopService(Intent(this, DownloadService::class.java)) }
     super.onDestroy()
+
+    // And then take the process with it, because a half-live one is worse than
+    // no process at all: wry starts the Rust side once per process and never
+    // again (see `leave`), so an activity that is really gone must not leave the
+    // event loop, the tokio runtime and a librqbit session holding port 3030
+    // behind for the next launch to attach itself to. `run()` is written for a
+    // cold start and only for a cold start; this is what guarantees it gets one.
+    //
+    // `isFinishing` keeps it off the path where Android is destroying the
+    // activity in order to rebuild it — a configuration change, or reclaiming a
+    // backgrounded app it means to restore.
+    if (isFinishing && !isChangingConfigurations) {
+      Process.killProcess(Process.myPid())
+    }
   }
 
   /**
@@ -302,11 +320,8 @@ class MainActivity : TauriActivity() {
     }
   }
 
-  // TauriActivity switches wry's own back handling off, so without this the
-  // remote's BACK key closes the app from any screen — and it's the most used
-  // key on a TV remote. The page decides what back means there (close a dialog,
-  // leave the player, go back a page) and answers "true" when it handled it;
-  // anything else means we're at the root and quitting is right.
+  // TauriActivity switches wry's own back handling off, so BACK is ours to
+  // answer — see `backToPage` below for where that happens now.
   /**
    * OK is the other key the page can't see for itself. The WebView turns
    * DPAD_CENTER into a click on a link or a button, and drops it entirely for
@@ -326,17 +341,57 @@ class MainActivity : TauriActivity() {
     return super.dispatchKeyEvent(event)
   }
 
-  override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-    val webView = web
-    if (keyCode != KeyEvent.KEYCODE_BACK || webView == null) {
-      return super.onKeyDown(keyCode, event)
-    }
-
-    webView.evaluateJavascript("window.__tvBack ? window.__tvBack() : false") { handled ->
-      if (handled != "true") {
-        finish()
+  /**
+   * BACK, from a remote's key and a phone's gesture alike.
+   *
+   * The dispatcher rather than `onKeyDown`, because the two are not one
+   * mechanism: an app targeting API 35+ gets predictive back, where the system
+   * routes BACK through `OnBackInvokedDispatcher` and `onKeyDown` is never
+   * called at all. That is why Android 15 phones closed the app from wherever
+   * they were — a dialog, the middle of a film — while the same build behaved on
+   * a TV box two versions older. `OnBackPressedDispatcher` is fed by both paths
+   * on every version we support, so the rule lives in one place instead of two
+   * that have to agree.
+   *
+   * `evaluateJavascript` is asynchronous and this callback is not, so it always
+   * claims the key and acts on the answer when it arrives. The page decides what
+   * back means (close a dialog, leave the player, go back a page) and answers
+   * "true" when it handled it; anything else means we are at the root.
+   */
+  private val backToPage = object : OnBackPressedCallback(true) {
+    override fun handleOnBackPressed() {
+      val webView = web
+      if (webView == null) {
+        leave()
+        return
+      }
+      webView.evaluateJavascript("window.__tvBack ? window.__tvBack() : false") { handled ->
+        if (handled != "true") {
+          leave()
+        }
       }
     }
-    return true
+  }
+
+  /**
+   * Back at the root screen, with nothing left to go back to.
+   *
+   * Deliberately not `finish()`. Finishing the activity does not end the
+   * process — Android caches it — and wry starts our Rust `run()` exactly once
+   * per process, off a `ProcessLifecycleOwner` observer that ignores a second
+   * registration. So reopening the app a few seconds later built a fresh
+   * activity onto an event loop whose webview had already been torn down, and
+   * the JNI callbacks along that path unwrap their way into a panic, which
+   * aborts the process. "I closed it and opened it again and it just crashed"
+   * was this, and it needs no unusual device to reproduce — only a relaunch fast
+   * enough that Android still had the old process.
+   *
+   * Backgrounding the task is what every other Android app does with back at the
+   * root anyway: the app is left where it was, a download keeps running, and
+   * reopening is instant. Genuinely closing it is the Recents swipe, which
+   * destroys the activity — see `onDestroy`.
+   */
+  private fun leave() {
+    moveTaskToBack(true)
   }
 }

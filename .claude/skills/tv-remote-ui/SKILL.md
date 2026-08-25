@@ -44,9 +44,23 @@ pages get remote support for free as long as they follow the rules below.
   Vuetify's list items and chips handle Enter/Space too.
 - **Back** is `window.__tvBack()`: close the top dialog, else let the page claim
   Escape (the player's menus, then leaving playback), else `router.back()`, else
-  return `false` so Android quits. `MainActivity.kt` routes `KEYCODE_BACK` into
-  it — without that override the app exits from any screen, because
-  `TauriActivity` turns wry's own back handling off.
+  return `false`, at which point `MainActivity` backgrounds the task. Without an
+  override the app exits from any screen, because `TauriActivity` turns wry's own
+  back handling off — but the override has to sit on
+  **`OnBackPressedDispatcher`**, not on `onKeyDown`. An app targeting API 35+ gets
+  predictive back, where BACK arrives through `OnBackInvokedDispatcher` and
+  `onKeyDown` is never called at all; the manifest declares
+  `enableOnBackInvokedCallback` so 33 and 34 take that path too, and the
+  dispatcher is what both mechanisms feed. Catching the keycode instead is what
+  made Android 15 phones close the app out of dialogs and out of a film.
+- **Back at the root backgrounds the app, it does not finish it.** Finishing the
+  activity leaves the *process* alive, and wry starts the Rust side exactly once
+  per process (a `ProcessLifecycleOwner` observer that ignores being added
+  twice), so the next launch built a fresh activity onto an event loop whose
+  webview was already gone — and aborted. `moveTaskToBack(true)` avoids all of
+  it; `onDestroy` kills the process when the activity is genuinely finishing, so
+  a real close is always followed by a cold start. `bun run check:dpad` holds
+  both ends of this.
 - **Focus is visible** whenever `<html>` carries `.dpad`, added on the first
   arrow key and removed on the first mouse move. The ring lives in the
   `vuetify-final` layer in `assets/css/layers.css`.
@@ -94,13 +108,15 @@ Run `bun run check:dpad` after touching the geometry.
   category, and `android:banner` — a TV launcher shows a blank tile without one
   (`res/drawable-xhdpi/tv_banner.png`, 320×180).
 - `gen/android` is committed, so edits there survive; regenerating the project
-  will clobber them, so re-apply the BACK override, the **OK forward**
+  will clobber them, so re-apply the BACK callback, the **OK forward**
   (`dispatchKeyEvent` → `window.__tvOk`), the `VenticScreen` JS interface
   (fullscreen, orientation, metered network, `tv()`), the **wide viewport**
   settings, `mediaPlaybackRequiresUserGesture = false`, `Downloads.kt` with its
-  `onResume`/`onPause`/`onDestroy` hooks, and the manifest lines — the leanback
-  ones, the service and its permissions — if that ever happens.
-  `bun run check:android-downloads` fails loudly when the download half is gone.
+  `onResume`/`onPause`/`onDestroy` hooks, the process kill in `onDestroy`, the
+  `windowBackground` in `res/values*/themes.xml`, and the manifest lines — the
+  leanback ones, `enableOnBackInvokedCallback`, the service and its permissions —
+  if that ever happens. `bun run check:android-downloads` fails loudly when the
+  download half is gone, and `check:dpad` when the BACK half is.
 - **A TV is 960dp wide**, which is a small laptop as far as any breakpoint is
   concerned: below every `lg:` rule the desktop layout is built on, and at twice
   the size anything wants to be across a room. `plugins/tv.client.ts` asks for a

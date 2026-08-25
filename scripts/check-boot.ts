@@ -5,9 +5,11 @@
 import assert from 'node:assert'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
+import { GROUND } from '../app/theme/themes'
 
 const SOURCE = readFileSync(new URL('../app/boot-diagnostics.js', import.meta.url), 'utf8')
   .replace('__VERSION__', '9.9.9')
+  .replace('__GROUND__', GROUND)
 
 /** Enough DOM for a panel that is one div of markup and nothing else. */
 function element(tag: string) {
@@ -15,6 +17,7 @@ function element(tag: string) {
     tagName: tag,
     id: '',
     innerHTML: '',
+    style: {} as Record<string, string>,
     scrollTop: 0,
     children: [] as any[],
     parentNode: null as any,
@@ -45,6 +48,10 @@ interface Boot {
 interface Harness {
   boot: Boot
   panel: () => any
+  /** The reassuring screen that comes long before the diagnostic one. */
+  hint: () => any
+  /** What `html` is painted, which is the very first thing this script does. */
+  ground: () => string | undefined
   mount: () => void
   /** Run every timer whose delay has come due, oldest first. */
   advance: (ms: number) => void
@@ -53,9 +60,19 @@ interface Harness {
   rerun: () => void
 }
 
-function launch(options: { ua?: string, drop?: string[], bridge?: boolean } = {}): Harness {
+function launch(options: {
+  ua?: string
+  drop?: string[]
+  bridge?: boolean
+  /** What the app painted last time, as it would come back off localStorage. */
+  remembered?: string
+  /** A webview with site data switched off throws rather than answering null. */
+  noStorage?: boolean
+} = {}): Harness {
   const body = element('body')
   const root = element('div')
+  const html = element('html')
+  html.style = {} as Record<string, string>
   root.id = '__nuxt'
 
   let clock = 0
@@ -75,13 +92,22 @@ function launch(options: { ua?: string, drop?: string[], bridge?: boolean } = {}
     devicePixelRatio: 2,
     innerWidth: 960,
     innerHeight: 540,
-    localStorage: { setItem() {}, removeItem() {} },
+    localStorage: {
+      setItem() {},
+      removeItem() {},
+      getItem(key: string) {
+        if (options.noStorage)
+          throw new Error('access denied')
+        return key === 'ventic.ground' ? options.remembered ?? null : null
+      },
+    },
     structuredClone: (value: unknown) => value,
     CSS: { supports: () => true },
     CSSLayerBlockRule: class {},
     AbortSignal: { timeout: () => ({}) },
     document: {
       body,
+      documentElement: html,
       getElementById: (id: string) => (id === '__nuxt' ? root : null),
       createElement: element,
       addEventListener: on,
@@ -102,6 +128,8 @@ function launch(options: { ua?: string, drop?: string[], bridge?: boolean } = {}
   return {
     boot: sandbox.__venticBoot,
     panel: () => body.children.find((c: any) => c.id === 'ventic-boot-error') ?? null,
+    hint: () => body.children.find((c: any) => c.id === 'ventic-boot-hint') ?? null,
+    ground: () => html.style.backgroundColor,
     mount: () => root.appendChild(element('div')),
     advance(ms: number) {
       const until = clock + ms
@@ -227,6 +255,165 @@ function launch(options: { ua?: string, drop?: string[], bridge?: boolean } = {}
   app.rerun()
   app.fire('error', { message: 'and another' })
   assert.deepEqual(app.boot.errors.map(e => e.message), ['parse error', 'and another'])
+}
+
+/* --- The ground, and the screen before the screen ------------------------- */
+
+/** The "Starting…" line inside the hint, which is the only part that moves. */
+function ticker(hint: any) {
+  return hint.children[0].children[1].innerHTML as string
+}
+
+/** The wordmark's inline style, which is where its colour is decided. */
+function wordmark(hint: any) {
+  return hint.children[0].children[0].attributes.style as string
+}
+
+// The very first statement that runs, ahead of every feature probe: a webview
+// that has just been handed a document paints something of ours rather than
+// its own white. This is the half of the fix that lives in JavaScript — the
+// window and the webview layers are set natively (see the cross-check below).
+{
+  const app = launch()
+  assert.equal(app.ground(), GROUND, 'the default ground is painted at once')
+}
+
+// ...and the app's own, once it has painted one. Without this a light theme
+// traded Windows' white flash for a dark one, which is no better.
+{
+  const app = launch({ remembered: '#eee9e9' })
+  assert.equal(app.ground(), '#eee9e9', 'what the app painted last time wins')
+}
+
+// localStorage is not a property you can test for: a webview with site data
+// switched off throws on access rather than answering null.
+{
+  const app = launch({ noStorage: true })
+  assert.equal(app.ground(), GROUND, 'unreadable storage falls back rather than throwing')
+  app.advance(13000)
+  assert.ok(app.panel(), 'and the rest of the script still runs')
+}
+
+// A healthy boot never sees either screen, which is the whole constraint on how
+// early the first one may come.
+{
+  const app = launch()
+  app.advance(2000)
+  assert.equal(app.hint(), null, 'nothing at all for the first couple of seconds')
+  app.mount()
+  app.advance(30000)
+  assert.equal(app.hint(), null, 'and nothing ever, for an app that started')
+}
+
+// The gap this was added for: a slow phone spent twelve seconds indistinguishable
+// from a dead one, and the reports said "it was real dark so I closed it".
+{
+  const app = launch()
+  app.advance(3000)
+  const hint = app.hint()
+  assert.ok(hint, 'a slow start says it is a slow start')
+  assert.equal(app.panel(), null, 'without claiming anything is wrong yet')
+  assert.match(hint.attributes.style, new RegExp(GROUND), 'on the app\'s own ground')
+}
+
+// The ellipsis is the diagnostic, not the decoration: if it moves, the webview
+// is running our code and the bundle is merely slow. A photograph of a dark
+// screen cannot otherwise tell that from a webview that never ran anything.
+{
+  const app = launch()
+  app.advance(3000)
+  const first = ticker(app.hint())
+  app.advance(500)
+  assert.notEqual(ticker(app.hint()), first, 'the ellipsis moves')
+  app.advance(2000)
+  assert.match(ticker(app.hint()), /^Starting\.{0,3}$/, 'and stays within three dots')
+}
+
+// Mounted still wins over everything, including the reassuring version.
+{
+  const app = launch()
+  app.advance(3000)
+  assert.ok(app.hint(), 'shown while nothing is on screen')
+  app.mount()
+  app.advance(2000)
+  assert.equal(app.hint(), null, 'and withdrawn the moment the app turns up')
+}
+
+// Twelve seconds in, being reassuring stops being honest.
+{
+  const app = launch()
+  app.advance(3000)
+  assert.ok(app.hint())
+  app.advance(10000)
+  assert.equal(app.hint(), null, 'the hint gives way')
+  assert.ok(app.panel(), 'to the diagnostic that replaces it')
+}
+
+// An error skips the reassurance: there is nothing left to be reassuring about.
+{
+  const app = launch()
+  app.advance(3000)
+  assert.ok(app.hint())
+  app.fire('error', { message: 'Unexpected token \'?\'' })
+  app.advance(1500)
+  assert.equal(app.hint(), null, 'the hint stands down')
+  assert.match(app.panel().innerHTML, /Unexpected token/, 'and the error is on screen at 4s, not 12s')
+}
+
+// Two lines of white text on a pale ground is the flash all over again, so the
+// hint reads its own contrast off whichever ground it ended up with.
+{
+  const dark = launch()
+  dark.advance(3000)
+  assert.match(wordmark(dark.hint()), /#ff5555/, 'the brand red on the grounds it was drawn for')
+
+  const light = launch({ remembered: '#eee9e9' })
+  light.advance(3000)
+  assert.ok(!wordmark(light.hint()).includes('#ff5555'), 'and never on a light one, where it falls under 3:1')
+}
+
+/* --- One colour, four files ----------------------------------------------- */
+
+// Three layers can each flash the wrong colour before the app paints: the native
+// window, the webview, and the document. Only the last of them can import the
+// theme — the other two are read by Rust and by Gradle — so this is what keeps
+// all of them saying what the default theme actually says.
+{
+  // GROUND is cast to a string on the way out of Vuetify's palette type, so the
+  // shape is worth one assert before three files are compared against it.
+  assert.match(GROUND, /^#[0-9a-f]{6}$/, 'the ground is a plain six-digit hex')
+
+  const tauri = readFileSync(new URL('../src-tauri/tauri.conf.json', import.meta.url), 'utf8')
+  const colors = readFileSync(
+    new URL('../src-tauri/gen/android/app/src/main/res/values/colors.xml', import.meta.url),
+    'utf8',
+  )
+  const themes = readFileSync(
+    new URL('../src-tauri/gen/android/app/src/main/res/values/themes.xml', import.meta.url),
+    'utf8',
+  )
+  const nightThemes = readFileSync(
+    new URL('../src-tauri/gen/android/app/src/main/res/values-night/themes.xml', import.meta.url),
+    'utf8',
+  )
+
+  assert.equal(
+    JSON.parse(tauri).app.windows[0].backgroundColor,
+    GROUND,
+    'the desktop window and webview start on the app\'s ground — this is the Windows double white flash',
+  )
+  assert.match(
+    colors,
+    new RegExp(`<color name="ventic_ground">${GROUND}</color>`),
+    'and so does the Android window',
+  )
+  for (const [name, file] of [['themes.xml', themes], ['values-night/themes.xml', nightThemes]] as const) {
+    assert.match(
+      file,
+      /<item name="android:windowBackground">@color\/ventic_ground<\/item>/,
+      `${name} uses it rather than the platform's colorBackground`,
+    )
+  }
 }
 
 // eslint-disable-next-line no-console

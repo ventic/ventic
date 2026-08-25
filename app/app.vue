@@ -17,7 +17,13 @@ const theme = useTheme()
  */
 const painted = computed(() => paintedTheme(settings, ui.shownArt, ui.backdropImage))
 
-watch(painted, value => applyTheme(theme, value), { immediate: true })
+watch(painted, value => {
+  applyTheme(theme, value)
+  // Every layer under the page — the native window, the webview, and `html`
+  // before a stylesheet lands — follows the colour the app is actually painted,
+  // so nothing flashes somebody else's white on the way in. See utils/ground.
+  rememberGround(theme.current.value.colors.background)
+}, { immediate: true })
 
 /**
  * The other global preference that only takes effect here: the UI language.

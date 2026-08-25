@@ -17,6 +17,15 @@
  * error page says more than this could, so errors are only collected onto
  * `window.__venticBoot` — which is also how to read them over adb or devtools,
  * along with `__venticBoot.show()` to raise the panel by hand.
+ *
+ * Two things happen before any of that, because the same blank screen is also
+ * what a *slow* start looks like and the reports are identical. It puts the
+ * colour the app last painted back straight away, so a cold start is never a
+ * flash of the platform's white; and after a couple of seconds it says the app
+ * is starting, with an ellipsis that moves. A moving ellipsis is worth more than
+ * it looks: it is the difference between "the webview is running our code and
+ * the bundle is slow" and "nothing here runs at all", which is otherwise the one
+ * distinction a photograph of a dark screen cannot make.
  */
 ;(function () {
   // Head tags survive hydration, but a second copy would cost nothing to guard.
@@ -26,12 +35,62 @@
   var VERSION = '__VERSION__'
   var NEEDS = 111
 
+  /** The default theme's ground — GROUND in app/theme/themes.ts. */
+  var GROUND = '__GROUND__'
+
+  /** Long enough that a healthy boot is never seen; short enough to beat a shrug. */
+  var HINT_MS = 2500
+
+  /** And how long before we stop being reassuring and start being useful. */
+  var PANEL_MS = 12000
+
   var boot = window.__venticBoot = {
     version: VERSION,
     errors: [],
     missing: [],
     show: show,
     report: report,
+  }
+
+  /**
+   * The colour to sit on until the app has one of its own.
+   *
+   * The build pins `html` to the default theme's ground (see `ground` in
+   * nuxt.config), which is right on a first launch and wrong for anyone who has
+   * since chosen a light theme — they would get a dark flash where a Windows
+   * user used to get a white one. So the app writes what it actually painted to
+   * `ventic.ground` (app.vue), and this puts it back before the first frame.
+   *
+   * localStorage throws rather than returning null in a webview with site data
+   * switched off, so this is the first of several try/catches around it.
+   */
+  function ground() {
+    try {
+      return localStorage.getItem('ventic.ground') || GROUND
+    }
+    catch (e) {
+      return GROUND
+    }
+  }
+
+  var GROUND_NOW = ground()
+
+  if (document.documentElement)
+    document.documentElement.style.backgroundColor = GROUND_NOW
+
+  /**
+   * Is that ground a light one? Perceived brightness, not WCAG — the only thing
+   * it decides is whether the two lines drawn on it are dark or pale, and the
+   * app's own contrast checking (scripts/check-theme.ts) covers everything real.
+   */
+  function pale(hex) {
+    var h = String(hex).replace('#', '')
+    if (h.length === 3)
+      h = h.charAt(0) + h.charAt(0) + h.charAt(1) + h.charAt(1) + h.charAt(2) + h.charAt(2)
+    var n = parseInt(h, 16)
+    if (h.length !== 6 || isNaN(n))
+      return false
+    return ((n >> 16 & 255) * 299 + (n >> 8 & 255) * 587 + (n & 255) * 114) / 1000 > 140
   }
 
   /**
@@ -128,7 +187,10 @@
 
   function record(kind, message, where) {
     boot.errors.push({ kind: kind, message: String(message), where: where || '' })
-    setTimeout(check, 1200)
+    // Straight past the reassuring stage, but not instantly: an error early in
+    // boot doesn't always stop the app, and one that didn't must not take the
+    // screen off a page that is about to mount.
+    setTimeout(escalate, 1200)
   }
 
   // Capture phase, because a <script> or stylesheet that fails to load fires its
@@ -180,6 +242,10 @@
       return
     }
 
+    // `__venticBoot.show()` can raise this by hand at any moment, including
+    // while the reassuring version of the same screen is still up.
+    unhint()
+
     var html = '<h1 style="margin:0 0 12px;font-size:22px;color:#fff">Ventic couldn\'t start</h1>'
       + '<p style="margin:0 0 20px;font-size:17px;line-height:1.5;color:#ffd280">' + escape(verdict()) + '</p>'
 
@@ -229,22 +295,111 @@
     }
   }
 
+  var hint = null
+  var dots = null
+  var step = 0
+
+  /**
+   * "Starting…", on the app's own ground, while there is still every reason to
+   * think it will start.
+   *
+   * This is the screen the bug reports were about: a phone that takes its time
+   * over the bundle looks exactly like one that will never finish, and someone
+   * looking at an unlit rectangle closes the app rather than waiting twelve
+   * seconds for a diagnostic they have no reason to expect. Built out of
+   * elements rather than one lump of innerHTML because the ellipsis below has to
+   * hold a reference to the line it rewrites.
+   */
+  function starting() {
+    if (hint || panel || !document.body)
+      return
+
+    var ink = pale(GROUND_NOW) ? '#1a1a1a' : '#e6e6e6'
+    var quiet = pale(GROUND_NOW) ? '#6a6a6a' : '#8a8a8a'
+
+    hint = document.createElement('div')
+    hint.id = 'ventic-boot-hint'
+    hint.setAttribute('style', 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483646;'
+      + 'display:flex;align-items:center;justify-content:center;text-align:center;'
+      + 'background:' + GROUND_NOW + ';color:' + ink + ';'
+      + 'font:16px/1.5 sans-serif;-webkit-text-size-adjust:none')
+
+    var box = document.createElement('div')
+
+    var mark = document.createElement('div')
+    // The brand red is only safe on the dark grounds it was drawn for; on a
+    // light theme it falls under 3:1 at this size, so the wordmark goes to ink.
+    mark.setAttribute('style', 'font-size:26px;letter-spacing:0.3em;margin:0 0 10px;'
+      + 'color:' + (pale(GROUND_NOW) ? ink : '#ff5555'))
+    mark.innerHTML = 'VENTIC'
+
+    dots = document.createElement('div')
+    dots.setAttribute('style', 'color:' + quiet)
+    dots.innerHTML = 'Starting'
+
+    box.appendChild(mark)
+    box.appendChild(dots)
+    hint.appendChild(box)
+    document.body.appendChild(hint)
+
+    pulse()
+  }
+
+  /**
+   * The ellipsis, on a self-rescheduling timeout rather than an interval so that
+   * dropping `dots` is the whole of stopping it — there is no handle to lose and
+   * no clearInterval to reach a webview that might not have one.
+   */
+  function pulse() {
+    if (!dots)
+      return
+    step = (step + 1) % 4
+    dots.innerHTML = 'Starting' + Array(step + 1).join('.')
+    setTimeout(pulse, 400)
+  }
+
+  function unhint() {
+    if (hint && hint.parentNode)
+      hint.parentNode.removeChild(hint)
+    hint = null
+    dots = null
+  }
+
+  /**
+   * True once there is something worth interrupting the user for: the timeout
+   * ran out, or an error arrived and the app did not recover from it.
+   */
+  var deep = false
+
   /**
    * Mounted wins, always. A weak box can take its time over 1.4 MB of
    * JavaScript, and an error early in boot doesn't always stop the app — so this
-   * keeps looking rather than deciding once, and takes the panel back down if
-   * the app turns up late.
+   * keeps looking rather than deciding once, and takes whatever is up back down
+   * if the app turns up late.
    */
   function check() {
-    if (mounted())
+    if (mounted()) {
+      unhint()
       hide()
-    else
+    }
+    else if (deep) {
+      unhint()
       show()
+    }
+    else {
+      starting()
+    }
   }
 
-  setTimeout(check, 12000)
+  function escalate() {
+    deep = true
+    check()
+  }
+
+  setTimeout(check, HINT_MS)
+  setTimeout(escalate, PANEL_MS)
   setInterval(function () {
-    if (panel)
+    if (panel || hint)
       check()
   }, 1000)
 })()

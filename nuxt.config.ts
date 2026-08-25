@@ -1,6 +1,7 @@
 import type { LocaleObject } from '@nuxtjs/i18n'
 import { readFileSync } from 'node:fs'
 import process from 'node:process'
+import { GROUND } from './app/theme/themes'
 import { flag } from './app/utils/flag'
 import i18nLocales from './i18n/i18n.locales.json'
 import { version } from './package.json'
@@ -20,6 +21,25 @@ const { defaultLocale, locales } = i18nLocales as { defaultLocale: LocaleObject[
  */
 const bootDiagnostics = readFileSync(new URL('app/boot-diagnostics.js', import.meta.url), 'utf8')
   .replace('__VERSION__', version)
+  .replace('__GROUND__', GROUND)
+
+/**
+ * The last of the three layers that can flash the wrong colour before the app
+ * has painted anything — the document itself.
+ *
+ * The other two are native and set elsewhere: the window (`backgroundColor` in
+ * tauri.conf.json, `android:windowBackground` in themes.xml) and the webview
+ * (the same tauri key, which wry hands to WebView2 as its default background
+ * before the controller exists). Both of those default to white, which is what
+ * "two white flashes on Windows" was: the Win32 window, then WebView2, then at
+ * last a themed page. This closes the third gap, between the webview appearing
+ * and the app's own stylesheet arriving.
+ *
+ * On `html` and never on `body`: body's background belongs to the theme, in the
+ * `app` layer of assets/css/layers.css, and an unlayered rule here would beat
+ * every layer and pin the app to one colour for good.
+ */
+const ground = `html{background:${GROUND}}`
 
 export default defineNuxtConfig({
   compatibilityDate: '2026-01-01',
@@ -92,6 +112,9 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'icon', href: '/logo.svg' },
+      ],
+      style: [
+        { innerHTML: ground },
       ],
       script: [
         { innerHTML: bootDiagnostics },
