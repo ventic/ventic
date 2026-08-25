@@ -177,6 +177,20 @@ assert.match(
   'and wry\'s own goBack() callback is off, or it takes the key before ours',
 )
 
+// And that is still not enough, because the WebView answers BACK on its own
+// account: it pops its history whenever `canGoBack()` is true, and it sits below
+// the activity in the view hierarchy, so `super.dispatchKeyEvent` spends the key
+// there before `onBackPressedDispatcher` is ever consulted. Measured on the box:
+// BACK on a film with the subtitle panel open left the film and never closed the
+// panel, and only at the root — no history to pop — did `__tvBack` run at all.
+// Predictive back skips `dispatchKeyEvent` entirely, so this is the older path
+// being routed to the same callback, not a second rule.
+assert.match(
+  activity,
+  /KeyEvent\.KEYCODE_BACK[\s\S]*?onBackPressedDispatcher\.onBackPressed\(\)[\s\S]*?return true/,
+  'and BACK is taken before super.dispatchKeyEvent, or the WebView pops history with it',
+)
+
 // Back at the root must not finish the activity. Finishing leaves the process
 // alive, wry runs the Rust side once per process and never again, and the next
 // launch attaches a new activity to an event loop whose webview is already gone

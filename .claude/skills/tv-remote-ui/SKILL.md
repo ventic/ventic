@@ -44,7 +44,7 @@ pages get remote support for free as long as they follow the rules below.
   Vuetify's list items and chips handle Enter/Space too.
 - **Back** is `window.__tvBack()`: close the top dialog, else let the page claim
   Escape (the player's menus, then leaving playback), else `router.back()`, else
-  return `false`, at which point `MainActivity` backgrounds the task. Two things
+  return `false`, at which point `MainActivity` backgrounds the task. Three things
   have to be true for any of that to run. `handleBackNavigation` must be
   **`false`** — `WryActivity.setWebView` otherwise adds a callback of its own
   that does nothing but `webView.goBack()`, and it wins, because the dispatcher
@@ -60,6 +60,18 @@ pages get remote support for free as long as they follow the rules below.
   `enableOnBackInvokedCallback` so 33 and 34 take that path too, and the
   dispatcher is what both mechanisms feed. Catching the keycode instead is what
   made Android 15 phones close the app out of dialogs and out of a film.
+- **And the WebView answers BACK on its own account, before any of that.** It
+  pops its own history whenever `canGoBack()` is true, and it sits *below* the
+  activity in the view hierarchy — `super.dispatchKeyEvent` walks the views
+  before `onBackPressedDispatcher` is ever consulted. So turning wry's callback
+  off was only half the job: the key was still spent on a history pop, and
+  `__tvBack` ran only at the root, where there is no history to pop. Measured on
+  the box: BACK on a film with the subtitle panel open left the film and never
+  closed the panel, and no dialog anywhere could be closed with it.
+  `MainActivity` therefore takes `KEYCODE_BACK` in `dispatchKeyEvent` and hands
+  it to `onBackPressedDispatcher` itself. Predictive back never calls
+  `dispatchKeyEvent`, so that is the older path being routed to the same
+  callback, not a second rule.
 - **Back at the root backgrounds the app, it does not finish it.** Finishing the
   activity leaves the *process* alive, and wry starts the Rust side exactly once
   per process (a `ProcessLifecycleOwner` observer that ignores being added

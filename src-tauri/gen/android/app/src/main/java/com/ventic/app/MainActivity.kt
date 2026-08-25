@@ -524,6 +524,28 @@ class MainActivity : TauriActivity() {
     if (event.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
       web?.evaluateJavascript("window.__tvOk ? window.__tvOk() : false", null)
     }
+
+    // BACK, before the WebView gets it. Turning wry's own handling off was only
+    // half the job: the WebView answers BACK itself and pops its history
+    // whenever `canGoBack()` is true, and it sits *below* this in the view
+    // hierarchy — `super.dispatchKeyEvent` walks the views before it ever
+    // reaches `onBackPressedDispatcher`. So the key was spent on a history pop
+    // and `backToPage` ran only at the root, where there is no history to pop:
+    // measured on the box, BACK on a film with the subtitle panel open left the
+    // film and never closed the panel.
+    //
+    // Predictive back (API 33+) never calls this at all, which is why the rule
+    // still lives on the dispatcher — this only makes sure the older path
+    // arrives there too. ACTION_UP is where Android's own back fires, so a held
+    // key doesn't repeat, and both actions are swallowed or the WebView still
+    // sees half the press.
+    if (event.keyCode == KeyEvent.KEYCODE_BACK) {
+      if (event.action == KeyEvent.ACTION_UP && !event.isCanceled) {
+        onBackPressedDispatcher.onBackPressed()
+      }
+      return true
+    }
+
     return super.dispatchKeyEvent(event)
   }
 
