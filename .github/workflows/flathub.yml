@@ -51,11 +51,11 @@ jobs:
       # Full history: generate-sources.sh reads package.json and Cargo.lock out
       # of the tag rather than the working tree, so the hashes describe the
       # bytes Flathub will check out.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
 

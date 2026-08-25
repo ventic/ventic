@@ -78,7 +78,7 @@ jobs:
       # below actually reached it. A release with no latest.json means that
       # secret is missing: the app then still says a version is out, and points
       # at the release page instead of installing it.
-      - uses: tauri-apps/tauri-action@v0
+      - uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # linuxdeploy's own ancient `strip` fails on .relr.dyn — see scripts/build/index.ts.
@@ -95,6 +95,9 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Ventic ${{ github.ref_name }}
+          # v1 fails rather than uploading when the tag's release exists and is
+          # no longer a draft, so re-running this after publishing is an error
+          # and not a silent no-op. Delete the release first, or re-tag.
           releaseDraft: true
           args: ${{ matrix.args }}
           # Windows builds both, and the updater installs whichever this names.
@@ -135,7 +138,7 @@ jobs:
       # not the place to park it. Missing when there was no key to sign with,
       # which is a release without in-app updates rather than a failure.
       - if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: appimage-signature
           path: src-tauri/target/release/bundle/appimage/*.AppImage.sig
@@ -157,7 +160,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       # Absent when the Linux job had no signing key, so this must not fail the
       # release — the script skips on a signature that isn't there.
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         continue-on-error: true
         with:
           name: appimage-signature
@@ -173,7 +176,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
