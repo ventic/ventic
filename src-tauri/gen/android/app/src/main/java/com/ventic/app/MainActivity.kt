@@ -1,10 +1,12 @@
 package com.ventic.app
 
 import android.Manifest
+import android.app.DownloadManager
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
+import android.net.Uri
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -22,6 +24,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.content.FileProvider
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -32,7 +35,16 @@ class MainActivity : TauriActivity() {
   companion object {
     /** Largest file FAT32 can address: 4 GiB, less one byte. */
     private const val FAT32_MAX = 4L * 1024 * 1024 * 1024 - 1
+
+    /** The new build, in this app's own folder — nothing else may read it. */
+    private const val UPDATE_APK = "update.apk"
   }
+
+  /** DownloadManager's id for the APK being fetched, or -1 for none. */
+  private var updateId = -1L
+
+  /** Whether the installer has already been opened for that file. */
+  private var updateHandedOver = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
     enableEdgeToEdge()
@@ -146,10 +158,55 @@ class MainActivity : TauriActivity() {
    * when it opens and again when it closes — and Chromium never shipped
    * `navigator.connection.type`, so nor can it tell mobile data from Wi-Fi.
    *
-   * Nothing but our own frontend is ever loaded into this webview. One method
-   * sets the window up, the other answers a single bit about the network;
-   * neither reads anything belonging to the user.
+   * Nothing but our own frontend is ever loaded into this webview, which is what
+   * makes `installUpdate` acceptable here: it is https-only and ends at the
+   * system installer, which asks the user and refuses anything not signed with
+   * this app's key. Nothing in here reads anything belonging to the user.
    */
+  /**
+   * Open the installer on the APK we just downloaded.
+   *
+   * A `content://` URI through the FileProvider, because a `file://` one has
+   * been a FileUriExposedException since API 24 — the package installer is
+   * another app, and this is how a file is lent to one.
+   */
+  private fun installApk() {
+    val file = java.io.File(getExternalFilesDir(null), UPDATE_APK)
+    runCatching {
+      startActivity(
+        Intent(Intent.ACTION_VIEW)
+          .setDataAndType(
+            FileProvider.getUriForFile(this, "$packageName.fileprovider", file),
+            "application/vnd.android.package-archive",
+          )
+          .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK),
+      )
+    }
+  }
+
+  /**
+   * The per-app "install unknown apps" switch, which is the only thing standing
+   * between a downloaded APK and the installer.
+   *
+   * Two fallbacks, for the same reason `openStorageSettings` has one: a set-top
+   * box often ships a cut-down Settings, and a dead button on a TV is worse than
+   * a general settings screen the user can find their way around.
+   */
+  private fun askInstallPermission() {
+    val intents = mutableListOf<Intent>()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      intents.add(
+        Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")),
+      )
+      intents.add(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES))
+    }
+    intents.add(Intent(Settings.ACTION_SECURITY_SETTINGS))
+    intents.add(Intent(Settings.ACTION_SETTINGS))
+    for (intent in intents) {
+      if (runCatching { startActivity(intent) }.isSuccess) return
+    }
+  }
+
   inner class Screen {
     /**
      * Does the network we are on charge for bytes? True for mobile data and for
@@ -285,6 +342,112 @@ class MainActivity : TauriActivity() {
         if (ok) return true
       }
       return false
+    }
+
+    /**
+     * Fetch a new build of Ventic and hand it to Android's package installer.
+     *
+     * There is no updater plugin on Android and there could not be one: an app
+     * cannot overwrite its own APK, only ask the system to install one, and the
+     * install is a screen the user confirms. So this is the whole of it —
+     * download the file, then open the installer on it — and the "keeps your
+     * library" part is Android's, not ours: the package manager only replaces a
+     * package with one signed by the same key, and keeps its data when it does.
+     *
+     * DownloadManager rather than a thread and a stream: it survives this
+     * activity, follows the redirect chain from the release URL, and puts a
+     * progress notification in the shade for free.
+     *
+     * Returns "" when the download has started, or the reason it did not —
+     * "permission" for the one the user has to grant on a settings screen we
+     * have just opened for them.
+     */
+    @JavascriptInterface
+    fun installUpdate(url: String): String {
+      // The installer refuses to hear from an app that is not on the "install
+      // unknown apps" list (API 26+), and that switch is the user's to flip on a
+      // screen only the system can show. Asked here rather than at launch,
+      // because this is the one moment it means anything.
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !packageManager.canRequestPackageInstalls()) {
+        runOnUiThread { askInstallPermission() }
+        return "permission"
+      }
+      // The bytes about to be handed to the package installer, so: TLS or
+      // nothing. (Android's own signature check would reject a swapped-in APK
+      // anyway — this is the belt to that braces.)
+      if (!url.startsWith("https://")) return "insecure"
+
+      // A cancelled install prompt leaves a perfectly good file behind, and BACK
+      // on a remote is one keypress from cancelling one — so offer that file
+      // again rather than fetching a hundred megabytes a second time. The flag
+      // is only ever set once a download finished, which makes it exactly the
+      // question "is the APK already here".
+      if (updateHandedOver) {
+        updateHandedOver = false
+        return ""
+      }
+
+      val manager = getSystemService(DownloadManager::class.java) ?: return "unavailable"
+      // Whatever a previous attempt left behind, including a half-written file
+      // from a download that was cancelled mid-flight.
+      if (updateId >= 0) runCatching { manager.remove(updateId) }
+      updateId = -1L
+      updateHandedOver = false
+      runCatching { java.io.File(getExternalFilesDir(null), UPDATE_APK).delete() }
+
+      return runCatching {
+        updateId = manager.enqueue(
+          DownloadManager.Request(Uri.parse(url))
+            .setTitle("Ventic")
+            .setDescription("Downloading the update")
+            .setDestinationInExternalFilesDir(this@MainActivity, null, UPDATE_APK)
+            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED),
+        )
+        ""
+      }.getOrElse { "failed" }
+    }
+
+    /**
+     * How that download is going, as JSON: `status` is one of downloading,
+     * installing, failed or idle, and `progress` is 0–1 where the server said
+     * how big the file is.
+     *
+     * Opening the installer happens here, on the poll that sees the download
+     * finish, rather than from a broadcast receiver: from API 29 a background
+     * process may not start an activity at all, so the attempt would be
+     * swallowed exactly when the user is not looking. Polled, it fires the next
+     * time they are — and the completed download's own notification installs it
+     * too, for the times they get there first.
+     */
+    @JavascriptInterface
+    fun updateProgress(): String {
+      val manager = getSystemService(DownloadManager::class.java)
+      if (updateId < 0 || manager == null) return JSONObject().put("status", "idle").toString()
+
+      val out = JSONObject()
+      manager.query(DownloadManager.Query().setFilterById(updateId)).use { row ->
+        if (!row.moveToFirst()) return out.put("status", "failed").toString()
+        val done = row.getLong(row.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
+        // -1 until the server sends a length, which is what makes the bar
+        // indeterminate rather than stuck at zero.
+        val total = row.getLong(row.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+        if (total > 0) out.put("progress", done.toDouble() / total)
+
+        val state = row.getInt(row.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
+        if (state == DownloadManager.STATUS_SUCCESSFUL && !updateHandedOver) {
+          updateHandedOver = true
+          runOnUiThread { installApk() }
+        }
+        out.put(
+          "status",
+          when (state) {
+            DownloadManager.STATUS_SUCCESSFUL -> "installing"
+            DownloadManager.STATUS_FAILED -> "failed"
+            else -> "downloading"
+          },
+        )
+      }
+      return out.toString()
     }
 
     @JavascriptInterface

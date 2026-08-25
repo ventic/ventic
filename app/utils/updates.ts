@@ -3,8 +3,10 @@
  *
  * Two halves that deliberately don't share a transport. *Finding out* is this
  * file: one call to the GitHub API, which every build can make — desktop,
- * Android, and `bun run dev` in a browser. *Applying* it is the updater plugin,
- * which fetches `latest.json` and the bundle from Rust.
+ * Android, and `bun run dev` in a browser. *Applying* it is platform work in
+ * `stores/updates.ts`: the updater plugin on the desktop, which fetches
+ * `latest.json` and the bundle from Rust, and on Android a DownloadManager fetch
+ * of the APK handed to the system installer (MainActivity's `installUpdate`).
  *
  * It has to be the API and not the release file the updater itself reads:
  * `releases/latest/download/…` redirects to release-assets.githubusercontent.com,
@@ -19,6 +21,24 @@
 
 export const REPO = 'ventic/ventic'
 export const RELEASES_URL = `https://github.com/${REPO}/releases/latest`
+
+/**
+ * The project's own download page, which is where anyone who has to fetch a
+ * build by hand is sent — a `.deb`, an AUR build, a browser. It names the file
+ * each platform wants; the GitHub release page is a list of six of them.
+ */
+export const DOWNLOAD_URL = 'https://ventic.tv/download/'
+
+/**
+ * The newest Android package, whichever release it belongs to. Only a fallback:
+ * an `Update` carries the APK of the *particular* release we told the user
+ * about, and offering a version other than the one named on screen is worse
+ * than offering none. This covers a release that shipped without one.
+ *
+ * https, not http — these bytes go to the package installer, and Android's
+ * network config forbids cleartext anyway.
+ */
+export const APK_URL = 'https://ventic.tv/apk'
 
 const API_URL = `https://api.github.com/repos/${REPO}/releases/latest`
 

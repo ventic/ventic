@@ -16,13 +16,13 @@ onMounted(() => {
 })
 
 /**
- * Where "get it yourself" points when this copy can't replace itself. Android is
- * the one platform with a single obvious file — the APK on the release — so it
- * gets a direct link; everywhere else the release page is the honest answer,
- * because which of the six bundles is the right one is the user's call.
+ * Where "get it yourself" points when this copy can't replace itself — a `.deb`,
+ * an AUR build, a browser, or an Android box whose installer wouldn't take our
+ * APK. The project's own download page rather than the GitHub release, which is
+ * a list of six files with no word about which one this machine wants.
  */
 const downloadUrl = computed(() =>
-  (platform.value === 'android' && updates.available?.apk) || updates.available?.url || RELEASES_URL)
+  (platform.value === 'android' && (updates.available?.apk || APK_URL)) || DOWNLOAD_URL)
 
 // Naming the licence is half the point of this list. Windows builds carry an
 // mpv.exe, which makes handing one out redistribution of GPL software — the
@@ -61,9 +61,11 @@ function open(url: string) {
     </settings-section>
 
     <settings-section :title="$t('Updates')">
-      <!-- Three outcomes, and which one shows has nothing to do with which
-           platform this is: `capable` is about how the app was *installed*.
-           See can_self_update in src-tauri/src/lib.rs. -->
+      <!-- Three outcomes, and on the desktop which one shows has nothing to do
+           with the platform: `capable` is about how the app was *installed*
+           (can_self_update in src-tauri/src/lib.rs). Android is the exception —
+           `apk` there means the bridge can fetch the package and hand it to the
+           system installer, which is the whole update. -->
       <template v-if="updates.available">
         <p class="text-body-medium">
           {{ $t('Ventic {version} is out', { version: updates.available.version }) }}
@@ -77,10 +79,13 @@ function open(url: string) {
           class="text-body-small max-h-60 overflow-y-auto whitespace-pre-wrap rounded-lg bg-surface-container/40 p-4 font-sans opacity-80"
         >{{ updates.available.notes }}</pre>
 
-        <p v-if="!updates.capable && platform === 'android'" class="text-body-medium opacity-70">
+        <p v-if="updates.apk" class="text-body-medium opacity-70">
+          {{ $t('Ventic downloads the new package and Android asks you to confirm the install. It is signed with the same key as the copy you have, so it upgrades in place and keeps your library.') }}
+        </p>
+        <p v-else-if="!updates.canUpdate && platform === 'android'" class="text-body-medium opacity-70">
           {{ $t('Android installs from the package itself — download it and open it. It is signed with the same key as the copy you have, so it upgrades in place and keeps your library.') }}
         </p>
-        <p v-else-if="!updates.capable" class="text-body-medium opacity-70">
+        <p v-else-if="!updates.canUpdate" class="text-body-medium opacity-70">
           {{ $t('This copy wasn\'t installed by Ventic\'s own installer — a package manager, or a build from source — so whatever put it there is what updates it. Replacing the files from in here would only confuse it.') }}
         </p>
 
@@ -111,7 +116,7 @@ function open(url: string) {
             {{ $t('Restart to finish') }}
           </v-btn>
           <v-btn
-            v-else-if="updates.capable"
+            v-else-if="updates.canUpdate"
             :prepend-icon="mdiUpdate"
             :loading="updates.status === 'downloading'"
             variant="flat"
@@ -121,15 +126,15 @@ function open(url: string) {
             {{ $t('Update now') }}
           </v-btn>
           <v-btn
-            v-if="!updates.capable || updates.status === 'failed'"
+            v-if="!updates.canUpdate || updates.status === 'failed'"
             :prepend-icon="platform === 'android' ? mdiTrayArrowDown : mdiOpenInNew"
             variant="tonal"
             @click="open(downloadUrl)"
           >
-            {{ platform === 'android' ? $t('Download the APK') : $t('Open the release') }}
+            {{ platform === 'android' ? $t('Download the APK') : $t('Open the download page') }}
           </v-btn>
           <v-btn
-            v-if="updates.status !== 'downloading' && updates.status !== 'ready' && !updates.dismissed"
+            v-if="!['downloading', 'ready', 'installing'].includes(updates.status) && !updates.dismissed"
             variant="text"
             @click="updates.dismiss()"
           >
@@ -139,6 +144,9 @@ function open(url: string) {
 
         <p v-if="updates.status === 'ready'" class="text-body-small opacity-70">
           {{ $t('Installed. It takes effect the next time Ventic starts.') }}
+        </p>
+        <p v-else-if="updates.status === 'installing'" class="text-body-small opacity-70">
+          {{ $t('Downloaded. Confirm the install when Android asks — Ventic closes while it happens.') }}
         </p>
       </template>
 

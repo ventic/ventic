@@ -82,6 +82,43 @@ export function openStorageSettings(): boolean {
   return bridge()?.openStorageSettings?.() ?? false
 }
 
+/** How the APK download started by `installApk` is going. */
+export interface ApkInstall {
+  status: 'downloading' | 'installing' | 'failed' | 'idle'
+  /** 0–1, or undefined until the server says how big the file is. */
+  progress?: number
+}
+
+/**
+ * Can this build fetch a new APK and open the installer on it? Android only —
+ * everywhere else updating is the Tauri updater plugin's, or nobody's.
+ */
+export function canInstallApk() {
+  return !!bridge()?.installUpdate
+}
+
+/**
+ * Start downloading `url` and hand it to Android's package installer when it
+ * lands. Empty string when the download started; otherwise why it didn't —
+ * `permission` means the user has been sent to the "install unknown apps"
+ * switch and can try again once they have flipped it.
+ */
+export type ApkProblem = '' | 'permission' | 'insecure' | 'unavailable' | 'failed'
+
+export function installApk(url: string): ApkProblem {
+  return (bridge()?.installUpdate?.(url) ?? 'unavailable') as ApkProblem
+}
+
+/** Where that download has got to. Polled; see MainActivity's `updateProgress`. */
+export function apkProgress(): ApkInstall {
+  try {
+    return JSON.parse(bridge()?.updateProgress?.() || '{}') as ApkInstall
+  }
+  catch {
+    return { status: 'failed' }
+  }
+}
+
 /** MainActivity's `Screen`, present only inside the Android app. */
 function bridge() {
   return (globalThis as {
@@ -90,6 +127,8 @@ function bridge() {
       volumes?: () => string
       tv?: () => boolean
       openStorageSettings?: () => boolean
+      installUpdate?: (url: string) => string
+      updateProgress?: () => string
     }
   }).VenticScreen
 }

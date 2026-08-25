@@ -2,4 +2,7 @@
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
   <external-path name="my_images" path="." />
   <cache-path name="my_cache_images" path="." />
+  <!-- The downloaded APK, lent to the package installer for as long as it takes
+       to read it. Same folder downloads land in, and only this app can write it. -->
+  <external-files-path name="updates" path="." />
 </paths>

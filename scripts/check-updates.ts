@@ -7,7 +7,8 @@
 // quietly parsed to an empty version would turn the badge off with nothing
 // anywhere to notice.
 import assert from 'node:assert'
-import { compareVersions, isNewer, parseUpdate, RELEASES_URL } from '../app/utils/updates'
+import { readFileSync } from 'node:fs'
+import { APK_URL, compareVersions, DOWNLOAD_URL, isNewer, parseUpdate, RELEASES_URL } from '../app/utils/updates'
 
 // --- Ordering ----------------------------------------------------------------
 
@@ -81,5 +82,59 @@ assert.equal(parseUpdate({ ...release, prerelease: true }), null)
 // Anything without a version is not a release, however well-formed the rest is.
 for (const bad of [null, undefined, {}, { tag_name: '' }, { tag_name: 'v' }, 'not json'])
   assert.equal(parseUpdate(bad), null, `rejected: ${JSON.stringify(bad)}`)
+
+// --- Installing it on Android ------------------------------------------------
+// No updater plugin exists there and no app can overwrite its own package, so
+// the update is: download the APK, open the system installer on it. That path
+// crosses from TS into Kotlin through the VenticScreen bridge, which no compiler
+// checks — a method renamed on one side is an Update button that silently does
+// nothing, on the one platform where there is no second way to install.
+
+const kotlin = readFileSync(
+  new URL('../src-tauri/gen/android/app/src/main/java/com/ventic/app/MainActivity.kt', import.meta.url),
+  'utf8',
+)
+const platform = readFileSync(new URL('../app/utils/platform.ts', import.meta.url), 'utf8')
+const store = readFileSync(new URL('../app/stores/updates.ts', import.meta.url), 'utf8')
+const manifest = readFileSync(
+  new URL('../src-tauri/gen/android/app/src/main/AndroidManifest.xml', import.meta.url),
+  'utf8',
+)
+
+for (const method of ['installUpdate', 'updateProgress']) {
+  assert.ok(kotlin.includes(`fun ${method}(`), `MainActivity answers ${method}()`)
+  assert.ok(platform.includes(`${method}?.(`), `and platform.ts is what calls it`)
+}
+
+// Every state the poll can end on has to be one the store knows what to do with.
+// A status Kotlin invents and the store doesn't handle reads as a failed
+// download in front of a perfectly good file.
+for (const state of ['downloading', 'installing', 'failed', 'idle']) {
+  assert.ok(kotlin.includes(`"${state}"`), `Kotlin can report ${state}`)
+  assert.ok(platform.includes(`'${state}'`), `and ApkInstall lists it`)
+}
+assert.ok(store.includes(`'installing'`), 'the store has Android\'s end state, which is not the desktop\'s')
+
+// Without the permission the installer refuses to hear from us at all, and
+// without the provider path FileProvider throws on the URI it is handed —
+// both fail at the last step, after a 100 MB download.
+assert.ok(
+  manifest.includes('android.permission.REQUEST_INSTALL_PACKAGES'),
+  'the manifest asks for REQUEST_INSTALL_PACKAGES',
+)
+assert.ok(
+  readFileSync(
+    new URL('../src-tauri/gen/android/app/src/main/res/xml/file_paths.xml', import.meta.url),
+    'utf8',
+  ).includes('external-files-path'),
+  'and the FileProvider can lend out the folder the APK lands in',
+)
+
+// The bytes go to the package installer, and Android's own network config
+// forbids cleartext besides — so a plain-http URL is a download that never
+// starts, whichever end refuses it first.
+for (const url of [APK_URL, DOWNLOAD_URL, RELEASES_URL])
+  assert.ok(url.startsWith('https://'), `${url} is https`)
+assert.ok(kotlin.includes('startsWith("https://")'), 'and Kotlin refuses anything else')
 
 console.log('check-updates: ok')

@@ -11,13 +11,25 @@ import { invoke } from '@tauri-apps/api/core'
  * apt, pacman, dnf or Nix installed is not ours to overwrite (see
  * `can_self_update` in `src-tauri/src/lib.rs`). When the two disagree the panel
  * still says a release is out, and points at it instead of installing it.
+ *
+ * Android is neither: no updater plugin exists for it and no app may overwrite
+ * its own package. What it *can* do is download the new APK and open the system
+ * installer on it, which is one confirmation away from the same thing — so
+ * `canUpdate` is the question the panel actually asks, and `install()` picks the
+ * path. Android's package manager only replaces a package with one signed by the
+ * same key, and keeps the library when it does.
  */
 export const useUpdatesStore = defineStore('updates', () => {
   /** The running version. Empty in a browser, where there is no Tauri to ask. */
   const current = ref('')
   const release = ref<Update | null>(null)
   const capable = ref(false)
-  const status = ref<'idle' | 'checking' | 'downloading' | 'ready' | 'failed'>('idle')
+  /**
+   * `ready` is the desktop's "installed, restart to finish". `installing` is
+   * Android's end of the road: the system installer is on screen and this
+   * process is about to be replaced, so there is nothing left here to restart.
+   */
+  const status = ref<'idle' | 'checking' | 'downloading' | 'ready' | 'installing' | 'failed'>('idle')
   const error = ref('')
   /** 0–1 while downloading. The bundle is ~100 MB, so this is worth showing. */
   const progress = ref(0)
@@ -30,6 +42,16 @@ export const useUpdatesStore = defineStore('updates', () => {
 
   const available = computed(() =>
     release.value && isNewer(current.value, release.value.version) ? release.value : null)
+
+  /**
+   * Android's route: fetch the APK and hand it to the installer. Read from the
+   * bridge rather than from `platform()`, so a build whose bridge failed to come
+   * up falls back to the download link instead of offering a dead button.
+   */
+  const apk = computed(() => canInstallApk())
+
+  /** Can this copy install the update itself, by either route? */
+  const canUpdate = computed(() => capable.value || apk.value)
 
   const dismissed = computed(() => !!available.value && available.value.version === skipped.value)
 
@@ -65,7 +87,11 @@ export const useUpdatesStore = defineStore('updates', () => {
    * panel falls back to the download link.
    */
   async function install() {
-    if (!capable.value || !available.value)
+    if (!available.value)
+      return
+    if (apk.value)
+      return installUpdateApk()
+    if (!capable.value)
       return
     status.value = 'downloading'
     progress.value = 0
@@ -95,7 +121,53 @@ export const useUpdatesStore = defineStore('updates', () => {
     }
   }
 
+  /**
+   * The Android half: DownloadManager fetches the APK, then Android's own
+   * package installer asks the user to confirm and replaces us in place.
+   *
+   * Polled rather than pushed, because the bridge is a synchronous JS interface
+   * with no way to call back into the page — and a second's granularity is
+   * plenty for a bar. The poll ends the moment the installer is up: from there
+   * the process either gets replaced or the user cancels, and either way this
+   * screen is not the one to report it.
+   */
+  async function installUpdateApk() {
+    status.value = 'downloading'
+    progress.value = 0
+    error.value = ''
+
+    // The APK of the exact release named on screen; the stable alias only
+    // covers a release that shipped without one.
+    const problem = installApk(available.value?.apk || APK_URL)
+    if (problem) {
+      status.value = 'failed'
+      error.value = problem === 'permission'
+        // The switch is one screen and one toggle, and we have just opened it.
+        ? $t('Android needs your permission to install apps from Ventic. Turn it on, then press Update again.')
+        : $t('The download couldn\'t be started.')
+      return
+    }
+
+    await new Promise<void>(resolve => {
+      const timer = setInterval(() => {
+        const state = apkProgress()
+        progress.value = state.progress ?? 0
+        if (state.status === 'downloading')
+          return
+        clearInterval(timer)
+        if (state.status === 'installing') {
+          status.value = 'installing'
+        }
+        else {
+          status.value = 'failed'
+          error.value = $t('The download didn\'t finish.')
+        }
+        resolve()
+      }, 1000)
+    })
+  }
+
   const restart = () => useTauriProcessRelaunch()
 
-  return { current, release, capable, status, error, progress, available, dismissed, dismiss, check, install, restart }
+  return { current, release, capable, apk, canUpdate, status, error, progress, available, dismissed, dismiss, check, install, restart }
 })

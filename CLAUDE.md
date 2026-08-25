@@ -179,6 +179,18 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   through the plugin's *AppImage* path, which renames the binary away and writes
   over it. Everything else in the panel follows from that bool; don't add a
   platform check beside it.
+- **Android is the third answer, and it isn't the updater plugin.** No app may
+  overwrite its own package there — it can only download an APK and ask the
+  system installer to take it, which is one confirmation away from the same
+  thing. That is `installUpdate`/`updateProgress` on the `VenticScreen` bridge
+  (DownloadManager, then an `ACTION_VIEW` through the FileProvider), so the
+  store's `canUpdate` — not `capable` — is what the panel asks, and `install()`
+  picks the path. The safety is Android's own: it replaces a package only with
+  one signed by the same key, and keeps the library when it does. `bun run
+  check:updates` holds that bridge seam, which no compiler sees. Anyone who has
+  to fetch a build by hand (a `.deb`, an AUR build, a browser) goes to
+  `DOWNLOAD_URL`, the project's own page — the GitHub release is six files with
+  no word on which one this machine wants.
 - **The AppImage is rewritten after it is signed.**
   `scripts/build/linux/appimage.ts` strips libwayland and repacks *after*
   tauri-action has already put a signature for the original file into

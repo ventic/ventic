@@ -12,6 +12,13 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+    <!-- Updating in place: the app downloads the new APK and opens the system
+         installer on it (MainActivity's installUpdate). Without this the
+         installer refuses to hear from us at all; with it, the user still has to
+         confirm both the one-time "install unknown apps" switch and the install
+         itself, and Android still refuses a package not signed with our key. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
     <!-- AndroidTV support. Both are `required="false"` on purpose: the same APK
          installs on a phone, and a TV would refuse it if a touchscreen were
          required. -->
