@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Semua yang sejauh ini sudah membelikan kopi. Terima kasih.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Semua isinya menggantikan apa yang ada di perangkat ini: {titles} judul, {watched} posisi tontonan, {favourites} favorit, {watchlist} di daftar tonton, dan {sources} sumber. Unduhan di disk tidak disentuh.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Semua yang ditonton disimpan di disk sampai ruangnya dibutuhkan, lalu judul yang paling lama tidak diputar akan dihapus. Nol membiarkannya tumbuh sampai sebesar sisa ruang yang ada.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "Keluar",
   "Exit fullscreen (f)": "Keluar dari layar penuh (f)",
   "Favourite": "Tambahkan ke favorit",
   "Favourites": "Favorit",

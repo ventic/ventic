@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "ყველას, ვინც აქამდე ყავა გაგვიმასპინძლა. გმადლობთ.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "ყველაფერი, რასაც ის შეიცავს, ჩაანაცვლებს იმას, რაც ამ მოწყობილობაზეა: {titles} სათაური, {watched} ნახვის პოზიცია, {favourites} რჩეული, {watchlist} სანახავ სიაში და {sources} წყარო. დისკზე არსებულ ჩამოტვირთვებს არაფერი დაემართება.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "ყველაფერი ნანახი დისკზე რჩება, სანამ ადგილი არ დასჭირდება, შემდეგ იშლება ის სათაურები, რომლებიც ყველაზე დიდი ხანია არ დაკრულა. ნული ამას იმდენად ზრდის, რამდენიც დისკზე თავისუფალი ადგილია.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "გასვლა",
   "Exit fullscreen (f)": "სრული ეკრანიდან გასვლა (f)",
   "Favourite": "რჩეულებში დამატება",
   "Favourites": "რჩეულები",

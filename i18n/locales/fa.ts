@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "از همهٔ کسانی که تا امروز یک قهوه مهمان کرده‌اند. ممنون.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "هر چه در آن هست جای آنچه روی این دستگاه است را می‌گیرد: {titles} عنوان، {watched} موقعیت تماشا، {favourites} علاقه‌مندی، {watchlist} در فهرست تماشا و {sources} منبع. دانلودهای روی دیسک دست‌نخورده می‌مانند.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "هر چه تماشا شده روی دیسک می‌ماند تا وقتی فضا لازم شود؛ آن‌گاه عنوان‌هایی که دیرتر از همه پخش شده‌اند حذف می‌شوند. صفر می‌گذارد این تا هر چه دیسک آزاد دارد رشد کند.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "خروج",
   "Exit fullscreen (f)": "خروج از تمام‌صفحه (f)",
   "Favourite": "افزودن به علاقه‌مندی‌ها",
   "Favourites": "علاقه‌مندی‌ها",

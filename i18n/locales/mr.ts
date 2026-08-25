@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "आतापर्यंत ज्यांनी एक कॉफी पाजली, त्या सर्वांचे आभार.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "त्यात जे आहे ते या उपकरणावरील सर्व गोष्टींची जागा घेईल: {titles} शीर्षके, {watched} पाहण्याची स्थाने, {favourites} आवडते, पाहण्याच्या यादीत {watchlist} आणि {sources} स्रोत. डिस्कवरील डाउनलोडना धक्का लागणार नाही.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "पाहिलेले सर्व जागा लागेपर्यंत डिस्कवर राहते, नंतर सर्वात आधी चालवलेली शीर्षके हटवली जातात. शून्यामुळे ते ड्राइव्हवर जेवढी जागा मोकळी असेल तेवढे वाढू शकते.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "बाहेर पडा",
   "Exit fullscreen (f)": "पूर्ण पडद्यातून बाहेर (f)",
   "Favourite": "आवडत्यांमध्ये जोडा",
   "Favourites": "आवडते",

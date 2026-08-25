@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Kõik, kes on seni kohvi välja teinud. Aitäh.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Kõik, mida see sisaldab, asendab selle, mis on selles seadmes: {titles} pealkirja, {watched} vaatamiskohta, {favourites} lemmikut, {watchlist} vaatamisnimekirjas ja {sources} allikat. Kettal olevaid allalaadimisi ei puudutata.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Kõik vaadatu jääb kettale, kuni ruumi vaja läheb, siis kustutatakse kõige kauem esitamata pealkirjad. Null laseb sel kasvada kõigeni, mis kettal vaba on.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "Välju",
   "Exit fullscreen (f)": "Välju täisekraanist (f)",
   "Favourite": "Lisa lemmikutesse",
   "Favourites": "Lemmikud",

@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Kwa wote waliolipia kahawa hadi sasa. Asanteni.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Kila kitu kilichomo hubadilisha kilicho kwenye kifaa hiki: vichwa {titles}, nafasi za kutazama {watched}, vipendwa {favourites}, {watchlist} kwenye orodha ya kutazama na vyanzo {sources}. Vipakuliwa vilivyo kwenye diski havitaguswa.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Kila kilichotazamwa huhifadhiwa kwenye diski hadi nafasi ihitajike, kisha vichwa vilivyochezwa zamani zaidi hufutwa. Sifuri huruhusu hilo kukua hadi kiasi chochote diski ilicho nacho.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "Toka",
   "Exit fullscreen (f)": "Toka skrini nzima (f)",
   "Favourite": "Kipendwa",
   "Favourites": "Vipendwa",

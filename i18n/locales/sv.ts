@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Alla som hittills har bjudit på en kaffe. Tack.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Allt den innehåller ersätter det som finns på den här enheten: {titles} titlar, {watched} visningspositioner, {favourites} favoriter, {watchlist} i bevakningslistan och {sources} källor. Nedladdningar på disken lämnas orörda.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Allt du sett behålls på disken tills utrymmet behövs, sedan tas de titlar bort som spelats senast för längst sedan. Noll låter det växa till vad disken än har över.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "Avsluta",
   "Exit fullscreen (f)": "Avsluta helskärm (f)",
   "Favourite": "Favoritmarkera",
   "Favourites": "Favoriter",

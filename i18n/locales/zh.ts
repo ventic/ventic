@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "感谢迄今为止请过咖啡的每一位。",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "其中的所有内容会替换本设备上的数据：{titles} 部作品、{watched} 个观看进度、{favourites} 个收藏、待看列表中的 {watchlist} 项，以及 {sources} 个来源。磁盘上的下载不受影响。",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "看过的内容会一直留在磁盘上，直到需要空间为止，然后删除最久未播放的作品。填 0 表示让它占满磁盘所有剩余空间。",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "退出",
   "Exit fullscreen (f)": "退出全屏（f）",
   "Favourite": "收藏",
   "Favourites": "收藏",

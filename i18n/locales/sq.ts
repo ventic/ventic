@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Të gjithëve që deri tani kanë qerasur një kafe. Faleminderit.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Gjithçka që përmban zëvendëson atë që ndodhet në këtë pajisje: {titles} tituj, {watched} pozicione shikimi, {favourites} të preferuar, {watchlist} në listën për shikim dhe {sources} burime. Shkarkimet në disk nuk preken.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Gjithçka e parë mbetet në disk derisa nevojitet hapësira, pastaj fshihen titujt që janë luajtur më së largëti. Zeroja e lë këtë të rritet deri në gjithë hapësirën e lirë të diskut.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "Dil",
   "Exit fullscreen (f)": "Dil nga ekrani i plotë (f)",
   "Favourite": "Shto te të preferuarat",
   "Favourites": "Të preferuarat",

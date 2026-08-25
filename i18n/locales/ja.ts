@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "これまでにコーヒーをおごってくださったみなさんへ。ありがとうございます。",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "この端末の内容がバックアップの中身に置き換わります: {titles} 作品、{watched} 件の再生位置、{favourites} 件のお気に入り、ウォッチリスト {watchlist} 件、ソース {sources} 件。ディスク上のダウンロードには手を付けません。",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "視聴したものは空き容量が必要になるまでディスクに残り、その後は最後に再生してから最も時間が経った作品から削除されます。0 にすると、ドライブの空き容量いっぱいまで増えます。",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "終了",
   "Exit fullscreen (f)": "全画面を終了 (f)",
   "Favourite": "お気に入りに追加",
   "Favourites": "お気に入り",

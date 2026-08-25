@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Σε όλους όσοι κέρασαν έναν καφέ μέχρι τώρα. Ευχαριστώ.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Ό,τι περιέχει αντικαθιστά ό,τι υπάρχει σε αυτή τη συσκευή: {titles} τίτλοι, {watched} θέσεις παρακολούθησης, {favourites} αγαπημένα, {watchlist} στη λίστα παρακολούθησης και {sources} πηγές. Οι λήψεις στον δίσκο μένουν ανέγγιχτες.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Ό,τι έχει προβληθεί μένει στον δίσκο ώσπου να χρειαστεί ο χώρος, και τότε διαγράφονται οι τίτλοι που έπαιξαν πιο παλιά. Το μηδέν το αφήνει να μεγαλώσει σε ό,τι έχει ελεύθερο ο δίσκος.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "Έξοδος",
   "Exit fullscreen (f)": "Έξοδος από πλήρη οθόνη (f)",
   "Favourite": "Προσθήκη στα αγαπημένα",
   "Favourites": "Αγαπημένα",

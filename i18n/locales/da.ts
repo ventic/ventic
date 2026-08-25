@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Alle, der indtil nu har givet en kop kaffe. Tak.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Alt, den indeholder, erstatter det, der er på denne enhed: {titles} titler, {watched} afspilningspositioner, {favourites} favoritter, {watchlist} på ønskelisten og {sources} kilder. Downloads på disken røres ikke.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Alt, du har set, bliver på disken, indtil pladsen skal bruges, hvorefter de titler, der senest blev afspillet for længst tid siden, slettes. Nul lader det vokse til alt, hvad drevet har til overs.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "Afslut",
   "Exit fullscreen (f)": "Forlad fuld skærm (f)",
   "Favourite": "Føj til favoritter",
   "Favourites": "Favoritter",

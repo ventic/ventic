@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Всем, кто до сих пор угостил кофе. Спасибо.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Всё, что в ней есть, заменит то, что на этом устройстве: {titles} тайтлов, {watched} позиций просмотра, {favourites} избранных, {watchlist} в списке просмотра и {sources} источников. Загрузки на диске остаются нетронутыми.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Всё просмотренное хранится на диске, пока не понадобится место, затем удаляются тайтлы, которые дольше всех не воспроизводились. Ноль позволяет этому расти до всего свободного места на диске.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "Выйти",
   "Exit fullscreen (f)": "Выйти из полноэкранного режима (f)",
   "Favourite": "Добавить в избранное",
   "Favourites": "Избранное",

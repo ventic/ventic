@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Pawb sydd wedi prynu coffi hyd yn hyn. Diolch.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Mae popeth y mae'n ei ddal yn disodli'r hyn sydd ar y ddyfais hon: {titles} teitl, {watched} safle gwylio, {favourites} ffefryn, {watchlist} ar y rhestr wylio a {sources} ffynhonnell. Ni chyffyrddir â'r lawrlwythiadau ar y ddisg.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Cedwir popeth a wyliwyd ar y ddisg nes bod angen y lle, ac yna caiff y teitlau a chwaraewyd bellaf yn ôl eu dileu. Mae sero'n gadael i hynny dyfu i beth bynnag sydd gan y ddisg yn sbâr.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "Gadael",
   "Exit fullscreen (f)": "Gadael y sgrin lawn (f)",
   "Favourite": "Ychwanegu at ffefrynnau",
   "Favourites": "Ffefrynnau",

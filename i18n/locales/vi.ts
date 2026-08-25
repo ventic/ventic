@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Gửi tới tất cả những ai đã mời một ly cà phê cho đến nay. Cảm ơn.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Mọi thứ trong đó sẽ thay thế những gì có trên thiết bị này: {titles} tựa, {watched} vị trí xem, {favourites} mục yêu thích, {watchlist} mục trong danh sách xem và {sources} nguồn. Các tệp đã tải trên ổ đĩa không bị đụng tới.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Mọi thứ đã xem vẫn nằm trên ổ đĩa cho tới khi cần chỗ, sau đó những tựa lâu chưa phát nhất sẽ bị xóa. Số 0 để phần này lớn tới hết chỗ trống mà ổ đĩa còn.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "Thoát",
   "Exit fullscreen (f)": "Thoát toàn màn hình (f)",
   "Favourite": "Thêm vào yêu thích",
   "Favourites": "Yêu thích",

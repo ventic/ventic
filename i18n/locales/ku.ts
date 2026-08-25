@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Ji bo hemûyên ku heta niha qehweyek kirîne. Spas.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Her tiştê ku ew dihewîne li şûna tiştên li ser vê amûrê tê danîn: {titles} sernav, {watched} cihên temaşeyê, {favourites} bijare, {watchlist} di lîsteya temaşeyê de û {sources} çavkanî. Daxistinên li ser dîskê nayên destlêdan.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Her tiştê temaşekirî li ser dîskê dimîne heta ku cih pêwîst be, paşê sernavên ku herî dirêj nehatine lêdan tên jêbirin. Sifir dihêle ew heta her cihê vala yê dîskê mezin bibe.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "Derkeve",
   "Exit fullscreen (f)": "Ji ekrana tijî derkeve (f)",
   "Favourite": "Li bijareyan zêde bike",
   "Favourites": "Bijare",

@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Iedereen die tot nu toe een koffie heeft getrakteerd. Bedankt.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Alles wat erin zit vervangt wat er op dit apparaat staat: {titles} titels, {watched} kijkposities, {favourites} favorieten, {watchlist} op de kijklijst en {sources} bronnen. Downloads op de schijf blijven ongemoeid.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Alles wat je gekeken hebt blijft op de schijf tot de ruimte nodig is; dan worden de titels verwijderd die het langst niet zijn afgespeeld. Nul laat dat groeien tot alles wat de schijf over heeft.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "Afsluiten",
   "Exit fullscreen (f)": "Volledig scherm verlaten (f)",
   "Favourite": "Aan favorieten toevoegen",
   "Favourites": "Favorieten",

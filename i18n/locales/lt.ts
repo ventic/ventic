@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Visiems, kurie iki šiol pavaišino kava. Ačiū.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Viskas, ką ji saugo, pakeičia tai, kas yra šiame įrenginyje: {titles} pavadinimų, {watched} žiūrėjimo pozicijų, {favourites} mėgstamų, {watchlist} žiūrėjimo sąraše ir {sources} šaltinių. Atsisiuntimai diske nepaliečiami.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Viskas, kas žiūrėta, lieka diske, kol prireiks vietos, tada ištrinami ilgiausiai negroti pavadinimai. Nulis leidžia tam augti iki viso disko laisvo ploto.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "Išeiti",
   "Exit fullscreen (f)": "Išeiti iš viso ekrano (f)",
   "Favourite": "Įtraukti į mėgstamus",
   "Favourites": "Mėgstami",

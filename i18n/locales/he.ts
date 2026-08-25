@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "לכל מי שקנה עד היום קפה. תודה.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "כל מה שהוא מכיל מחליף את מה שיש במכשיר הזה: {titles} כותרים, {watched} מיקומי צפייה, {favourites} מועדפים, {watchlist} ברשימת הצפייה ו‑{sources} מקורות. ההורדות בדיסק אינן נוגעות.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "כל מה שנצפה נשמר בדיסק עד שיידרש המקום, ואז נמחקים הכותרים שנוגנו לפני הכי הרבה זמן. אפס נותן לזה לגדול לכל מה שפנוי בכונן.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "יציאה",
   "Exit fullscreen (f)": "צא ממסך מלא (f)",
   "Favourite": "הוסף למועדפים",
   "Favourites": "מועדפים",

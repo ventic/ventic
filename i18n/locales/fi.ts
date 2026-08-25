@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Kaikille, jotka ovat tähän mennessä tarjonneet kahvin. Kiitos.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Kaikki sen sisältö korvaa tällä laitteella olevan: {titles} nimikettä, {watched} katselukohtaa, {favourites} suosikkia, {watchlist} katselulistalla ja {sources} lähdettä. Levyllä olevia latauksia ei kosketa.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Kaikki katsottu säilyy levyllä, kunnes tilaa tarvitaan, minkä jälkeen poistetaan pisimpään toistamatta olleet nimikkeet. Nolla antaa tämän kasvaa kaikkeen, mitä levyllä on vapaana.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "Poistu",
   "Exit fullscreen (f)": "Poistu koko näytöstä (f)",
   "Favourite": "Lisää suosikkeihin",
   "Favourites": "Suosikit",

@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "ಇಲ್ಲಿಯವರೆಗೆ ಒಂದು ಕಾಫಿ ಕೊಡಿಸಿದ ಎಲ್ಲರಿಗೂ ಧನ್ಯವಾದಗಳು.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "ಅದರಲ್ಲಿರುವುದೆಲ್ಲ ಈ ಸಾಧನದಲ್ಲಿರುವುದನ್ನು ಬದಲಿಸುತ್ತದೆ: {titles} ಶೀರ್ಷಿಕೆಗಳು, {watched} ವೀಕ್ಷಣಾ ಸ್ಥಾನಗಳು, {favourites} ಮೆಚ್ಚಿನವು, ವೀಕ್ಷಣಾ ಪಟ್ಟಿಯಲ್ಲಿ {watchlist} ಮತ್ತು {sources} ಮೂಲಗಳು. ಡಿಸ್ಕ್‌ನಲ್ಲಿನ ಡೌನ್‌ಲೋಡ್‌ಗಳಿಗೆ ಏನೂ ಆಗುವುದಿಲ್ಲ.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "ನೋಡಿದ್ದೆಲ್ಲ ಜಾಗ ಬೇಕಾಗುವವರೆಗೆ ಡಿಸ್ಕ್‌ನಲ್ಲಿ ಉಳಿಯುತ್ತದೆ, ಆಮೇಲೆ ಅತಿ ಹಿಂದೆ ಪ್ಲೇ ಆದ ಶೀರ್ಷಿಕೆಗಳು ಅಳಿಸಲ್ಪಡುತ್ತವೆ. ಸೊನ್ನೆ ಇದನ್ನು ಡ್ರೈವ್‌ನಲ್ಲಿ ಎಷ್ಟು ಜಾಗ ಖಾಲಿ ಇದೆಯೋ ಅಷ್ಟಕ್ಕೂ ಬೆಳೆಯಲು ಬಿಡುತ್ತದೆ.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "ನಿರ್ಗಮಿಸಿ",
   "Exit fullscreen (f)": "ಪೂರ್ಣ ಪರದೆಯಿಂದ ಹೊರಬನ್ನಿ (f)",
   "Favourite": "ಮೆಚ್ಚಿನವುಗಳಿಗೆ ಸೇರಿಸಿ",
   "Favourites": "ಮೆಚ್ಚಿನವು",

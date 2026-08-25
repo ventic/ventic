@@ -130,7 +130,7 @@ export default {
   "Everyone who has bought a coffee so far. Thank you.": "Shu paytgacha bir chashka qahva ulashgan barchaga rahmat.",
   "Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.": "Undagi hamma narsa bu qurilmadagini almashtiradi: {titles} ta sarlavha, {watched} ta koʻrish nuqtasi, {favourites} ta sevimli, koʻrish roʻyxatida {watchlist} ta va {sources} ta manba. Diskdagi yuklab olishlarga tegilmaydi.",
   "Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.": "Koʻrilgan hamma narsa joy kerak boʻlgunicha diskda saqlanadi, keyin eng uzoq vaqt ijro etilmagan sarlavhalar oʻchiriladi. Nol buning diskda boʻsh joy qancha boʻlsa shuncha oʻsishiga ruxsat beradi.",
-  "Exit": "TODO_TRANSLATION: Exit",
+  "Exit": "Chiqish",
   "Exit fullscreen (f)": "Toʻliq ekrandan chiqish (f)",
   "Favourite": "Sevimlilarga qoʻshish",
   "Favourites": "Sevimlilar",
