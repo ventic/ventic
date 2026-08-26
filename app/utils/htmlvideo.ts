@@ -254,7 +254,10 @@ export function videoEngine(video: HTMLVideoElement): PlayerEngine {
         ext.sid = ext.owns(value) ? value : 'no'
         break
       // sub-delay and the sub-* look are applied where the cues are drawn, and
-      // `aid` has nothing to select between.
+      // `aid` has nothing to select between. Levelling and the dialogue boost
+      // (`audio-normalize`, `dialogue-boost`) would want a WebAudio graph in
+      // front of the element; this path is `bun run dev` in a browser, so they
+      // are ignored rather than built twice.
     }
   }
 

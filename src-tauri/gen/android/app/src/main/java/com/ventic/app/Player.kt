@@ -1,7 +1,10 @@
 package com.ventic.app
 
 import android.graphics.Color
+import android.media.AudioManager
 import android.media.MediaCodecList
+import android.media.audiofx.Equalizer
+import android.media.audiofx.LoudnessEnhancer
 import android.os.Handler
 import android.os.Looper
 import android.view.View
@@ -64,6 +67,26 @@ class VenticPlayer(private val activity: MainActivity) {
   private var vol = 100
   private var muted = false
   private var cues = ""
+
+  /**
+   * Where mpv has a filter graph, this has the platform's audio effects — and
+   * an effect attaches to an audio *session*, so we generate one up front and
+   * hand it to ExoPlayer rather than waiting for the one it picks at first play.
+   * That way the settings can be applied before there is any audio, and they
+   * survive every file this player opens.
+   */
+  private val session by lazy {
+    activity.getSystemService(AudioManager::class.java).generateAudioSessionId()
+  }
+
+  private var loudness: LoudnessEnhancer? = null
+  private var equalizer: Equalizer? = null
+
+  /** Target gain in millibels — see `audio-normalize` in setProp. */
+  private var gainMb = 0
+
+  /** How much to lift the speech band by, also in millibels. */
+  private var dialogueMb = 0
 
   @Volatile
   private var snap = JSONObject()
@@ -168,6 +191,10 @@ class VenticPlayer(private val activity: MainActivity) {
   fun release() {
     onMain {
       main.removeCallbacks(tick)
+      runCatching { loudness?.release() }
+      runCatching { equalizer?.release() }
+      loudness = null
+      equalizer = null
       player?.release()
       player = null
       view = null
@@ -192,6 +219,7 @@ class VenticPlayer(private val activity: MainActivity) {
       )
       .build()
 
+    p.audioSessionId = session
     p.setWakeMode(C.WAKE_MODE_LOCAL)
     p.addListener(object : Player.Listener {
       override fun onPlayerError(error: PlaybackException) {
@@ -259,6 +287,64 @@ class VenticPlayer(private val activity: MainActivity) {
       "speed" -> p.setPlaybackSpeed(num(value, 1.0).toFloat().coerceAtLeast(0.1f))
       "aid" -> select(value, C.TRACK_TYPE_AUDIO)
       "sid" -> select(value, C.TRACK_TYPE_TEXT)
+      // Neither of these is an mpv property: mpv is sent a filter chain built
+      // in utils/audio.ts, and the backends that have no filters are sent the
+      // setting itself to do what they can with. See `audioProps` there.
+      "audio-normalize" -> {
+        gainMb = when (value) {
+          "light" -> 300
+          "medium" -> 700
+          "strong" -> 1200
+          else -> 0
+        }
+        effects()
+      }
+      "dialogue-boost" -> {
+        dialogueMb = (num(value, 0.0) * 100).toInt()
+        effects()
+      }
+    }
+  }
+
+  /**
+   * Levelling and the dialogue boost, as far as Android will do them.
+   *
+   * `LoudnessEnhancer` is a compressor with one knob — a target gain it reaches
+   * by bringing the quiet parts up rather than by turning everything up — which
+   * is the shape of the levelling setting, if not its range. The dialogue boost
+   * has no centre channel to work on here (the effect sits after the mix, on
+   * the stereo pair the device is playing), so it is the speech band lifted
+   * with the platform equaliser, which is what the stereo case does under mpv
+   * too.
+   *
+   * Both are allowed to fail and both are meant to: a device may ship no effect
+   * library at all, and one passing Dolby through to a receiver has no PCM in
+   * this process to filter. A film is not worth losing over a volume setting.
+   *
+   * ponytail: DynamicsProcessing (API 28) is the upgrade — a real multiband
+   * compressor with a limiter — if the enhancer's fixed one proves too blunt.
+   */
+  private fun effects() {
+    try {
+      val le = loudness ?: LoudnessEnhancer(session).also { loudness = it }
+      le.setTargetGain(gainMb)
+      le.setEnabled(gainMb > 0)
+    } catch (_: Throwable) {
+      loudness = null
+    }
+
+    try {
+      val eq = equalizer ?: Equalizer(0, session).also { equalizer = it }
+      // 2 kHz, in the millihertz the effect is addressed in. getBand answers
+      // with the band that owns it, or -1 on a device whose bands stop short.
+      val band = if (dialogueMb > 0) eq.getBand(2_000_000).toInt() else -1
+      if (band >= 0) {
+        val ceiling = eq.bandLevelRange[1].toInt()
+        eq.setBandLevel(band.toShort(), dialogueMb.coerceAtMost(ceiling).toShort())
+      }
+      eq.setEnabled(band >= 0)
+    } catch (_: Throwable) {
+      equalizer = null
     }
   }
 

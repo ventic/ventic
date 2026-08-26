@@ -178,7 +178,7 @@ poster size, app scale and a global CSS box.</sub>
 | **Favourites** / **Watchlist** / **History** | The three local lists |
 | **Detail** | Backdrop, synopsis, cast, trailer, seasons and episodes with per-episode state |
 | **Downloads** | The engine's UI — add, pick files, pause, seed, limit, evict |
-| **Settings** | Appearance, Sources, Subtitles, Network, Storage, Account, Support, About |
+| **Settings** | Appearance, Sources, Subtitles, Audio, Network, Storage, Account, Support, About |
 
 <p align="right"><a href="#readme-top">&#9650; back to top</a></p>
 
@@ -193,6 +193,7 @@ One component, one set of controls, three backends underneath.
 | **Seek preview** | Frames pulled with ffmpeg and cached, warmed only while the control bar is up |
 | **Tracks** | The file's own audio and subtitle tracks, the release's subtitle files, and OpenSubtitles — in one menu |
 | **Subtitle styling** | Font, size, colour, outline, position, applied to mpv and to the page-drawn cues alike, previewing live from Settings |
+| **Volume levelling** | Quiet dialogue up, loud scenes down, in four steps — plus a dialogue boost that raises the centre channel of a 5.1 mix and nothing else |
 | **Auto-sync** | A file cut for another release is slid onto the audio's silence map (desktop only — it needs ffmpeg, which Windows bundles) |
 | **Resume** | Progress recorded as it plays, per episode, and picked back up from the card or the detail page |
 | **Fullscreen** | Held for as long as the player is mounted; Android goes landscape and immersive |

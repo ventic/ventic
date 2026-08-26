@@ -1,3 +1,4 @@
+import type { AudioSettings } from '~/utils/audio'
 import type { SubtitleStyle } from '~/utils/subtitles'
 import {
   mdiAccountCircleOutline,
@@ -8,11 +9,12 @@ import {
   mdiPowerPlugOutline,
   mdiSubtitlesOutline,
   mdiTranslate,
+  mdiTuneVariant,
   mdiWifi,
 } from '@mdi/js'
 import { DEFAULT_SOURCE } from '~/theme/presets'
 
-export type SectionKey = 'appearance' | 'language' | 'sources' | 'subtitles' | 'network' | 'storage' | 'account' | 'support' | 'about'
+export type SectionKey = 'appearance' | 'language' | 'sources' | 'subtitles' | 'audio' | 'network' | 'storage' | 'account' | 'support' | 'about'
 
 /**
  * The sidebar of the settings layout, in the order it lists them. A `value` is
@@ -29,6 +31,7 @@ export const SECTIONS: { value: SectionKey, title: () => string, icon: string }[
   { value: 'language', title: () => $t('Language'), icon: mdiTranslate },
   { value: 'sources', title: () => $t('Sources'), icon: mdiPowerPlugOutline },
   { value: 'subtitles', title: () => $t('Subtitles'), icon: mdiSubtitlesOutline },
+  { value: 'audio', title: () => $t('Audio'), icon: mdiTuneVariant },
   { value: 'network', title: () => $t('Network'), icon: mdiWifi },
   { value: 'storage', title: () => $t('Storage'), icon: mdiFolderOutline },
   { value: 'account', title: () => $t('Account'), icon: mdiAccountCircleOutline },
@@ -138,9 +141,16 @@ export const useSettingsStore = defineStore('settings', () => {
   /** ISO 639 code, as the player last chose or the settings page last set. */
   const subLang = useLocalStorage('ventic.subLang', '')
 
+  // --- Audio ---
+  /**
+   * Levelling and the dialogue boost — see utils/audio.ts for what each does.
+   * mergeDefaults for the same reason the subtitle style has it.
+   */
+  const audio = useLocalStorage<AudioSettings>('ventic.audio', { ...AUDIO_DEFAULTS }, { mergeDefaults: true })
+
   function resetSubs() {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, tmdbKey, downLimit, upLimit, wifiOnly, downloadDir, subs, autoSubs, subLang, resetSubs }
+  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, tmdbKey, downLimit, upLimit, wifiOnly, downloadDir, subs, autoSubs, subLang, audio, resetSubs }
 })

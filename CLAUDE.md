@@ -72,6 +72,16 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   `bun scripts/build/macos/bundle-dylib.ts <path.app>` re-checks a finished
   bundle, which is the only way to see the failure — the build machine has
   Homebrew, so a dylib left behind resolves fine there and nowhere else.
+- **The volume levelling is one setting and two implementations**, because
+  there is no filter graph on Android. `app/utils/audio.ts` owns both: mpv is
+  handed a `lavfi` chain over the `af` command (dynaudnorm for the levelling,
+  and for the dialogue boost a `pan` that lifts the centre channel of a 5.1 mix
+  — the layout is echoed back from `audio-params/channels`, and a stereo track
+  falls back to a bell around 2 kHz), while ExoPlayer is sent the two settings
+  themselves and `Player.kt` puts them on the platform's own LoudnessEnhancer
+  and Equalizer. A chain mpv rejects answers `error running command` and keeps
+  playing, which is what the retry in `applyAudio` is for. `bun run check:audio`
+  holds the chain and that Kotlin seam.
 - Playback starts through `downloads.start(key, …)`, never `startTorrent`
   directly: the store files the info hash under the title's progress key
   (`ventic.cached`), and that map is what lets an already-downloaded film play
@@ -81,7 +91,7 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   (`check:dpad`, `check:torrents`, `check:subtitles`, `check:theme`,
   `check:library`, `check:player`, `check:swipe`, `check:boot`,
   `check:perf`, `check:android-downloads`, `check:updates`, `check:supporters`,
-  `check:i18n`).
+  `check:audio`, `check:i18n`).
   Add to those rather than pulling in a test framework. `bun run check:types` is
   the odd one out: a whole-app `vue-tsc` pass, which is the only thing that
   reads a template's bindings against its script's types — eslint never does.

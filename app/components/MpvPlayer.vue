@@ -369,6 +369,52 @@ function applySubtitleStyle() {
 
 watch(() => settings.subs, applySubtitleStyle, { deep: true })
 
+// ---------------------------------------------------------------------------
+// Levelling and the dialogue boost — see utils/audio.ts for what the two do.
+// Pushed once the file is open and again on every edit, like the subtitle
+// style, and once more whenever the audio track changes: which filter fits
+// depends on the channel layout, and a 5.1 track and a stereo commentary want
+// different ones.
+// ---------------------------------------------------------------------------
+/**
+ * How mpv is decoding the track that is playing — `5.1(side)`, `stereo` — and
+ * how many channels that is. Read off the poll rather than asked for here: a
+ * track only has a layout once mpv has reconfigured onto it, which is a moment
+ * after the `aid` that selected it was set.
+ */
+let layout = { name: '', channels: 0 }
+
+async function applyAudio() {
+  if (!started.value)
+    return
+
+  // ExoPlayer has no filter graph, so the two settings cross the bridge as
+  // themselves and Player.kt decides what the platform's audio effects can do
+  // with them. The <video> path answers neither and plays on unfiltered.
+  if (!native) {
+    for (const [name, value] of Object.entries(audioProps(settings.audio)))
+      ipc(['set_property', name, value])
+    return
+  }
+
+  const chain = mpvAudioChain(settings.audio, layout.name, layout.channels)
+  if (!chain) {
+    ipc(['af', 'clr', ''])
+    return
+  }
+
+  // A layout mpv named and libavfilter won't parse takes the whole chain down
+  // with it — the command answers "error running command" and the film plays on
+  // unfiltered. The retry drops the one filter that names a layout and keeps
+  // the levelling, which needs no layout at all.
+  const res = await ipc(['af', 'set', chain])
+  const plain = mpvAudioChain(settings.audio)
+  if (chain !== plain && res?.error && res.error !== 'success')
+    ipc(['af', 'set', plain])
+}
+
+watch(() => settings.audio, applyAudio, { deep: true })
+
 // The subtitles the page draws itself, wherever mpv isn't drawing them. Both
 // kinds arrive here: downloaded files as parsed cues, and a track muxed into the
 // file as text ExoPlayer decoded and handed over. The `<video>` path has only
@@ -593,6 +639,8 @@ function fits(f: SubtitleFile) {
 function setAudio(t: Track) {
   aid.value = t.id
   ipc(['set_property', 'aid', t.id])
+  // The filters follow on the next poll — see `layout`, which is what notices
+  // that another track is another channel layout.
   osd(`Audio: ${trackLabel(t)}`)
 }
 
@@ -1142,6 +1190,7 @@ async function startPlayer() {
     aid.value = 'no'
     activeUrl.value = ''
     subText.value = ''
+    layout = { name: '', channels: 0 } // a fresh mpv carries no filters either
     subDelay.value = 0 // a fresh mpv starts at zero
     subSpeed.value = 1
     syncNote.value = ''
@@ -1193,7 +1242,7 @@ async function restart() {
 // Polling: playback props, plus a liveness check so a dead mpv reports itself
 // instead of leaving a black rectangle behind.
 // ---------------------------------------------------------------------------
-const POLLED = ['pause', 'paused-for-cache', 'duration', 'time-pos', 'demuxer-cache-time', 'volume', 'mute', 'speed', 'mouse-pos', 'sub-text']
+const POLLED = ['pause', 'paused-for-cache', 'duration', 'time-pos', 'demuxer-cache-time', 'volume', 'mute', 'speed', 'mouse-pos', 'sub-text', 'audio-params/channels', 'audio-params/channel-count']
 
 let tick = 0
 let lastMouse = ''
@@ -1296,11 +1345,22 @@ async function poll() {
     lastMouse = key
   }
 
+  // A layout is mpv's first word on the track it is actually playing, and the
+  // audio filters are built from it. Only mpv answers these, so on the other
+  // backends this never fires and the push below is the only one.
+  const channels = typeof p['audio-params/channels'] === 'string' ? p['audio-params/channels'] : ''
+  const count = typeof p['audio-params/channel-count'] === 'number' ? p['audio-params/channel-count'] : 0
+  if (channels !== layout.name || count !== layout.channels) {
+    layout = { name: channels, channels: count }
+    applyAudio()
+  }
+
   // Tracks only exist once mpv has the file open, and a duration is the first
   // sign of that.
   if (!loaded && duration.value > 0) {
     loaded = true
     applySubtitleStyle()
+    applyAudio()
     await refreshTracks()
     applyPreferredSub()
     const saved = props.media ? library.resumeAt(props.media, props.season, props.episode) : 0
