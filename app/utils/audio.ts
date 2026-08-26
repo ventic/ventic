@@ -37,8 +37,21 @@ export interface AudioSettings {
 
 export const AUDIO_DEFAULTS: AudioSettings = { normalize: 'off', dialogue: 0 }
 
-/** As far as the boost slider goes. Past this the mix stops sounding like one. */
+/** As far as the boost goes. Past this the mix stops sounding like one. */
 export const MAX_DIALOGUE = 8
+
+/**
+ * The steps, in the order both places list them: the settings page and the
+ * player's own Audio panel, which edits the very same setting while a film is
+ * up. `title` is a function for the reason every options table in the app has
+ * one — this is built when the module loads, before `$t` has a locale.
+ */
+export const LEVELLERS: { value: Leveller, title: () => string }[] = [
+  { value: 'off', title: () => $t('Off') },
+  { value: 'light', title: () => $t('Light') },
+  { value: 'medium', title: () => $t('Medium') },
+  { value: 'strong', title: () => $t('Strong') },
+]
 
 /**
  * `dynaudnorm` settings per step, as ffmpeg spells them: `f` frame in ms, `g`
@@ -102,6 +115,44 @@ export function mpvAudioChain(a: AudioSettings, layout = '', channels = 0): stri
   // One lavfi filter holding a graph, rather than one mpv filter each: the
   // brackets are what let a comma and a pipe through mpv's own option parser.
   return parts.length ? `lavfi=[${parts.join(',')}]` : ''
+}
+
+/**
+ * What one film plays with: its own settings where it was given any, and the
+ * default everything else uses where it wasn't.
+ *
+ * The two are edited in two places on purpose. *Settings → Audio* sets the
+ * default, which is the answer to "films are mixed too quietly for this room".
+ * The player's own panel sets this one, which is the answer to "I can't hear a
+ * word of *this* film" — a mix that bad is one film in twenty, and levelling
+ * every film after it because of one would be its own complaint.
+ *
+ * Keyed by `titleKey`, so a series keeps one answer across its episodes: the
+ * mix is the show's, not the episode's.
+ */
+export function pickAudio(byTitle: Record<string, AudioSettings>, key: string, base: AudioSettings): AudioSettings {
+  return (key && byTitle[key]) || base
+}
+
+/**
+ * The map with `key` set to `next` — or with it *removed*, when `next` is what
+ * the default says anyway. A film only stays in here for as long as it disagrees
+ * with the settings page, so putting one back by hand is also how you forget it,
+ * and changing the default later still reaches every film that never argued.
+ *
+ * Nothing prunes it otherwise: an entry is two short strings, and a viewer with
+ * a thousand of them has spent about 50 KB on knowing which films were mixed
+ * badly.
+ */
+export function rememberAudio(byTitle: Record<string, AudioSettings>, key: string, next: AudioSettings, base: AudioSettings): Record<string, AudioSettings> {
+  if (!key)
+    return byTitle
+  const out = { ...byTitle }
+  if (next.normalize === base.normalize && next.dialogue === base.dialogue)
+    delete out[key]
+  else
+    out[key] = { ...next }
+  return out
 }
 
 /**

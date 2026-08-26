@@ -4,13 +4,6 @@ import { mdiAccountVoice, mdiVolumeHigh } from '@mdi/js'
 
 const settings = useSettingsStore()
 
-const LEVELS: { value: Leveller, title: () => string }[] = [
-  { value: 'off', title: () => $t('Off') },
-  { value: 'light', title: () => $t('Light') },
-  { value: 'medium', title: () => $t('Medium') },
-  { value: 'strong', title: () => $t('Strong') },
-]
-
 /** What the chosen step actually does to a film, in the words of the complaint. */
 const LEVEL_HINT: Record<Leveller, () => string> = {
   off: () => $t('The film is played as it was mixed.'),
@@ -27,9 +20,9 @@ const boost = computed(() => settings.audio.dialogue ? `+${settings.audio.dialog
   <div class="flex flex-col gap-8">
     <settings-section
       :title="$t('Evening out the volume')"
-      :hint="$t('Rides the volume for you, so the quiet lines come up and the loud scenes stop making you reach for the remote.')"
+      :hint="$t('Rides the volume for you, so the quiet lines come up and the loud scenes stop making you reach for the remote. This is what every film starts with — the player\'s own Audio panel changes the film you are watching and nothing else.')"
     >
-      <settings-segment v-model="settings.audio.normalize" :options="LEVELS" />
+      <settings-segment v-model="settings.audio.normalize" :options="LEVELLERS" />
       <p class="text-body-medium opacity-70">
         <v-icon :icon="mdiVolumeHigh" size="18" /> {{ levelHint }}
       </p>

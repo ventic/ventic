@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type { AudioSettings, Leveller } from '~/utils/audio'
 import type { PlayerEngine } from '~/utils/htmlvideo'
 import type { Subtitle, SubtitleFile, SubtitleLanguage } from '~/utils/subtitles'
 import type { Media } from '~/utils/tmdb'
@@ -21,6 +22,7 @@ import {
   mdiPlaySpeed,
   mdiPlus,
   mdiReload,
+  mdiRestore,
   mdiRewind10,
   mdiSkipNext,
   mdiSubtitles,
@@ -377,6 +379,23 @@ watch(() => settings.subs, applySubtitleStyle, { deep: true })
 // different ones.
 // ---------------------------------------------------------------------------
 /**
+ * Which title's settings are in force — `movie:603`, `tv:1396`. Empty for a
+ * bare magnet, which has no title to remember anything against.
+ */
+const audioKey = computed(() => props.media ? titleKey(props.media.type, props.media.id) : '')
+
+/** A magnet's edits, which live as long as this playback and no longer. */
+const looseAudio = ref<AudioSettings | null>(null)
+
+/** What this film is actually playing with: its own settings, or the default. */
+const audio = computed(() => audioKey.value
+  ? settings.audioFor(audioKey.value)
+  : looseAudio.value ?? settings.audio)
+
+/** Has this film been given settings of its own? Then it can also be given them back. */
+const ownAudio = computed(() => !!audioKey.value && audioKey.value in settings.audioByTitle)
+
+/**
  * How mpv is decoding the track that is playing — `5.1(side)`, `stereo` — and
  * how many channels that is. Read off the poll rather than asked for here: a
  * track only has a layout once mpv has reconfigured onto it, which is a moment
@@ -392,12 +411,12 @@ async function applyAudio() {
   // themselves and Player.kt decides what the platform's audio effects can do
   // with them. The <video> path answers neither and plays on unfiltered.
   if (!native) {
-    for (const [name, value] of Object.entries(audioProps(settings.audio)))
+    for (const [name, value] of Object.entries(audioProps(audio.value)))
       ipc(['set_property', name, value])
     return
   }
 
-  const chain = mpvAudioChain(settings.audio, layout.name, layout.channels)
+  const chain = mpvAudioChain(audio.value, layout.name, layout.channels)
   if (!chain) {
     ipc(['af', 'clr', ''])
     return
@@ -408,12 +427,46 @@ async function applyAudio() {
   // unfiltered. The retry drops the one filter that names a layout and keeps
   // the levelling, which needs no layout at all.
   const res = await ipc(['af', 'set', chain])
-  const plain = mpvAudioChain(settings.audio)
+  const plain = mpvAudioChain(audio.value)
   if (chain !== plain && res?.error && res.error !== 'success')
     ipc(['af', 'set', plain])
 }
 
-watch(() => settings.audio, applyAudio, { deep: true })
+// Whichever of the two is in force, and the settings page editing the default
+// while this is open counts as a change to a film that hasn't overridden it.
+watch(audio, applyAudio, { deep: true })
+
+/**
+ * An edit here is about *this* film. One mix in twenty is the one you can't
+ * hear a word of, and levelling every film afterwards because of that one would
+ * be its own complaint — so the panel writes a per-title entry (`setAudioFor`)
+ * and *Settings → Audio* keeps setting what everything else starts from. Put
+ * back to the default and the entry is dropped again; see `rememberAudio`.
+ */
+function editAudio(next: AudioSettings) {
+  if (audioKey.value)
+    settings.setAudioFor(audioKey.value, next)
+  else
+    looseAudio.value = next
+}
+
+function setLevel(v: Leveller) {
+  editAudio({ ...audio.value, normalize: v })
+  osd(v === 'off' ? $t('Levelling off') : $t('Levelling: {level}', { level: LEVELLERS.find(l => l.value === v)!.title() }))
+}
+
+const boostText = computed(() => audio.value.dialogue ? `+${audio.value.dialogue} dB` : $t('Off'))
+
+function nudgeBoost(delta: number) {
+  editAudio({ ...audio.value, dialogue: Math.min(MAX_DIALOGUE, Math.max(0, audio.value.dialogue + delta)) })
+  osd($t('Dialogue: {boost}', { boost: boostText.value }))
+}
+
+/** Back to whatever everything else plays with. */
+function useDefaultAudio() {
+  editAudio({ ...settings.audio })
+  osd($t('Using the usual audio settings'))
+}
 
 // The subtitles the page draws itself, wherever mpv isn't drawing them. Both
 // kinds arrive here: downloaded files as parsed cues, and a track muxed into the
@@ -2281,6 +2334,51 @@ defineExpose({ osd })
             <p v-if="!audioTracks.length" :class="NOTE">
               {{ $t('This file has one audio track.') }}
             </p>
+
+            <!-- The same two settings the Audio page holds, where they can be
+                 heard: a mix is only ever wrong about its dialogue while it is
+                 playing. Rows rather than the page's slider and segment — a
+                 remote is the input here, and a row with a tick is what every
+                 other list in this panel already is. -->
+            <p :class="MENU_GROUP">
+              {{ $t('Evening out the volume') }}
+            </p>
+            <button
+              v-for="l in LEVELLERS"
+              :key="l.value"
+              :class="[MENU_ROW, audio.normalize === l.value && 'text-primary']"
+              @click="setLevel(l.value)"
+            >
+              <span>{{ l.title() }}</span>
+              <v-icon v-if="audio.normalize === l.value" :icon="mdiCheck" size="16" />
+            </button>
+
+            <p :class="MENU_GROUP">
+              {{ $t('Dialogue') }}
+            </p>
+            <div class="flex items-center justify-between px-2.5 py-1">
+              <span class="text-label-large opacity-70">{{ $t('Boost') }}</span>
+              <div class="flex items-center gap-0.5">
+                <button v-tooltip:top="$t('Less')" class="!h-7 !min-w-7" :class="ICO" @click="nudgeBoost(-1)">
+                  <v-icon :icon="mdiMinus" size="14" />
+                </button>
+                <span class="w-16 text-center text-label-large tabular-nums">{{ boostText }}</span>
+                <button v-tooltip:top="$t('More')" class="!h-7 !min-w-7" :class="ICO" @click="nudgeBoost(1)">
+                  <v-icon :icon="mdiPlus" size="14" />
+                </button>
+              </div>
+            </div>
+            <!-- Only while this film has an entry of its own: it is both the
+                 way back and the only sign that there is anything to go back
+                 from. -->
+            <button v-if="ownAudio" :class="MENU_ROW" @click="useDefaultAudio">
+              <span class="flex items-center gap-2">
+                <v-icon :icon="mdiRestore" size="16" /> {{ $t('Use the usual settings') }}
+              </span>
+            </button>
+            <p :class="NOTE">
+              {{ $t('Remembered for this title alone. Settings → Audio is what everything else plays with.') }}
+            </p>
           </template>
 
           <template v-else>
@@ -2537,9 +2635,11 @@ defineExpose({ osd })
             <v-icon v-if="speed === 1" :icon="mdiPlaySpeed" size="20" />
             <span v-else class="text-label-large tabular-nums">{{ speed }}×</span>
           </button>
+          <!-- Always, now that the panel holds the levelling and the dialogue
+               boost as well: those apply to every film, and a track list was
+               the only thing here that most releases don't have. -->
           <button
-            v-if="audioTracks.length > 1"
-            v-tooltip:top="$t('Audio track')"
+            v-tooltip:top="$t('Audio')"
             :class="[ICO, menu === 'audio' && '!text-primary !opacity-100']"
             @click="openMenu('audio')"
           >
@@ -2553,7 +2653,10 @@ defineExpose({ osd })
           >
             <v-icon :icon="subsOn ? mdiSubtitles : mdiSubtitlesOutline" size="22" />
           </button>
-          <button v-tooltip:top="windowFullscreen ? $t('Exit fullscreen (f)') : $t('Fullscreen (f)')" :class="ICO" @click="toggleFullscreen">
+          <!-- A television has no window to be one of many, and the player is
+               already the whole screen there: the button can only ever put the
+               system bars back. -->
+          <button v-if="!tv" v-tooltip:top="windowFullscreen ? $t('Exit fullscreen (f)') : $t('Fullscreen (f)')" :class="ICO" @click="toggleFullscreen">
             <v-icon :icon="windowFullscreen ? mdiFullscreenExit : mdiFullscreen" size="22" />
           </button>
         </div>

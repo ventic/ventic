@@ -148,9 +148,25 @@ export const useSettingsStore = defineStore('settings', () => {
    */
   const audio = useLocalStorage<AudioSettings>('ventic.audio', { ...AUDIO_DEFAULTS }, { mergeDefaults: true })
 
+  /**
+   * The films that needed something other than the above, by `titleKey` — the
+   * player's Audio panel writes these, this page writes the default they fall
+   * back to. See `pickAudio` for why the two are separate.
+   */
+  const audioByTitle = useLocalStorage<Record<string, AudioSettings>>('ventic.audioByTitle', {})
+
+  /** What `key` should play with. An empty key (a bare magnet) gets the default. */
+  function audioFor(key: string) {
+    return pickAudio(audioByTitle.value, key, audio.value)
+  }
+
+  function setAudioFor(key: string, next: AudioSettings) {
+    audioByTitle.value = rememberAudio(audioByTitle.value, key, next, audio.value)
+  }
+
   function resetSubs() {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, tmdbKey, downLimit, upLimit, wifiOnly, downloadDir, subs, autoSubs, subLang, audio, resetSubs }
+  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, tmdbKey, downLimit, upLimit, wifiOnly, downloadDir, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, resetSubs }
 })

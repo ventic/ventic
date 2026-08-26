@@ -193,7 +193,7 @@ One component, one set of controls, three backends underneath.
 | **Seek preview** | Frames pulled with ffmpeg and cached, warmed only while the control bar is up |
 | **Tracks** | The file's own audio and subtitle tracks, the release's subtitle files, and OpenSubtitles — in one menu |
 | **Subtitle styling** | Font, size, colour, outline, position, applied to mpv and to the page-drawn cues alike, previewing live from Settings |
-| **Volume levelling** | Quiet dialogue up, loud scenes down, in four steps — plus a dialogue boost that raises the centre channel of a 5.1 mix and nothing else |
+| **Volume levelling** | Quiet dialogue up, loud scenes down, in four steps — plus a dialogue boost that raises the centre channel of a 5.1 mix and nothing else. Set a default under Settings, or change the film you're watching from the player's Audio panel, which remembers that title alone |
 | **Auto-sync** | A file cut for another release is slid onto the audio's silence map (desktop only — it needs ffmpeg, which Windows bundles) |
 | **Resume** | Progress recorded as it plays, per episode, and picked back up from the card or the detail page |
 | **Fullscreen** | Held for as long as the player is mounted; Android goes landscape and immersive |

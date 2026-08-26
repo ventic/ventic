@@ -1,3 +1,4 @@
+import type { AudioSettings } from '../app/utils/audio'
 import assert from 'node:assert'
 // Self-check for the audio filters: `bun scripts/check-audio.ts`.
 //
@@ -7,7 +8,7 @@ import assert from 'node:assert'
 // property names Android answers to — a seam between TypeScript and Kotlin that
 // no compiler crosses.
 import { readFileSync } from 'node:fs'
-import { AUDIO_DEFAULTS, audioProps, MAX_DIALOGUE, mpvAudioChain } from '../app/utils/audio'
+import { AUDIO_DEFAULTS, audioProps, MAX_DIALOGUE, mpvAudioChain, pickAudio, rememberAudio } from '../app/utils/audio'
 import { exoEngine } from '../app/utils/htmlvideo'
 import './i18n-stub'
 
@@ -50,6 +51,24 @@ assert.equal(both.match(/lavfi=\[/g)?.length, 1, 'one lavfi filter holding one g
 // lifted further than this clips against the rest of the mix.
 assert.ok(MAX_DIALOGUE <= 8)
 
+// --- One film's own settings ----------------------------------------------
+// The player's panel is about the film in front of you; the settings page is
+// about every other one. A film with nothing of its own has to keep following
+// the default, including when the default changes later.
+const base: AudioSettings = { normalize: 'light', dialogue: 0 }
+assert.deepEqual(pickAudio({}, 'movie:603', base), base)
+assert.deepEqual(pickAudio({ 'movie:603': { normalize: 'strong', dialogue: 5 } }, 'movie:603', base), { normalize: 'strong', dialogue: 5 })
+assert.deepEqual(pickAudio({ 'movie:603': { normalize: 'strong', dialogue: 5 } }, 'tv:1396', base), base, 'and the film beside it is untouched')
+// A bare magnet has no title to key on and simply plays the default.
+assert.deepEqual(pickAudio({ '': { normalize: 'strong', dialogue: 5 } }, '', base), base)
+
+const one = rememberAudio({}, 'movie:603', { normalize: 'strong', dialogue: 5 }, base)
+assert.deepEqual(Object.keys(one), ['movie:603'])
+assert.deepEqual(rememberAudio(one, 'movie:603', { ...base }, base), {}, 'set back to the default, the film is forgotten again')
+assert.deepEqual(rememberAudio(one, '', { normalize: 'off', dialogue: 0 }, base), one, 'nothing to remember a magnet against')
+// The map handed in is never the map handed back, or a store's ref wouldn't see it.
+assert.notEqual(one, rememberAudio(one, 'tv:1396', { normalize: 'off', dialogue: 2 }, base))
+
 // --- The Android seam -----------------------------------------------------
 const kotlin = readFileSync(
   new URL('../src-tauri/gen/android/app/src/main/java/com/ventic/app/Player.kt', import.meta.url),
@@ -87,5 +106,18 @@ assert.deepEqual(seen, [
   '["set_property","audio-normalize","strong"]',
   '["set_property","dialogue-boost",6]',
 ], 'forwarded untouched, names and values both')
+
+// --- The way in ------------------------------------------------------------
+// The player's Audio panel edits these very settings while a film is up, and
+// the only door to it is one button in the bottom bar. That button used to be
+// mounted only for a file with more than one audio track — which is a minority
+// of releases, and would leave the levelling unreachable exactly where it is
+// wanted.
+const player = readFileSync(new URL('../app/components/MpvPlayer.vue', import.meta.url), 'utf8')
+assert.ok(!player.includes('audioTracks.length > 1'), 'the Audio button is not gated on a track list')
+assert.ok(player.includes('LEVELLERS'), 'and the panel lists the steps from the one table')
+
+const settings = readFileSync(new URL('../app/pages/settings/audio.vue', import.meta.url), 'utf8')
+assert.ok(settings.includes('LEVELLERS'), 'as does the settings page, so the two can never disagree')
 
 console.log('audio: ok')

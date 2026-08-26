@@ -80,8 +80,13 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   falls back to a bell around 2 kHz), while ExoPlayer is sent the two settings
   themselves and `Player.kt` puts them on the platform's own LoudnessEnhancer
   and Equalizer. A chain mpv rejects answers `error running command` and keeps
-  playing, which is what the retry in `applyAudio` is for. `bun run check:audio`
-  holds the chain and that Kotlin seam.
+  playing, which is what the retry in `applyAudio` is for. It is also two
+  settings in two places: *Settings → Audio* is the default every film starts
+  from, and the player's own Audio panel writes a `titleKey` entry in
+  `ventic.audioByTitle` for the one film in twenty whose dialogue is inaudible —
+  put back to the default, the entry is dropped again, so a later change to the
+  default still reaches every film that never argued. `bun run check:audio`
+  holds the chain, that fallback and the Kotlin seam.
 - Playback starts through `downloads.start(key, …)`, never `startTorrent`
   directly: the store files the info hash under the title's progress key
   (`ventic.cached`), and that map is what lets an already-downloaded film play
