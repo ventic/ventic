@@ -4,6 +4,10 @@ import $vuetify from '../vuetify/ch'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Un lengguåhi ni taya' kumumple ha tradusi ha kontinuha ni Engles, liñia yan liñia, pot enao taya' nai bakånte.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "I limite ni un pega guini ha sigi ha' lokkue' anai mama'playing, sa' i automåtiko na limite siña ha bahaha i seeding asta un kuåtto na påtte i liñia para u sigi i stream.",
   "A link asked Ventic to start searching:": "Guaha link ni ha faisen si Ventic para u tutuhon manaligao gi:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Portugues (Brasil)",
   "Poster art": "Litratun poster",
   "Poster size": "Medidan poster",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Fine'nana na li'e'",
   "Progress": "Progreso",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "I progreso, i marka egga', i favorite yan i watchlist ma adahi gi este na device ha'. Yanggen un na'gasgas guini, para todu i tiempo — guaha backup fail gi Kuenta yanggen malago' hao uno fine'nana.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Månu manhånao i download",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Månu ma tuge' i peliku'la yan episodio. I torrent ni manna'tunok esta ha sågåyi i lugåt-ña.",
   "Where to keep downloads": "Månu para un adahi i download",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "Håfa na drive ma tuge' i peliku'la yan episodio — un USB stick ni makonekta ha adahi mås ki i box maisa. Yanggen un na'suha i app, ma dilete ha' lokkue'. I torrent ni manna'tunok esta ha sågåyi i lugåt-ña.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Maolek para un na'annok gi kada lugåt anai makkat i app — mås takhilo' gi televishon pat set-top box, sa' i graphics chip guihi dikike' ha' kompara yan un laptop.",
   "Writer": "Eskribiente",

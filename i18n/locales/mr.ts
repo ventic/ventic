@@ -4,6 +4,10 @@ import $vuetify from '../vuetify/mr'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "ज्या भाषेचे भाषांतर कोणीही पूर्ण केलेले नाही, ती ओळ-ओळीने इंग्रजीकडे परत जाते, त्यामुळे कधीही काहीही रिकामे राहत नाही.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "इथे ठरवलेली मर्यादा चालू असतानाही लागू राहते; अन्यथा स्वयंचलित कमाल मर्यादा प्रवाह टिकावा म्हणून सीडिंग रेषेच्या एक चतुर्थांशपर्यंत खाली आणली असती.",
   "A link asked Ventic to start searching:": "एका दुव्याने Ventic ला इथे शोध सुरू करण्यास सांगितले:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "पोर्तुगीज (ब्राझील)",
   "Poster art": "पोस्टरचे चित्र",
   "Poster size": "पोस्टरचा आकार",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "पूर्वावलोकन",
   "Progress": "प्रगती",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "प्रगती, पाहिल्याच्या खुणा, आवडते आणि पाहण्याची यादी फक्त याच उपकरणावर ठेवली जातात. इथे साफ केल्यास ती कायमची जातात — आधी बॅकअप हवा असल्यास खाते विभागात बॅकअप फाइल आहे.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "डाउनलोड कुठे जातात",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "चित्रपट व भाग कुठे लिहिले जातात. आधीच डाउनलोड झालेले टोरंट जिथे आहेत तिथेच राहतात.",
   "Where to keep downloads": "डाउनलोड कुठे ठेवायचे",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "चित्रपट व भाग कोणत्या ड्राइव्हवर लिहायचे — लावलेल्या पेनड्राइव्हमध्ये सहसा बॉक्सपेक्षा कितीतरी जास्त मावते. अ‍ॅप काढून टाकल्यास ते तरीही हटतात. आधीच डाउनलोड झालेले टोरंट जिथे आहेत तिथेच राहतात.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "जिथे अ‍ॅप जड वाटेल तिथे चालू करणे उपयुक्त — विशेषतः टीव्ही किंवा सेट-टॉप बॉक्सवर, जिथे ग्राफिक्स चिप लॅपटॉपच्या तुलनेत फारच लहान असते.",
   "Writer": "लेखक",

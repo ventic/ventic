@@ -4,6 +4,10 @@ import { en as $vuetify } from 'vuetify/locale'
 
 export default {
   $vuetify,
+  "1080p": "1080p",
+  "4K": "4K",
+  "720p": "720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.",
   "A link asked Ventic to start searching:": "A link asked Ventic to start searching:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Portuguese (Brazil)",
   "Poster art": "Poster art",
   "Poster size": "Poster size",
+  "Preferred quality": "Preferred quality",
   "Preview": "Preview",
   "Progress": "Progress",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Where downloads go",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Where films and episodes are written. Torrents already downloaded stay where they are.",
   "Where to keep downloads": "Where to keep downloads",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.",
   "Writer": "Writer",

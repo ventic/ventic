@@ -75,10 +75,44 @@ const TRACKERS = [
 ]
 
 /**
- * Streaming preference. 1080p is the sweet spot; 4k needs more bandwidth than
- * most connections give a torrent, so it sits below 720p.
+ * Streaming preference, best first. 1080p is the sweet spot; 4k needs more
+ * bandwidth than most connections give a torrent, so it sits below 720p.
  */
-const QUALITY_ORDER = ['1080p', '720p', '4k', '2160p', '480p']
+const QUALITY_ORDER = ['1080p', '720p', '2160p', '480p']
+
+/** Sources label one tier "4k" or "2160p". Nothing past here should have to know. */
+function tier(quality: string) {
+  const q = quality.toLowerCase()
+  return q.startsWith('4k') ? '2160p' : QUALITY_ORDER.find(t => q.startsWith(t)) ?? ''
+}
+
+/** What the user asked for, '' for "whatever streams best" — see `setQuality`. */
+let preferred = ''
+
+/**
+ * The tier to try first. Pushed in rather than read out of a store, the same as
+ * `setSources`: the `check:*` scripts reach this file with no Nuxt around it.
+ */
+export function setQuality(value: string) {
+  preferred = tier(value)
+}
+
+/** The choices offered under Settings → Sources. */
+export const QUALITIES: { value: string, title: () => string }[] = [
+  { value: '', title: () => $t('Automatic') },
+  { value: '720p', title: () => $t('720p') },
+  { value: '1080p', title: () => $t('1080p') },
+  { value: '2160p', title: () => $t('4K') },
+]
+
+/**
+ * A preference moves one tier to the front and leaves the rest as they were. It
+ * is an order and not a filter, which is the whole fallback: a tier with nothing
+ * live in it has nothing to rank, so the next one down wins on its own.
+ */
+function order() {
+  return preferred ? [preferred, ...QUALITY_ORDER.filter(q => q !== preferred)] : QUALITY_ORDER
+}
 
 /**
  * Past this a release is a remux or a needlessly fat encode: the same picture
@@ -89,10 +123,25 @@ const QUALITY_ORDER = ['1080p', '720p', '4k', '2160p', '480p']
 const SWEET_BYTES: Record<string, number> = {
   '1080p': 6 * 1024 ** 3,
   '720p': 3 * 1024 ** 3,
-  '4k': 20 * 1024 ** 3,
   '2160p': 20 * 1024 ** 3,
   '480p': 2 * 1024 ** 3,
 }
+
+/**
+ * The other end of `SWEET_BYTES`, and the one the label lies about: a copy this
+ * much lighter than the rest of its own tier is 1080p by pixel count and by
+ * nothing else — same frame size, a third of the bits, and it looks it.
+ *
+ * No bitrate-per-minute table, because every release in the list is the same
+ * film: the other copies of it are the yardstick. That needs no runtime plumbed
+ * in, never goes stale as encoders improve, and reads a 25-minute episode and a
+ * three-hour feature alike.
+ */
+const STARVED = 0.5
+/** Fewer copies than this in a tier and there is no "normal" to be under. */
+const SAMPLE = 4
+/** Enough of a swarm to stream from. Under it a tier is a promise, not a copy. */
+const THIN = 5
 
 /** Remuxes stream badly on anything but a LAN — a 60 GB movie never keeps up. */
 const MAX_BYTES = 25 * 1024 ** 3
@@ -213,14 +262,40 @@ export function releaseKey(r: Release) {
 }
 
 function rank(t: Release) {
-  const i = QUALITY_ORDER.findIndex(q => t.quality.toLowerCase().startsWith(q))
+  const i = order().indexOf(tier(t.quality))
   return i === -1 ? QUALITY_ORDER.length : i
 }
 
 /** More bytes than this tier needs to look good — a bigger bill for the same picture. */
 export function isBloated(t: Release) {
-  const cap = SWEET_BYTES[QUALITY_ORDER[rank(t)] ?? ''] ?? MAX_BYTES
-  return t.bytes > cap
+  return t.bytes > (SWEET_BYTES[tier(t.quality)] ?? MAX_BYTES)
+}
+
+/**
+ * Which of these give their own tier away on size — see `STARVED`. Built once
+ * per pick rather than asked per release, because what it compares against is
+ * the list's median and not anything the release carries.
+ */
+function starvedIn(list: Release[]) {
+  const sizes = new Map<string, number[]>()
+  for (const t of list) {
+    if (!t.bytes)
+      continue
+    const seen = sizes.get(tier(t.quality)) ?? []
+    seen.push(t.bytes)
+    sizes.set(tier(t.quality), seen)
+  }
+
+  const floor = new Map<string, number>()
+  for (const [key, all] of sizes) {
+    // Two copies are each other's outlier. Say nothing rather than guess.
+    if (all.length < SAMPLE)
+      continue
+    all.sort((a, b) => a - b)
+    floor.set(key, all[all.length >> 1]! * STARVED)
+  }
+
+  return (t: Release) => !!t.bytes && t.bytes < (floor.get(tier(t.quality)) ?? 0)
 }
 
 /**
@@ -293,15 +368,23 @@ export function isAwkward(t: Release) {
  *
  * A direct link wins the last tiebreak before seeders: same picture, same
  * bitrate, but it starts at once and nothing has to be kept on the disk.
+ *
+ * A copy that gives its tier away is ranked as the tier below rather than
+ * dropped — too few bits for the label (`STARVED`), or too few peers to deliver
+ * them (`THIN`). Demoted and not removed because it is still the best thing here
+ * when there is nothing under it, which is the whole of the 4k fallback: ask for
+ * 2160p, and a 2160p nobody is seeding loses to a healthy 1080p on its own.
  */
 export function pickBest(list: Release[], maxBytes = MAX_BYTES, compatible = false): Release | null {
   const limit = Math.min(MAX_BYTES, maxBytes)
+  const starved = starvedIn(list)
+  const at = (t: Release) => rank(t) + Number(starved(t) || (!t.url && t.seeders < THIN))
   return [...list]
     // Neither test applies to a link: there is no swarm to have seeders, and
     // nothing is written to the disk the budget is protecting.
     .filter(t => !!t.url || (t.seeders > 0 && (!t.bytes || t.bytes <= limit)))
     .sort((a, b) =>
-      rank(a) - rank(b)
+      at(a) - at(b)
       || (compatible ? Number(isAwkward(a)) - Number(isAwkward(b)) : 0)
       || Number(isBloated(a)) - Number(isBloated(b))
       || Number(!a.url) - Number(!b.url)

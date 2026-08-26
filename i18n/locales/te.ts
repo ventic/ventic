@@ -4,6 +4,10 @@ import $vuetify from '../vuetify/te'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "ఎవరూ పూర్తిగా అనువదించని భాష లైన్ల వారీగా ఆంగ్లానికి తిరిగి వెళ్తుంది, కాబట్టి ఏదీ ఎప్పుడూ ఖాళీగా ఉండదు.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "ఇక్కడ మీరు పెట్టే పరిమితి ప్లేబ్యాక్ సమయంలోనూ వర్తిస్తుంది; లేకపోతే ఆటోమేటిక్ గరిష్ఠ పరిమితి, స్ట్రీమ్ ఆగకుండా సాగేందుకు సీడింగ్‌ను లైన్‌లో నాలుగో వంతుకు తగ్గించేది.",
   "A link asked Ventic to start searching:": "Ventic వెతకడం ప్రారంభించమని ఒక లింక్ కోరింది:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "పోర్చుగీస్ (బ్రెజిల్)",
   "Poster art": "పోస్టర్ చిత్రకళ",
   "Poster size": "పోస్టర్ పరిమాణం",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "ప్రివ్యూ",
   "Progress": "పురోగతి",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "పురోగతి, చూసిన గుర్తులు, ఇష్టమైనవి, చూడాల్సిన జాబితా — ఇవన్నీ ఈ పరికరంలో మాత్రమే ఉంచబడతాయి. వాటిని ఇక్కడ తుడిచేస్తే అవి శాశ్వతంగా పోతాయి — ముందుగా ఒకటి కావాలంటే ఖాతా విభాగంలో బ్యాకప్ ఫైల్ ఉంది.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "డౌన్‌లోడ్‌లు వెళ్లే చోటు",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "సినిమాలు, ఎపిసోడ్‌లు రాయబడే చోటు. ఇప్పటికే డౌన్‌లోడ్ అయిన టొరెంట్‌లు ఉన్నచోటే ఉంటాయి.",
   "Where to keep downloads": "డౌన్‌లోడ్‌లను ఎక్కడ ఉంచాలి",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "సినిమాలు, ఎపిసోడ్‌లు ఏ డ్రైవ్‌లో రాయబడతాయో — పెట్టిన పెన్‌డ్రైవ్ సాధారణంగా బాక్స్ కంటే చాలా ఎక్కువ పడుతుంది. యాప్‌ను అన్‌ఇన్‌స్టాల్ చేసినా అవి తొలగిపోతాయి. ఇప్పటికే డౌన్‌లోడ్ అయిన టొరెంట్‌లు ఉన్నచోటే ఉంటాయి.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "యాప్ బరువుగా అనిపించే ఎక్కడైనా దీన్ని ఆన్ చేయడం మంచిది — ముఖ్యంగా టెలివిజన్‌లో లేదా సెట్-టాప్ బాక్స్‌లో, అక్కడ గ్రాఫిక్స్ చిప్ ల్యాప్‌టాప్‌లోని దానిలో ఒక చిన్న భాగం మాత్రమే.",
   "Writer": "రచయిత",

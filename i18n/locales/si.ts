@@ -4,6 +4,10 @@ import $vuetify from '../vuetify/si'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "කිසිවෙකු පරිවර්තනය අවසන් නොකළ භාෂාවක් පේළියෙන් පේළිය ඉංග්‍රීසියට හැරෙයි, එබැවින් කිසිවක් කිසිදා හිස්ව නොපවතී.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "මෙහි ඔබ තබන සීමාව වාදනය වන අතරතුරද බලපායි; නැතිනම් ස්වයංක්‍රීය සීමාව ප්‍රවාහයට ඉඩ දීම සඳහා බෙදාහැරීම රේඛාවෙන් හතරෙන් එකකට අඩු කරයි.",
   "A link asked Ventic to start searching:": "සබැඳියක් Ventic ට මෙතැනින් සෙවීම ආරම්භ කරන ලෙස ඉල්ලා ඇත:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "පෘතුගීසි (බ්‍රසීලය)",
   "Poster art": "පෝස්ටර් රූපය",
   "Poster size": "පෝස්ටර ප්‍රමාණය",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "පෙරදසුන",
   "Progress": "ප්‍රගතිය",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "ප්‍රගතිය, නැරඹූ ලකුණු, ප්‍රියතම සහ නැරඹීමේ ලැයිස්තුව මෙම උපාංගයේ පමණක් තබා ගැනේ. මෙහි ඒවා හිස් කිරීම සදහටම මකා දමයි — මුලින්ම උපස්ථයක් අවශ්‍ය නම් ගිණුම යටතේ උපස්ථ ගොනුවක් ඇත.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "බාගැනීම් යන්නේ කොහේටද",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "චිත්‍රපට සහ කථාංග ලියන්නේ කොහේටද. දැනටමත් බාගත් ටොරන්ට් තිබූ තැනම රැඳේ.",
   "Where to keep downloads": "බාගැනීම් තබන්නේ කොහේද",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "චිත්‍රපට සහ කථාංග ලියන්නේ කුමන ධාවකයටද — සම්බන්ධ කළ මතක තැටියක සාමාන්‍යයෙන් පෙට්ටියටත් වඩා බොහෝ දේ ගබඩා වේ. යෙදුම ඉවත් කළත් ඒවා මැකේ. දැනටමත් බාගත් ටොරන්ට් තිබූ තැනම රැඳේ.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "යෙදුම බර යැයි හැඟෙන ඕනෑම තැනක ක්‍රියාත්මක කිරීම වටී — විශේෂයෙන් රූපවාහිනියක හෝ සෙට්-ටොප් පෙට්ටියක, එහිදී ග්‍රැෆික්ස් චිපය ලැප්ටොප් එකකට වඩා ඉතා කුඩාය.",
   "Writer": "රචකයා",

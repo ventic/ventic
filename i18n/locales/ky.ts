@@ -4,6 +4,10 @@ import $vuetify from '../vuetify/ky'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Котормосун эч ким аягына чыгарбаган тил сап-сабы менен англис тилине кайтат, ошондуктан эч качан эч нерсе бош калбайт.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Бул жерде коюлган чектөө ойнотуу учурунда да иштейт: болбосо автоматтык чек агым үлгүрсүн деп таратууну линиянын төрттөн бирине түшүрмөк.",
   "A link asked Ventic to start searching:": "Шилтеме Ventic'тен ушул жерден издей баштоону сурады:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Португал (Бразилия)",
   "Poster art": "Постер сүрөтү",
   "Poster size": "Постер өлчөмү",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Алдын ала кароо",
   "Progress": "Жүрүш",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Жүрүш, көрүлдү белгилери, тандалмалар жана көрүү тизмеси бул түзмөктө гана сакталат. Аларды бул жерде тазалоо түбөлүккө тазалайт — адегенде көчүрмө керек болсо, «Каттоо эсеби» бөлүмүндө камдык көчүрмө файлы бар.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Жүктөөлөр кайда барат",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Тасмалар жана бөлүмдөр кайда жазылат. Мурун жүктөлгөн торренттер ордунда калат.",
   "Where to keep downloads": "Жүктөөлөр кайда сакталат",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "Тасмалар менен бөлүмдөр кайсы дискке жазылат — сайылган флешка адатта түзмөктүн өзүнөн алда канча көп батат. Колдонмону өчүргөндө алар баары бир жоголот. Мурун жүктөлгөн торренттер ордунда калат.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Колдонмо оор сезилген жерде күйгүзүүгө арзыйт — өзгөчө телевизордо же ТВ-приставкада, ал жерде графикалык чип ноутбуктукунун кичине бөлүгү гана.",
   "Writer": "Сценарист",

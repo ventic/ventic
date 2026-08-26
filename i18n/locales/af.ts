@@ -4,6 +4,10 @@ import { af as $vuetify } from 'vuetify/locale'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "'n Taal wat niemand nog klaar vertaal het nie, val reël vir reël terug op Engels, sodat niks ooit leeg is nie.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "'n Limiet wat jy hier stel, geld ook tydens terugspeel, waar die outomatiese plafon andersins saai tot 'n kwart van die lyn sou laat val sodat die stroom kan byhou.",
   "A link asked Ventic to start searching:": "'n Skakel het Ventic gevra om te begin soek:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Portugees (Brasilië)",
   "Poster art": "Plakkaatkuns",
   "Poster size": "Plakkaatgrootte",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Voorskou",
   "Progress": "Vordering",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Vordering, kykmerke, gunstelinge en die kyklys, net op hierdie toestel gehou. As jy hulle hier skoonmaak, is hulle vir goed weg — Rekening het 'n rugsteunlêer as jy eers een wil hê.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Waarheen aflaaie gaan",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Waar films en episodes geskryf word. Torrents wat reeds afgelaai is, bly waar hulle is.",
   "Where to keep downloads": "Waar om aflaaie te hou",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "Na watter skyf films en episodes geskryf word — 'n ingeprop stokkie hou gewoonlik veel meer as die boks self. As jy die program deïnstalleer, word hulle steeds verwyder. Torrents wat reeds afgelaai is, bly waar hulle is.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Werd om aan te skakel waar die program ook al swaar voel — 'n televisie of 'n dekodeerder die meeste van alles, waar die grafikaskyfie 'n fraksie van 'n skootrekenaar s'n is.",
   "Writer": "Skrywer",

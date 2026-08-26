@@ -4,6 +4,10 @@ import { pt as $vuetify } from 'vuetify/locale'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Um idioma que ninguém terminou de traduzir volta ao inglês linha por linha, então nunca fica nada em branco.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Um limite definido aqui vale também durante a reprodução, onde o teto automático reduziria o semeamento a um quarto da linha para o fluxo dar conta.",
   "A link asked Ventic to start searching:": "Um link pediu ao Ventic para começar a buscar em:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Português (Brasil)",
   "Poster art": "Arte do pôster",
   "Poster size": "Tamanho dos pôsteres",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Prévia",
   "Progress": "Progresso",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Progresso, marcas de assistido, favoritos e a lista para assistir ficam só neste dispositivo. Limpá-los aqui apaga tudo de vez — em Conta há um arquivo de backup, se você quiser um antes.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Para onde vão os downloads",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Onde filmes e episódios são gravados. Torrents já baixados ficam onde estão.",
   "Where to keep downloads": "Onde guardar os downloads",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "Em qual unidade filmes e episódios são gravados — um pen drive conectado costuma caber muito mais que a própria caixa. Desinstalar o app remove tudo mesmo assim. Torrents já baixados ficam onde estão.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Vale ligar sempre que o app parecer pesado — sobretudo numa televisão ou num set-top box, onde o chip gráfico é uma fração do de um notebook.",
   "Writer": "Roteiro",

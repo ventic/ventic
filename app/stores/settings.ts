@@ -100,6 +100,12 @@ export const useSettingsStore = defineStore('settings', () => {
    */
   const sources = useLocalStorage<string[]>('ventic.sources', [])
 
+  /**
+   * Quality to try first, '' for whatever streams best. A preference and not a
+   * filter — see `setQuality` in utils/torrents, which is where it is enforced.
+   */
+  const quality = useLocalStorage('ventic.quality', '')
+
   // --- Film data ---
   /**
    * A TMDB read token of the user's own, used instead of the one the build
@@ -168,5 +174,5 @@ export const useSettingsStore = defineStore('settings', () => {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, tmdbKey, downLimit, upLimit, wifiOnly, downloadDir, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, resetSubs }
+  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, quality, tmdbKey, downLimit, upLimit, wifiOnly, downloadDir, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, resetSubs }
 })

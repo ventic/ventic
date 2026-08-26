@@ -153,6 +153,16 @@ async function toggleStremio(on: boolean | null) {
     </settings-section>
 
     <settings-section
+      :title="$t('Preferred quality')"
+      :hint="$t('Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.')"
+    >
+      <settings-segment v-model="settings.quality" :options="QUALITIES" />
+      <p class="text-body-small opacity-70">
+        {{ $t('A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.') }}
+      </p>
+    </settings-section>
+
+    <settings-section
       :title="$t('Adding by link')"
       :hint="$t('A page can offer a ventic:// link that opens the app with a source ready to add. The app always asks first — a link can never change what Ventic searches on its own.')"
     >

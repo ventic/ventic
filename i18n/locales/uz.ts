@@ -4,6 +4,10 @@ import $vuetify from '../vuetify/uz'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Hech kim tarjimasini tugatmagan til satrma-satr inglizchaga qaytadi, shuning uchun hech qachon hech yer boʻsh qolmaydi.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Bu yerda belgilagan cheklovingiz ijro vaqtida ham amal qiladi; aks holda avtomatik chegara oqim yetib borishi uchun tarqatishni kanalning chorak qismigacha tushirgan boʻlardi.",
   "A link asked Ventic to start searching:": "Bir havola Venticdan qidiruvni boshlashni soʻradi:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Portugalcha (Braziliya)",
   "Poster art": "Afisha grafikasi",
   "Poster size": "Afisha oʻlchami",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Oldindan koʻrish",
   "Progress": "Jarayon",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Jarayon, koʻrilgan belgilari, sevimlilar va koʻrish roʻyxati faqat shu qurilmada saqlanadi. Ularni bu yerda tozalasangiz, butunlay yoʻqoladi — avval nusxa olmoqchi boʻlsangiz, Hisob boʻlimida zaxira nusxa fayli bor.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Yuklab olishlar qayerga tushadi",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Filmlar va qismlar qayerga yoziladi. Allaqachon yuklab olingan torrentlar oʻz joyida qoladi.",
   "Where to keep downloads": "Yuklab olishlar qayerda saqlansin",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "Filmlar va qismlar qaysi diskka yozilishi — ulangan flesh odatda qutining oʻzidan ancha koʻp sigʻdiradi. Ilovani oʻchirish baribir ularni olib tashlaydi. Allaqachon yuklab olingan torrentlar oʻz joyida qoladi.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Ilova ogʻir tuyulgan har qanday joyda buni yoqish foydali — ayniqsa televizor yoki pristavkada, u yerda grafik chip noutbukdagining kichik bir ulushi xolos.",
   "Writer": "Stsenariy muallifi",

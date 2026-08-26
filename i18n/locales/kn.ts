@@ -4,6 +4,10 @@ import $vuetify from '../vuetify/kn'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "ಯಾರೂ ಅನುವಾದ ಪೂರ್ಣಗೊಳಿಸದ ಭಾಷೆ ಸಾಲಿನಿಂದ ಸಾಲಿಗೆ ಇಂಗ್ಲಿಷ್‌ಗೆ ಮರಳುತ್ತದೆ, ಹಾಗಾಗಿ ಎಂದೂ ಏನೂ ಖಾಲಿ ಉಳಿಯುವುದಿಲ್ಲ.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "ಇಲ್ಲಿ ನೀವು ಹಾಕುವ ಮಿತಿ ಪ್ಲೇ ಆಗುತ್ತಿರುವಾಗಲೂ ಅನ್ವಯವಾಗುತ್ತದೆ; ಇಲ್ಲದಿದ್ದರೆ ಸ್ವಯಂಚಾಲಿತ ಮಿತಿ ಸ್ಟ್ರೀಮ್ ಮುಂದುವರಿಯಲಿ ಎಂದು ಸೀಡಿಂಗ್ ಅನ್ನು ಲೈನಿನ ಕಾಲುಭಾಗಕ್ಕೆ ಇಳಿಸುತ್ತಿತ್ತು.",
   "A link asked Ventic to start searching:": "ಒಂದು ಲಿಂಕ್ Ventic ಗೆ ಇಲ್ಲಿ ಹುಡುಕಲು ಆರಂಭಿಸುವಂತೆ ಕೇಳಿದೆ:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "ಪೋರ್ಚುಗೀಸ್ (ಬ್ರೆಜಿಲ್)",
   "Poster art": "ಪೋಸ್ಟರ್ ಚಿತ್ರ",
   "Poster size": "ಪೋಸ್ಟರ್ ಗಾತ್ರ",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "ಮುನ್ನೋಟ",
   "Progress": "ಪ್ರಗತಿ",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "ಪ್ರಗತಿ, ನೋಡಿದ ಗುರುತುಗಳು, ಮೆಚ್ಚಿನವು ಮತ್ತು ವೀಕ್ಷಣಾ ಪಟ್ಟಿ ಈ ಸಾಧನದಲ್ಲಷ್ಟೇ ಇರುತ್ತವೆ. ಇಲ್ಲಿ ಅವನ್ನು ಅಳಿಸಿದರೆ ಶಾಶ್ವತವಾಗಿ ಅಳಿಯುತ್ತವೆ — ಮೊದಲು ಒಂದು ಬ್ಯಾಕಪ್ ಬೇಕಿದ್ದರೆ ಖಾತೆಯಲ್ಲಿ ಬ್ಯಾಕಪ್ ಫೈಲ್ ಇದೆ.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "ಡೌನ್‌ಲೋಡ್‌ಗಳು ಎಲ್ಲಿಗೆ ಹೋಗುತ್ತವೆ",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "ಚಲನಚಿತ್ರಗಳು ಮತ್ತು ಸಂಚಿಕೆಗಳು ಎಲ್ಲಿ ಬರೆಯಲ್ಪಡುತ್ತವೆ. ಈಗಾಗಲೇ ಡೌನ್‌ಲೋಡ್ ಆದ ಟೊರೆಂಟ್‌ಗಳು ಇದ್ದಲ್ಲೇ ಇರುತ್ತವೆ.",
   "Where to keep downloads": "ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ಎಲ್ಲಿ ಇಡಬೇಕು",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "ಚಲನಚಿತ್ರಗಳು ಮತ್ತು ಸಂಚಿಕೆಗಳು ಯಾವ ಡ್ರೈವ್‌ಗೆ ಬರೆಯಲ್ಪಡುತ್ತವೆ — ಸಿಕ್ಕಿಸಿದ ಪೆನ್‌ಡ್ರೈವ್ ಸಾಮಾನ್ಯವಾಗಿ ಬಾಕ್ಸ್‌ಗಿಂತ ಬಹಳ ಹೆಚ್ಚು ಹಿಡಿಯುತ್ತದೆ. ಆ್ಯಪ್ ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿದರೂ ಅವು ತೆಗೆದುಹಾಕಲ್ಪಡುತ್ತವೆ. ಈಗಾಗಲೇ ಡೌನ್‌ಲೋಡ್ ಆದ ಟೊರೆಂಟ್‌ಗಳು ಇದ್ದಲ್ಲೇ ಇರುತ್ತವೆ.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "ಆ್ಯಪ್ ಭಾರ ಅನಿಸುವ ಎಲ್ಲೆಡೆ ಆನ್ ಮಾಡುವುದು ಒಳ್ಳೆಯದು — ವಿಶೇಷವಾಗಿ ಟೆಲಿವಿಷನ್ ಅಥವಾ ಸೆಟ್-ಟಾಪ್ ಬಾಕ್ಸ್‌ನಲ್ಲಿ, ಅಲ್ಲಿ ಗ್ರಾಫಿಕ್ಸ್ ಚಿಪ್ ಲ್ಯಾಪ್‌ಟಾಪ್‌ನದ್ದರ ಒಂದು ಸಣ್ಣ ಭಾಗ ಮಾತ್ರ.",
   "Writer": "ಬರಹಗಾರ",

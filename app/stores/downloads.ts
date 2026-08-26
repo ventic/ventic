@@ -388,6 +388,7 @@ export const useDownloadsStore = defineStore('downloads', () => {
   // Searching only ever hits the sources the user configured, so the list has to
   // reach utils/torrents before the first search — hence `immediate`.
   watch(() => settings.sources, urls => setSources(urls), { immediate: true, deep: true })
+  watch(() => settings.quality, value => setQuality(value), { immediate: true })
 
   /**
    * What the sidebar rail and the filter box narrow the list to. Newest first:

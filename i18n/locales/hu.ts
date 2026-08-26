@@ -4,6 +4,10 @@ import { hu as $vuetify } from 'vuetify/locale'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Az a nyelv, amelynek a fordítását senki sem fejezte be, soronként visszaesik az angolra, így soha semmi nem marad üresen.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Az itt beállított korlát lejátszás közben is érvényes, ahol az automatikus felső határ különben a vonal negyedére vinné le a megosztást, hogy a stream lépést tartson.",
   "A link asked Ventic to start searching:": "Egy hivatkozás arra kérte a Venticet, hogy kezdjen keresni itt:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Portugál (Brazília)",
   "Poster art": "Plakátkép",
   "Poster size": "Plakátméret",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Előnézet",
   "Progress": "Folyamat",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "A folyamat, a megnézve jelölések, a kedvencek és a megnézendők listája csak ezen az eszközön marad. Ha itt törlöd, végleg törlöd — a Fiók alatt van biztonsági mentés fájl, ha előbb szeretnél egyet.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Hová kerülnek a letöltések",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Hová íródnak a filmek és epizódok. A már letöltött torrentek a helyükön maradnak.",
   "Where to keep downloads": "Hol tárolja a letöltéseket",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "Melyik meghajtóra íródnak a filmek és epizódok — egy csatlakoztatott pendrive általában jóval többet elbír, mint maga a doboz. Az alkalmazás eltávolítása ettől még törli őket. A már letöltött torrentek a helyükön maradnak.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Érdemes bekapcsolni ott, ahol az alkalmazás nehézkesnek tűnik — leginkább tévén vagy set-top boxon, ahol a grafikus chip töredéke egy laptopénak.",
   "Writer": "Forgatókönyvíró",

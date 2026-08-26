@@ -4,6 +4,10 @@ import { sv as $vuetify } from 'vuetify/locale'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Ett språk som ingen har översatt färdigt faller tillbaka på engelska rad för rad, så ingenting blir någonsin tomt.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "En gräns du sätter här gäller även under uppspelning, där det automatiska taket annars skulle sänka seedningen till en fjärdedel av linan så att strömmen hinner med.",
   "A link asked Ventic to start searching:": "En länk bad Ventic att börja söka:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Portugisiska (Brasilien)",
   "Poster art": "Omslagsbild",
   "Poster size": "Affischstorlek",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Förhandsvisning",
   "Progress": "Förlopp",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Förlopp, sedd-markeringar, favoriter och bevakningslistan, sparade bara på den här enheten. Rensar du dem här är de borta för gott — under Konto finns en säkerhetskopia om du vill ta en först.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Vart nedladdningar går",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Var filmer och avsnitt skrivs. Torrenter som redan laddats ner ligger kvar där de är.",
   "Where to keep downloads": "Var nedladdningar ska sparas",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "Vilken disk filmer och avsnitt skrivs till — ett inkopplat minne rymmer oftast mycket mer än boxen själv. Avinstallerar du appen tas de ändå bort. Torrenter som redan laddats ner ligger kvar där de är.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Värt att slå på överallt där appen känns trög — på en tv eller en digitalbox framför allt, där grafikkretsen är en bråkdel av en laptops.",
   "Writer": "Manusförfattare",

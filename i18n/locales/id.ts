@@ -4,6 +4,10 @@ import { id as $vuetify } from 'vuetify/locale'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Bahasa yang belum selesai diterjemahkan siapa pun akan kembali ke bahasa Inggris baris demi baris, jadi tidak ada yang pernah kosong.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Batas yang kamu tetapkan di sini juga berlaku selama pemutaran, yang jika tidak, plafon otomatis akan menurunkan seeding hingga seperempat jalur agar streaming tetap mengejar.",
   "A link asked Ventic to start searching:": "Sebuah tautan meminta Ventic mulai mencari di:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Portugis (Brasil)",
   "Poster art": "Gambar poster",
   "Poster size": "Ukuran poster",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Pratinjau",
   "Progress": "Kemajuan",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Kemajuan, tanda tertonton, favorit, dan daftar tonton hanya disimpan di perangkat ini. Membersihkannya di sini menghapusnya selamanya — di Akun ada berkas cadangan jika kamu ingin satu lebih dulu.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Ke mana unduhan disimpan",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Ke mana film dan episode ditulis. Torrent yang sudah diunduh tetap di tempatnya.",
   "Where to keep downloads": "Di mana menyimpan unduhan",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "Ke drive mana film dan episode ditulis — flash disk yang dicolok biasanya memuat jauh lebih banyak daripada boks itu sendiri. Mencopot aplikasi tetap menghapusnya. Torrent yang sudah diunduh tetap di tempatnya.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Layak dinyalakan di mana pun aplikasi terasa berat — terutama di televisi atau set-top box, di mana cip grafisnya hanya sebagian kecil dari milik laptop.",
   "Writer": "Penulis",

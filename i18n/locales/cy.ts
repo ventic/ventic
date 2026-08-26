@@ -4,6 +4,10 @@ import $vuetify from '../vuetify/cy'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Mae iaith nad oes neb wedi gorffen ei chyfieithu yn syrthio'n ôl i'r Saesneg fesul llinell, felly does dim byd byth yn wag.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Mae terfyn a osodwch yma yn dal i fod mewn grym wrth chwarae hefyd, lle byddai'r nenfwd awtomatig fel arall yn gostwng yr hadu i chwarter y llinell er mwyn i'r ffrwd allu dal i fyny.",
   "A link asked Ventic to start searching:": "Gofynnodd dolen i Ventic ddechrau chwilio:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Portiwgaleg (Brasil)",
   "Poster art": "Celf y poster",
   "Poster size": "Maint y posteri",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Rhagolwg",
   "Progress": "Cynnydd",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Cynnydd, marciau gwylio, ffefrynnau a'r rhestr wylio, a gedwir ar y ddyfais hon yn unig. Mae eu clirio yma'n eu clirio am byth — mae ffeil copi wrth gefn yn Cyfrif os ydych am un yn gyntaf.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Ble mae lawrlwythiadau'n mynd",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Ble mae ffilmiau a phenodau'n cael eu hysgrifennu. Mae torrentau sydd eisoes wedi'u lawrlwytho'n aros lle maent.",
   "Where to keep downloads": "Ble i gadw lawrlwythiadau",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "Pa yriant y mae ffilmiau a phenodau'n cael eu hysgrifennu iddo — mae ffon sydd wedi'i phlygio i mewn fel arfer yn dal llawer mwy na'r blwch ei hun. Mae dadosod yr ap yn dal i'w tynnu. Mae torrentau sydd eisoes wedi'u lawrlwytho'n aros lle maent.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Werth ei droi ymlaen ble bynnag y mae'r ap yn teimlo'n drwm — teledu neu flwch set-top yn anad dim, lle mae'r sglodyn graffeg yn ffracsiwn o un gliniadur.",
   "Writer": "Awdur",

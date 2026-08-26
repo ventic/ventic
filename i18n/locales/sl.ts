@@ -4,6 +4,10 @@ import { sl as $vuetify } from 'vuetify/locale'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Jezik, ki ga ni nihče prevedel do konca, se vrstico za vrstico vrne v angleščino, tako da ni nikoli nič prazno.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Omejitev, ki jo nastaviš tu, velja tudi med predvajanjem, kjer bi samodejna zgornja meja sicer spustila sejanje na četrtino linije, da bi pretok dohajal.",
   "A link asked Ventic to start searching:": "Povezava je Ventic prosila, naj začne iskati na:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Portugalščina (Brazilija)",
   "Poster art": "Grafika plakata",
   "Poster size": "Velikost plakatov",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Predogled",
   "Progress": "Napredek",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Napredek, oznake ogledov, priljubljeni in seznam za ogled se hranijo samo na tej napravi. Če jih tu počistiš, so izbrisani za vedno — pod Račun je datoteka varnostne kopije, če jo želiš najprej narediti.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Kam gredo prenosi",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Kam se zapisujejo filmi in epizode. Že preneseni torrenti ostanejo tam, kjer so.",
   "Where to keep downloads": "Kje hraniti prenose",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "Na kateri pogon se zapisujejo filmi in epizode — priključen ključek običajno sprejme veliko več kot sam predvajalnik. Ob odstranitvi aplikacije se vseeno izbrišejo. Že preneseni torrenti ostanejo tam, kjer so.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Vredno vklopiti povsod, kjer se aplikacija zdi počasna — predvsem na televizorju ali TV-predvajalniku, kjer je grafični čip le drobec prenosnikovega.",
   "Writer": "Scenarij",

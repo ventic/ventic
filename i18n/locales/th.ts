@@ -4,6 +4,10 @@ import { th as $vuetify } from 'vuetify/locale'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "ภาษาที่ยังไม่มีใครแปลจนเสร็จจะย้อนกลับไปใช้ภาษาอังกฤษทีละบรรทัด ดังนั้นจึงไม่มีอะไรว่างเปล่า",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "ขีดจำกัดที่คุณตั้งไว้ที่นี่มีผลระหว่างการเล่นด้วย ซึ่งตามปกติเพดานอัตโนมัติจะลดการซีดลงเหลือหนึ่งในสี่ของสายเพื่อให้สตรีมตามทัน",
   "A link asked Ventic to start searching:": "ลิงก์หนึ่งขอให้ Ventic เริ่มค้นหา:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "โปรตุเกส (บราซิล)",
   "Poster art": "ภาพโปสเตอร์",
   "Poster size": "ขนาดโปสเตอร์",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "ตัวอย่าง",
   "Progress": "ความคืบหน้า",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "ความคืบหน้า เครื่องหมายดูแล้ว รายการโปรด และรายการที่จะดู เก็บไว้บนอุปกรณ์นี้เท่านั้น ถ้าล้างที่นี่ก็หายไปถาวร — ถ้าอยากสำรองไว้ก่อน ไปที่หัวข้อบัญชีเพื่อสร้างไฟล์สำรอง",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "ที่เก็บไฟล์ดาวน์โหลด",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "ที่ที่ภาพยนตร์และตอนต่าง ๆ ถูกเขียนลงไป ทอร์เรนต์ที่ดาวน์โหลดไว้แล้วจะยังอยู่ที่เดิม",
   "Where to keep downloads": "จะเก็บไฟล์ดาวน์โหลดไว้ที่ไหน",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "ไดรฟ์ที่ใช้เขียนภาพยนตร์และตอนต่าง ๆ ลงไป — แฟลชไดรฟ์ที่เสียบไว้มักจุได้มากกว่าตัวกล่องเองมาก ถ้าถอนการติดตั้งแอปไฟล์เหล่านี้ก็ยังถูกลบอยู่ดี ทอร์เรนต์ที่ดาวน์โหลดไว้แล้วจะยังอยู่ที่เดิม",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "ควรเปิดไว้ทุกที่ที่แอปรู้สึกหนัก — โดยเฉพาะบนโทรทัศน์หรือกล่องเซ็ตท็อป ซึ่งชิปกราฟิกมีกำลังเพียงเสี้ยวเดียวของแล็ปท็อป",
   "Writer": "ผู้เขียนบท",

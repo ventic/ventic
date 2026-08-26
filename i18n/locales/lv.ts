@@ -4,6 +4,10 @@ import { lv as $vuetify } from 'vuetify/locale'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Valoda, kuras tulkojumu neviens nav pabeidzis, rindiņu pa rindiņai atgriežas pie angļu valodas, tāpēc nekas nekad nepaliek tukšs.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Šeit iestatītais ierobežojums darbojas arī atskaņošanas laikā, kur automātiskais griests citādi samazinātu sējumu līdz ceturtdaļai līnijas, lai straume paspētu.",
   "A link asked Ventic to start searching:": "Saite lūdza Ventic sākt meklēt šeit:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Portugāļu (Brazīlija)",
   "Poster art": "Plakāta attēls",
   "Poster size": "Plakātu izmērs",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Priekšskatījums",
   "Progress": "Progress",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Progress, skatīšanās atzīmes, izlase un skatīšanās saraksts tiek glabāti tikai šajā ierīcē. Notīrot tos šeit, tie pazūd uz visiem laikiem — sadaļā Konts ir dublējuma fails, ja vispirms vēlaties vienu.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Kur nonāk lejupielādes",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Kur tiek rakstītas filmas un epizodes. Jau lejupielādētie torrenti paliek, kur bijuši.",
   "Where to keep downloads": "Kur glabāt lejupielādes",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "Uz kuru disku tiek rakstītas filmas un epizodes — pievienota atmiņas kartiņa parasti ietilpina daudz vairāk nekā pati pierīce. Atinstalējot lietotni, tie tik un tā tiek dzēsti. Jau lejupielādētie torrenti paliek, kur bijuši.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Vērts ieslēgt visur, kur lietotne šķiet smaga — jo īpaši televizorā vai pierīcē, kur grafikas mikroshēma ir daļiņa no klēpjdatora jaudas.",
   "Writer": "Scenārists",

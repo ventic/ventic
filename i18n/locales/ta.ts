@@ -4,6 +4,10 @@ import $vuetify from '../vuetify/ta'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "யாரும் முழுமையாக மொழிபெயர்க்காத மொழி வரி வரியாக ஆங்கிலத்திற்குத் திரும்புகிறது, அதனால் எதுவும் வெறுமையாக இருப்பதில்லை.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "இங்கே நீங்கள் அமைக்கும் வரம்பு இயக்கத்தின் போதும் பொருந்தும்; இல்லையெனில் தானியங்கி உச்சவரம்பு, ஸ்ட்ரீம் தொடர்ந்து இயங்க வேண்டி, சீடிங்கை இணைப்பின் கால் பங்காகக் குறைத்திருக்கும்.",
   "A link asked Ventic to start searching:": "ஒரு இணைப்பு Ventic-ஐத் தேட ஆரம்பிக்கக் கேட்டது:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "போர்த்துகீசியம் (பிரேசில்)",
   "Poster art": "சுவரொட்டிக் கலை",
   "Poster size": "சுவரொட்டி அளவு",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "முன்னோட்டம்",
   "Progress": "முன்னேற்றம்",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "முன்னேற்றம், பார்த்த குறிகள், பிடித்தவை, பார்வைப் பட்டியல் ஆகியவை இந்தச் சாதனத்தில் மட்டுமே வைக்கப்படுகின்றன. இங்கே அவற்றை அழித்தால் அவை நிரந்தரமாகப் போய்விடும் — முதலில் ஒன்று வேண்டுமெனில், கணக்கு பகுதியில் காப்புப் பிரதிக் கோப்பு உள்ளது.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "பதிவிறக்கங்கள் செல்லும் இடம்",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "திரைப்படங்களும் அத்தியாயங்களும் எழுதப்படும் இடம். ஏற்கெனவே பதிவிறக்கிய டொரண்ட்கள் இருந்த இடத்திலேயே இருக்கும்.",
   "Where to keep downloads": "பதிவிறக்கங்களை எங்கே வைப்பது",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "திரைப்படங்களும் அத்தியாயங்களும் எந்த இயக்கியில் எழுதப்படும் — செருகப்பட்ட ஸ்டிக், பெட்டியைவிட வழக்கமாக மிக அதிகம் வைத்திருக்கும். செயலியை நீக்கினாலும் அவை நீக்கப்படும். ஏற்கெனவே பதிவிறக்கிய டொரண்ட்கள் இருந்த இடத்திலேயே இருக்கும்.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "செயலி கனமாக உணரும் எந்த இடத்திலும் இதை இயக்குவது நல்லது — குறிப்பாகத் தொலைக்காட்சியிலோ செட்-டாப் பெட்டியிலோ, அங்கே வரைகலை சிப் மடிக்கணினியில் உள்ளதில் ஒரு சிறு பகுதியே.",
   "Writer": "திரைக்கதை ஆசிரியர்",

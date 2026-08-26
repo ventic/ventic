@@ -4,6 +4,10 @@ import { bg as $vuetify } from 'vuetify/locale'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Език, чийто превод никой не е завършил, се връща към английски ред по ред, така че нищо никога не остава празно.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Ограничение, зададено тук, важи и по време на възпроизвеждане, където автоматичният таван иначе би свалил споделянето до четвърт от линията, за да смогва потокът.",
   "A link asked Ventic to start searching:": "Връзка помоли Ventic да започне да търси в:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Португалски (Бразилия)",
   "Poster art": "Изображение на постера",
   "Poster size": "Размер на постерите",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Преглед",
   "Progress": "Напредък",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Напредък, отметки за гледано, любими и списъкът за гледане, пазени само на това устройство. Изчистването им тук ги изчиства завинаги — в Профил има файл с резервно копие, ако първо искате такъв.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Къде отиват изтеглянията",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Къде се записват филмите и епизодите. Вече изтеглените торенти си остават на място.",
   "Where to keep downloads": "Къде да се пазят изтеглянията",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "На кой диск се записват филмите и епизодите — включена флашка обикновено събира далеч повече от самата приставка. Деинсталирането на приложението пак ги премахва. Вече изтеглените торенти си остават на място.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Струва си да се включи навсякъде, където приложението изглежда тежко — най-вече на телевизор или приставка, където графичният чип е малка част от този на лаптоп.",
   "Writer": "Сценарист",

@@ -4,6 +4,10 @@ import $vuetify from '../vuetify/hy'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Այն լեզուն, որի թարգմանությունը ոչ ոք չի ավարտել, տող առ տող վերադառնում է անգլերենին, այնպես որ ոչինչ երբեք դատարկ չի մնում։",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Այստեղ սահմանված սահմանաչափը գործում է նաև նվագարկման ընթացքում, որտեղ ինքնաշխատ առաստաղը հակառակ դեպքում սերմանումը կիջեցներ գծի մեկ քառորդին, որպեսզի հոսքը հասցնի։",
   "A link asked Ventic to start searching:": "Հղումը խնդրել է Ventic-ին սկսել որոնումն այստեղ՝",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Պորտուգալերեն (Բրազիլիա)",
   "Poster art": "Պաստառի պատկեր",
   "Poster size": "Պաստառի չափ",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Նախադիտում",
   "Progress": "Առաջընթաց",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Առաջընթացը, դիտված նշումները, ընտրյալները և դիտելու ցանկը պահվում են միայն այս սարքում։ Դրանք այստեղ մաքրելը մաքրում է ընդմիշտ — «Հաշիվ» բաժնում կա պահուստային ֆայլ, եթե նախ մեկը ցանկանում եք։",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Ուր են գնում ներբեռնումները",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Ուր են գրվում ֆիլմերն ու դրվագները։ Արդեն ներբեռնված torrent-ները մնում են այնտեղ, որտեղ կան։",
   "Where to keep downloads": "Որտեղ պահել ներբեռնումները",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "Որ սկավառակի վրա են գրվում ֆիլմերն ու դրվագները — միացված կրիչը սովորաբար շատ ավելին է տեղավորում, քան հենց արկղը։ Հավելվածը հեռացնելիս դրանք միևնույն է ջնջվում են։ Արդեն ներբեռնված torrent-ները մնում են այնտեղ, որտեղ կան։",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Արժե միացնել ամենուր, որտեղ հավելվածը ծանր է թվում — հատկապես հեռուստացույցի կամ սեթ-թոփ արկղի վրա, որտեղ գրաֆիկական չիպը նոութբուքի չիպի փոքր մասն է։",
   "Writer": "Սցենարիստ",

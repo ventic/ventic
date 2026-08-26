@@ -4,6 +4,10 @@ import $vuetify from '../vuetify/ka'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "ენა, რომლის თარგმანიც ვერავინ დაასრულა, სტრიქონ-სტრიქონ ინგლისურზე ბრუნდება, ასე რომ არაფერი რჩება ცარიელი.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "აქ დაყენებული ზღვარი დაკვრის დროსაც მოქმედებს, სადაც ავტომატური ჭერი სხვა შემთხვევაში დათესვას ხაზის მეოთხედამდე დასწევდა, რომ ნაკადი ჩამორჩენას ასცდეს.",
   "A link asked Ventic to start searching:": "ბმულმა Ventic-ს სთხოვა ძიების დაწყება აქ:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "პორტუგალიური (ბრაზილია)",
   "Poster art": "პოსტერის გამოსახულება",
   "Poster size": "პოსტერის ზომა",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "წინასწარი ხედი",
   "Progress": "პროგრესი",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "პროგრესი, ნანახის ნიშნები, რჩეულები და სანახავი სია მხოლოდ ამ მოწყობილობაზე ინახება. აქ მათი გასუფთავება სამუდამოდ შლის — „ანგარიშში“ არის სარეზერვო ფაილი, თუ ჯერ ერთი გინდათ.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "სად მიდის ჩამოტვირთვები",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "სად იწერება ფილმები და ეპიზოდები. უკვე ჩამოტვირთული ტორენტები თავის ადგილას რჩება.",
   "Where to keep downloads": "სად შეინახოს ჩამოტვირთვები",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "რომელ დისკზე იწერება ფილმები და ეპიზოდები — ჩართული ფლეშკა ჩვეულებრივ გაცილებით მეტს იტევს, ვიდრე თავად მოწყობილობა. აპლიკაციის წაშლა მათ მაინც შლის. უკვე ჩამოტვირთული ტორენტები თავის ადგილას რჩება.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "ღირს ჩართვა ყველგან, სადაც აპლიკაცია მძიმედ მოგეჩვენებათ — განსაკუთრებით ტელევიზორზე ან სეტ-ტოპ ბოქსზე, სადაც გრაფიკული ჩიპი ლეპტოპისას მცირე ნაწილს შეადგენს.",
   "Writer": "სცენარისტი",

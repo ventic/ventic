@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import process from 'node:process'
-import { diskBudget, ENGINE, findReleases, haveAt, isAwkward, normalizeSource, parseRelease, pickBest, pickSubtitleFiles, pickVideoFile, planEviction, planNetwork, releaseKey, setSources, startTorrent, streamParts, toRelease, uploadLimit, usedBytes } from '../app/utils/torrents'
+import { diskBudget, ENGINE, findReleases, haveAt, isAwkward, isBloated, normalizeSource, parseRelease, pickBest, pickSubtitleFiles, pickVideoFile, planEviction, planNetwork, releaseKey, setQuality, setSources, startTorrent, streamParts, toRelease, uploadLimit, usedBytes } from '../app/utils/torrents'
 // Self-check for the torrent parser/ranker: `bun scripts/check-torrents.ts`.
 // The fixture is the response shape a source answers with, filled in with a
 // public-domain film. `--live <source-url> <imdb-id>` also searches for real.
@@ -153,6 +153,43 @@ assert.equal(
   'still not worth dropping to 720p over',
 )
 assert.ok(isAwkward(codecs[0]!) && !isAwkward(codecs[1]!))
+
+// --- A label is not a bitrate ------------------------------------------------
+// Every copy in a search is the same film, so the tier's own median is what
+// "1080p" weighs for this one. The 700 MB entry is 1080p by frame size and by
+// nothing else, and no number of seeders makes it the pick.
+const sameFilm = [
+  { name: 'Example\n1080p', title: 'Sintel.2010.1080p.WEB.x264\n👤 900 💾 700 MB ⚙️ a', infoHash: 'mush' },
+  { name: 'Example\n1080p', title: 'Sintel.2010.1080p.BluRay.x264\n👤 40 💾 2.2 GB ⚙️ b', infoHash: 'good' },
+  { name: 'Example\n1080p', title: 'Sintel.2010.1080p.WEB-DL.x264\n👤 30 💾 2.4 GB ⚙️ c', infoHash: 'also' },
+  { name: 'Example\n1080p', title: 'Sintel.2010.1080p.BluRay.x265\n👤 20 💾 2.6 GB ⚙️ d', infoHash: 'more' },
+].flatMap(s => toRelease(s) ?? [])
+
+assert.equal(pickBest(sameFilm)!.hash, 'good', 'a starved copy loses its tier, whatever its seeders')
+assert.equal(
+  pickBest(sameFilm.slice(0, 2))!.hash,
+  'mush',
+  'two copies are each other\'s outlier — with no sample there is no verdict',
+)
+
+// --- The tier you asked for, when it is really there --------------------------
+const swarms = [
+  { name: 'Example\n4k HDR', title: 'Sintel.2010.2160p.WEB-DL\n👤 2 💾 15 GB ⚙️ a', infoHash: 'uhd' },
+  { name: 'Example\n1080p', title: 'Sintel.2010.1080p.WEB-DL\n👤 200 💾 2.4 GB ⚙️ b', infoHash: 'hd' },
+].flatMap(s => toRelease(s) ?? [])
+
+setQuality('2160p')
+assert.equal(pickBest(swarms)!.hash, 'hd', 'a 4k two people are seeding loses to a healthy 1080p')
+assert.equal(
+  pickBest(swarms.filter(t => t.hash === 'uhd'))!.hash,
+  'uhd',
+  'and is still played when it is the only thing there',
+)
+assert.equal(pickBest(parsed)!.hash, 'aaa', 'a live 4k is taken when one was asked for')
+// "4k" and "2160p" are one tier under two labels, so the fat cap is the 4k one.
+assert.ok(!isBloated(swarms[0]!), '15 GB is not a bloated 2160p')
+setQuality('')
+assert.equal(pickBest(parsed)!.hash, 'bbb', 'and the streaming default comes back')
 
 // ...but the name is only half of it. With a device to ask — Android, where the
 // player is ExoPlayer on the platform's own decoders — the answer comes from

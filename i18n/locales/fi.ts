@@ -4,6 +4,10 @@ import { fi as $vuetify } from 'vuetify/locale'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Kieli, jonka käännöstä kukaan ei ole saanut valmiiksi, palautuu englantiin rivi kerrallaan, joten mikään ei jää koskaan tyhjäksi.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Tässä asettamasi rajoitus pätee myös toiston aikana, jossa automaattinen katto muuten pudottaisi jakamisen neljäsosaan linjasta, jotta suoratoisto pysyy mukana.",
   "A link asked Ventic to start searching:": "Linkki pyysi Venticia aloittamaan haun osoitteesta:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Portugali (Brasilia)",
   "Poster art": "Julisteen kuvitus",
   "Poster size": "Julisteen koko",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Esikatselu",
   "Progress": "Edistyminen",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Edistyminen, katsottu-merkinnät, suosikit ja katselulista säilytetään vain tässä laitteessa. Niiden tyhjentäminen täällä tyhjentää ne lopullisesti — Tili-kohdassa on varmuuskopiotiedosto, jos haluat sellaisen ensin.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Minne lataukset menevät",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Minne elokuvat ja jaksot kirjoitetaan. Jo ladatut torrentit pysyvät siellä, missä ovat.",
   "Where to keep downloads": "Minne lataukset säilytetään",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "Mille asemalle elokuvat ja jaksot kirjoitetaan — kytketty tikku vetää yleensä paljon enemmän kuin itse boksi. Sovelluksen poistaminen poistaa ne silti. Jo ladatut torrentit pysyvät siellä, missä ovat.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Kannattaa kytkeä päälle kaikkialla, missä sovellus tuntuu raskaalta — ennen kaikkea televisiossa tai digiboksissa, jossa näytönohjain on murto-osa kannettavan vastaavasta.",
   "Writer": "Käsikirjoittaja",

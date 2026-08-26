@@ -4,6 +4,10 @@ import { sk as $vuetify } from 'vuetify/locale'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Jazyk, ktorého preklad nikto nedokončil, sa riadok po riadku vracia k angličtine, takže nikdy nič nezostane prázdne.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Limit nastavený tu platí aj počas prehrávania, kde by automatický strop inak znížil zdieľanie na štvrtinu linky, aby stream stíhal.",
   "A link asked Ventic to start searching:": "Odkaz požiadal Ventic, aby začal hľadať na:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Portugalčina (Brazília)",
   "Poster art": "Obrázok plagátu",
   "Poster size": "Veľkosť plagátov",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Náhľad",
   "Progress": "Priebeh",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Priebeh, značky pozretia, obľúbené a zoznam na pozretie sa uchovávajú len v tomto zariadení. Vymazať ich tu znamená vymazať ich navždy — v Účte je záložný súbor, ak si najprv chcete nejaký spraviť.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Kam idú sťahovania",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Kam sa zapisujú filmy a epizódy. Už stiahnuté torrenty zostávajú tam, kde sú.",
   "Where to keep downloads": "Kam ukladať sťahovania",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "Na aký disk sa zapisujú filmy a epizódy — zapojený kľúč zvyčajne pojme oveľa viac ako samotný box. Odinštalovanie aplikácie ich aj tak odstráni. Už stiahnuté torrenty zostávajú tam, kde sú.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Oplatí sa zapnúť všade, kde aplikácia pôsobí ťažkopádne — najmä na televízore alebo set-top boxe, kde je grafický čip zlomkom toho v notebooku.",
   "Writer": "Scenár",

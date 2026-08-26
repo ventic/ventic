@@ -4,6 +4,10 @@ import $vuetify from '../vuetify/gd'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Cànan nach do chrìochnaich duine eadar-theangachadh, tillidh e gu Beurla loidhne air loidhne, agus mar sin cha bhi dad falamh a-riamh.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Bidh crìoch a shuidhicheas tu an-seo an sàs rè cluich cuideachd, far am biodh a' mhullach fèin-obrachail a' leigeil an t-sìolachaidh sìos gu cairteal na loidhne gus an cùm an sruth suas.",
   "A link asked Ventic to start searching:": "Dh'iarr ceangal air Ventic tòiseachadh a' lorg aig:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Portagailis (Braisil)",
   "Poster art": "Ealain a' phostair",
   "Poster size": "Meud nam postairean",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Ro-shealladh",
   "Progress": "Adhartas",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Cumar an t-adhartas, na comharran coimhid, na h-annsachdan agus an liosta chòimhid air an uidheam seo a-mhàin. Ma dh'fhalamhaicheas tu an-seo iad, falamhaichear gu bràth iad — tha faidhle lethbhreac-glèidhidh fo Cunntas ma tha thu ag iarraidh fear an toiseach.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Càit an tèid na luchdaidhean",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Càit an tèid filmichean agus eapasodan a sgrìobhadh. Fanaidh torrentan a chaidh a luchdachadh a-nuas mu thràth far a bheil iad.",
   "Where to keep downloads": "Càit an tèid na luchdaidhean a chumail",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "Dè an draibh dhan tèid filmichean agus eapasodan a sgrìobhadh — mar as trice cumaidh bioran a chaidh a phlugadh a-steach mòran a bharrachd na am bogsa fhèin. Bheir dì-stàladh na h-aplacaid air falbh iad co-dhiù. Fanaidh torrentan a chaidh a luchdachadh a-nuas mu thràth far a bheil iad.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "'S fhiach a chur air àite sam bith far am bi an aplacaid a' faireachdainn trom — air telebhisean no bogsa-set as motha, far nach eil sa chip ghrafaigeach ach bloigh de fhear coimpiutair-uchd.",
   "Writer": "Sgrìobhadair",

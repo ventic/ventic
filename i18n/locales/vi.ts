@@ -4,6 +4,10 @@ import { vi as $vuetify } from 'vuetify/locale'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Ngôn ngữ chưa ai dịch xong sẽ quay về tiếng Anh theo từng dòng, nên không bao giờ có chỗ nào bị trống.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Giới hạn bạn đặt ở đây vẫn có hiệu lực trong lúc phát, nơi mà trần tự động lẽ ra đã hạ việc chia sẻ xuống còn một phần tư đường truyền để luồng phát theo kịp.",
   "A link asked Ventic to start searching:": "Một liên kết đã yêu cầu Ventic bắt đầu tìm kiếm:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Tiếng Bồ Đào Nha (Brazil)",
   "Poster art": "Ảnh áp phích",
   "Poster size": "Cỡ áp phích",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Xem trước",
   "Progress": "Tiến độ",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Tiến độ, dấu đã xem, mục yêu thích và danh sách xem chỉ được giữ trên thiết bị này. Xóa ở đây là mất hẳn — mục Tài khoản có tệp sao lưu nếu bạn muốn lưu lại trước.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Nơi các mục tải xuống được lưu",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Nơi phim và các tập được ghi vào. Những torrent đã tải xong vẫn nằm nguyên chỗ cũ.",
   "Where to keep downloads": "Nơi lưu các mục tải xuống",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "Phim và các tập được ghi vào ổ đĩa nào — một chiếc USB cắm ngoài thường chứa được nhiều hơn hẳn bản thân chiếc hộp. Gỡ cài đặt ứng dụng thì chúng vẫn bị xóa. Những torrent đã tải xong vẫn nằm nguyên chỗ cũ.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Đáng bật ở bất cứ đâu ứng dụng thấy nặng — nhất là trên tivi hay hộp set-top, nơi chip đồ họa chỉ bằng một phần nhỏ so với laptop.",
   "Writer": "Biên kịch",

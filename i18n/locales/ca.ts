@@ -4,6 +4,10 @@ import { ca as $vuetify } from 'vuetify/locale'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Una llengua que ningú no ha acabat de traduir recorre a l'anglès línia a línia, de manera que mai no queda res en blanc.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Un límit que fixis aquí també s'aplica durant la reproducció, on el sostre automàtic altrament reduiria la sembra a un quart de la línia perquè el flux pugui seguir.",
   "A link asked Ventic to start searching:": "Un enllaç ha demanat al Ventic que comenci a cercar a:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Portuguès (Brasil)",
   "Poster art": "Il·lustració del pòster",
   "Poster size": "Mida dels pòsters",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Vista prèvia",
   "Progress": "Progrés",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "El progrés, les marques de vist, els preferits i la llista per veure es guarden només en aquest dispositiu. Netejar-los aquí els neteja per sempre: a Compte hi ha un fitxer de còpia de seguretat si en vols un abans.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "On van les baixades",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "On s'escriuen les pel·lícules i els episodis. Els torrents ja baixats es queden on són.",
   "Where to keep downloads": "On desar les baixades",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "A quina unitat s'escriuen les pel·lícules i els episodis: un llapis de memòria connectat sol tenir molt més espai que l'aparell mateix. Desinstal·lar l'aplicació els esborra igualment. Els torrents ja baixats es queden on són.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Val la pena activar-ho allà on l'aplicació vagi pesada: sobretot en un televisor o un descodificador, on el xip gràfic és una fracció del d'un portàtil.",
   "Writer": "Guió",

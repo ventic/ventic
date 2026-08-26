@@ -4,6 +4,10 @@ import $vuetify from '../vuetify/sq'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Një gjuhë që askush nuk e ka përkthyer deri në fund kthehet te anglishtja rresht pas rreshti, kështu që asgjë nuk mbetet kurrë bosh.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Një kufi që vendos këtu vlen edhe gjatë luajtjes, ku tavani automatik përndryshe do ta ulte shpërndarjen në një të katërtën e linjës që transmetimi të mbajë ritmin.",
   "A link asked Ventic to start searching:": "Një lidhje i kërkoi Ventic të fillojë kërkimin në:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Portugalisht (Brazil)",
   "Poster art": "Grafika e posterit",
   "Poster size": "Madhësia e posterave",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Paraprakisht",
   "Progress": "Progresi",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Progresi, shenjat e shikimit, të preferuarat dhe lista për shikim ruhen vetëm në këtë pajisje. Pastrimi i tyre këtu i fshin përgjithmonë — te Llogaria ka një skedar kopjeje rezervë nëse do fillimisht një të tillë.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Ku shkojnë shkarkimet",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Ku shkruhen filmat dhe episodet. Torrentët e shkarkuar tashmë mbeten aty ku janë.",
   "Where to keep downloads": "Ku të mbahen shkarkimet",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "Në cilin disk shkruhen filmat dhe episodet — një USB i futur zakonisht nxë shumë më tepër se vetë kutia. Çinstalimi i aplikacionit i heq gjithsesi. Torrentët e shkarkuar tashmë mbeten aty ku janë.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Ia vlen të ndizet kudo ku aplikacioni duket i rëndë — sidomos në një televizor ose një kuti televizive, ku çipi grafik është një pjesë e vogël e atij të një laptopi.",
   "Writer": "Skenari",

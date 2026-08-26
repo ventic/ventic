@@ -4,6 +4,10 @@ import { el as $vuetify } from 'vuetify/locale'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Μια γλώσσα που κανείς δεν έχει ολοκληρώσει τη μετάφρασή της επιστρέφει στα αγγλικά γραμμή προς γραμμή, ώστε να μη μένει ποτέ τίποτα κενό.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Ένα όριο που ορίζετε εδώ ισχύει και κατά την αναπαραγωγή, όπου το αυτόματο πλαφόν θα έριχνε αλλιώς τη διαμοίραση στο ένα τέταρτο της γραμμής ώστε να προλαβαίνει η ροή.",
   "A link asked Ventic to start searching:": "Ένας σύνδεσμος ζήτησε από το Ventic να ξεκινήσει αναζήτηση στο:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "Πορτογαλικά (Βραζιλία)",
   "Poster art": "Εικαστικό αφίσας",
   "Poster size": "Μέγεθος αφισών",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "Προεπισκόπηση",
   "Progress": "Πρόοδος",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Η πρόοδος, οι σημάνσεις παρακολούθησης, τα αγαπημένα και η λίστα παρακολούθησης φυλάσσονται μόνο σε αυτή τη συσκευή. Η εκκαθάρισή τους εδώ τα σβήνει οριστικά — στον Λογαριασμό υπάρχει αρχείο αντιγράφου ασφαλείας αν θέλετε ένα πρώτα.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "Πού πηγαίνουν οι λήψεις",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "Πού γράφονται ταινίες και επεισόδια. Τα ήδη κατεβασμένα torrent μένουν εκεί που είναι.",
   "Where to keep downloads": "Πού να φυλάσσονται οι λήψεις",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "Σε ποιον δίσκο γράφονται ταινίες και επεισόδια — ένα συνδεδεμένο στικάκι χωράει συνήθως πολύ περισσότερα από το ίδιο το κουτί. Η απεγκατάσταση της εφαρμογής τα αφαιρεί ούτως ή άλλως. Τα ήδη κατεβασμένα torrent μένουν εκεί που είναι.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "Αξίζει να ενεργοποιηθεί όπου η εφαρμογή δείχνει βαριά — κυρίως σε τηλεόραση ή αποκωδικοποιητή, όπου το τσιπ γραφικών είναι κλάσμα ενός φορητού υπολογιστή.",
   "Writer": "Σενάριο",

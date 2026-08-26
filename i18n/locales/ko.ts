@@ -4,6 +4,10 @@ import { ko as $vuetify } from 'vuetify/locale'
 
 export default {
   $vuetify,
+  "1080p": "TODO_TRANSLATION: 1080p",
+  "4K": "TODO_TRANSLATION: 4K",
+  "720p": "TODO_TRANSLATION: 720p",
+  "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "TODO_TRANSLATION: A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "아무도 번역을 끝내지 않은 언어는 한 줄씩 영어로 되돌아가므로, 비어 있는 곳은 생기지 않습니다.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "여기서 정한 제한은 재생 중에도 적용됩니다. 자동 상한이라면 스트림이 따라오도록 시딩을 회선의 4분의 1까지 떨어뜨렸을 상황입니다.",
   "A link asked Ventic to start searching:": "링크가 Ventic에 다음 위치에서 검색을 시작하도록 요청했습니다:",
@@ -289,6 +293,7 @@ export default {
   "Portuguese (Brazil)": "포르투갈어(브라질)",
   "Poster art": "포스터 아트워크",
   "Poster size": "포스터 크기",
+  "Preferred quality": "TODO_TRANSLATION: Preferred quality",
   "Preview": "미리보기",
   "Progress": "진행 상황",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "진행 상황, 시청 표시, 즐겨찾기, 볼 목록은 이 기기에만 저장됩니다. 여기서 지우면 영구히 사라집니다 — 먼저 백업을 원한다면 계정에 백업 파일이 있습니다.",
@@ -455,6 +460,7 @@ export default {
   "Where downloads go": "다운로드가 저장되는 곳",
   "Where films and episodes are written. Torrents already downloaded stay where they are.": "영화와 에피소드를 기록하는 위치. 이미 내려받은 토렌트는 그대로 남습니다.",
   "Where to keep downloads": "다운로드를 보관할 위치",
+  "Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.": "TODO_TRANSLATION: Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.",
   "Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.": "영화와 에피소드를 어느 드라이브에 기록할지 — 꽂은 USB 메모리는 보통 박스 자체보다 훨씬 많이 담습니다. 앱을 삭제하면 어차피 함께 지워집니다. 이미 내려받은 토렌트는 그대로 남습니다.",
   "Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop's.": "앱이 무겁게 느껴지는 곳이라면 어디든 켤 만합니다 — 특히 텔레비전이나 셋톱박스에서는 그래픽 칩 성능이 노트북의 일부에 불과합니다.",
   "Writer": "각본",
