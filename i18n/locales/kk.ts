@@ -18,6 +18,7 @@ export default {
   "About": "Бағдарлама туралы",
   "Account": "Тіркелгі",
   "Add": "Қосу",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "magnet қосу",
   "Add source": "Дереккөз қосу",
   "Add this source?": "Осы дереккөзді қосу керек пе?",

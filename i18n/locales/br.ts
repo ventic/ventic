@@ -18,6 +18,7 @@ export default {
   "About": "Diwar-benn",
   "Account": "Kont",
   "Add": "Ouzhpennañ",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Ouzhpennañ ur magnet",
   "Add source": "Ouzhpennañ ur vammenn",
   "Add this source?": "Ouzhpennañ ar vammenn-mañ?",

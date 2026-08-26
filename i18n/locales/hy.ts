@@ -18,6 +18,7 @@ export default {
   "About": "Ծրագրի մասին",
   "Account": "Հաշիվ",
   "Add": "Ավելացնել",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Ավելացնել magnet",
   "Add source": "Ավելացնել աղբյուր",
   "Add this source?": "Ավելացնե՞լ այս աղբյուրը",

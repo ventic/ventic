@@ -18,6 +18,7 @@ export default {
   "About": "Despre",
   "Account": "Cont",
   "Add": "Adaugă",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Adaugă magnet",
   "Add source": "Adaugă sursă",
   "Add this source?": "Adaugi această sursă?",

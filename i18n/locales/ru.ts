@@ -18,6 +18,7 @@ export default {
   "About": "О программе",
   "Account": "Аккаунт",
   "Add": "Добавить",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Добавить magnet",
   "Add source": "Добавить источник",
   "Add this source?": "Добавить этот источник?",

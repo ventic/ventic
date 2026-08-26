@@ -18,6 +18,7 @@ export default {
   "About": "Névjegy",
   "Account": "Fiók",
   "Add": "Hozzáadás",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Magnet hozzáadása",
   "Add source": "Forrás hozzáadása",
   "Add this source?": "Hozzáadod ezt a forrást?",

@@ -18,6 +18,7 @@ export default {
   "About": "Ynghylch",
   "Account": "Cyfrif",
   "Add": "Ychwanegu",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Ychwanegu magnet",
   "Add source": "Ychwanegu ffynhonnell",
   "Add this source?": "Ychwanegu'r ffynhonnell hon?",

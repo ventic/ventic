@@ -18,6 +18,7 @@ export default {
   "About": "Ku saabsan",
   "Account": "Akoonka",
   "Add": "Ku dar",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Ku dar magnet",
   "Add source": "Ku dar il",
   "Add this source?": "Ma ku darnaa isha kan?",

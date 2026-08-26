@@ -18,6 +18,7 @@ export default {
   "About": "关于",
   "Account": "账户",
   "Add": "添加",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "添加磁力链接",
   "Add source": "添加来源",
   "Add this source?": "要添加这个来源吗？",

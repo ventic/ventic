@@ -18,6 +18,7 @@ export default {
   "About": "Oor",
   "Account": "Rekening",
   "Add": "Voeg by",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Voeg magneet by",
   "Add source": "Voeg bron by",
   "Add this source?": "Voeg hierdie bron by?",

@@ -18,6 +18,7 @@ export default {
   "About": "परिचय",
   "Account": "खाता",
   "Add": "जोड़ें",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "मैग्नेट जोड़ें",
   "Add source": "स्रोत जोड़ें",
   "Add this source?": "यह स्रोत जोड़ें?",

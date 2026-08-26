@@ -18,6 +18,7 @@ export default {
   "About": "Apie",
   "Account": "Paskyra",
   "Add": "Pridėti",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Pridėti magnet",
   "Add source": "Pridėti šaltinį",
   "Add this source?": "Pridėti šį šaltinį?",

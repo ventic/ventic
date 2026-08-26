@@ -18,6 +18,7 @@ export default {
   "About": "Over",
   "Account": "Account",
   "Add": "Toevoegen",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Magnet toevoegen",
   "Add source": "Bron toevoegen",
   "Add this source?": "Deze bron toevoegen?",

@@ -18,6 +18,7 @@ export default {
   "About": "Put",
   "Account": "Kuentå-mu",
   "Add": "Na'hålom",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Na'hålom magnet",
   "Add source": "Na'hålom source",
   "Add this source?": "Na'hålom este na source?",

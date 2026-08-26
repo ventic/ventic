@@ -18,6 +18,7 @@ export default {
   "About": "Pri",
   "Account": "Konto",
   "Add": "Aldoni",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Aldoni magneton",
   "Add source": "Aldoni fonton",
   "Add this source?": "Ĉu aldoni ĉi tiun fonton?",

@@ -6,6 +6,7 @@ import {
   mdiAlertCircleOutline,
   mdiArrowLeft,
   mdiDownload,
+  mdiPowerPlugOutline,
   mdiReload,
 } from '@mdi/js'
 
@@ -132,6 +133,9 @@ const failure = computed(() => errorMsg.value
     ? $t('Couldn\'t load this title from TMDB.')
     : ''))
 
+/** The one failure whose fix is a button away rather than a retry. */
+const noSources = computed(() => failure.value === NO_SOURCES())
+
 const heading = computed(() => {
   const name = title.value?.title ?? (route.query.title as string) ?? $t('Loading…')
   return season.value && episode.value ? `${name} · S${season.value}E${episode.value}` : name
@@ -218,7 +222,15 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
               {{ failure }}
             </p>
             <div class="mt-2 flex gap-2">
-              <v-btn variant="tonal" :prepend-icon="mdiReload" @click="start">
+              <v-btn
+                v-if="noSources"
+                variant="tonal"
+                :prepend-icon="mdiPowerPlugOutline"
+                :to="localePath('/settings/sources')"
+              >
+                {{ $t('Add a source') }}
+              </v-btn>
+              <v-btn v-else variant="tonal" :prepend-icon="mdiReload" @click="start">
                 {{ $t('Try again') }}
               </v-btn>
               <v-btn variant="text" :prepend-icon="mdiArrowLeft" @click="leave">

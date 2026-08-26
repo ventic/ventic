@@ -18,6 +18,7 @@ export default {
   "About": "정보",
   "Account": "계정",
   "Add": "추가",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "마그넷 추가",
   "Add source": "소스 추가",
   "Add this source?": "이 소스를 추가할까요?",

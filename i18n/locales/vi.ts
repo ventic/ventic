@@ -18,6 +18,7 @@ export default {
   "About": "Giới thiệu",
   "Account": "Tài khoản",
   "Add": "Thêm",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Thêm magnet",
   "Add source": "Thêm nguồn",
   "Add this source?": "Thêm nguồn này?",

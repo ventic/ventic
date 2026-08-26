@@ -18,6 +18,7 @@ export default {
   "About": "ಕುರಿತು",
   "Account": "ಖಾತೆ",
   "Add": "ಸೇರಿಸಿ",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "ಮ್ಯಾಗ್ನೆಟ್ ಸೇರಿಸಿ",
   "Add source": "ಮೂಲ ಸೇರಿಸಿ",
   "Add this source?": "ಈ ಮೂಲವನ್ನು ಸೇರಿಸಬೇಕೇ?",

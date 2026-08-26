@@ -18,6 +18,7 @@ export default {
   "About": "Tietoja",
   "Account": "Tili",
   "Add": "Lisää",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Lisää magnet",
   "Add source": "Lisää lähde",
   "Add this source?": "Lisätäänkö tämä lähde?",

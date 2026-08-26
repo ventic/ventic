@@ -18,6 +18,7 @@ export default {
   "About": "Программа жөнүндө",
   "Account": "Каттоо эсеби",
   "Add": "Кошуу",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "magnet кошуу",
   "Add source": "Булак кошуу",
   "Add this source?": "Бул булак кошулсунбу?",

@@ -18,6 +18,7 @@ export default {
   "About": "Kuhusu",
   "Account": "Akaunti",
   "Add": "Ongeza",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Ongeza magnet",
   "Add source": "Ongeza chanzo",
   "Add this source?": "Ongeza chanzo hiki?",

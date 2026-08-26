@@ -18,6 +18,7 @@ export default {
   "About": "เกี่ยวกับ",
   "Account": "บัญชี",
   "Add": "เพิ่ม",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "เพิ่มแม็กเน็ต",
   "Add source": "เพิ่มแหล่ง",
   "Add this source?": "เพิ่มแหล่งนี้ไหม",

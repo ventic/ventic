@@ -18,6 +18,7 @@ export default {
   "About": "সম্পর্কে",
   "Account": "অ্যাকাউন্ট",
   "Add": "যোগ করুন",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "ম্যাগনেট যোগ করুন",
   "Add source": "উৎস যোগ করুন",
   "Add this source?": "এই উৎসটি যোগ করবেন?",

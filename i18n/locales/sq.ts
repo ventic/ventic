@@ -18,6 +18,7 @@ export default {
   "About": "Rreth",
   "Account": "Llogaria",
   "Add": "Shto",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Shto magnet",
   "Add source": "Shto burim",
   "Add this source?": "Ta shtojmë këtë burim?",

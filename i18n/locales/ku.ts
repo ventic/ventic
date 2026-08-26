@@ -18,6 +18,7 @@ export default {
   "About": "Der barê",
   "Account": "Hesab",
   "Add": "Zêde bike",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Magnet zêde bike",
   "Add source": "Çavkanî zêde bike",
   "Add this source?": "Ev çavkanî were zêdekirin?",

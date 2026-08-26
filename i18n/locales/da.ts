@@ -18,6 +18,7 @@ export default {
   "About": "Om",
   "Account": "Konto",
   "Add": "Tilføj",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Tilføj magnet",
   "Add source": "Tilføj kilde",
   "Add this source?": "Vil du tilføje denne kilde?",

@@ -18,6 +18,7 @@ export default {
   "About": "Teave",
   "Account": "Konto",
   "Add": "Lisa",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Lisa magnet",
   "Add source": "Lisa allikas",
   "Add this source?": "Kas lisada see allikas?",

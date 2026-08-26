@@ -18,6 +18,7 @@ export default {
   "About": "Honi buruz",
   "Account": "Kontua",
   "Add": "Gehitu",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Gehitu magnet-a",
   "Add source": "Gehitu iturburua",
   "Add this source?": "Iturburu hau gehitu?",

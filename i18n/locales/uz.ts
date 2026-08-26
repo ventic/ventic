@@ -18,6 +18,7 @@ export default {
   "About": "Haqida",
   "Account": "Hisob",
   "Add": "Qoʻshish",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Magnit qoʻshish",
   "Add source": "Manba qoʻshish",
   "Add this source?": "Bu manba qoʻshilsinmi?",

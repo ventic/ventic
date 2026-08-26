@@ -18,6 +18,7 @@ export default {
   "About": "ਬਾਰੇ",
   "Account": "ਖਾਤਾ",
   "Add": "ਜੋੜੋ",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "ਮੈਗਨੈੱਟ ਜੋੜੋ",
   "Add source": "ਸਰੋਤ ਜੋੜੋ",
   "Add this source?": "ਇਹ ਸਰੋਤ ਜੋੜਨਾ ਹੈ?",

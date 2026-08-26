@@ -18,6 +18,7 @@ export default {
   "About": "تعارف",
   "Account": "اکاؤنٹ",
   "Add": "شامل کریں",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "میگنیٹ شامل کریں",
   "Add source": "ماخذ شامل کریں",
   "Add this source?": "یہ ماخذ شامل کریں؟",

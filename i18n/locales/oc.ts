@@ -18,6 +18,7 @@ export default {
   "About": "A prepaus",
   "Account": "Compte",
   "Add": "Ajustar",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Ajustar un magnet",
   "Add source": "Ajustar una font",
   "Add this source?": "Ajustar aquesta font?",

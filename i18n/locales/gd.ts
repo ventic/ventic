@@ -18,6 +18,7 @@ export default {
   "About": "Mu dheidhinn",
   "Account": "Cunntas",
   "Add": "Cuir ris",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Cuir magnet ris",
   "Add source": "Cuir tùs ris",
   "Add this source?": "An cuir sinn an tùs seo ris?",

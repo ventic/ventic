@@ -18,6 +18,7 @@ export default {
   "About": "შესახებ",
   "Account": "ანგარიში",
   "Add": "დამატება",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "magnet-ის დამატება",
   "Add source": "წყაროს დამატება",
   "Add this source?": "დაემატოს ეს წყარო?",

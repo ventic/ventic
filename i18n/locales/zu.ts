@@ -18,6 +18,7 @@ export default {
   "About": "Mayelana",
   "Account": "I-akhawunti",
   "Add": "Engeza",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Engeza i-magnet",
   "Add source": "Engeza umthombo",
   "Add this source?": "Ngabe uyawengeza lo mthombo?",

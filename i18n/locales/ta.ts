@@ -18,6 +18,7 @@ export default {
   "About": "பற்றி",
   "Account": "கணக்கு",
   "Add": "சேர்",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "மேக்னெட்டைச் சேர்",
   "Add source": "மூலத்தைச் சேர்",
   "Add this source?": "இந்த மூலத்தைச் சேர்க்கவா?",

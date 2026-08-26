@@ -18,6 +18,7 @@ export default {
   "About": "Hakkında",
   "Account": "Hesap",
   "Add": "Ekle",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Magnet ekle",
   "Add source": "Kaynak ekle",
   "Add this source?": "Bu kaynak eklensin mi?",

@@ -18,6 +18,7 @@ export default {
   "About": "Tentang",
   "Account": "Akun",
   "Add": "Tambah",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Tambah magnet",
   "Add source": "Tambah sumber",
   "Add this source?": "Tambahkan sumber ini?",

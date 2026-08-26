@@ -18,6 +18,7 @@ export default {
   "About": "Пра праграму",
   "Account": "Уліковы запіс",
   "Add": "Дадаць",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Дадаць магніт",
   "Add source": "Дадаць крыніцу",
   "Add this source?": "Дадаць гэтую крыніцу?",

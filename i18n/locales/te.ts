@@ -18,6 +18,7 @@ export default {
   "About": "గురించి",
   "Account": "ఖాతా",
   "Add": "జోడించు",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "మాగ్నెట్ జోడించు",
   "Add source": "మూలాన్ని జోడించు",
   "Add this source?": "ఈ మూలాన్ని జోడించాలా?",

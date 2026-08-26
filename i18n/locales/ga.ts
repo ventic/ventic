@@ -18,6 +18,7 @@ export default {
   "About": "Maidir leis",
   "Account": "Cuntas",
   "Add": "Cuir leis",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Cuir magnet leis",
   "Add source": "Cuir foinse leis",
   "Add this source?": "An foinse seo a chur leis?",

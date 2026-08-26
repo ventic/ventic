@@ -18,6 +18,7 @@ export default {
   "About": "About",
   "Account": "Account",
   "Add": "Add",
+  "Add a source": "Add a source",
   "Add magnet": "Add magnet",
   "Add source": "Add source",
   "Add this source?": "Add this source?",

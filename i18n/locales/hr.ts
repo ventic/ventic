@@ -18,6 +18,7 @@ export default {
   "About": "O aplikaciji",
   "Account": "Račun",
   "Add": "Dodaj",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Dodaj magnet",
   "Add source": "Dodaj izvor",
   "Add this source?": "Dodati ovaj izvor?",

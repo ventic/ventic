@@ -18,6 +18,7 @@ export default {
   "About": "Par",
   "Account": "Konts",
   "Add": "Pievienot",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Pievienot magnet",
   "Add source": "Pievienot avotu",
   "Add this source?": "Pievienot šo avotu?",

@@ -18,6 +18,7 @@ export default {
   "About": "Σχετικά",
   "Account": "Λογαριασμός",
   "Add": "Προσθήκη",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Προσθήκη magnet",
   "Add source": "Προσθήκη πηγής",
   "Add this source?": "Προσθήκη αυτής της πηγής;",

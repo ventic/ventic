@@ -18,6 +18,7 @@ export default {
   "About": "このアプリについて",
   "Account": "アカウント",
   "Add": "追加",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "マグネットを追加",
   "Add source": "ソースを追加",
   "Add this source?": "このソースを追加しますか？",

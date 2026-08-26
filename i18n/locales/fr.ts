@@ -18,6 +18,7 @@ export default {
   "About": "À propos",
   "Account": "Compte",
   "Add": "Ajouter",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Ajouter un magnet",
   "Add source": "Ajouter une source",
   "Add this source?": "Ajouter cette source ?",

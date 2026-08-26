@@ -18,6 +18,7 @@ export default {
   "About": "Относно",
   "Account": "Профил",
   "Add": "Добави",
+  "Add a source": "TODO_TRANSLATION: Add a source",
   "Add magnet": "Добави магнит",
   "Add source": "Добави източник",
   "Add this source?": "Да се добави ли този източник?",
