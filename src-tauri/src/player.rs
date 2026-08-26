@@ -330,9 +330,18 @@ pub fn player_start(
 		.arg(format!("--input-ipc-server={}", ipc.display()))
 		.arg(format!("--log-file={}", log.display()))
 		// In a Wayland session mpv defaults to its own Wayland window and
-		// ignores --wid (X11-only). Drop WAYLAND_DISPLAY so mpv uses the X11
-		// (XWayland) output and embeds into our child window.
-		.env_remove("WAYLAND_DISPLAY")
+		// ignores --wid (X11-only), so it has to be pushed onto the X11
+		// (XWayland) output to embed into our child window.
+		//
+		// Empty, not removed. `wl_display_connect(NULL)` falls back to the
+		// literal socket name "wayland-0" when WAYLAND_DISPLAY is unset — which
+		// is exactly what GNOME and KDE call theirs, so *unsetting* the variable
+		// on those sessions still lands mpv on Wayland and pops the film into
+		// its own window. (Hyprland names its socket wayland-1, which is why
+		// this never showed up here.) An empty value defeats both the fallback
+		// and mpv's own "is there a compositor" check, which only looks for the
+		// variable being present.
+		.env("WAYLAND_DISPLAY", "")
 		// An AppImage puts its own libraries — the build box's, so usually older
 		// than the machine's — in front of everything on LD_LIBRARY_PATH. mpv is
 		// the *system's*, and inheriting that kills it on the first symbol its
