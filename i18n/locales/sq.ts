@@ -71,6 +71,7 @@ export default {
   "Cancel": "Anulo",
   "Captions (SDH)": "Titra (SDH)",
   "Cast": "Aktorët",
+  "Cast size": "Madhësia e aktorëve",
   "Change as you browse": "Ndrysho ndërsa shfleton",
   "Change picture": "Ndrysho imazhin",
   "Check again": "Kontrollo sërish",

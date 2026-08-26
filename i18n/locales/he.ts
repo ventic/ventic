@@ -71,6 +71,7 @@ export default {
   "Cancel": "ביטול",
   "Captions (SDH)": "כתוביות (SDH)",
   "Cast": "שחקנים",
+  "Cast size": "גודל השחקנים",
   "Change as you browse": "החלף תוך כדי עיון",
   "Change picture": "החלף תמונה",
   "Check again": "בדוק שוב",

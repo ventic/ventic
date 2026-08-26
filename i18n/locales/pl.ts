@@ -71,6 +71,7 @@ export default {
   "Cancel": "Anuluj",
   "Captions (SDH)": "Napisy (SDH)",
   "Cast": "Obsada",
+  "Cast size": "Rozmiar obsady",
   "Change as you browse": "Zmieniaj podczas przeglądania",
   "Change picture": "Zmień obraz",
   "Check again": "Sprawdź ponownie",

@@ -71,6 +71,7 @@ export default {
   "Cancel": "منسوخ کریں",
   "Captions (SDH)": "کیپشنز (SDH)",
   "Cast": "کاسٹ",
+  "Cast size": "کاسٹ کا سائز",
   "Change as you browse": "براؤز کرتے ہوئے بدلے",
   "Change picture": "تصویر بدلیں",
   "Check again": "دوبارہ دیکھیں",

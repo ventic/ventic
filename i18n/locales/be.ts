@@ -71,6 +71,7 @@ export default {
   "Cancel": "Скасаваць",
   "Captions (SDH)": "Субтытры (SDH)",
   "Cast": "Акцёры",
+  "Cast size": "Памер фота акцёраў",
   "Change as you browse": "Мяняць падчас прагляду спіса",
   "Change picture": "Змяніць здымак",
   "Check again": "Праверыць зноў",

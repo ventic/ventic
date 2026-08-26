@@ -71,6 +71,7 @@ export default {
   "Cancel": "Ghairi",
   "Captions (SDH)": "Manukuu (SDH)",
   "Cast": "Waigizaji",
+  "Cast size": "Ukubwa wa waigizaji",
   "Change as you browse": "Badilisha unapovinjari",
   "Change picture": "Badilisha picha",
   "Check again": "Angalia tena",

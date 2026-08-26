@@ -71,6 +71,7 @@ export default {
   "Cancel": "අවලංගු කරන්න",
   "Captions (SDH)": "උපසිරැසි (SDH)",
   "Cast": "රංගන ශිල්පීන්",
+  "Cast size": "රංගන ශිල්පීන්ගේ ප්‍රමාණය",
   "Change as you browse": "පිරික්සන අතරතුර වෙනස් කරන්න",
   "Change picture": "පින්තූරය වෙනස් කරන්න",
   "Check again": "නැවත පරීක්ෂා කරන්න",

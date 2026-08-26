@@ -71,6 +71,7 @@ export default {
   "Cancel": "Peruuta",
   "Captions (SDH)": "Tekstitys (SDH)",
   "Cast": "Näyttelijät",
+  "Cast size": "Näyttelijöiden koko",
   "Change as you browse": "Vaihda selatessa",
   "Change picture": "Vaihda kuva",
   "Check again": "Tarkista uudelleen",

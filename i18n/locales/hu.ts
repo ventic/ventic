@@ -71,6 +71,7 @@ export default {
   "Cancel": "Mégse",
   "Captions (SDH)": "Feliratok (SDH)",
   "Cast": "Szereplők",
+  "Cast size": "Szereplők mérete",
   "Change as you browse": "Váltás böngészés közben",
   "Change picture": "Kép cseréje",
   "Check again": "Ellenőrzés újra",

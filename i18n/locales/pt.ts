@@ -71,6 +71,7 @@ export default {
   "Cancel": "Cancelar",
   "Captions (SDH)": "Legendas (SDH)",
   "Cast": "Elenco",
+  "Cast size": "Tamanho do elenco",
   "Change as you browse": "Mudar enquanto navega",
   "Change picture": "Trocar imagem",
   "Check again": "Verificar de novo",

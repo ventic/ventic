@@ -71,6 +71,7 @@ export default {
   "Cancel": "Жокко чыгаруу",
   "Captions (SDH)": "Субтитрлер (SDH)",
   "Cast": "Актёрлор",
+  "Cast size": "Актёрлор өлчөмү",
   "Change as you browse": "Карап жатканда өзгөртүү",
   "Change picture": "Сүрөттү алмаштыруу",
   "Check again": "Кайра текшерүү",

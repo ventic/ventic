@@ -71,6 +71,7 @@ export default {
   "Cancel": "إلغاء",
   "Captions (SDH)": "ترجمة للصمّ (SDH)",
   "Cast": "طاقم التمثيل",
+  "Cast size": "حجم طاقم التمثيل",
   "Change as you browse": "التغيير أثناء التصفح",
   "Change picture": "تغيير الصورة",
   "Check again": "إعادة الفحص",

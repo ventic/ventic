@@ -30,6 +30,8 @@ const settings = read('app/stores/settings.ts')
 const appearance = read('app/pages/settings/appearance/display.vue')
 const app = read('app/app.vue')
 const row = read('app/components/ScrollRow.vue')
+const cast = read('app/components/CastRow.vue')
+const person = read('app/pages/person/[id].vue')
 
 // --- Always on, no setting: these cost nothing to look at ---
 
@@ -62,6 +64,20 @@ assert.match(
   poster,
   /group-hover:scale/,
   'the hover zoom belongs on the same element as the skip, never inside it',
+)
+
+// A cast row is twenty faces the page below the fold, and a person's page is a
+// whole filmography — the same two answers as the card grid, for the same
+// reason. The credits are *paged* as well as skipped: content-visibility saves
+// the paint of a card, not the cost of mounting three hundred of them.
+const face = cast.match(/<media-poster[\s\S]*?\/>/)?.[0] ?? ''
+assert.match(face, /\[content-visibility:auto\]/, 'a cast face skips paint off screen, like a card')
+assert.match(face, /group-hover:scale/, 'and the zoom is on that same element — see above')
+assert.match(cast, /containIntrinsicSize/, 'a skipped face still needs a size reserved')
+assert.match(
+  person,
+  /useInfiniteScroll[\s\S]*?shown\.value \+= PAGE/,
+  'the credits grid grows as it is scrolled — mounting every credit at once is what a TV cannot afford',
 )
 
 // One frame-buffer readback per card, twenty on screen at once. Comments are

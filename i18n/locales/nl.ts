@@ -71,6 +71,7 @@ export default {
   "Cancel": "Annuleren",
   "Captions (SDH)": "Ondertitels (SDH)",
   "Cast": "Cast",
+  "Cast size": "Castgrootte",
   "Change as you browse": "Wisselen tijdens het bladeren",
   "Change picture": "Afbeelding wijzigen",
   "Check again": "Opnieuw controleren",

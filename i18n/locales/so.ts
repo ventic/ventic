@@ -71,6 +71,7 @@ export default {
   "Cancel": "Jooji",
   "Captions (SDH)": "Qoraalka hoose (SDH)",
   "Cast": "Jilayaasha",
+  "Cast size": "Cabbirka jilayaasha",
   "Change as you browse": "Beddel intaad fiirinayso",
   "Change picture": "Beddel sawirka",
   "Check again": "Mar kale hubi",

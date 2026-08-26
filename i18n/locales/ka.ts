@@ -71,6 +71,7 @@ export default {
   "Cancel": "გაუქმება",
   "Captions (SDH)": "სუბტიტრები (SDH)",
   "Cast": "მსახიობები",
+  "Cast size": "მსახიობების ზომა",
   "Change as you browse": "შეიცვალოს დათვალიერებისას",
   "Change picture": "სურათის შეცვლა",
   "Check again": "ხელახლა შემოწმება",

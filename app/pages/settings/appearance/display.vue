@@ -42,6 +42,15 @@ const scale = computed({
           thumb-label
         />
       </settings-row>
+      <settings-row :label="$t('Cast size')">
+        <v-slider
+          v-model="ui.castWidth"
+          :min="100"
+          :max="220"
+          :step="10"
+          thumb-label
+        />
+      </settings-row>
     </settings-section>
 
     <settings-section

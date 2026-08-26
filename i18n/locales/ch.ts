@@ -71,6 +71,7 @@ export default {
   "Cancel": "Kansela",
   "Captions (SDH)": "Subtitulu (SDH)",
   "Cast": "Aktot siha",
+  "Cast size": "Medidan aktot siha",
   "Change as you browse": "Tulaika anai manaligao hao",
   "Change picture": "Tulaika i litratu",
   "Check again": "Chek ta'lo",

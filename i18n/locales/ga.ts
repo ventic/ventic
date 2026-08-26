@@ -71,6 +71,7 @@ export default {
   "Cancel": "Cealaigh",
   "Captions (SDH)": "Fotheidil (SDH)",
   "Cast": "Foireann aisteoirí",
+  "Cast size": "Méid na foirne aisteoirí",
   "Change as you browse": "Athraigh agus tú ag brabhsáil",
   "Change picture": "Athraigh an pictiúr",
   "Check again": "Seiceáil arís",

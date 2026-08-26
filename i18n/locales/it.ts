@@ -71,6 +71,7 @@ export default {
   "Cancel": "Annulla",
   "Captions (SDH)": "Sottotitoli (SDH)",
   "Cast": "Cast",
+  "Cast size": "Dimensione del cast",
   "Change as you browse": "Cambia mentre sfogli",
   "Change picture": "Cambia immagine",
   "Check again": "Controlla di nuovo",

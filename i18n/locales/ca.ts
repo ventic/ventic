@@ -71,6 +71,7 @@ export default {
   "Cancel": "Cancel·la",
   "Captions (SDH)": "Subtítols (SDH)",
   "Cast": "Repartiment",
+  "Cast size": "Mida del repartiment",
   "Change as you browse": "Canvia mentre navegues",
   "Change picture": "Canvia la imatge",
   "Check again": "Torna a comprovar",

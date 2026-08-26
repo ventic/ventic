@@ -71,6 +71,7 @@ export default {
   "Cancel": "റദ്ദാക്കുക",
   "Captions (SDH)": "സബ്ടൈറ്റിലുകൾ (SDH)",
   "Cast": "അഭിനേതാക്കൾ",
+  "Cast size": "അഭിനേതാക്കളുടെ വലുപ്പം",
   "Change as you browse": "ബ്രൗസ് ചെയ്യുമ്പോൾ മാറ്റുക",
   "Change picture": "ചിത്രം മാറ്റുക",
   "Check again": "വീണ്ടും പരിശോധിക്കുക",

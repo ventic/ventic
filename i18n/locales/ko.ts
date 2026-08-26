@@ -71,6 +71,7 @@ export default {
   "Cancel": "취소",
   "Captions (SDH)": "자막 (SDH)",
   "Cast": "출연진",
+  "Cast size": "출연진 크기",
   "Change as you browse": "둘러보는 동안 바꾸기",
   "Change picture": "사진 변경",
   "Check again": "다시 확인",

@@ -36,6 +36,8 @@ export const useUiStore = defineStore('ui', () => {
   if (layout.value as string === 'grid')
     layout.value = 'grid-detail'
   const cardWidth = useLocalStorage('ventic.cardWidth', 170)
+  /** The faces in a Cast row. Its own setting: a headshot is read at a size a poster isn't. */
+  const castWidth = useLocalStorage('ventic.castWidth', 140)
   /** Desktop: collapsed icon-only sidebar. */
   const rail = useLocalStorage('ventic.rail', false)
   /** Mobile: the sidebar is an overlay, so it needs an open/closed state. */
@@ -105,6 +107,9 @@ export const useUiStore = defineStore('ui', () => {
   // to a monitor with a different density.
   const { pixelRatio } = useDevicePixelRatio()
   const posterSize = computed(() => posterFor(cardWidth.value * pixelRatio.value))
+  // TMDB has no bucket between the two, so a face wider than w185 device pixels
+  // takes h632 rather than being upscaled — which is the whole point of enlarging it.
+  const profileSize = computed(() => castWidth.value * pixelRatio.value > 185 ? 'h632' as const : 'w185' as const)
 
   const isGrid = computed(() => layout.value.startsWith('grid'))
   const isDetailed = computed(() => layout.value.endsWith('detail'))
@@ -171,5 +176,5 @@ export const useUiStore = defineStore('ui', () => {
   // Sweeping the cursor across a grid would otherwise queue a crossfade per card.
   const preview = useDebounceFn(hover, 120)
 
-  return { layout, cardWidth, posterSize, rail, drawer, pendingSource, blur, tint, backdropMode, backdropImage, backdropFollowsHover, artOverCustom, shownArt, selected, art, backdrop, isGrid, isDetailed, select, ambient, release, hover, preview }
+  return { layout, cardWidth, castWidth, posterSize, profileSize, rail, drawer, pendingSource, blur, tint, backdropMode, backdropImage, backdropFollowsHover, artOverCustom, shownArt, selected, art, backdrop, isGrid, isDetailed, select, ambient, release, hover, preview }
 })

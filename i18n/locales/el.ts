@@ -71,6 +71,7 @@ export default {
   "Cancel": "Ακύρωση",
   "Captions (SDH)": "Υπότιτλοι (SDH)",
   "Cast": "Ηθοποιοί",
+  "Cast size": "Μέγεθος ηθοποιών",
   "Change as you browse": "Αλλαγή καθώς περιηγείστε",
   "Change picture": "Αλλαγή εικόνας",
   "Check again": "Έλεγχος ξανά",

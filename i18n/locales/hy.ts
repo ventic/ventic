@@ -71,6 +71,7 @@ export default {
   "Cancel": "Չեղարկել",
   "Captions (SDH)": "Ենթագրեր (SDH)",
   "Cast": "Դերասաններ",
+  "Cast size": "Դերասանների չափ",
   "Change as you browse": "Փոխել դիտարկելիս",
   "Change picture": "Փոխել պատկերը",
   "Check again": "Կրկին ստուգել",

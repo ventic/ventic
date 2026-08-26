@@ -71,6 +71,7 @@ export default {
   "Cancel": "Kanselahin",
   "Captions (SDH)": "Mga caption (SDH)",
   "Cast": "Mga cast",
+  "Cast size": "Laki ng mga cast",
   "Change as you browse": "Magbago habang nagba-browse",
   "Change picture": "Palitan ang larawan",
   "Check again": "Tingnan muli",

@@ -71,6 +71,7 @@ export default {
   "Cancel": "取消",
   "Captions (SDH)": "字幕（SDH）",
   "Cast": "演员",
+  "Cast size": "演员大小",
   "Change as you browse": "浏览时随之变化",
   "Change picture": "更换图片",
   "Check again": "再次检查",

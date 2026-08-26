@@ -71,6 +71,7 @@ export default {
   "Cancel": "Utzi",
   "Captions (SDH)": "Azpitituluak (SDH)",
   "Cast": "Aktoreak",
+  "Cast size": "Aktoreen tamaina",
   "Change as you browse": "Aldatu arakatzean",
   "Change picture": "Aldatu irudia",
   "Check again": "Egiaztatu berriro",

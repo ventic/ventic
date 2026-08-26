@@ -71,6 +71,7 @@ export default {
   "Cancel": "Nullañ",
   "Captions (SDH)": "Istitloù (SDH)",
   "Cast": "Aktourien",
+  "Cast size": "Ment an aktourien",
   "Change as you browse": "Cheñch diouzh ma furchit",
   "Change picture": "Cheñch skeudenn",
   "Check again": "Gwiriañ en-dro",

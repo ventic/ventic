@@ -71,6 +71,7 @@ export default {
   "Cancel": "Loobu",
   "Captions (SDH)": "Subtiitrid (SDH)",
   "Cast": "Osatäitjad",
+  "Cast size": "Osatäitjate suurus",
   "Change as you browse": "Muuda sirvimise ajal",
   "Change picture": "Muuda pilti",
   "Check again": "Kontrolli uuesti",

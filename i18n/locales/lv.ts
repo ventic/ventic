@@ -71,6 +71,7 @@ export default {
   "Cancel": "Atcelt",
   "Captions (SDH)": "Subtitri (SDH)",
   "Cast": "Aktieri",
+  "Cast size": "Aktieru izmērs",
   "Change as you browse": "Mainīt pārlūkojot",
   "Change picture": "Mainīt attēlu",
   "Check again": "Pārbaudīt vēlreiz",

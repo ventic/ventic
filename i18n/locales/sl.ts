@@ -71,6 +71,7 @@ export default {
   "Cancel": "Prekliči",
   "Captions (SDH)": "Podnapisi (SDH)",
   "Cast": "Igralci",
+  "Cast size": "Velikost igralcev",
   "Change as you browse": "Menjaj med brskanjem",
   "Change picture": "Zamenjaj sliko",
   "Check again": "Preveri znova",

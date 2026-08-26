@@ -71,6 +71,7 @@ export default {
   "Cancel": "Khansela",
   "Captions (SDH)": "Imibhalo engezansi (SDH)",
   "Cast": "Abalingisi",
+  "Cast size": "Usayizi wabalingisi",
   "Change as you browse": "Shintsha njengoba uphequlula",
   "Change picture": "Shintsha isithombe",
   "Check again": "Hlola futhi",

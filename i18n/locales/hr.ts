@@ -71,6 +71,7 @@ export default {
   "Cancel": "Odustani",
   "Captions (SDH)": "Titlovi (SDH)",
   "Cast": "Glumci",
+  "Cast size": "Veličina glumaca",
   "Change as you browse": "Mijenjaj dok pregledavaš",
   "Change picture": "Promijeni sliku",
   "Check again": "Provjeri ponovno",

@@ -71,6 +71,7 @@ export default {
   "Cancel": "Anullar",
   "Captions (SDH)": "Sostítols (SDH)",
   "Cast": "Distribucion",
+  "Cast size": "Talha de la distribucion",
   "Change as you browse": "Cambiar pendent la navegacion",
   "Change picture": "Cambiar l'imatge",
   "Check again": "Verificar tornarmai",

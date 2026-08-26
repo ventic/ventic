@@ -71,6 +71,7 @@ export default {
   "Cancel": "Hủy",
   "Captions (SDH)": "Phụ đề (SDH)",
   "Cast": "Diễn viên",
+  "Cast size": "Cỡ diễn viên",
   "Change as you browse": "Đổi theo khi duyệt",
   "Change picture": "Đổi ảnh",
   "Check again": "Kiểm tra lại",

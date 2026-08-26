@@ -71,6 +71,7 @@ export default {
   "Cancel": "Avbryt",
   "Captions (SDH)": "Undertexter (SDH)",
   "Cast": "Skådespelare",
+  "Cast size": "Storlek på skådespelare",
   "Change as you browse": "Ändra när du bläddrar",
   "Change picture": "Byt bild",
   "Check again": "Kontrollera igen",

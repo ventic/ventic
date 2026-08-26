@@ -71,6 +71,7 @@ export default {
   "Cancel": "キャンセル",
   "Captions (SDH)": "字幕 (SDH)",
   "Cast": "キャスト",
+  "Cast size": "キャストの大きさ",
   "Change as you browse": "見て回る間に切り替える",
   "Change picture": "画像を変更",
   "Check again": "再確認",

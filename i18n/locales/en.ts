@@ -71,6 +71,7 @@ export default {
   "Cancel": "Cancel",
   "Captions (SDH)": "Captions (SDH)",
   "Cast": "Cast",
+  "Cast size": "Cast size",
   "Change as you browse": "Change as you browse",
   "Change picture": "Change picture",
   "Check again": "Check again",

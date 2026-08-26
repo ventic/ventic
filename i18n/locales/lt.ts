@@ -71,6 +71,7 @@ export default {
   "Cancel": "Atšaukti",
   "Captions (SDH)": "Subtitrai (SDH)",
   "Cast": "Aktoriai",
+  "Cast size": "Aktorių dydis",
   "Change as you browse": "Keisti naršant",
   "Change picture": "Keisti paveikslėlį",
   "Check again": "Tikrinti dar kartą",

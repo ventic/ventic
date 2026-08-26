@@ -71,6 +71,7 @@ export default {
   "Cancel": "বাতিল",
   "Captions (SDH)": "ক্যাপশন (SDH)",
   "Cast": "অভিনয়ে",
+  "Cast size": "অভিনেতাদের ছবির মাপ",
   "Change as you browse": "ব্রাউজ করার সময় বদলাবে",
   "Change picture": "ছবি বদলান",
   "Check again": "আবার দেখুন",

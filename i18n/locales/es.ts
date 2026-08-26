@@ -71,6 +71,7 @@ export default {
   "Cancel": "Cancelar",
   "Captions (SDH)": "Subtítulos (SDH)",
   "Cast": "Reparto",
+  "Cast size": "Tamaño del reparto",
   "Change as you browse": "Cambiar al navegar",
   "Change picture": "Cambiar imagen",
   "Check again": "Volver a comprobar",

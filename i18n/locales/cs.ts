@@ -71,6 +71,7 @@ export default {
   "Cancel": "Zrušit",
   "Captions (SDH)": "Titulky (SDH)",
   "Cast": "Obsazení",
+  "Cast size": "Velikost obsazení",
   "Change as you browse": "Měnit při procházení",
   "Change picture": "Změnit obrázek",
   "Check again": "Zkontrolovat znovu",

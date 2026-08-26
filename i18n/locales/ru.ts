@@ -71,6 +71,7 @@ export default {
   "Cancel": "Отмена",
   "Captions (SDH)": "Субтитры (SDH)",
   "Cast": "В ролях",
+  "Cast size": "Размер фото актёров",
   "Change as you browse": "Менять при просмотре списка",
   "Change picture": "Сменить изображение",
   "Check again": "Проверить снова",

@@ -71,6 +71,7 @@ export default {
   "Cancel": "Betal bike",
   "Captions (SDH)": "Jêrnivîs (SDH)",
   "Cast": "Lîstikvan",
+  "Cast size": "Mezinahiya lîstikvanan",
   "Change as you browse": "Dema gerînê biguhere",
   "Change picture": "Wêneyê biguhere",
   "Check again": "Dîsa kontrol bike",

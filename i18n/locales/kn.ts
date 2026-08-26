@@ -71,6 +71,7 @@ export default {
   "Cancel": "ರದ್ದುಮಾಡಿ",
   "Captions (SDH)": "ಉಪಶೀರ್ಷಿಕೆಗಳು (SDH)",
   "Cast": "ಪಾತ್ರವರ್ಗ",
+  "Cast size": "ಪಾತ್ರವರ್ಗದ ಗಾತ್ರ",
   "Change as you browse": "ಬ್ರೌಸ್ ಮಾಡುತ್ತಿದ್ದಂತೆ ಬದಲಾಯಿಸಿ",
   "Change picture": "ಚಿತ್ರ ಬದಲಾಯಿಸಿ",
   "Check again": "ಮತ್ತೆ ಪರಿಶೀಲಿಸಿ",

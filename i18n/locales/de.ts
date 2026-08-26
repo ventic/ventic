@@ -71,6 +71,7 @@ export default {
   "Cancel": "Abbrechen",
   "Captions (SDH)": "Untertitel (SDH)",
   "Cast": "Besetzung",
+  "Cast size": "Bildgröße der Besetzung",
   "Change as you browse": "Beim Blättern mitwechseln",
   "Change picture": "Bild ändern",
   "Check again": "Erneut prüfen",

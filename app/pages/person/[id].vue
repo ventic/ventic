@@ -7,6 +7,9 @@ definePageMeta({
   validate: ({ params }) => 'id' in params && /^\d+$/.test(params.id),
 })
 
+/** Cards per screenful-and-a-bit — enough that the first fill never looks short. */
+const PAGE = 60
+
 const route = useRoute()
 const ui = useUiStore()
 
@@ -49,6 +52,21 @@ useResizeObserver(bio, ([entry]) => {
   clipped.value = !!el && (expanded.value || el.scrollHeight > el.clientHeight + 1)
 })
 
+// A prolific name has three hundred credits, and content-visibility only saves
+// the *paint* of the ones off screen — mounting them is script and layout a
+// television pays for before the page is usable. So the grid grows as it is
+// scrolled, the way a row pages in: the first screenful is the only one anybody
+// waits for.
+const shown = ref(PAGE)
+const scroller = ref<HTMLElement | null>(null)
+watch(id, () => (shown.value = PAGE))
+useInfiniteScroll(
+  scroller,
+  () => { shown.value += PAGE },
+  { distance: 800, canLoadMore: () => shown.value < (person.value?.credits.length ?? 0) },
+)
+const credits = computed(() => person.value?.credits.slice(0, shown.value) ?? [])
+
 // Deliberately not the browse pages' list/grid switch: this is a strip of work
 // belonging to one person, the same way "More like this" is, and both are cards.
 const gridStyle = computed(() => ({
@@ -57,7 +75,7 @@ const gridStyle = computed(() => ({
 </script>
 
 <template>
-  <div class="h-full overflow-y-auto pb-12">
+  <div ref="scroller" class="h-full overflow-y-auto pb-12">
     <div v-if="error" class="flex h-full flex-col items-center justify-center gap-2">
       <v-icon :icon="mdiAlertCircleOutline" color="error" size="40" />
       <span class="text-body-medium opacity-70">{{ $t('Couldn\'t load this person.') }}</span>
@@ -122,7 +140,7 @@ const gridStyle = computed(() => ({
 
         <div class="grid gap-x-4 gap-y-5" :style="gridStyle">
           <media-card
-            v-for="media in person?.credits"
+            v-for="media in credits"
             :key="`${media.type}-${media.id}`"
             :media="media"
             :detail="ui.isDetailed"

@@ -71,6 +71,7 @@ export default {
   "Cancel": "Бас тарту",
   "Captions (SDH)": "Субтитрлер (SDH)",
   "Cast": "Актерлер",
+  "Cast size": "Актерлер өлшемі",
   "Change as you browse": "Шолу кезінде өзгерту",
   "Change picture": "Суретті ауыстыру",
   "Check again": "Қайта тексеру",

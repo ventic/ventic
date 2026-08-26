@@ -71,6 +71,7 @@ export default {
   "Cancel": "Sguir dheth",
   "Captions (SDH)": "Fo-thiotalan (SDH)",
   "Cast": "Sgioba-cluiche",
+  "Cast size": "Meud an sgioba-chluiche",
   "Change as you browse": "Atharraich fhad 's a bhios tu a' rùrachadh",
   "Change picture": "Atharraich an dealbh",
   "Check again": "Thoir sùil a-rithist",

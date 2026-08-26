@@ -71,6 +71,7 @@ export default {
   "Cancel": "ரத்து",
   "Captions (SDH)": "வசனங்கள் (SDH)",
   "Cast": "நடிகர்கள்",
+  "Cast size": "நடிகர்கள் அளவு",
   "Change as you browse": "உலாவும்போது மாறு",
   "Change picture": "படத்தை மாற்று",
   "Check again": "மீண்டும் பார்",

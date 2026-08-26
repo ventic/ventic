@@ -71,6 +71,7 @@ export default {
   "Cancel": "Annuler",
   "Captions (SDH)": "Sous-titres (SDH)",
   "Cast": "Distribution",
+  "Cast size": "Taille de la distribution",
   "Change as you browse": "Changer au fil de la navigation",
   "Change picture": "Changer d'image",
   "Check again": "Vérifier à nouveau",

@@ -71,6 +71,7 @@ export default {
   "Cancel": "Batal",
   "Captions (SDH)": "Subtitel (SDH)",
   "Cast": "Pemeran",
+  "Cast size": "Ukuran pemeran",
   "Change as you browse": "Ganti saat menjelajah",
   "Change picture": "Ganti gambar",
   "Check again": "Periksa lagi",

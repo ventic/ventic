@@ -71,6 +71,7 @@ export default {
   "Cancel": "Kanselleer",
   "Captions (SDH)": "Onderskrifte (SDH)",
   "Cast": "Rolverdeling",
+  "Cast size": "Grootte van rolverdeling",
   "Change as you browse": "Verander soos jy blaai",
   "Change picture": "Verander prent",
   "Check again": "Kyk weer",

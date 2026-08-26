@@ -71,6 +71,7 @@ export default {
   "Cancel": "لغو",
   "Captions (SDH)": "زیرنویس (SDH)",
   "Cast": "بازیگران",
+  "Cast size": "اندازهٔ بازیگران",
   "Change as you browse": "تغییر هنگام مرور",
   "Change picture": "تغییر تصویر",
   "Check again": "بررسی دوباره",

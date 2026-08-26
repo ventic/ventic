@@ -71,6 +71,7 @@ export default {
   "Cancel": "ਰੱਦ ਕਰੋ",
   "Captions (SDH)": "ਉਪਸਿਰਲੇਖ (SDH)",
   "Cast": "ਕਲਾਕਾਰ",
+  "Cast size": "ਕਲਾਕਾਰਾਂ ਦਾ ਆਕਾਰ",
   "Change as you browse": "ਬ੍ਰਾਊਜ਼ ਕਰਦਿਆਂ ਬਦਲੋ",
   "Change picture": "ਤਸਵੀਰ ਬਦਲੋ",
   "Check again": "ਦੁਬਾਰਾ ਜਾਂਚੋ",

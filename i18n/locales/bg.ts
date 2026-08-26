@@ -71,6 +71,7 @@ export default {
   "Cancel": "Отказ",
   "Captions (SDH)": "Субтитри (SDH)",
   "Cast": "Актьорски състав",
+  "Cast size": "Размер на актьорския състав",
   "Change as you browse": "Смяна при разглеждане",
   "Change picture": "Смени снимката",
   "Check again": "Провери отново",

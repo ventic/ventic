@@ -71,6 +71,7 @@ export default {
   "Cancel": "Annuller",
   "Captions (SDH)": "Undertekster (SDH)",
   "Cast": "Medvirkende",
+  "Cast size": "Størrelse på medvirkende",
   "Change as you browse": "Skift mens du browser",
   "Change picture": "Skift billede",
   "Check again": "Tjek igen",

@@ -71,6 +71,7 @@ export default {
   "Cancel": "Откажи",
   "Captions (SDH)": "Титлови (SDH)",
   "Cast": "Глумачка подела",
+  "Cast size": "Величина глумачке поделе",
   "Change as you browse": "Мењај док прегледате",
   "Change picture": "Промени слику",
   "Check again": "Провери поново",

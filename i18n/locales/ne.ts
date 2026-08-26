@@ -71,6 +71,7 @@ export default {
   "Cancel": "रद्द गर्नुहोस्",
   "Captions (SDH)": "उपशीर्षक (SDH)",
   "Cast": "कलाकार",
+  "Cast size": "कलाकारको आकार",
   "Change as you browse": "ब्राउज गर्दै जाँदा बदल्नुहोस्",
   "Change picture": "तस्बिर बदल्नुहोस्",
   "Check again": "फेरि जाँच्नुहोस्",

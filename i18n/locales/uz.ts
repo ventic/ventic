@@ -71,6 +71,7 @@ export default {
   "Cancel": "Bekor qilish",
   "Captions (SDH)": "Taglavhalar (SDH)",
   "Cast": "Aktyorlar",
+  "Cast size": "Aktyorlar oʻlchami",
   "Change as you browse": "Koʻrib chiqayotganda oʻzgarsin",
   "Change picture": "Rasmni almashtirish",
   "Check again": "Yana tekshirish",

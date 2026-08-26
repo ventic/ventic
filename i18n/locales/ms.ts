@@ -71,6 +71,7 @@ export default {
   "Cancel": "Batal",
   "Captions (SDH)": "Sari kata (SDH)",
   "Cast": "Pelakon",
+  "Cast size": "Saiz pelakon",
   "Change as you browse": "Tukar sambil menyemak imbas",
   "Change picture": "Tukar gambar",
   "Check again": "Semak semula",

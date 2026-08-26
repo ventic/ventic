@@ -71,6 +71,7 @@ export default {
   "Cancel": "İptal",
   "Captions (SDH)": "Altyazılar (SDH)",
   "Cast": "Oyuncular",
+  "Cast size": "Oyuncu boyutu",
   "Change as you browse": "Gezindikçe değişsin",
   "Change picture": "Resmi değiştir",
   "Check again": "Yeniden denetle",

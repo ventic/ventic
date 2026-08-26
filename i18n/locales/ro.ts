@@ -71,6 +71,7 @@ export default {
   "Cancel": "Anulează",
   "Captions (SDH)": "Subtitrări (SDH)",
   "Cast": "Distribuție",
+  "Cast size": "Dimensiunea distribuției",
   "Change as you browse": "Schimbă în timp ce navighezi",
   "Change picture": "Schimbă imaginea",
   "Check again": "Verifică din nou",

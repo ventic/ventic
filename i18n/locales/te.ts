@@ -71,6 +71,7 @@ export default {
   "Cancel": "రద్దు",
   "Captions (SDH)": "ఉపశీర్షికలు (SDH)",
   "Cast": "నటీనటులు",
+  "Cast size": "నటీనటుల పరిమాణం",
   "Change as you browse": "బ్రౌజ్ చేస్తుండగా మారు",
   "Change picture": "చిత్రాన్ని మార్చు",
   "Check again": "మళ్లీ తనిఖీ చేయి",

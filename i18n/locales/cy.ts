@@ -71,6 +71,7 @@ export default {
   "Cancel": "Diddymu",
   "Captions (SDH)": "Isdeitlau (SDH)",
   "Cast": "Cast",
+  "Cast size": "Maint y cast",
   "Change as you browse": "Newid wrth bori",
   "Change picture": "Newid llun",
   "Check again": "Gwirio eto",

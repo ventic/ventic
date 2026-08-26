@@ -71,6 +71,7 @@ export default {
   "Cancel": "Nuligi",
   "Captions (SDH)": "Subtekstoj (SDH)",
   "Cast": "Rolantaro",
+  "Cast size": "Grandeco de rolantaro",
   "Change as you browse": "Ŝanĝi dum vi foliumas",
   "Change picture": "Ŝanĝi bildon",
   "Check again": "Kontroli denove",
