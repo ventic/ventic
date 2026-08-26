@@ -18,6 +18,11 @@ permissions:
 # Baked into the frontend bundle at build time (nuxt.config runtimeConfig).
 env:
   TMDB_API: ${{ secrets.TMDB_API }}
+  # Node sizes its heap from the machine's RAM, and the macOS runner has half of
+  # what the others do — so `nuxt generate` prerendering 72 locales died at a
+  # 2 GB ceiling there while passing everywhere else. Give every runner the same
+  # headroom rather than the Mac a special case.
+  NODE_OPTIONS: --max-old-space-size=4096
 
 jobs:
   desktop:

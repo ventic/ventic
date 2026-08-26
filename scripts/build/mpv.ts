@@ -20,6 +20,10 @@
  * Bumping them: pick a release from the repo below, then update `BUILD.tag` and
  * each binary's asset name and hash out of that release's sha256.txt. Every
  * download is checked against it.
+ *
+ * The pin is not load-bearing, because upstream deletes a release after about a
+ * month: when it is gone `resolve()` takes the newest build instead, so a
+ * release cut long after the last bump still produces an installer.
  */
 import { execFileSync, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -39,12 +43,16 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
  * from drifting apart.
  */
 const BUILD = {
-  tag: '2026-07-26-b27573a239',
+  tag: '2026-08-26-c318236b88',
   binaries: [
     {
       member: 'mpv.exe',
-      asset: 'mpv-x86_64-20260726-git-b27573a239.7z',
-      sha256: 'cee9077eb838c920ff1888e056cab79797539c97ed91e004bd1cf5a56afe19d5',
+      asset: 'mpv-x86_64-20260826-git-c318236b88.7z',
+      sha256: '1ccee88f10d4049906f339b6718c87bec7e94c6ec86652d4de70082959da7b27',
+      // How to find the same binary in a release this file has never seen (see
+      // `resolve()`). Anchored, because every release also holds -dev, -debug,
+      // -lgpl and AVX2-only (-v3) variants of the same name.
+      match: /^mpv-x86_64-\d+-git-[0-9a-f]+\.7z$/,
     },
     /**
      * mpv links ffmpeg statically but exposes no CLI, and the seek previews and
@@ -54,10 +62,19 @@ const BUILD = {
      */
     {
       member: 'ffmpeg.exe',
-      asset: 'ffmpeg-x86_64-git-601d9ee88.7z',
-      sha256: 'c79ce973c64877367658efdf3d9e75e472506a721a2855afb5335957290c0220',
+      asset: 'ffmpeg-x86_64-git-a1050d48b.7z',
+      sha256: 'c67b9b4a36a2d823eefb7e33b65031778ccd90ab3fccc88a77390dbb76c4add5',
+      match: /^ffmpeg-x86_64-git-[0-9a-f]+\.7z$/,
     },
   ],
+}
+
+type Release = typeof BUILD
+
+const RELEASES = 'https://github.com/zhongfly/mpv-winbuild/releases'
+
+function assetUrl(tag: string, asset: string) {
+  return `${RELEASES}/download/${tag}/${asset}`
 }
 
 /** Where the bundler picks them up from — see tauri.windows.conf.json. */
@@ -83,8 +100,8 @@ const LICENCE = join(DEST_DIR, 'LICENSE.txt')
  * The build tag ends in the mpv commit it was made from, which is what makes
  * "the corresponding source" a precise thing rather than a gesture.
  */
-function notice() {
-  const commit = BUILD.tag.split('-').pop()
+function notice(release: Release) {
+  const commit = release.tag.split('-').pop()
   return `Ventic bundles mpv to play video on Windows, and ffmpeg to read the
 audio and the frames of what it is playing.
 
@@ -95,8 +112,8 @@ over an IPC socket or a pipe rather than linking against either.
 
 The binaries shipped beside this file are the community Windows builds
 
-${BUILD.binaries.map(b => `    ${b.asset}`).join('\n')}
-    https://github.com/zhongfly/mpv-winbuild/releases/tag/${BUILD.tag}
+${release.binaries.map(b => `    ${b.asset}`).join('\n')}
+    ${RELEASES}/tag/${release.tag}
 
 built from mpv at commit ${commit} (https://github.com/mpv-player/mpv) and from
 ffmpeg (https://github.com/FFmpeg/FFmpeg) at the commit its own file name ends
@@ -142,8 +159,44 @@ async function download(url: string, to: string) {
   writeFileSync(to, new Uint8Array(await res.arrayBuffer()))
 }
 
+/**
+ * The release to take the binaries from: the pinned one, or the newest build if
+ * it has been deleted. zhongfly keeps about a month of releases, so a pin always
+ * outlives itself — and a 404 here failed the whole Windows job before anything
+ * had been compiled.
+ */
+async function resolve(): Promise<Release> {
+  const pinned = await fetch(assetUrl(BUILD.tag, BUILD.binaries[0]!.asset), { method: 'HEAD' })
+  if (pinned.ok)
+    return BUILD
+
+  const res = await fetch('https://api.github.com/repos/zhongfly/mpv-winbuild/releases/latest')
+  if (!res.ok)
+    throw new Error(`mpv build ${BUILD.tag} is gone and the newest one could not be looked up → HTTP ${res.status}`)
+  const tag = (await res.json() as { tag_name: string }).tag_name
+
+  // That release's own sha256.txt is the only checksum there can be for a build
+  // nobody here has pinned, and still catches a truncated or swapped download.
+  const url = assetUrl(tag, 'sha256.txt')
+  const sums = await fetch(url)
+  if (!sums.ok)
+    throw new Error(`${url} → HTTP ${sums.status}`)
+  const lines = (await sums.text()).trim().split('\n').map(l => l.trim().split(/\s+/))
+
+  const binaries = BUILD.binaries.map(binary => {
+    const found = lines.find(([, asset]) => asset && binary.match.test(asset))
+    if (!found)
+      throw new Error(`release ${tag} holds nothing matching ${binary.match} for ${binary.member}`)
+    return { ...binary, asset: found[1]!, sha256: found[0]! }
+  })
+
+  console.log(`! mpv build ${BUILD.tag} no longer exists upstream — using ${tag}.`)
+  console.log(`  Bump BUILD in scripts/build/mpv.ts to the one you have tested.`)
+  return { tag, binaries }
+}
+
 /** One binary out of the release, downloaded, checked and unpacked. */
-async function ensure(binary: typeof BUILD.binaries[number]): Promise<string> {
+async function ensure(binary: Release['binaries'][number], tag: string): Promise<string> {
   const dest = join(DEST_DIR, binary.member)
   if (existsSync(dest))
     return dest
@@ -152,7 +205,7 @@ async function ensure(binary: typeof BUILD.binaries[number]): Promise<string> {
   const archive = join(CACHE, binary.asset)
 
   if (!existsSync(archive)) {
-    const url = `https://github.com/zhongfly/mpv-winbuild/releases/download/${BUILD.tag}/${binary.asset}`
+    const url = assetUrl(tag, binary.asset)
     console.log(`→ Fetching ${binary.member} for Windows (${binary.asset}, ~30 MB)`)
     await download(url, archive)
   }
@@ -192,13 +245,20 @@ async function ensure(binary: typeof BUILD.binaries[number]): Promise<string> {
  */
 export async function ensureMpv(): Promise<string> {
   mkdirSync(DEST_DIR, { recursive: true })
+
+  // Only when there is something to fetch: a build with both binaries already
+  // unpacked must not need the network, and the pin can only be checked over it.
+  const release = BUILD.binaries.every(b => existsSync(join(DEST_DIR, b.member)))
+    ? BUILD
+    : await resolve()
+
   // Rewritten every run, not just on download: a cached exe from an older tag
   // would otherwise keep a notice pointing at the wrong source.
-  writeFileSync(LICENCE, notice() + readFileSync(GPL, 'utf8'))
+  writeFileSync(LICENCE, notice(release) + readFileSync(GPL, 'utf8'))
 
   const paths: string[] = []
-  for (const binary of BUILD.binaries)
-    paths.push(await ensure(binary))
+  for (const binary of release.binaries)
+    paths.push(await ensure(binary, release.tag))
   return paths[0]!
 }
 
