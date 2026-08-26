@@ -111,7 +111,7 @@ export function backdropFor(mode: 'art' | 'custom' | 'off', artPath: string | nu
   return (artWins && url) || image || undefined
 }
 
-export function profileUrl(path?: string | null, size: 'w45' | 'w185' = 'w185') {
+export function profileUrl(path?: string | null, size: 'w45' | 'w185' | 'h632' = 'w185') {
   return path ? `${IMAGE_BASE}/${size}${path}` : null
 }
 
@@ -135,6 +135,10 @@ export function logoUrl(path?: string | null, size: 'w300' | 'w500' = 'w500') {
  */
 export function mediaLink(media: Pick<Media, 'id' | 'type'>) {
   return localePath(`/${media.type}/${media.id}`)
+}
+
+export function personLink(id: string | number) {
+  return localePath(`/person/${id}`)
 }
 
 export function seasonLink(showId: string | number, season: number) {
@@ -179,6 +183,18 @@ export function dateText(date?: string) {
   if (!date)
     return ''
   return new Date(date).toLocaleDateString(uiLocale(), { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+/** Whole years since a date — someone's age today, or 0 if there is no date. */
+export function yearsSince(date: string) {
+  if (!date)
+    return 0
+  const born = new Date(date)
+  const now = new Date()
+  // A birthday still to come this year hasn't been had yet.
+  const early = now.getMonth() < born.getMonth()
+    || (now.getMonth() === born.getMonth() && now.getDate() < born.getDate())
+  return Math.max(0, now.getFullYear() - born.getFullYear() - (early ? 1 : 0))
 }
 
 /**
@@ -494,5 +510,82 @@ export function useEpisode(
         writers: jobs(raw.crew ?? [], ['Writer', 'Teleplay', 'Screenplay', 'Story']),
       }),
     },
+  )
+}
+
+// --- People ------------------------------------------------------------------
+
+export interface PersonDetail {
+  id: number
+  name: string
+  biography: string
+  birthday: string
+  deathday: string
+  birthplace: string
+  profile: string | null
+  /** Every title they are credited on, cast and crew alike, best known first. */
+  credits: Media[]
+}
+
+interface RawPerson {
+  id: number
+  name?: string
+  biography?: string
+  birthday?: string | null
+  deathday?: string | null
+  place_of_birth?: string | null
+  profile_path?: string | null
+  combined_credits?: { cast?: TmdbItem[], crew?: TmdbItem[] }
+  translations?: { translations: { iso_639_1: string, data?: { biography?: string } }[] }
+}
+
+export function toPersonDetail(raw: RawPerson): PersonDetail {
+  // How many people have rated the title, which is the closest thing TMDB gives
+  // to "what is this person known for": a filmography in date order buries the
+  // one film anyone came here for under twenty years of bit parts.
+  //
+  // Not `popularity`, which is trending traffic and belongs to the *title* — a
+  // long-running chat show is permanently more popular than any film, so
+  // sorting on it put four talk shows and Jeopardy! above every Avengers
+  // picture on Scarlett Johansson's page. A four-episode "Self - Guest" credit
+  // has a few hundred ratings; the films have tens of thousands.
+  const all = [...raw.combined_credits?.cast ?? [], ...raw.combined_credits?.crew ?? []]
+    .sort((a, b) => (b.vote_count ?? 0) - (a.vote_count ?? 0))
+
+  const credits: Media[] = []
+  const seen = new Set<string>()
+  for (const item of all) {
+    const media = toMedia(item)
+    // Credited twice on one title (acted in it and produced it) is one card.
+    if (!media || seen.has(`${media.type}-${media.id}`))
+      continue
+    seen.add(`${media.type}-${media.id}`)
+    credits.push(media)
+  }
+
+  return {
+    id: raw.id,
+    name: raw.name ?? '',
+    // A biography is the one field TMDB does *not* fall back to English on: a
+    // language it has no translation in answers with an empty string, which is
+    // 33 of the app's languages showing a blank page. The English one is asked
+    // for alongside and stands in — see `translations` in the append below.
+    biography: raw.biography
+      || raw.translations?.translations.find(t => t.iso_639_1 === 'en')?.data?.biography
+      || '',
+    birthday: raw.birthday ?? '',
+    deathday: raw.deathday ?? '',
+    birthplace: raw.place_of_birth ?? '',
+    profile: raw.profile_path ?? null,
+    credits,
+  }
+}
+
+/** Never blocks navigation — the page renders its skeleton while this resolves. */
+export function usePerson(id: MaybeRefOrGetter<string | number>) {
+  return useAsyncData(
+    () => `person-${toValue(id)}`,
+    () => tmdb<RawPerson>(`/person/${toValue(id)}`, { append_to_response: 'combined_credits,translations' }),
+    { lazy: true, watch: [() => toValue(id)], transform: toPersonDetail },
   )
 }

@@ -96,7 +96,7 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   (`check:dpad`, `check:torrents`, `check:subtitles`, `check:theme`,
   `check:library`, `check:player`, `check:swipe`, `check:boot`,
   `check:perf`, `check:android-downloads`, `check:updates`, `check:supporters`,
-  `check:audio`, `check:i18n`).
+  `check:audio`, `check:people`, `check:i18n`).
   Add to those rather than pulling in a test framework. `bun run check:types` is
   the odd one out: a whole-app `vue-tsc` pass, which is the only thing that
   reads a template's bindings against its script's types — eslint never does.
