@@ -1196,6 +1196,26 @@ function saveProgress() {
 watch(paused, () => saveProgress())
 
 // ---------------------------------------------------------------------------
+// Keeping the screen on
+//
+// Two hours of film is two hours of no input, which every idle timer reads as
+// nobody being there — so the screen blanks, or the machine suspends, during the
+// one thing the user is certainly still doing. mpv would normally tell the
+// desktop that itself, but only from a window it owns: on X11 it is embedded in
+// ours and does no more than poke the X server's own blanker, which no desktop
+// of the last fifteen years asks; on macOS there is no mpv window at all, since
+// we draw the frames. So the app says it — src-tauri/src/awake.rs, which is a
+// no-op on the two platforms that already have an answer (Windows is mpv's,
+// Android is MainActivity's FLAG_KEEP_SCREEN_ON — see `setPlayerMode`).
+//
+// Let go while paused, exactly as mpv does: a film stopped at the credits for an
+// hour is not a reason to hold the display up. Off Tauri there is nobody to ask.
+// ---------------------------------------------------------------------------
+watch(() => started.value && !paused.value, on => {
+  invoke('keep_awake', { on }).catch(() => {})
+})
+
+// ---------------------------------------------------------------------------
 // Lifecycle
 // ---------------------------------------------------------------------------
 async function startPlayer() {
@@ -2092,6 +2112,9 @@ onBeforeUnmount(() => {
     clearTimeout(flashTimer)
   if (windowFullscreen.value)
     setWindowFullscreen(false)
+  // The watcher above dies with the component, so the last thing it asked for
+  // has to be given back by hand — otherwise the screen never sleeps again.
+  invoke('keep_awake', { on: false }).catch(() => {})
   if (native)
     invoke('player_stop').catch(() => {})
   else

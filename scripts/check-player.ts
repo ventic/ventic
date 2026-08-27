@@ -288,5 +288,22 @@ assert.ok(!mpv.includes('rootEl.value?.querySelectorAll'), 'scoped to the player
 const watch = await Bun.file('app/pages/watch.vue').text()
 assert.match(watch, /Escape' && !document\.querySelector\('\.v-overlay--active/, 'Escape closes an open dialog before it leaves playback')
 
+// Keeping the screen on is three files agreeing on one string, and nothing
+// compiles the agreement: the player invokes a command by name, lib.rs decides
+// which names exist, and awake.rs is what runs. Rename any one of them and the
+// call rejects into a `.catch(() => {})` — a film that plays perfectly and a
+// screen that blanks twenty minutes in, on the two platforms mpv can't ask for
+// itself (X11 embeds it in our window, macOS gives it no window at all).
+const awake = await Bun.file('src-tauri/src/awake.rs').text()
+const lib = await Bun.file('src-tauri/src/lib.rs').text()
+assert.match(mpv, /invoke\('keep_awake', \{ on \}\)/, 'the player asks for it while playing')
+assert.match(mpv, /invoke\('keep_awake', \{ on: false \}\)/, 'and gives it back on the way out')
+assert.match(awake, /pub fn keep_awake\(on: bool\)/, 'awake.rs answers to that name')
+assert.match(lib, /awake::keep_awake/, 'and lib.rs hands it to the frontend')
+// Both halves of the pairing come off one expression, so a film that is up but
+// paused releases it — mpv's own behaviour, and the difference between a screen
+// timeout that works again after the credits and one that never does.
+assert.match(mpv, /watch\(\(\) => started\.value && !paused\.value/, 'and pausing lets the screen go')
+
 // eslint-disable-next-line no-console
 console.log('player: ok')

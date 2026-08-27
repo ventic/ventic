@@ -44,6 +44,25 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   `native` flag rather than two players — a new control needs no second
   implementation, but a new mpv property does need a line in the shim's `READ`.
   `bun run check:player` covers the translation.
+- **Nothing tells the desktop a film is on, so the app does.** Two hours of
+  playback is two hours of no input, which every idle timer reads as an empty
+  room — the screen blanks, or the machine suspends, mid-film. mpv would
+  normally say otherwise itself, but only from a window it owns: on X11 it is
+  embedded in ours and gets no further than the X server's own blanker, which no
+  desktop of the last fifteen years asks, and on macOS it has no window at all
+  (`vo=libmpv` — we draw the frames). `src-tauri/src/awake.rs` answers for both:
+  one `keep_awake(on)` command, called from `MpvPlayer.vue` while
+  `started && !paused` — so pausing lets the screen go, exactly as mpv does. It
+  is a D-Bus inhibit on Linux (`org.freedesktop.ScreenSaver` *and*
+  `org.freedesktop.PowerManagement.Inhibit`, because no desktop implements both,
+  taken on a connection of their own so that dropping it releases them however
+  the app goes down) and an `IOPMAssertion` on macOS. The other two targets
+  already had an answer and it stays a no-op there: Windows is mpv's own window
+  thread (`SetThreadExecutionState` is per-*thread*, and a command's isn't one
+  that lives), Android is `FLAG_KEEP_SCREEN_ON` in `MainActivity.setPlayerMode`.
+  `bun run check:player` holds the command name across the three files that have
+  to agree on it — nothing else does, and the failure is a film that plays
+  perfectly and a screen that blanks twenty minutes in.
 - The torrent engine hashes pieces with aws-lc, which assembles its x86_64 fast
   paths with **NASM** — a tool Linux has packaged and Windows does not, so a
   Windows build dies in `aws-lc-sys`'s build script long before any of our code.

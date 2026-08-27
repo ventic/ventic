@@ -28,6 +28,10 @@ mod player;
 /// Playing what this device holds on another Ventic on the same network.
 mod cast;
 
+/// Telling the OS not to blank the screen while a film is on. Linux and macOS
+/// only — the other two already have their own answer (see the module).
+mod awake;
+
 /// mpv's IPC socket, shared by the two backends that have one.
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 mod player_socket;
@@ -682,7 +686,8 @@ pub fn run() {
 			cast::cast_sharing,
 			cast::cast_share,
 			cast::cast_receive,
-			cast::cast_firewall_hint
+			cast::cast_firewall_hint,
+			awake::keep_awake
 		])
 		.setup(|app| {
 			// The installers write the scheme association (registry keys on

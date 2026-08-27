@@ -48,6 +48,10 @@ axum = "0.8"
 [target.'cfg(target_os = "linux")'.dependencies]
 raw-window-handle = "0.6"
 x11-dl = "2"
+# "Don't blank the screen, a film is on" is a D-Bus call on Linux and nothing
+# else (see src/awake.rs). Already compiled either way — tauri-plugin-single-
+# instance and the notification plugin both pull zbus in on this target.
+zbus = "5"
 
 # The same job on Windows: a child HWND, a window region for the cutouts and a
 # named pipe for mpv's IPC (see src/player_windows.rs).
