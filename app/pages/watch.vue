@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type MpvPlayer from '~/components/MpvPlayer.vue'
 import type { CastDevice } from '~/utils/cast'
 import type { MediaType } from '~/utils/tmdb'
 import type { Release } from '~/utils/torrents'
@@ -20,6 +21,7 @@ const route = useRoute()
 const router = useRouter()
 const downloads = useDownloadsStore()
 const library = useLibraryStore()
+const settings = useSettingsStore()
 
 const type = computed<MediaType>(() => route.query.type === 'tv' ? 'tv' : 'movie')
 const id = computed(() => String(route.query.id ?? ''))
@@ -144,18 +146,29 @@ watch(
 /** Where this film was handed to, for as long as it is playing there. */
 const castTo = ref<CastDevice | null>(null)
 
-/** Everything the other device needs but the URL, which CastButton builds. */
-const castPlay = computed(() => ({
-  kind: type.value,
-  id: id.value,
-  season: season.value,
-  episode: episode.value,
-  title: title.value?.title ?? String(route.query.title ?? ''),
-  // The player writes a resume point every couple of seconds, so the library
-  // already holds where this got to — near enough to hand over, and `resumeAt`
-  // is the one thing that knows the opening minute isn't worth resuming.
-  position: id.value ? library.resumeAt({ id: Number(id.value), type: type.value }, season.value, episode.value) : 0,
-}))
+/** The live player, for the one thing only it knows: where playback is now. */
+const player = useTemplateRef<InstanceType<typeof MpvPlayer>>('player')
+
+/**
+ * Everything the other device needs but the URL, which CastButton builds.
+ *
+ * A function rather than a computed, and the position comes off the player
+ * rather than out of the library: the stored resume point is only written when
+ * playback pauses or stops, and `resumeAt` discards anything under a minute
+ * besides — so a film cast twenty minutes in, having never been paused, handed
+ * over a zero and started the television from the top. Read at the moment the
+ * button is pressed, the answer is simply the second on screen.
+ */
+function castPlay() {
+  return {
+    kind: type.value,
+    id: id.value,
+    season: season.value,
+    episode: episode.value,
+    title: title.value?.title ?? String(route.query.title ?? ''),
+    position: player.value?.position ?? 0,
+  }
+}
 
 function handOver(device: CastDevice) {
   castTo.value = device
@@ -172,6 +185,13 @@ function handOver(device: CastDevice) {
  * reading from.
  */
 async function stopCasting() {
+  // The other device first, while it still has something to read: stopping the
+  // mirror underneath it would leave the film up until the buffer ran dry and
+  // then look like the network failing. Best effort — a television already
+  // switched off is not a reason to keep serving one that isn't there.
+  if (castTo.value)
+    await sendStop(castTo.value, settings.castTarget?.code ?? '')
+
   await shareEngine(false).catch(() => {})
   castTo.value = null
   await downloads.release()
@@ -349,6 +369,7 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
       <!-- :key so picking a different file/torrent gets a fresh mpv process. -->
       <mpv-player
         v-else
+        ref="player"
         :key="src"
         :src="src"
         :status="statusLine"

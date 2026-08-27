@@ -182,5 +182,47 @@ assert.ok(
   'leaving the player while casting must not pause the torrent being served',
 )
 
+// Stop has to reach the other device. Without the route and the listener, the
+// film carries on there until the mirror it was reading from goes down, and
+// then reads as the network failing rather than as the Stop that was pressed.
+assert.ok(/\.route\("\/ventic\/stop", post\(stop\)\)/.test(rust), 'the receiver must answer a stop command')
+assert.ok(/cast:\/\/stop/.test(rust), 'stop is emitted to the page')
+assert.ok(
+  /listen\('cast:\/\/stop'/.test(read('app/plugins/cast.client.ts')),
+  'the receiving page must act on a stop, or Stop only stops the sending half',
+)
+
+// The firewall hint is Linux's alone: Windows and macOS ask at bind time and
+// Android has no firewall. A hint on those is a command that does nothing.
+assert.ok(
+  /#\[cfg\(target_os = "linux"\)\][\t\v\f\r \xA0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n\s*\{[\t\v\f\r \xA0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n\s*let IpAddr::V4/.test(rust),
+  'cast_firewall_hint is gated to Linux',
+)
+assert.ok(
+  /ufw allow from \{subnet\} to any port \{MIRROR_PORT\}/.test(rust),
+  'the hint names the mirror port and the subnet, not a bare `allow`',
+)
+
+// The one that already went wrong once: the handed-over position must be read
+// off the player. The library only writes a resume point on a pause or on the
+// way out, and `resumeAt` throws away anything under a minute — so a film cast
+// twenty minutes in, never paused, started the television from the top.
+assert.ok(
+  /position: player\.value\?\.position/.test(watch),
+  'the cast position comes off the live player',
+)
+assert.ok(
+  !/castPlay[\s\S]{0,400}resumeAt/.test(watch),
+  'the cast position must not come from the library resume point',
+)
+
+// Two `defineExpose` calls in one <script setup> do not merge — the second
+// replaces the first, silently, taking `osd` or `position` with it.
+assert.equal(
+  (read('app/components/MpvPlayer.vue').match(/defineExpose\(/g) ?? []).length,
+  1,
+  'MpvPlayer exposes everything through one defineExpose',
+)
+
 console.log('cast: ok')
 process.exit(0)

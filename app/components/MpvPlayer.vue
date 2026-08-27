@@ -2110,7 +2110,17 @@ function fmt(s: number) {
 
 const remaining = computed(() => duration.value ? `-${fmt((duration.value - position.value) / speed.value)}` : '')
 
-defineExpose({ osd })
+/**
+ * `position` is for the one caller that can't wait for the library: casting
+ * (see pages/watch.vue). The stored resume point is written on a pause and on
+ * the way out, and `resumeAt` discards anything under a minute besides — both
+ * right for picking a film back up, both wrong for handing one over, where the
+ * answer is simply the second on screen.
+ *
+ * One call, because a second `defineExpose` replaces this one rather than
+ * adding to it.
+ */
+defineExpose({ osd, position: readonly(position) })
 </script>
 
 <template>

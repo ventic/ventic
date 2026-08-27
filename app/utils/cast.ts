@@ -183,8 +183,19 @@ export function mirrored(url: string) {
   }
 }
 
-/** Empty when the other device took it, otherwise why it didn't. */
-export async function sendPlay(device: CastDevice, code: string, play: CastPlay): Promise<string> {
+/** Why a cast didn't happen, and the one-line fix where there is one. */
+export interface CastProblem {
+  message: string
+  /**
+   * A command to paste, for the failure that has one. Only the firewall case
+   * does, and only on Linux — see `cast_firewall_hint` in cast.rs for why that
+   * is the platform with a hole to plug rather than a dialog to click.
+   */
+  command?: string
+}
+
+/** Null when the other device took it, otherwise why it didn't. */
+export async function sendPlay(device: CastDevice, code: string, play: CastPlay): Promise<CastProblem | null> {
   try {
     const res = await tauriFetch(`http://${device.address}:${CAST_PORT}/ventic/play`, {
       method: 'POST',
@@ -194,23 +205,46 @@ export async function sendPlay(device: CastDevice, code: string, play: CastPlay)
       signal: AbortSignal.timeout(8000),
     })
     if (res.status === 403)
-      return $t('That code doesn\'t match the one on the other device.')
+      return { message: $t('That code doesn\'t match the one on the other device.') }
+
     // The other device took the command and then couldn't open the film (see
     // `reachable` in cast.rs). When the film is ours to serve, that is nearly
     // always this machine's own firewall: 3231 is an inbound port here, and a
     // dropped connection is the one failure the sending device cannot see for
     // itself. Said here, on the screen belonging to the machine that has the
-    // firewall, rather than left to a television across the room.
+    // firewall, rather than left to a television across the room — and said
+    // with the command, because a rule nobody can remember the syntax of is a
+    // rule nobody adds.
     if (res.status === 502) {
       return mirrored(play.url)
-        ? $t('{device} couldn\'t reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.', { device: device.name, port: MIRROR_PORT })
-        : $t('{device} couldn\'t open that link. It may have expired, or that device may have no connection of its own.', { device: device.name })
+        ? {
+            message: $t('{device} couldn\'t reach this device — a firewall here is blocking port {port}.', { device: device.name, port: MIRROR_PORT }),
+            command: await firewallHint(),
+          }
+        : { message: $t('{device} couldn\'t open that link. It may have expired, or that device may have no connection of its own.', { device: device.name }) }
     }
-    return res.ok ? '' : $t('The other device refused the film.')
+    return res.ok ? null : { message: $t('The other device refused the film.') }
   }
   catch {
-    return $t('Couldn\'t reach that device.')
+    return { message: $t('Couldn\'t reach that device.') }
   }
+}
+
+/**
+ * Take it back: tell the other device to stop playing.
+ *
+ * Best effort and deliberately unreported — this device stops sharing either
+ * way, and a television that has already been switched off is not a failure
+ * worth putting on screen.
+ */
+export async function sendStop(device: CastDevice, code: string): Promise<void> {
+  await tauriFetch(`http://${device.address}:${CAST_PORT}/ventic/stop`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ code }),
+    connectTimeout: 3000,
+    signal: AbortSignal.timeout(5000),
+  }).catch(() => {})
 }
 
 // --- This device --------------------------------------------------------------
@@ -231,6 +265,15 @@ export async function castAddress(): Promise<string> {
  */
 export async function shareEngine(enable: boolean): Promise<string> {
   return await invoke<string | null>('cast_share', { enable }) ?? ''
+}
+
+/**
+ * A ready-to-paste command that opens the mirror port on this machine, or ''
+ * where the platform doesn't need one. Only asked for once a cast has actually
+ * been refused, so nothing goes looking for a firewall that isn't in the way.
+ */
+export async function firewallHint(): Promise<string> {
+  return await invoke<string | null>('cast_firewall_hint').catch(() => null) ?? ''
 }
 
 /** Is this device serving its engine to the network right now? */

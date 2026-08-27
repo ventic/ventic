@@ -85,6 +85,14 @@ pub struct Play {
 	position: f64,
 }
 
+/// A stop command. Carries the code and nothing else — there is only one thing
+/// this device can be doing on the sender's behalf.
+#[derive(Deserialize)]
+pub struct Stop {
+	#[serde(default)]
+	code: String,
+}
+
 /// What a device answers a probe with. `app` is what tells a Ventic apart from
 /// whatever else on the network happens to answer on this port.
 #[derive(Serialize)]
@@ -220,6 +228,7 @@ pub fn cast_receive(app: AppHandle, enable: bool, name: String, code: String) ->
 		let router = Router::new()
 			.route("/ventic", get(identity))
 			.route("/ventic/play", post(play))
+			.route("/ventic/stop", post(stop))
 			.with_state(state);
 
 		tokio::select! {
@@ -301,6 +310,71 @@ async fn play(State(state): State<Receiving>, Json(mut command): Json<Play>) -> 
 	}
 }
 
+/// "I'm taking it back" — the other end pressing Stop.
+///
+/// Its own route rather than a flag on `play`: what the sending device wants is
+/// for this screen to stop, and it has no film to name. The mirror it was being
+/// served from goes down a moment later, so a receiver that never heard this
+/// would carry on until its buffer ran dry and then blame the network.
+async fn stop(State(state): State<Receiving>, Json(command): Json<Stop>) -> StatusCode {
+	if command.code != state.code {
+		return StatusCode::FORBIDDEN;
+	}
+	match state.app.emit("cast://stop", ()) {
+		Ok(()) => StatusCode::OK,
+		Err(e) => {
+			eprintln!("[ventic] cast stop could not reach the page: {e:#}");
+			StatusCode::INTERNAL_SERVER_ERROR
+		}
+	}
+}
+
+/// Whether a binary is installed, without asking `PATH` — a desktop app is
+/// launched from a session whose `PATH` often has no `/usr/sbin` on it, which is
+/// exactly where the answer lives.
+#[cfg(target_os = "linux")]
+fn installed(binary: &str) -> bool {
+	["/usr/bin", "/usr/sbin", "/bin", "/sbin", "/usr/local/bin", "/usr/local/sbin"]
+		.iter()
+		.any(|dir| std::path::Path::new(dir).join(binary).exists())
+}
+
+/// The command that opens the mirror port on this machine, ready to paste.
+///
+/// Linux only, and that is not an oversight: Windows and macOS put a dialog up
+/// the first time the port is bound, and Android has no firewall to be caught
+/// by. Linux is the one platform that drops the connection with nothing said
+/// anywhere, so it is the one that needs the sentence — and a firewall rule
+/// nobody can remember the syntax of is a rule nobody adds.
+///
+/// Scoped to this device's own subnet on purpose. The mirror is read-only, but
+/// it still lists and serves the whole library to whatever can reach it, and
+/// that has no business being wider than the network the television is on.
+#[tauri::command]
+pub fn cast_firewall_hint() -> Option<String> {
+	#[cfg(target_os = "linux")]
+	{
+		let IpAddr::V4(ip) = local_ip()? else {
+			return None;
+		};
+		let [a, b, c, _] = ip.octets();
+		let subnet = format!("{a}.{b}.{c}.0/24");
+
+		// ufw unless the box is plainly a firewalld one: ufw is what the
+		// distributions most of these installs are on ship, and `firewall-cmd`
+		// sits in /usr/bin where it can actually be seen.
+		Some(if installed("firewall-cmd") {
+			format!(
+				"sudo firewall-cmd --permanent --add-rich-rule='rule family=ipv4 source address={subnet} port port={MIRROR_PORT} protocol=tcp accept' && sudo firewall-cmd --reload"
+			)
+		} else {
+			format!("sudo ufw allow from {subnet} to any port {MIRROR_PORT} proto tcp")
+		})
+	}
+	#[cfg(not(target_os = "linux"))]
+	None
+}
+
 #[cfg(test)]
 mod tests {
 	use super::{authority, reachable};
@@ -318,6 +392,20 @@ mod tests {
 		// Nothing to open a socket to: probing is skipped, not failed.
 		assert_eq!(authority("/home/tilko/film.mkv"), None);
 		assert_eq!(authority("http:///x"), None);
+	}
+
+	/// The hint is pasted into a terminal, so it has to be a command. Loose on
+	/// purpose — what it says depends on the machine it is read off.
+	#[test]
+	#[cfg(target_os = "linux")]
+	fn firewall_hint() {
+		// None is legitimate: a machine with no address on any network.
+		if let Some(hint) = super::cast_firewall_hint() {
+			println!("firewall hint: {hint}");
+			assert!(hint.starts_with("sudo "), "has to be runnable as written");
+			assert!(hint.contains(&super::MIRROR_PORT.to_string()), "names the port that is blocked");
+			assert!(hint.contains("/24"), "scoped to this device's own subnet, not the whole world");
+		}
 	}
 
 	/// A dropped connection has to read as unreachable and a live one as fine —

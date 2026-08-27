@@ -55,4 +55,13 @@ export default defineNuxtPlugin(() => {
   listen<CastPlay>('cast://play', event => {
     navigateTo({ path: localePath('/watch'), query: castRoute(event.payload) })
   }).catch(() => {}) // no Tauri under `bun run dev`, and nothing to listen to
+
+  // The sending device pressed Stop. It stops serving the film a moment later,
+  // so a screen left on the player would sit there until the buffer ran dry and
+  // then blame the network. Only from the player: a cast that has already been
+  // left is nothing to act on, and Home is not somewhere to be sent from.
+  listen('cast://stop', () => {
+    if (useRouter().currentRoute.value.path === localePath('/watch'))
+      navigateTo(localePath('/'))
+  }).catch(() => {})
 })

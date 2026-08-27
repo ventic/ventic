@@ -228,10 +228,21 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   anything and answers **502** when it can't, so the complaint lands in the cast
   dialog on the machine that has the firewall, naming the port, instead of on a
   television across the room blaming a link that was never the problem. Nothing
-  here opens that port and nothing should — `ufw allow from 192.168.0.0/24 to
-  any port 3231 proto tcp` is the user's to run (3232 for that desktop to
-  *receive* a cast). Android has no firewall to be caught by, which is why it
-  only ever fails in one direction. `ventic.castCode` and `ventic.castTarget` are in `backup.ts`'s
+  here opens that port and nothing should — but `cast_firewall_hint` writes the
+  line out (`sudo ufw allow from <this subnet> to any port 3231 proto tcp`, or
+  the rich-rule equivalent where `firewall-cmd` is installed) and the dialog
+  shows it with a copy button, because a rule nobody can remember the syntax of
+  is a rule nobody adds. Running it stays the user's to do, and 3232 is the one
+  to open for that desktop to *receive* a cast. That hint is Linux's alone:
+  Windows and macOS put a dialog up at bind time, and Android has no firewall to
+  be caught by — which is also why casting only ever fails in one direction.
+  Stopping is its own route (`POST /ventic/stop`, `cast://stop`) rather than a
+  flag on a play: the mirror goes down a moment after Stop is pressed, so a
+  receiver that never heard it plays on until the buffer runs dry and then
+  blames the network. And the position handed over comes off the **player**, not
+  `library.resumeAt` — the stored resume point is only written on a pause or on
+  the way out, and is thrown away under a minute, so a film cast twenty minutes
+  in and never paused started the television from the top. `ventic.castCode` and `ventic.castTarget` are in `backup.ts`'s
   `SECRET` set. LAN only and opt-in; there is no relay, no NAT traversal and no
   account, for the same reason the library has none.
 - **The library is local and nothing syncs it.** There is no account, no server

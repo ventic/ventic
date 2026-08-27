@@ -681,7 +681,8 @@ pub fn run() {
 			cast::cast_address,
 			cast::cast_sharing,
 			cast::cast_share,
-			cast::cast_receive
+			cast::cast_receive,
+			cast::cast_firewall_hint
 		])
 		.setup(|app| {
 			// The installers write the scheme association (registry keys on
