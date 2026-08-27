@@ -19,8 +19,18 @@ onMounted(async () => {
   sharing.value = await sharingEngine()
 })
 
+/** Why the last Stop didn't fully land, for the screen it was pressed on. */
+const stopped = ref('')
+
+/**
+ * The Stop that matters. Leaving the player is the ordinary way to use a cast,
+ * and the player's own button goes with it — so this is where a cast is stopped
+ * most of the time, and it has to do the whole job: tell the other device to
+ * leave the film, then stop serving it.
+ */
 async function stopSharing() {
-  await shareEngine(false).catch(() => {})
+  const problem = await stopCast(settings.castTarget)
+  stopped.value = problem?.message ?? ''
   sharing.value = false
   // The film was left focused so it would keep feeding the other device — see
   // `onBeforeUnmount` in pages/watch.vue. This is where that is handed back.
@@ -134,15 +144,26 @@ function label(value: number) {
         </p>
       </template>
 
-      <div v-if="sharing" class="flex flex-wrap items-center gap-3">
-        <p class="text-body-medium">
-          <v-icon :icon="mdiCast" size="18" class="mr-1" />
-          {{ $t('This device is streaming a film to another one right now.') }}
+      <div v-if="sharing" class="flex flex-col gap-2">
+        <div class="flex flex-wrap items-center gap-3">
+          <p class="text-body-medium">
+            <v-icon :icon="mdiCast" size="18" class="mr-1" />
+            {{ settings.castTarget
+              ? $t('This device is streaming a film to {device} right now.', { device: settings.castTarget.name })
+              : $t('This device is streaming a film to another one right now.') }}
+          </p>
+          <v-btn variant="tonal" :prepend-icon="mdiStop" @click="stopSharing">
+            {{ $t('Stop casting') }}
+          </v-btn>
+        </div>
+        <p class="text-body-small opacity-70">
+          {{ $t('Stopping tells the other device to leave the film, then stops serving it from here.') }}
         </p>
-        <v-btn variant="tonal" :prepend-icon="mdiStop" @click="stopSharing">
-          {{ $t('Stop') }}
-        </v-btn>
       </div>
+
+      <p v-else-if="stopped" class="text-body-small text-error">
+        {{ stopped }}
+      </p>
     </settings-section>
 
     <settings-section :title="$t('Right now')" :hint="$t('Live totals from the torrent engine.')">

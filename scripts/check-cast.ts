@@ -192,6 +192,21 @@ assert.ok(
   'the receiving page must act on a stop, or Stop only stops the sending half',
 )
 
+// Both Stop buttons, one implementation. The player's own button goes with the
+// player — leaving it is the ordinary way to use a cast — so *Settings →
+// Network* is where a cast is stopped most of the time, and it used to stop
+// only the serving half and leave the film playing on the other device.
+for (const screen of ['app/pages/watch.vue', 'app/pages/settings/network.vue'])
+  assert.ok(/stopCast\(/.test(read(screen)), `${screen} must stop a cast through stopCast`)
+
+// …and the order inside it: telling the other device *after* the mirror is gone
+// is telling a screen that has already lost the film.
+const teardown = /export async function stopCast[\s\S]*?\n\}/.exec(read('app/utils/cast.ts'))?.[0] ?? ''
+assert.ok(
+  teardown.indexOf('sendStop') < teardown.indexOf('shareEngine'),
+  'stopCast tells the other device before it stops serving the film',
+)
+
 // The firewall hint is Linux's alone: Windows and macOS ask at bind time and
 // Android has no firewall. A hint on those is a command that does nothing.
 assert.ok(

@@ -187,12 +187,9 @@ function handOver(device: CastDevice) {
 async function stopCasting() {
   // The other device first, while it still has something to read: stopping the
   // mirror underneath it would leave the film up until the buffer ran dry and
-  // then look like the network failing. Best effort — a television already
-  // switched off is not a reason to keep serving one that isn't there.
-  if (castTo.value)
-    await sendStop(castTo.value, settings.castTarget?.code ?? '')
-
-  await shareEngine(false).catch(() => {})
+  // then look like the network failing. `settings.castTarget` rather than
+  // `castTo`, so this is the same call Settings makes — see `stopCast`.
+  await stopCast(settings.castTarget)
   castTo.value = null
   await downloads.release()
   leave()

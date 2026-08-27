@@ -230,21 +230,52 @@ export async function sendPlay(device: CastDevice, code: string, play: CastPlay)
   }
 }
 
+/** Take it back: tell the other device to leave the player. */
+export async function sendStop(device: CastDevice, code: string): Promise<CastProblem | null> {
+  try {
+    const res = await tauriFetch(`http://${device.address}:${CAST_PORT}/ventic/stop`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ code }),
+      connectTimeout: 3000,
+      signal: AbortSignal.timeout(5000),
+    })
+    if (res.status === 403)
+      return { message: $t('That code doesn\'t match the one on the other device.') }
+    return res.ok ? null : { message: $t('{device} didn\'t stop. Stop the film there yourself.', { device: device.name }) }
+  }
+  catch {
+    return { message: $t('{device} didn\'t answer. Stop the film there yourself.', { device: device.name }) }
+  }
+}
+
 /**
- * Take it back: tell the other device to stop playing.
- *
- * Best effort and deliberately unreported — this device stops sharing either
- * way, and a television that has already been switched off is not a failure
- * worth putting on screen.
+ * Everything about the device being cast to, as it is remembered between
+ * screens — the address to reach it at and the code it answers to.
  */
-export async function sendStop(device: CastDevice, code: string): Promise<void> {
-  await tauriFetch(`http://${device.address}:${CAST_PORT}/ventic/stop`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ code }),
-    connectTimeout: 3000,
-    signal: AbortSignal.timeout(5000),
-  }).catch(() => {})
+export interface CastTarget extends CastDevice {
+  code: string
+}
+
+/**
+ * Take the film back: stop the other device, then stop serving it to the
+ * network.
+ *
+ * One function because there are two places to press Stop — the player, and
+ * Settings → Network* once the player has been left — and a Stop that only did
+ * half the job from one of them is the bug this replaced. Leaving the player is
+ * the ordinary way to use a cast (the whole point is putting the phone down),
+ * so the durable copy of who is playing it lives in settings, not on the page.
+ *
+ * Stops sharing whatever the other device said, including nothing at all: the
+ * mirror going down is what ends the film for a television that never heard,
+ * and leaving a port open because a switched-off TV didn't answer is worse than
+ * either.
+ */
+export async function stopCast(target: CastTarget | null): Promise<CastProblem | null> {
+  const problem = target ? await sendStop(target, target.code) : null
+  await shareEngine(false).catch(() => {})
+  return problem
 }
 
 // --- This device --------------------------------------------------------------
