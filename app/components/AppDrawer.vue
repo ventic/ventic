@@ -65,7 +65,12 @@ const library = computed(() => [
         :title="link.title"
         color="primary"
         rounded="lg"
-      />
+      >
+        <!-- Collapsed to icons, the label is the only thing naming the page.
+             `end` rather than `right` so it stays outside the drawer in the
+             four right-to-left languages too. -->
+        <v-tooltip v-if="rail" activator="parent" location="end" :text="link.title" />
+      </v-list-item>
 
       <v-divider class="mx-2 my-3 opacity-40" />
 
@@ -77,7 +82,12 @@ const library = computed(() => [
         :title="link.title"
         color="primary"
         rounded="lg"
-      />
+      >
+        <!-- Collapsed to icons, the label is the only thing naming the page.
+             `end` rather than `right` so it stays outside the drawer in the
+             four right-to-left languages too. -->
+        <v-tooltip v-if="rail" activator="parent" location="end" :text="link.title" />
+      </v-list-item>
     </v-list>
 
     <!-- Phone only: on a wide window the toolbar carries these three, so a copy
