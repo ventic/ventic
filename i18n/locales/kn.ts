@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "{count} ಸಂಚಿಕೆಗಳು",
   "{count} lines": "{count} ಸಾಲುಗಳು",
   "{count} seeders": "{count} ಸೀಡರ್‌ಗಳು",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "{drive} FAT32 ಆಗಿ ಫಾರ್ಮ್ಯಾಟ್ ಆಗಿದೆ, ಅದು {limit} ಗಿಂತ ದೊಡ್ಡ ಒಂದೇ ಫೈಲ್ ಹಿಡಿಯಲಾರದು. ದೊಡ್ಡ ಬಿಡುಗಡೆಗಳು ಮೂಲಗಳ ಪಟ್ಟಿಯಲ್ಲಿ ಮಬ್ಬಾಗಿ ಕಾಣುತ್ತವೆ ಮತ್ತು ಎಂದೂ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಆಯ್ಕೆಯಾಗುವುದಿಲ್ಲ — ಅದಕ್ಕಿಂತ ಚಿಕ್ಕದೆಲ್ಲ ಸಾಮಾನ್ಯವಾಗಿ ಕೆಲಸ ಮಾಡುತ್ತದೆ.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} ಸಿಕ್ಕಿಸಲಾಗಿದೆ, ಆದರೆ ಅದರ ಮೇಲೆ ಏನನ್ನೂ ಬರೆಯಲಾಗುವುದಿಲ್ಲ — ಈ ಸಾಧನ ಡ್ರೈವ್ ಇರುವ ಸ್ವರೂಪವನ್ನು ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. ಇಲ್ಲಿ ಅದನ್ನು ಫಾರ್ಮ್ಯಾಟ್ ಮಾಡಿದರೆ ಸರಿಯಾಗುತ್ತದೆ, ಮತ್ತು ಡ್ರೈವ್‌ನಲ್ಲಿರುವುದೆಲ್ಲ ಅಳಿಯುತ್ತದೆ.",
   "{drive} · {free} free": "{drive} · {free} ಖಾಲಿ",

@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "{count} eapasod",
   "{count} lines": "{count} loidhne",
   "{count} seeders": "{count} sìoladair",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "Tha {drive} air fhòrmatadh mar FAT32, nach cùm aon fhaidhle os cionn {limit}. Bidh sgaoilidhean nas motha doilleir ann an liosta nan tùsan agus cha tèid an taghadh gu fèin-obrachail a-riamh — obraichidh a h-uile rud nas lugha mar as àbhaist.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "Tha {drive} plugte a-steach, ach chan urrainnear dad a sgrìobhadh air — chan eil an t-uidheam seo a' cur taic ris an fhòrmat anns a bheil an draibh. Càraichidh a fhòrmatadh an-seo sin, agus sguabaidh e às a h-uile rud a tha air an draibh.",
   "{drive} · {free} free": "{drive} · {free} saor",

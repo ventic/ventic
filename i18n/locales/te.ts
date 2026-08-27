@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "{count} ఎపిసోడ్‌లు",
   "{count} lines": "{count} లైన్లు",
   "{count} seeders": "{count} సీడర్లు",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "{drive} FAT32గా ఫార్మాట్ చేయబడింది, అది {limit} కంటే పెద్ద ఒక్క ఫైల్‌ను కూడా పట్టుకోలేదు. పెద్ద విడుదలలు మూలాల జాబితాలో మసకగా కనిపిస్తాయి, ఎప్పుడూ ఆటోమేటిక్‌గా ఎంపిక కావు — అంతకంటే చిన్నవన్నీ మామూలుగానే పనిచేస్తాయి.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} పెట్టబడింది, కానీ అందులో ఏదీ రాయలేం — డ్రైవ్ ఉన్న ఫార్మాట్‌ను ఈ పరికరం సపోర్ట్ చేయదు. ఇక్కడ దాన్ని ఫార్మాట్ చేస్తే అది సరిపోతుంది, పైగా డ్రైవ్‌లో ఉన్నదంతా తుడిచిపెట్టుకుపోతుంది.",
   "{drive} · {free} free": "{drive} · {free} ఖాళీ",

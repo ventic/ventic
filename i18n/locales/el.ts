@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "{count} επεισόδια",
   "{count} lines": "{count} γραμμές",
   "{count} seeders": "{count} seeder",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "Ο {drive} είναι διαμορφωμένος ως FAT32, που δεν μπορεί να κρατήσει ένα αρχείο πάνω από {limit}. Οι μεγαλύτερες εκδόσεις εμφανίζονται θαμπές στη λίστα πηγών και δεν επιλέγονται ποτέ αυτόματα — ό,τι είναι μικρότερο λειτουργεί κανονικά.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "Ο {drive} είναι συνδεδεμένος, αλλά δεν μπορεί να γραφτεί τίποτα σε αυτόν — αυτή η συσκευή δεν υποστηρίζει τη μορφή στην οποία βρίσκεται ο δίσκος. Η διαμόρφωσή του εδώ το διορθώνει, και σβήνει ό,τι υπάρχει στον δίσκο.",
   "{drive} · {free} free": "{drive} · {free} ελεύθερα",

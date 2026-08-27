@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "{count} osa",
   "{count} lines": "{count} rida",
   "{count} seeders": "{count} külvajat",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "{drive} on vormindatud FAT32-ks, mis ei mahuta üle {limit} suurust üksikut faili. Suuremad väljalasked kuvatakse allikate loendis tuhmilt ja neid ei valita kunagi automaatselt — kõik väiksem töötab tavapäraselt.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} on ühendatud, aga sinna ei saa midagi kirjutada — see seade ei toeta vormingut, milles ketas on. Selle vormindamine siin lahendab probleemi ja kustutab kõik, mis kettal on.",
   "{drive} · {free} free": "{drive} · {free} vaba",

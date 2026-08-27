@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "{count} എപ്പിസോഡുകൾ",
   "{count} lines": "{count} വരികൾ",
   "{count} seeders": "{count} സീഡർമാർ",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "{drive} FAT32 ആയി ഫോർമാറ്റ് ചെയ്തിരിക്കുന്നു, അതിന് {limit}-ൽ കൂടുതലുള്ള ഒറ്റ ഫയൽ ഉൾക്കൊള്ളാനാവില്ല. വലിയ റിലീസുകൾ ഉറവിട പട്ടികയിൽ മങ്ങിക്കാണും, ഒരിക്കലും സ്വയമേവ തിരഞ്ഞെടുക്കില്ല — അതിലും ചെറുതെല്ലാം സാധാരണപോലെ പ്രവർത്തിക്കും.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} കുത്തിവച്ചിട്ടുണ്ട്, പക്ഷേ അതിലേക്ക് ഒന്നും എഴുതാനാവില്ല — ഈ ഉപകരണം ഡ്രൈവിന്റെ ഫോർമാറ്റിനെ പിന്തുണയ്ക്കുന്നില്ല. ഇവിടെ ഫോർമാറ്റ് ചെയ്താൽ അത് ശരിയാകും, ഡ്രൈവിലുള്ളതെല്ലാം മായും.",
   "{drive} · {free} free": "{drive} · {free} ഒഴിവ്",

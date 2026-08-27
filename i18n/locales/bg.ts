@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "{count} епизода",
   "{count} lines": "{count} реда",
   "{count} seeders": "{count} сийдъра",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "{drive} е форматиран като FAT32, който не може да побере един файл над {limit}. По-големите издания се затъмняват в списъка с източници и никога не се избират автоматично — всичко по-малко работи нормално.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} е включен, но на него не може да се записва — това устройство не поддържа формата, в който е дискът. Форматирането му тук решава това и изтрива всичко на диска.",
   "{drive} · {free} free": "{drive} · {free} свободни",

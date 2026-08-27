@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "{count} episoder",
   "{count} lines": "{count} linjer",
   "{count} seeders": "{count} delere",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "{drive} er formatert som FAT32, som ikke kan romme en enkeltfil over {limit}. Større utgivelser vises nedtonet i kildelisten og velges aldri automatisk — alt som er mindre fungerer som normalt.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} er koblet til, men det går ikke å skrive noe til den — denne enheten støtter ikke formatet stasjonen har. Å formatere den her løser det, og sletter alt som ligger på stasjonen.",
   "{drive} · {free} free": "{drive} · {free} ledig",

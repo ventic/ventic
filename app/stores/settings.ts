@@ -12,6 +12,7 @@ import {
   mdiTuneVariant,
   mdiWifi,
 } from '@mdi/js'
+import { StorageSerializers } from '@vueuse/core'
 import { DEFAULT_SOURCE } from '~/theme/presets'
 
 export type SectionKey = 'appearance' | 'language' | 'sources' | 'subtitles' | 'audio' | 'network' | 'storage' | 'account' | 'support' | 'about'
@@ -162,8 +163,19 @@ export const useSettingsStore = defineStore('settings', () => {
    *
    * ponytail: one device. A second television is a re-scan, which is the same
    * two taps as picking it from a list would have been.
+   *
+   * The serializer is spelled out because the default is `null`, and that is the
+   * one default VueUse cannot read a type from: it falls back to `String(value)`,
+   * which stored the device as the literal "[object Object]". It came back as
+   * that string, `pick` read an `address` off it and got `undefined`, and the
+   * dialog's own `!address.trim()` threw while rendering — so casting worked
+   * exactly once per install and then the dialog never opened again.
    */
-  const castTarget = useLocalStorage<{ name: string, address: string, code: string } | null>('ventic.castTarget', null)
+  const castTarget = useLocalStorage<{ name: string, address: string, code: string } | null>(
+    'ventic.castTarget',
+    null,
+    { serializer: StorageSerializers.object },
+  )
 
   // --- Storage ---
   /** Where torrents are written. '' = the app's own cache folder. */

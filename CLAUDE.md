@@ -220,15 +220,18 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   player while casting must **not** call `downloads.release()`, which pauses the
   torrent the other device is reading from, and `Downloads.kt` polls port 3231
   so a finished film being cast still counts as work — without it Android
-  freezes the process and the stream stops. A third seam is nobody's code at
-  all: 3231 is an **inbound** port on the *sending* machine, so a desktop
-  firewall drops the receiver's request and the television blames the link
-  ("could not be reached", from the player's own probe). `ufw` on Arch does
-  exactly that and says nothing, so a cast from a firewalled desktop wants
-  `ufw allow from 192.168.0.0/24 to any port 3231 proto tcp` (and 3232 for that
-  desktop to *receive* one) before any of the above is even reached. Android has
-  no firewall to be caught by, which is why the failure only ever shows up in
-  one direction. `ventic.castCode` and `ventic.castTarget` are in `backup.ts`'s
+  freezes the process and the stream stops. A third seam is nobody's code
+  at all: 3231 is an **inbound** port on the *sending* machine, and a desktop
+  firewall drops the receiver's request without a word — Windows and macOS ask
+  at bind time, Linux just drops it. That is what `reachable` in cast.rs is for:
+  the receiver opens a TCP connection to the film's own URL before it emits
+  anything and answers **502** when it can't, so the complaint lands in the cast
+  dialog on the machine that has the firewall, naming the port, instead of on a
+  television across the room blaming a link that was never the problem. Nothing
+  here opens that port and nothing should — `ufw allow from 192.168.0.0/24 to
+  any port 3231 proto tcp` is the user's to run (3232 for that desktop to
+  *receive* a cast). Android has no firewall to be caught by, which is why it
+  only ever fails in one direction. `ventic.castCode` and `ventic.castTarget` are in `backup.ts`'s
   `SECRET` set. LAN only and opt-in; there is no relay, no NAT traversal and no
   account, for the same reason the library has none.
 - **The library is local and nothing syncs it.** There is no account, no server

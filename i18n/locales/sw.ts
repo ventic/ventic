@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "Vipindi {count}",
   "{count} lines": "Mistari {count}",
   "{count} seeders": "Waenezaji {count}",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "{drive} imefomatiwa FAT32, ambayo haiwezi kubeba faili moja inayozidi {limit}. Matoleo makubwa zaidi hufifishwa kwenye orodha ya chanzo na hayachaguliwi kiotomatiki kamwe — kila kilicho kidogo hufanya kazi kawaida.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} imechomekwa, lakini hakuna kinachoweza kuandikwa ndani yake — kifaa hiki hakiungi mkono muundo iliyo nao diski. Kuifomati hapa hurekebisha hilo, na hufuta chochote kilicho kwenye diski.",
   "{drive} · {free} free": "{drive} · {free} bila kutumika",

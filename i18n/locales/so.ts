@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "{count} qeybood",
   "{count} lines": "{count} sadar",
   "{count} seeders": "{count} faafiye",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "{drive} waxaa loo habeeyay FAT32, oo aan hayn karin hal fayl oo ka weyn {limit}. Sii deynta ka weyn waxay ku mugdiyoobaan liiska ilaha marnabana lama doorto si toos ah — wax kasta oo ka yar si caadi ah ayay u shaqeeyaan.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} waa la xiray, laakiin waxba lagu qori karo — qalabkani ma taageero qaabka diskku ku jiro. Halkan u habeyntiisu way xallinaysaa, waxayna tirtiraysaa wax kasta oo diskka ku jira.",
   "{drive} · {free} free": "{drive} · {free} banaan",

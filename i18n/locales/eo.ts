@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "{count} epizodoj",
   "{count} lines": "{count} linioj",
   "{count} seeders": "{count} semantoj",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "{drive} estas formatita kiel FAT32, kiu ne povas teni unuopan dosieron pli grandan ol {limit}. Pli grandaj eldonoj estas malheligitaj en la fontlisto kaj neniam estas elektataj aŭtomate — ĉio pli malgranda funkcias normale.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} estas enŝovita, sed nenio skribeblas sur ĝin — ĉi tiu aparato ne subtenas la formaton, en kiu la disko estas. Formati ĝin ĉi tie riparas tion, kaj forviŝas ĉion, kio estas sur la disko.",
   "{drive} · {free} free": "{drive} · {free} libera",

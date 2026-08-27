@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "{count} epizodes",
   "{count} lines": "{count} rindas",
   "{count} seeders": "{count} sējēji",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "{drive} ir formatēts kā FAT32, kas nespēj glabāt vienu failu, lielāku par {limit}. Lielāki izdevumi avotu sarakstā ir aptumšoti un nekad netiek izvēlēti automātiski — viss mazākais darbojas normāli.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} ir pievienots, bet uz tā neko nevar ierakstīt — šī ierīce neatbalsta formātu, kādā ir disks. Formatējot to šeit, tas tiek atrisināts, un viss diskā tiek izdzēsts.",
   "{drive} · {free} free": "{drive} · {free} brīvi",

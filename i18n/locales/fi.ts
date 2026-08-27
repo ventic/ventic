@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "{count} jaksoa",
   "{count} lines": "{count} riviä",
   "{count} seeders": "{count} jakajaa",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "{drive} on alustettu FAT32-muotoon, joka ei voi sisältää yksittäistä yli {limit} kokoista tiedostoa. Suuremmat julkaisut näkyvät himmennettyinä lähdelistassa eikä niitä valita koskaan automaattisesti — kaikki pienempi toimii normaalisti.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} on kytketty, mutta sille ei voi kirjoittaa mitään — tämä laite ei tue tiedostojärjestelmää, jossa asema on. Sen alustaminen täällä korjaa asian ja tyhjentää kaiken, mitä asemalla on.",
   "{drive} · {free} free": "{drive} · {free} vapaana",

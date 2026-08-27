@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "{count} ਕਿਸ਼ਤਾਂ",
   "{count} lines": "{count} ਸਤਰਾਂ",
   "{count} seeders": "{count} ਸੀਡਰ",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "{drive} FAT32 ਵਿੱਚ ਫਾਰਮੈਟ ਹੈ, ਜੋ {limit} ਤੋਂ ਵੱਡੀ ਇੱਕ ਵੀ ਫ਼ਾਈਲ ਨਹੀਂ ਰੱਖ ਸਕਦਾ। ਵੱਡੀਆਂ ਰਿਲੀਜ਼ਾਂ ਸਰੋਤ ਸੂਚੀ ਵਿੱਚ ਧੁੰਦਲੀਆਂ ਦਿਖਦੀਆਂ ਹਨ ਅਤੇ ਕਦੇ ਆਪਣੇ-ਆਪ ਨਹੀਂ ਚੁਣੀਆਂ ਜਾਂਦੀਆਂ — ਇਸ ਤੋਂ ਛੋਟਾ ਸਭ ਕੁਝ ਆਮ ਵਾਂਗ ਚੱਲਦਾ ਹੈ।",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} ਲੱਗਾ ਹੋਇਆ ਹੈ, ਪਰ ਇਸ 'ਤੇ ਕੁਝ ਨਹੀਂ ਲਿਖਿਆ ਜਾ ਸਕਦਾ — ਇਹ ਡਿਵਾਈਸ ਡਰਾਈਵ ਦੇ ਫਾਰਮੈਟ ਨੂੰ ਸਮਰਥਨ ਨਹੀਂ ਦਿੰਦਾ। ਇੱਥੇ ਇਸਨੂੰ ਫਾਰਮੈਟ ਕਰਨ ਨਾਲ ਇਹ ਠੀਕ ਹੋ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਡਰਾਈਵ ਦਾ ਸਭ ਕੁਝ ਮਿਟ ਜਾਂਦਾ ਹੈ।",
   "{drive} · {free} free": "{drive} · {free} ਖਾਲੀ",

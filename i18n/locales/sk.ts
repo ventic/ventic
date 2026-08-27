@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "{count} epizód",
   "{count} lines": "{count} riadkov",
   "{count} seeders": "{count} seedov",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "{drive} je naformátovaný ako FAT32, ktorý neunesie jediný súbor nad {limit}. Väčšie vydania sú v zozname zdrojov stlmené a nikdy sa nevyberajú automaticky — všetko menšie funguje normálne.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} je pripojený, ale nedá sa naň nič zapísať — toto zariadenie nepodporuje formát, v ktorom disk je. Naformátovať ho tu to napraví a zmaže všetko, čo na ňom je.",
   "{drive} · {free} free": "{drive} · {free} voľných",

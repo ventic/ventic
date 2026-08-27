@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "{count} afleveringen",
   "{count} lines": "{count} regels",
   "{count} seeders": "{count} seeders",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "{drive} is geformatteerd als FAT32, dat geen enkel bestand boven {limit} aankan. Grotere releases staan gedimd in de bronnenlijst en worden nooit automatisch gekozen — alles wat kleiner is werkt gewoon.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} is aangesloten, maar er kan niets naartoe worden geschreven — dit apparaat ondersteunt het formaat van de schijf niet. Hem hier formatteren lost dat op, en wist alles wat erop staat.",
   "{drive} · {free} free": "{drive} · {free} vrij",

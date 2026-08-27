@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "{count} odcinków",
   "{count} lines": "{count} wierszy",
   "{count} seeders": "{count} seedów",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "{drive} jest sformatowany jako FAT32, który nie pomieści pojedynczego pliku powyżej {limit}. Większe wydania są przygaszone na liście źródeł i nigdy nie są wybierane automatycznie — wszystko mniejsze działa normalnie.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} jest podłączony, ale nic nie da się na niego zapisać — to urządzenie nie obsługuje formatu, w jakim jest dysk. Sformatowanie go tutaj to naprawia i kasuje wszystko, co na nim jest.",
   "{drive} · {free} free": "{drive} · {free} wolne",

@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "{count} бөлүм",
   "{count} lines": "{count} сап",
   "{count} seeders": "{count} таратуучу",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "{drive} FAT32 кылып форматталган, ал {limit} өлчөмүнөн чоң бир файлды сактай албайт. Чоңураак чыгарылымдар булактар тизмесинде күңүрт көрүнөт жана эч качан автоматтык тандалбайт — андан кичинесинин баары кадимкидей иштейт.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} сайылган, бирок ага эч нерсе жазууга болбойт — бул түзмөк дисктин форматын колдобойт. Аны бул жерде форматтоо муну оңдойт жана дисктегинин баарын өчүрөт.",
   "{drive} · {free} free": "{drive} · {free} бош",

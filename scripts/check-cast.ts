@@ -8,7 +8,7 @@
 import assert from 'node:assert'
 import { readFileSync } from 'node:fs'
 import process from 'node:process'
-import { CAST_PORT, castable, castRoute, castUrl, newCode, subnet } from '../app/utils/cast'
+import { CAST_PORT, castable, castRoute, castUrl, MIRROR_PORT, mirrored, newCode, subnet } from '../app/utils/cast'
 import { ENGINE } from '../app/utils/torrents'
 import './i18n-stub'
 
@@ -100,6 +100,12 @@ assert.equal(
 // …and the port Android watches for "a cast is being served" is the mirror's.
 const mirror = /MIRROR_PORT: u16 = (\d+)/.exec(rust)
 assert.ok(mirror, 'cast.rs must name the mirror port')
+assert.equal(
+  Number(mirror[1]),
+  MIRROR_PORT,
+  'MIRROR_PORT in utils/cast.ts and in cast.rs are the same port — the wrong one here names '
+  + 'the wrong port in the one message that tells somebody what to open',
+)
 assert.ok(
   kotlin.includes(`http://127.0.0.1:${mirror[1]}`),
   'Downloads.kt polls the mirror to know a cast is running — a stale port there means the '
@@ -127,6 +133,26 @@ assert.ok(
   'the code must be blanked before the command reaches the page',
 )
 
+// A film the receiving device cannot fetch is refused while the sender is still
+// on screen to be told. Without this the only complaint appears on a television
+// across the room, and it blames the link rather than the firewall in front of
+// it — which is a bug report nobody can act on.
+assert.ok(
+  /if !reachable\(&command\.url\)\.await \{[\t\v\f\r \xA0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n\s*return StatusCode::BAD_GATEWAY/.test(rust),
+  'the receiver must refuse a film it cannot reach, before the page is sent anywhere',
+)
+assert.ok(
+  rust.indexOf('reachable(&command.url)') < rust.indexOf('state.app.emit'),
+  'and refuse it before emitting, or the player starts anyway and the answer is moot',
+)
+
+// Which of the two answers the sender gives depends on whose film it is: only a
+// URL this device is serving can be blocked by this device's own firewall.
+assert.ok(mirrored(`http://192.168.1.5:${MIRROR_PORT}/torrents/3/stream/0`), 'ours to serve, ours to unblock')
+assert.ok(!mirrored(link), 'a debrid link is not this device\'s firewall to answer for')
+assert.ok(!mirrored('http://192.168.1.5:8096/stream'), 'another server on the LAN is not the mirror')
+assert.ok(!mirrored('/home/someone/a.mkv'), 'not a URL at all')
+
 // A pairing code that travelled in a backup would be a code its reader can cast
 // with, and the remembered target carries one too.
 for (const key of ['castCode', 'castTarget'])
@@ -137,6 +163,16 @@ for (const key of ['castCode', 'castTarget'])
 assert.ok(
   /useLocalStorage\('ventic\.castReceive', false\)/.test(settings),
   'casting to a device is opt-in',
+)
+
+// The remembered device is an object with a `null` default, which is the one
+// default VueUse cannot guess a serializer from — left to guess it writes
+// `String(value)`, so the device came back as the string "[object Object]",
+// `pick` read `undefined` off it, and the dialog threw while rendering
+// `!address.trim()`. Casting worked once per install and never again.
+assert.ok(
+  /castTarget = useLocalStorage<[^>]*>\(\s*'ventic\.castTarget',\s*null,\s*\{ serializer: StorageSerializers\.object \},/.test(settings),
+  'ventic.castTarget must name its serializer — a null default makes VueUse store the device as "[object Object]"',
 )
 
 // The torrent the other device is reading from must not be paused on the way

@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "කථාංග {count}",
   "{count} lines": "පේළි {count}",
   "{count} seeders": "බෙදාහරින්නන් {count}",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "{drive} FAT32 ලෙස ෆෝමැට් කර ඇති අතර, එයට {limit} ට වඩා විශාල තනි ගොනුවක් තබා ගත නොහැක. විශාල නිකුතු මූලාශ්‍ර ලැයිස්තුවේ අඳුරු වී පෙනෙන අතර කිසිදා ස්වයංක්‍රීයව තෝරා නොගැනේ — ඊට වඩා කුඩා සියල්ල සාමාන්‍ය ලෙස ක්‍රියා කරයි.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} සම්බන්ධ කර ඇත, නමුත් එයට කිසිවක් ලිවිය නොහැක — මෙම උපාංගය ධාවකයේ ඇති ආකෘතියට සහාය නොදක්වයි. එය මෙහි ෆෝමැට් කිරීමෙන් එය නිවැරදි වන අතර, ධාවකයේ ඇති සියල්ල මැකේ.",
   "{drive} · {free} free": "{drive} · {free} ඉතිරි",

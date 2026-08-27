@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "Iziqephu ezingu-{count}",
   "{count} lines": "Imigqa engu-{count}",
   "{count} seeders": "Ama-seeder angu-{count}",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "I-{drive} ifomethwe nge-FAT32, engakwazi ukuthwala ifayela elilodwa elidlula u-{limit}. Amareliza amakhulu afiphazwa ohlwini lomthombo futhi awakhethwa ngokuzenzakalela — konke okuncane kusebenza ngokujwayelekile.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "I-{drive} ifakiwe, kodwa akukho okungabhalwa kuyo — le divayisi ayilisekeli ifomethi idrayivu ekuyo. Ukuyifometha lapha kuyakulungisa lokho, futhi kususe konke okukuyo.",
   "{drive} · {free} free": "{drive} · {free} okukhululekile",

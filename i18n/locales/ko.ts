@@ -543,6 +543,8 @@ export default {
   "{count} episodes": "{count}개 에피소드",
   "{count} lines": "{count}줄",
   "{count} seeders": "시더 {count}",
+  "{device} couldn't open that link. It may have expired, or that device may have no connection of its own.": "TODO_TRANSLATION: {device} couldn't open that link. It may have expired, or that device may have no connection of its own.",
+  "{device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.": "TODO_TRANSLATION: {device} couldn't reach this device. A firewall here is blocking port {port} — allow incoming connections on it, then try again.",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.": "{drive}은(는) FAT32로 포맷되어 있어 {limit}을 넘는 단일 파일을 담을 수 없습니다. 그보다 큰 릴리스는 소스 목록에서 흐리게 표시되며 자동으로 선택되지 않습니다 — 더 작은 것은 모두 정상 동작합니다.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive}이(가) 연결되어 있지만 아무것도 기록할 수 없습니다 — 이 기기는 해당 드라이브의 형식을 지원하지 않습니다. 여기서 포맷하면 해결되며, 드라이브의 모든 내용이 지워집니다.",
   "{drive} · {free} free": "{drive} · {free} 남음",

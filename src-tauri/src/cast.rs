@@ -244,6 +244,38 @@ async fn identity(State(state): State<Receiving>) -> Json<Identity> {
 	Json(Identity { app: "ventic", name: state.name })
 }
 
+/// `host:port` out of an http(s) URL — enough to open a socket to, which is all
+/// the probe below needs, and not worth a URL parser for.
+fn authority(url: &str) -> Option<String> {
+	let rest = url.split_once("://")?.1;
+	let host = rest.split(['/', '?', '#']).next().filter(|h| !h.is_empty())?;
+	// An IPv6 literal is bracketed, so its own colons aren't a port.
+	let ported = if host.starts_with('[') { host.contains("]:") } else { host.contains(':') };
+	Some(if ported {
+		host.to_string()
+	} else {
+		format!("{host}:{}", if url.starts_with("https") { 443 } else { 80 })
+	})
+}
+
+/// Can this device actually open a connection to where the film is served?
+///
+/// The one failure the sending device cannot see for itself: 3231 is *inbound*
+/// there, and a desktop firewall drops the request without a word — a TCP
+/// connect is exactly what such a rule blocks, so exactly what tests it. Asked
+/// here, while the sender is still waiting on this POST, so the complaint
+/// arrives on the screen belonging to the machine that has the firewall rather
+/// than on a television across the room (see `sendPlay` in utils/cast.ts).
+async fn reachable(url: &str) -> bool {
+	let Some(authority) = authority(url) else {
+		return true; // nothing to test — let the player report what it finds
+	};
+	matches!(
+		tokio::time::timeout(std::time::Duration::from_secs(3), tokio::net::TcpStream::connect(authority)).await,
+		Ok(Ok(_))
+	)
+}
+
 async fn play(State(state): State<Receiving>, Json(mut command): Json<Play>) -> StatusCode {
 	// A four-digit code read off a television and typed on a phone, over a
 	// network the sender is already on: what matters is that a wrong one is
@@ -253,11 +285,56 @@ async fn play(State(state): State<Receiving>, Json(mut command): Json<Play>) -> 
 	}
 	command.code = String::new();
 
+	// Refuse a film this device can't fetch, rather than showing a spinner and
+	// then blaming the link. Checked before the page is sent anywhere, so the
+	// sending device is still on screen to be told.
+	if !reachable(&command.url).await {
+		return StatusCode::BAD_GATEWAY;
+	}
+
 	match state.app.emit("cast://play", command) {
 		Ok(()) => StatusCode::OK,
 		Err(e) => {
 			eprintln!("[ventic] cast command could not reach the page: {e:#}");
 			StatusCode::INTERNAL_SERVER_ERROR
 		}
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::{authority, reachable};
+
+	/// What the mirror mints, what a debrid link looks like, and the two shapes
+	/// a hand-typed address arrives in.
+	#[test]
+	fn authorities() {
+		assert_eq!(authority("http://192.168.0.191:3231/torrents/13/stream/6").as_deref(), Some("192.168.0.191:3231"));
+		assert_eq!(authority("https://host.example/film.mkv?token=x").as_deref(), Some("host.example:443"));
+		assert_eq!(authority("http://host.example/film.mkv").as_deref(), Some("host.example:80"));
+		// An IPv6 literal's own colons are not a port.
+		assert_eq!(authority("http://[fe80::1]/x").as_deref(), Some("[fe80::1]:80"));
+		assert_eq!(authority("http://[fe80::1]:3231/x").as_deref(), Some("[fe80::1]:3231"));
+		// Nothing to open a socket to: probing is skipped, not failed.
+		assert_eq!(authority("/home/tilko/film.mkv"), None);
+		assert_eq!(authority("http:///x"), None);
+	}
+
+	/// A dropped connection has to read as unreachable and a live one as fine —
+	/// get this backwards and casting either never works or never warns.
+	#[test]
+	fn reachability() {
+		let rt = tokio::runtime::Runtime::new().unwrap();
+		let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+		let port = listener.local_addr().unwrap().port();
+		assert!(rt.block_on(reachable(&format!("http://127.0.0.1:{port}/torrents/1/stream/0"))));
+
+		// The same address with nobody on it. (A closed port refuses rather than
+		// dropping, which is the fast half of what a firewall does slowly.)
+		drop(listener);
+		assert!(!rt.block_on(reachable(&format!("http://127.0.0.1:{port}/torrents/1/stream/0"))));
+
+		// Not a URL: nothing to test, and not a reason to refuse the film.
+		assert!(rt.block_on(reachable("/home/tilko/film.mkv")));
 	}
 }
