@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { mdiAccountCircleOutline, mdiAnimationPlayOutline, mdiBookmarkOutline, mdiCogOutline, mdiFilmstrip, mdiHeartOutline, mdiHistory, mdiHomeOutline, mdiTelevisionClassic, mdiTrayArrowDown } from '@mdi/js'
+import { mdiAccountCircleOutline, mdiAnimationPlayOutline, mdiBookmarkOutline, mdiCogOutline, mdiFilmstrip, mdiHeartOutline, mdiHistory, mdiHomeOutline, mdiTelevisionClassic, mdiTelevisionPlay, mdiTrayArrowDown } from '@mdi/js'
 
 const ui = useUiStore()
 const downloads = useDownloadsStore()
@@ -29,6 +29,10 @@ const links = computed(() => [
   { title: $t('Movies'), icon: mdiFilmstrip, to: localePath('/movies') },
   { title: $t('TV Shows'), icon: mdiTelevisionClassic, to: localePath('/tv') },
   { title: $t('Anime'), icon: mdiAnimationPlayOutline, to: localePath('/anime') },
+  // Listed even with no playlist configured: the page's own empty state is what
+  // says how to fill it, and a feature nobody can see is a feature nobody adds
+  // a playlist for.
+  { title: $t('Live TV'), icon: mdiTelevisionPlay, to: localePath('/live') },
 ])
 
 // "My stuff" — kept apart from the feeds above and the app controls below.

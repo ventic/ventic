@@ -106,6 +106,19 @@ export const useSettingsStore = defineStore('settings', () => {
    */
   const quality = useLocalStorage('ventic.quality', '')
 
+  // --- Live TV ---
+  /**
+   * M3U playlists to read channels from. A separate list from `sources` because
+   * it is a separate thing: a source is a server answering the addon protocol,
+   * a playlist is a text file of channels (see utils/iptv). Ships empty and
+   * stays empty, for the same reason `sources` does.
+   *
+   * These carry credentials — an Xtream playlist URL has the account's password
+   * in its query string — so the key is in `backup.ts`'s SECRET set and never
+   * travels in an export.
+   */
+  const playlists = useLocalStorage<string[]>('ventic.playlists', [])
+
   // --- Film data ---
   /**
    * A TMDB read token of the user's own, used instead of the one the build
@@ -174,5 +187,5 @@ export const useSettingsStore = defineStore('settings', () => {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, quality, tmdbKey, downLimit, upLimit, wifiOnly, downloadDir, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, resetSubs }
+  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, downloadDir, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, resetSubs }
 })

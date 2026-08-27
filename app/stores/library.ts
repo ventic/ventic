@@ -32,6 +32,15 @@ export const useLibraryStore = defineStore('library', () => {
   const favourites = useLocalStorage<Record<string, number>>('ventic.favourites', {})
   const watchlist = useLocalStorage<Record<string, number>>('ventic.watchlist', {})
 
+  /**
+   * Live TV channels you starred, by `channelKey` -> when. Its own map rather
+   * than an entry in `favourites`: everything above is keyed by `titleKey` and
+   * rendered from the `media` snapshot beside it, and a channel has neither —
+   * no TMDB id, no poster, no page. All it needs is to sort to the top of the
+   * Live TV grid.
+   */
+  const favouriteChannels = useLocalStorage<Record<string, number>>('ventic.liveFavourites', {})
+
   // Rewritten only when something visible changed: `record` calls this every
   // couple of seconds, and a fresh object every time would rewrite the whole
   // map to localStorage on each tick.
@@ -233,6 +242,18 @@ export const useLibraryStore = defineStore('library', () => {
     remember(m)
   }
 
+  function isChannelFavourite(name: string) {
+    return channelKey(name) in favouriteChannels.value
+  }
+
+  function toggleChannelFavourite(name: string) {
+    const key = channelKey(name)
+    if (key in favouriteChannels.value)
+      delete favouriteChannels.value[key]
+    else
+      favouriteChannels.value[key] = Date.now()
+  }
+
   const toggleFavourite = (m: Media) => toggle('favourites', m)
   const toggleWatchlist = (m: Media) => toggle('watchlist', m)
 
@@ -242,6 +263,7 @@ export const useLibraryStore = defineStore('library', () => {
     progress.value = {}
     favourites.value = {}
     watchlist.value = {}
+    favouriteChannels.value = {}
   }
 
   return {
@@ -249,6 +271,7 @@ export const useLibraryStore = defineStore('library', () => {
     progress,
     favourites,
     watchlist,
+    favouriteChannels,
     remember,
     resumeRow,
     history,
@@ -271,6 +294,8 @@ export const useLibraryStore = defineStore('library', () => {
     toggleWatched,
     toggleFavourite,
     toggleWatchlist,
+    isChannelFavourite,
+    toggleChannelFavourite,
     clear,
   }
 })

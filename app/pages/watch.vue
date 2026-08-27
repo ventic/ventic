@@ -27,6 +27,12 @@ const fileIndex = computed(() => route.query.file == null ? null : Number(route.
 const magnet = computed(() => String(route.query.magnet ?? ''))
 /** A release the picker resolved to a plain link — played as-is, no engine. */
 const link = computed(() => String(route.query.url ?? ''))
+/**
+ * A live channel. Set by the Live TV page, which is the only thing that knows:
+ * an HLS URL looks the same live or not, and both mpv and ExoPlayer report a
+ * usable duration for one often enough that guessing is worse than being told.
+ */
+const live = computed(() => route.query.live === '1')
 
 /** What this playback is remembered as — no id (a bare magnet) means nothing. */
 const key = computed(() => id.value ? progressKey(type.value, id.value, season.value, episode.value) : '')
@@ -280,6 +286,7 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
         :year="title?.year"
         :season="season"
         :episode="episode"
+        :live="live"
         fullscreen
         @exit="leave"
       >

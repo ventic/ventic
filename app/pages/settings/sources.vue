@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { mdiDeleteOutline, mdiInformationOutline, mdiPlus, mdiPowerPlugOutline } from '@mdi/js'
+import { mdiDeleteOutline, mdiInformationOutline, mdiPlus, mdiPowerPlugOutline, mdiTelevisionPlay } from '@mdi/js'
 import { invoke } from '@tauri-apps/api/core'
 
 /**
@@ -41,6 +41,39 @@ function add() {
 
 function remove(value: string) {
   settings.sources = settings.sources.filter(s => s !== value)
+}
+
+// --- Live TV ------------------------------------------------------------------
+
+/**
+ * A playlist is not a source and is kept apart from one: a source answers the
+ * addon protocol for a title you looked up, a playlist is a file of channels
+ * (see utils/iptv). Same rule though — the app ships with none and names none.
+ */
+const playlist = ref('')
+const playlistError = ref('')
+
+function addPlaylist() {
+  const value = playlist.value.trim()
+  if (!value)
+    return
+  // Only a URL, and only http(s): the fetch goes through Rust, and a `file://`
+  // or `javascript:` here would be asking it to open something else entirely.
+  if (!/^https?:\/\//i.test(value)) {
+    playlistError.value = $t('A playlist is an http:// or https:// link to an M3U file.')
+    return
+  }
+  if (settings.playlists.includes(value)) {
+    playlistError.value = $t('That playlist is already in the list.')
+    return
+  }
+  settings.playlists = [...settings.playlists, value]
+  playlist.value = ''
+  playlistError.value = ''
+}
+
+function removePlaylist(value: string) {
+  settings.playlists = settings.playlists.filter(p => p !== value)
 }
 
 // --- Deep links ---------------------------------------------------------------
@@ -159,6 +192,54 @@ async function toggleStremio(on: boolean | null) {
       <settings-segment v-model="settings.quality" :options="QUALITIES" />
       <p class="text-body-small opacity-70">
         {{ $t('A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.') }}
+      </p>
+    </settings-section>
+
+    <settings-section
+      :title="$t('Live TV')"
+      :hint="$t('Channels come from an M3U playlist — the file every IPTV subscription and every public channel index hands out. Paste its link here and the channels appear under Live TV. An Xtream server counts: its get.php address is an M3U, so paste that.')"
+    >
+      <v-list v-if="settings.playlists.length" bg-color="transparent" class="rounded-lg bg-surface-container/40">
+        <!-- The name, not the URL. An Xtream playlist carries the account's
+             password in its query string, and this list gets read across a
+             room. -->
+        <v-list-item v-for="value in settings.playlists" :key="value" :title="playlistName(value)">
+          <template #append>
+            <v-btn icon size="small" variant="text" color="on-surface" @click="removePlaylist(value)">
+              <v-icon :icon="mdiDeleteOutline" size="20" />
+              <v-tooltip activator="parent" :text="$t('Remove this playlist')" />
+            </v-btn>
+          </template>
+        </v-list-item>
+      </v-list>
+
+      <div v-else class="flex flex-col items-center gap-2 rounded-lg bg-surface-container/40 px-4 py-10 text-center">
+        <v-icon :icon="mdiTelevisionPlay" size="32" class="opacity-40" />
+        <p class="text-body-medium opacity-70">
+          {{ $t('No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.') }}
+        </p>
+      </div>
+
+      <div class="flex items-start gap-2">
+        <v-text-field
+          v-model="playlist"
+          :label="$t('Playlist URL')"
+          placeholder="https://…"
+          variant="solo-filled"
+          density="comfortable"
+          rounded="lg"
+          flat
+          :error-messages="playlistError"
+          @keydown.enter="addPlaylist"
+          @update:model-value="playlistError = ''"
+        />
+        <v-btn :prepend-icon="mdiPlus" variant="tonal" size="large" class="mt-1" @click="addPlaylist">
+          {{ $t('Add') }}
+        </v-btn>
+      </div>
+
+      <p class="text-body-small opacity-70">
+        {{ $t('A playlist link usually contains your account details, so it is kept out of backups. Channels are read once per launch; restart the app to pick up a playlist that has changed.') }}
       </p>
     </settings-section>
 

@@ -178,6 +178,27 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   favourites and the watchlist need no code at all: they are keyed on
   `titleKey`, not on a torrent. Desktop only — mpv opens a path and the
   webview's `<video>` cannot.
+- **Live TV is the same `url` path with a different list in front of it.** A
+  channel is a name and a URL (`app/utils/iptv.ts`), so playing one is
+  `/watch?url=…&live=1` — no engine, no disk, no swarm, and not a line of the
+  player changed beyond a `live` flag that swaps the wall clock for a LIVE dot
+  (the bar is left alone: a live HLS really does have a seekable window, which
+  is a DVR and not a bug). The list is an **M3U playlist**, because that is what
+  both halves of the world speak — a public channel index publishes one, every
+  IPTV subscription hands one out, and an Xtream panel's
+  `get.php?…&type=m3u_plus` *is* an M3U, so pasting that needs no second client
+  and no credentials form. The one thing it cost is a dependency: a playlist
+  host is somebody's panel and sends no `Access-Control-Allow-Origin`, so that
+  fetch goes through `tauri-plugin-http`, where CORS does not apply. The streams
+  never do — mpv and ExoPlayer open the channel URL themselves, which is why
+  `media3-exoplayer-hls` is in the Android gradle file: without it
+  `DefaultMediaSourceFactory` cannot read an `.m3u8`, and every channel fails
+  there and nowhere else. `ventic.playlists` is in `backup.ts`'s `SECRET` set —
+  an Xtream URL carries the account's password — and the Sources line holds
+  here too: no default playlist, no bundled index, no link to one anywhere in
+  the repo. Deliberately absent, each a project rather than a function: EPG
+  (XMLTV) and a guide, catch-up and DVR, and the Xtream JSON API with its VOD
+  library. `bun run check:iptv` holds the parser and those two invisible seams.
 - **The library is local and nothing syncs it.** There is no account, no server
   and no third-party service: `stores/library.ts` writes four localStorage maps
   and `app/utils/backup.ts` is the only way one moves between machines. Trakt

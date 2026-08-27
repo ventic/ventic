@@ -27,7 +27,7 @@ const PREFIX = 'ventic.'
  * sync is gone but the key is still sitting in those installs' storage, so it
  * stays on this list rather than starting to land in backup files.
  */
-const SECRET = new Set([`${PREFIX}trakt`, `${PREFIX}tmdbKey`])
+const SECRET = new Set([`${PREFIX}trakt`, `${PREFIX}tmdbKey`, `${PREFIX}playlists`])
 
 export interface Backup {
   app: 'ventic'

@@ -75,6 +75,13 @@ const props = defineProps<{
   year?: string
   season?: number
   episode?: number
+  /**
+   * A live channel, so a wall clock reading `0:12 / 0:00` is a lie rather than
+   * a measurement. Only the readout changes: the bar itself is left alone,
+   * because a live HLS stream really does have a seekable window and mpv really
+   * will scrub inside it — which is a DVR, not a bug.
+   */
+  live?: boolean
 }>()
 
 /** Leave the player. The page owns where that goes back to — see `leave`. */
@@ -2627,7 +2634,10 @@ defineExpose({ osd })
             />
           </div>
 
-          <span :class="TIME">{{ fmt(position) }} <i class="not-italic opacity-45">/</i> {{ fmt(duration) }}</span>
+          <span v-if="live" class="flex items-center gap-1.5" :class="TIME">
+            <i class="size-2 rounded-full bg-error not-italic" />{{ $t('LIVE') }}
+          </span>
+          <span v-else :class="TIME">{{ fmt(position) }} <i class="not-italic opacity-45">/</i> {{ fmt(duration) }}</span>
 
           <div class="flex-1" />
 

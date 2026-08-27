@@ -31,6 +31,12 @@ serde_json = "1"
 anyhow = "1"
 librqbit-dualstack-sockets = "0.7"
 tauri-plugin-deep-link = "2.4.9"
+# An HTTP client on the Rust side, for exactly one caller: the Live TV playlist
+# fetch (app/utils/iptv.ts). A playlist is served by somebody's IPTV panel, which
+# sends no `Access-Control-Allow-Origin` — and a `tauri://` origin is bound by
+# CORS like any page. Its default features are rustls, which is what the rest of
+# this file already needs for the Android cross-compile.
+tauri-plugin-http = "2"
 
 # Embedding mpv means creating an X11 child window and shaping it (see
 # src/player.rs). x11-dl's build script needs libX11 present, so it can only be
