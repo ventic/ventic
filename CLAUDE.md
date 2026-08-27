@@ -168,6 +168,16 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   swarm: `startTorrent` returns it as `Started.url`, `watch.vue` plays it
   directly, and `pickBest` exempts it from the seeder check and the disk
   budget. Anything that assumes a hash needs a `t.url` branch.
+- **A film the user already owns rides that same `url` path, and nothing scans
+  for it.** `LocalFileButton.vue` opens the OS file picker on a title you have
+  already found and files the path under its progress key (`ventic.local`);
+  `startTorrent`'s `local` option then returns it exactly as it returns a debrid
+  link. That is the whole feature — there is deliberately no folder to configure,
+  no filename parser and no title matcher, because the user did the matching and
+  a scanner is the part that generates the bug reports. Progress, history,
+  favourites and the watchlist need no code at all: they are keyed on
+  `titleKey`, not on a torrent. Desktop only — mpv opens a path and the
+  webview's `<video>` cannot.
 - **The library is local and nothing syncs it.** There is no account, no server
   and no third-party service: `stores/library.ts` writes four localStorage maps
   and `app/utils/backup.ts` is the only way one moves between machines. Trakt

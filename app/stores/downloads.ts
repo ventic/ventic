@@ -72,6 +72,29 @@ export const useDownloadsStore = defineStore('downloads', () => {
     return (key && cached.value[key]) || null
   }
 
+  /**
+   * Films the user already had, keyed the same way: an absolute path they
+   * pointed at under "Local file". Nothing here ever goes looking for one — the
+   * app has no idea what is on the disk until it is told — and nothing prunes
+   * this list either, since the file is theirs and not ours to have an opinion
+   * about. A path that has since moved fails in mpv, which says so.
+   */
+  const local = useLocalStorage<Record<string, string>>('ventic.local', {})
+
+  function localFor(key: string) {
+    return (key && local.value[key]) || ''
+  }
+
+  /** Attach a file to a title, or detach it again with an empty path. */
+  function setLocal(key: string, path: string) {
+    if (!key)
+      return
+    if (path)
+      local.value[key] = path
+    else
+      delete local.value[key]
+  }
+
   /** User's own ceiling on the cache, in bytes. 0 = whatever the disk allows. */
   const cap = useLocalStorage('ventic.storageCap', 0)
 
@@ -138,7 +161,7 @@ export const useDownloadsStore = defineStore('downloads', () => {
     // Both ceilings are on the same quantity — the size of the file we'd fetch —
     // so the tighter one wins and `pickBest` needs to know nothing about drives.
     const maxBytes = Math.min(budget.value, fileLimit.value)
-    const started = await startTorrent({ maxBytes, cached: cachedFor(key), ...options })
+    const started = await startTorrent({ maxBytes, cached: cachedFor(key), local: localFor(key), ...options })
     // A direct link leaves nothing on the disk to come back to, so there is no
     // offline copy to file — and filing an empty hash would shadow a real one.
     if (key && started.hash)
@@ -443,6 +466,8 @@ export const useDownloadsStore = defineStore('downloads', () => {
     release,
     metered,
     cachedFor,
+    localFor,
+    setLocal,
     start,
   }
 })

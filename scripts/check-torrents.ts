@@ -595,6 +595,30 @@ const refound = await startTorrent({ imdbId: 'tt0000001', cached })
 assert.equal(refound.hash, 'bbb')
 assert.ok(requests.some(u => u.startsWith('https://a.example')), 'a copy that is gone is searched for again')
 
+// --- A file the user already had ----------------------------------------------
+// The whole of "play my own films": no folder scan, no filename parsing and no
+// matching, because the path was handed in by someone who had already found the
+// title. From there it is a stream like any other — but one that costs the
+// engine, the sources, the disk budget and TMDB nothing at all.
+
+engine.held = true
+engine.have = 2_000_000_000
+requests = []
+const own = await startTorrent({ imdbId: 'tt0000001', local: '/films/The Searchers (1956).mkv', cached })
+assert.equal(own.url, '/films/The Searchers (1956).mkv')
+assert.equal(own.id, -1)
+assert.equal(own.hash, '', 'nothing lands on disk, so there is no offline copy to file')
+assert.equal(requests.length, 0, 'nothing is searched for, asked of the engine, or looked up')
+
+// Attaching a file is a standing decision about the title; picking a release is
+// a decision about this one play, so that still wins.
+requests = []
+assert.equal(
+  (await startTorrent({ magnet: 'magnet:?xt=urn:btih:bbb', local: '/films/ignored.mkv' })).index,
+  1,
+  'a hand-picked release beats the attached file',
+)
+
 // --- Adopting a download nobody filed under a title ---------------------------
 // A pasted magnet, or anything downloaded before the title had a cached entry,
 // is still the copy that should play — and with no sources it is the only one.

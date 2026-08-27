@@ -31,8 +31,8 @@ const link = computed(() => String(route.query.url ?? ''))
 /** What this playback is remembered as — no id (a bare magnet) means nothing. */
 const key = computed(() => id.value ? progressKey(type.value, id.value, season.value, episode.value) : '')
 
-/** This title has a copy in the engine — one that may well need no network. */
-const downloaded = computed(() => !!downloads.cachedFor(key.value))
+/** This title has a copy on this device — one that needs no network at all. */
+const downloaded = computed(() => !!downloads.cachedFor(key.value) || !!downloads.localFor(key.value))
 
 // TMDB is only asked for the IMDb id (what a source is keyed by) and a title
 // to show while the torrent warms up.

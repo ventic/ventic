@@ -1135,6 +1135,13 @@ const fromEngine = computed(() => props.src.startsWith(ENGINE))
  * minute looking like it's buffering.
  */
 async function waitForStream(url: string, timeoutMs = 60000) {
+  // A file on this disk is either there or it isn't, and there is nothing to
+  // probe it with: a webview cannot `fetch` a path, so the probe would spend
+  // its whole leash failing and then blame a source that was never involved.
+  // mpv opens it and reports what happened, which is the better message anyway.
+  if (!/^https?:/i.test(url))
+    return { ok: true, status: 0 }
+
   const local = url.startsWith(ENGINE)
   const deadline = Date.now() + (local ? timeoutMs : 15000)
   let status = 0

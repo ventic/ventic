@@ -207,6 +207,16 @@ const playLabel = computed(() => [
               >
                 {{ $t('Trailer') }}
               </v-btn>
+              <!-- Beside the other ways to get this playing, rather than in
+                   Settings: it is a fact about this title, not a preference. -->
+              <local-file-button
+                v-if="type === 'movie' || target"
+                :id="id"
+                :type="type"
+                :season="target?.season"
+                :episode="target?.episode"
+                :size="mobile ? 'default' : 'large'"
+              />
               <v-spacer v-if="mobile" />
               <!-- Whole-title mark. For a show that's a manual override — the
                    app can't know every episode has been seen without a season

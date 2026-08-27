@@ -146,7 +146,10 @@ const THIN = 5
 /** Remuxes stream badly on anything but a LAN — a 60 GB movie never keeps up. */
 const MAX_BYTES = 25 * 1024 ** 3
 
-const VIDEO_EXT = /\.(?:mkv|mp4|webm|avi|mov|m4v|ts|m2ts|flv|wmv)$/i
+/** What this app counts as a film — the containers mpv and ExoPlayer both open. */
+export const VIDEO_EXTENSIONS = ['mkv', 'mp4', 'webm', 'avi', 'mov', 'm4v', 'ts', 'm2ts', 'flv', 'wmv']
+
+const VIDEO_EXT = new RegExp(`\\.(?:${VIDEO_EXTENSIONS.join('|')})$`, 'i')
 
 /**
  * Text subtitles only. VobSub (`.sub` + `.idx`) is a pair of files mpv can only
@@ -937,6 +940,13 @@ export async function startTorrent(options: {
   magnet?: string
   /** Ditto, for a release that was a direct link rather than a torrent. */
   url?: string
+  /**
+   * A file on this machine's own disk that the user attached to this title.
+   * Beaten by a hand-picked release, since asking for a specific torrent is a
+   * decision about *this* play; beats everything else, including a copy in the
+   * engine, because it is the copy they said they wanted.
+   */
+  local?: string
   season?: number
   episode?: number
   /** Play exactly this file — the downloads page already knows which one. */
@@ -969,6 +979,12 @@ export async function startTorrent(options: {
   // Nothing to add, nothing to fetch, nothing to keep — the link is the stream.
   if (options.url)
     return { id: -1, index: -1, hash: '', url: options.url, torrent: null }
+
+  // A file the user already had is the same deal minus the network: no engine,
+  // no disk budget, no swarm, and no TMDB round trip on the way in. mpv opens a
+  // path exactly as it opens a URL, so nothing downstream needs to know.
+  if (options.local && !magnet)
+    return { id: -1, index: -1, hash: '', url: options.local, torrent: null }
 
   // A magnet the caller named is a release someone chose by hand, so it beats
   // whatever is already on the disk. Asked before the id lookup below, because

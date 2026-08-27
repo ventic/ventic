@@ -112,6 +112,13 @@ const credits = computed(() => {
                 :episode="episodeNumber"
                 size="large"
               />
+              <local-file-button
+                :id="id"
+                type="tv"
+                :season="seasonNumber"
+                :episode="episodeNumber"
+                size="large"
+              />
               <watched-button
                 :show-id="id"
                 :season="seasonNumber"
