@@ -251,9 +251,11 @@ function leave() {
 }
 
 // preventDefault marks the press as used up, which is how the remote's back key
-// knows it doesn't also have to go back a page (see plugins/dpad.client.ts).
+// knows it doesn't also have to go back a page (see plugins/dpad.client.ts) —
+// and the same file's test for "a dialog owns the screen" is what keeps Escape
+// off the film while the cast dialog is up: that press closes the dialog.
 useEventListener(window, 'keydown', (e: KeyboardEvent) => {
-  if (e.key === 'Escape') {
+  if (e.key === 'Escape' && !document.querySelector('.v-overlay--active:not(.v-tooltip)')) {
     e.preventDefault()
     leave()
   }

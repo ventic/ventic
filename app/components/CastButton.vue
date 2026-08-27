@@ -156,7 +156,9 @@ onBeforeUnmount(() => hunt?.abort())
   </v-btn>
 
   <v-dialog v-model="open" max-width="520">
-    <v-card rounded="xl">
+    <!-- flat: over mpv this card is a hole cut in the video window, and a
+         shadow would be sliced off at its edge (see MpvPlayer's `CUT`). -->
+    <v-card flat rounded="xl">
       <v-card-title class="text-title-medium">
         {{ $t('Play on another device') }}
       </v-card-title>

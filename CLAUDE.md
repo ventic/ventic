@@ -220,10 +220,17 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   player while casting must **not** call `downloads.release()`, which pauses the
   torrent the other device is reading from, and `Downloads.kt` polls port 3231
   so a finished film being cast still counts as work — without it Android
-  freezes the process and the stream stops. `ventic.castCode` and
-  `ventic.castTarget` are in `backup.ts`'s `SECRET` set. LAN only and opt-in;
-  there is no relay, no NAT traversal and no account, for the same reason the
-  library has none.
+  freezes the process and the stream stops. A third seam is nobody's code at
+  all: 3231 is an **inbound** port on the *sending* machine, so a desktop
+  firewall drops the receiver's request and the television blames the link
+  ("could not be reached", from the player's own probe). `ufw` on Arch does
+  exactly that and says nothing, so a cast from a firewalled desktop wants
+  `ufw allow from 192.168.0.0/24 to any port 3231 proto tcp` (and 3232 for that
+  desktop to *receive* one) before any of the above is even reached. Android has
+  no firewall to be caught by, which is why the failure only ever shows up in
+  one direction. `ventic.castCode` and `ventic.castTarget` are in `backup.ts`'s
+  `SECRET` set. LAN only and opt-in; there is no relay, no NAT traversal and no
+  account, for the same reason the library has none.
 - **The library is local and nothing syncs it.** There is no account, no server
   and no third-party service: `stores/library.ts` writes four localStorage maps
   and `app/utils/backup.ts` is the only way one moves between machines. Trakt

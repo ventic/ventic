@@ -1016,11 +1016,12 @@ function viewport(dpr: number) {
 
 /**
  * What has to show through mpv's window. `[data-cut]` is this file's own bars;
- * the second half is a Vuetify tooltip, which teleports to the app root and so
- * would never be found by a search scoped to the player — leaving mpv painting
- * over the only label a bare icon button has.
+ * the second half is every Vuetify overlay — a tooltip, and the cast dialog the
+ * bar opens. Those teleport to the app root, so a search scoped to the player
+ * would never find them and mpv would paint over them: an open dialog that dims
+ * the screen and then shows nothing, which is what it did.
  */
-const CUT = '[data-cut], .v-tooltip > .v-overlay__content'
+const CUT = '[data-cut], .v-overlay--active > .v-overlay__content'
 
 /** Every overlay's rectangle, clipped to the video box and in physical pixels. */
 function cutouts(box: DOMRect, dpr: number): Rect[] {
