@@ -41,6 +41,15 @@ class DownloadService : Service() {
     /** The same engine the frontend talks to — `ENGINE` in app/utils/torrents.ts. */
     const val ENGINE = "http://127.0.0.1:3030"
 
+    /**
+     * The read-only mirror casting serves a film to another device from —
+     * `MIRROR_PORT` in src-tauri/src/cast.rs. It answering at all is the whole
+     * signal: it is opened when a cast starts and closed when it stops, and a
+     * film playing on the television is work this process has to stay awake for
+     * even though nothing here is downloading.
+     */
+    const val MIRROR = "http://127.0.0.1:3231"
+
     /** Roughly the frontend's own poll, which is what the numbers come from. */
     const val EVERY_MS = 3000L
   }
@@ -115,8 +124,15 @@ class DownloadService : Service() {
     }
   }
 
-  /** Active downloads, as the notification wants them. */
-  private class Snapshot(val count: Int, val name: String, val percent: Int, val mibps: Double)
+  /** Active downloads, as the notification wants them — plus whether a cast is
+   *  being served, which is work with no download behind it. */
+  private class Snapshot(
+    val count: Int,
+    val name: String,
+    val percent: Int,
+    val mibps: Double,
+    val casting: Boolean
+  )
 
   private fun poll(): Snapshot? {
     val body = get("$ENGINE/torrents?with_stats=true") ?: return null
@@ -154,11 +170,14 @@ class DownloadService : Service() {
     }
 
     val percent = if (total > 0L) (have * 100 / total).toInt() else 0
-    return Snapshot(count, name, percent, mibps)
+    // A finished film being cast counts for nothing above — it is finished, and
+    // seeding is not worth a wake lock. It is worth one while another device is
+    // reading it: freezing this process is the stream stopping.
+    return Snapshot(count, name, percent, mibps, get("$MIRROR/torrents") != null)
   }
 
   private fun show(state: Snapshot) {
-    if (state.count == 0) {
+    if (state.count == 0 && !state.casting) {
       idle()
       return
     }
@@ -205,15 +224,22 @@ class DownloadService : Service() {
       PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
     val speed = String.format("%.1f MiB/s", state.mibps)
+    val idle = state.count == 0
     return NotificationCompat.Builder(this, CHANNEL)
       .setSmallIcon(android.R.drawable.stat_sys_download)
       .setContentTitle(
-        if (state.count > 1) "Downloading ${state.count} torrents" else state.name.ifEmpty { "Downloading" }
+        when {
+          idle -> "Playing on another device"
+          state.count > 1 -> "Downloading ${state.count} torrents"
+          else -> state.name.ifEmpty { "Downloading" }
+        }
       )
-      .setContentText("${state.percent}% · $speed")
+      .setContentText(
+        if (idle) "Ventic is streaming to it — leave this running" else "${state.percent}% · $speed"
+      )
       // Nothing is known about the size until the metadata is in, and a bar
-      // stuck at zero reads as broken.
-      .setProgress(100, state.percent, state.percent == 0)
+      // stuck at zero reads as broken. A cast has no size at all to report.
+      .setProgress(if (idle) 0 else 100, state.percent, !idle && state.percent == 0)
       .setOngoing(true)
       .setSilent(true)
       .setOnlyAlertOnce(true)

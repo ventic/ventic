@@ -137,6 +137,34 @@ export const useSettingsStore = defineStore('settings', () => {
   /** Android only — no other platform can tell a metered network from a free one. */
   const wifiOnly = useLocalStorage('ventic.wifiOnly', false)
 
+  // --- Casting ---
+  /**
+   * Answer play commands from other Ventics on this network. Off by default and
+   * deliberately: it opens a port, and a television nobody asked to be cast to
+   * is a television anyone on the Wi-Fi can interrupt.
+   */
+  const castReceive = useLocalStorage('ventic.castReceive', false)
+
+  /** What this device is listed as by the one casting to it. */
+  const castName = useLocalStorage('ventic.castName', '')
+
+  /**
+   * The pairing code this device shows and expects. Generated once and kept, so
+   * the phone that has been paired stays paired — `ventic.castCode` is in
+   * `backup.ts`'s SECRET set, since a code that travelled in an export would be
+   * a code the export's reader can cast with.
+   */
+  const castCode = useLocalStorage('ventic.castCode', '')
+
+  /**
+   * The device this one casts to, remembered with the code that was typed for
+   * it so the second cast is one press. Cleared by picking another.
+   *
+   * ponytail: one device. A second television is a re-scan, which is the same
+   * two taps as picking it from a list would have been.
+   */
+  const castTarget = useLocalStorage<{ name: string, address: string, code: string } | null>('ventic.castTarget', null)
+
   // --- Storage ---
   /** Where torrents are written. '' = the app's own cache folder. */
   const downloadDir = useLocalStorage('ventic.downloadDir', '')
@@ -187,5 +215,5 @@ export const useSettingsStore = defineStore('settings', () => {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, downloadDir, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, resetSubs }
+  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, castReceive, castName, castCode, castTarget, downloadDir, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, resetSubs }
 })

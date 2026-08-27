@@ -82,6 +82,12 @@ const props = defineProps<{
    * will scrub inside it — which is a DVR, not a bug.
    */
   live?: boolean
+  /**
+   * Open at this many seconds instead of at whatever this device remembers.
+   * Set only by a cast: the film was being watched on another device, and this
+   * one's library has never seen it (see utils/cast.ts).
+   */
+  startAt?: number
 }>()
 
 /** Leave the player. The page owns where that goes back to — see `leave`. */
@@ -1430,7 +1436,7 @@ async function poll() {
     applyAudio()
     await refreshTracks()
     applyPreferredSub()
-    const saved = props.media ? library.resumeAt(props.media, props.season, props.episode) : 0
+    const saved = props.startAt || (props.media ? library.resumeAt(props.media, props.season, props.episode) : 0)
     if (saved) {
       seekTo(saved)
       osd(`Resumed at ${fmt(saved)}`, 2500)

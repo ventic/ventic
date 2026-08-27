@@ -6675,6 +6675,7 @@ name = "ventic"
 version = "0.4.0"
 dependencies = [
  "anyhow",
+ "axum",
  "libc",
  "libmpv2",
  "libmpv2-sys",

@@ -20,6 +20,7 @@
     "check:types": "vue-tsc --noEmit",
     "check:android-downloads": "bun scripts/check-android-downloads.ts",
     "check:audio": "bun scripts/check-audio.ts",
+    "check:cast": "bun scripts/check-cast.ts",
     "check:boot": "bun scripts/check-boot.ts",
     "check:dpad": "bun scripts/check-dpad.ts",
     "check:library": "bun scripts/check-library.ts",

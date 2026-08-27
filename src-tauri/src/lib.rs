@@ -25,6 +25,9 @@ use librqbit_dualstack_sockets::TcpListener;
 #[cfg_attr(not(any(target_os = "linux", target_os = "windows", target_os = "macos")), path = "player_unsupported.rs")]
 mod player;
 
+/// Playing what this device holds on another Ventic on the same network.
+mod cast;
+
 /// mpv's IPC socket, shared by the two backends that have one.
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 mod player_socket;
@@ -573,6 +576,9 @@ async fn run_torrent_server(
 		}
 	};
 	let api = Api::new(session, None, None);
+	// Casting puts a second, read-only HTTP server in front of this same session
+	// (see cast.rs). Handed over here because this is the only place with one.
+	cast::set_engine(api.clone());
 
 	let addr: std::net::SocketAddr = TORRENT_API_ADDR.parse()?;
 	// On a dev hot-restart the previous process can still hold the port for a
@@ -671,7 +677,11 @@ pub fn run() {
 			thumbnail,
 			deep_link_fix_handler,
 			disk_space,
-			can_self_update
+			can_self_update,
+			cast::cast_address,
+			cast::cast_sharing,
+			cast::cast_share,
+			cast::cast_receive
 		])
 		.setup(|app| {
 			// The installers write the scheme association (registry keys on

@@ -199,6 +199,31 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   the repo. Deliberately absent, each a project rather than a function: EPG
   (XMLTV) and a guide, catch-up and DVR, and the Xtream JSON API with its VOD
   library. `bun run check:iptv` holds the parser and those two invisible seams.
+- **Casting is the `url` path pointed sideways.** "Play this on the TV" sends a
+  *URL*, never a torrent, so the receiving device plays it exactly as it plays a
+  debrid link or a live channel — `?url=` in `watch.vue`, not a line of the
+  player changed — and the film is not fetched twice, which is the whole point
+  on a box with 8 GB of storage. Where those bytes come from is `cast_share` in
+  `src-tauri/src/cast.rs`: a **second, read-only** librqbit HTTP API on
+  `0.0.0.0:3231` over the same session. The real API stays on `127.0.0.1:3030` —
+  it can add and delete torrents, and `read_only: true` is what makes the LAN
+  copy safe to expose at all. `cast_share` is `async` for one reason and it is
+  not that it awaits: a dualstack listener registers with tokio's reactor as it
+  binds and *panics* without one, and tauri runs a sync command on the main
+  thread. The receiver (`cast_receive`, port 3232) is a two-route axum server —
+  axum was already compiled, it is librqbit's own — guarded by a four-digit code
+  the receiving screen shows, because a television anyone on the Wi-Fi can
+  interrupt is not one anybody wants. Discovery is a /24 sweep from TypeScript
+  through `tauri-plugin-http` (no mDNS, no multicast, and the address field is
+  the fallback), and the whole sending half lives in `app/utils/cast.ts` where
+  `bun run check:cast` can reach it. Two seams no compiler sees: leaving the
+  player while casting must **not** call `downloads.release()`, which pauses the
+  torrent the other device is reading from, and `Downloads.kt` polls port 3231
+  so a finished film being cast still counts as work — without it Android
+  freezes the process and the stream stops. `ventic.castCode` and
+  `ventic.castTarget` are in `backup.ts`'s `SECRET` set. LAN only and opt-in;
+  there is no relay, no NAT traversal and no account, for the same reason the
+  library has none.
 - **The library is local and nothing syncs it.** There is no account, no server
   and no third-party service: `stores/library.ts` writes four localStorage maps
   and `app/utils/backup.ts` is the only way one moves between machines. Trakt
