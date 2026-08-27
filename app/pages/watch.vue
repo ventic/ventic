@@ -1,13 +1,17 @@
 <script lang="ts" setup>
+import type MpvPlayer from '~/components/MpvPlayer.vue'
+import type { CastDevice } from '~/utils/cast'
 import type { MediaType } from '~/utils/tmdb'
 import type { Release } from '~/utils/torrents'
 import {
   mdiAccountGroup,
   mdiAlertCircleOutline,
   mdiArrowLeft,
+  mdiCastConnected,
   mdiDownload,
   mdiPowerPlugOutline,
   mdiReload,
+  mdiStop,
 } from '@mdi/js'
 
 // The player owns the whole window: no app bar, no drawer, no page scroll.
@@ -17,6 +21,7 @@ const route = useRoute()
 const router = useRouter()
 const downloads = useDownloadsStore()
 const library = useLibraryStore()
+const settings = useSettingsStore()
 
 const type = computed<MediaType>(() => route.query.type === 'tv' ? 'tv' : 'movie')
 const id = computed(() => String(route.query.id ?? ''))
@@ -33,6 +38,13 @@ const link = computed(() => String(route.query.url ?? ''))
  * usable duration for one often enough that guessing is worse than being told.
  */
 const live = computed(() => route.query.live === '1')
+
+/**
+ * Seconds to open at, overriding whatever this device remembers. Only a cast
+ * sets it: the film was being watched somewhere else, and this device's own
+ * library has never heard of it (see plugins/cast.client.ts).
+ */
+const startAt = computed(() => Number(route.query.t) || 0)
 
 /** What this playback is remembered as — no id (a bare magnet) means nothing. */
 const key = computed(() => id.value ? progressKey(type.value, id.value, season.value, episode.value) : '')
@@ -127,9 +139,68 @@ watch(
 // Leaving the player stops the download and hands the connection back to
 // whatever was paused for it. Every exit route unmounts — Esc, Back, the browser
 // history, switching to another title — so this is the one place it belongs.
+// ---------------------------------------------------------------------------
+// Casting — this film, playing on another device on the network
+// ---------------------------------------------------------------------------
+
+/** Where this film was handed to, for as long as it is playing there. */
+const castTo = ref<CastDevice | null>(null)
+
+/** The live player, for the one thing only it knows: where playback is now. */
+const player = useTemplateRef<InstanceType<typeof MpvPlayer>>('player')
+
+/**
+ * Everything the other device needs but the URL, which CastButton builds.
+ *
+ * A function rather than a computed, and the position comes off the player
+ * rather than out of the library: the stored resume point is only written when
+ * playback pauses or stops, and `resumeAt` discards anything under a minute
+ * besides — so a film cast twenty minutes in, having never been paused, handed
+ * over a zero and started the television from the top. Read at the moment the
+ * button is pressed, the answer is simply the second on screen.
+ */
+function castPlay() {
+  return {
+    kind: type.value,
+    id: id.value,
+    season: season.value,
+    episode: episode.value,
+    title: title.value?.title ?? String(route.query.title ?? ''),
+    position: player.value?.position ?? 0,
+  }
+}
+
+function handOver(device: CastDevice) {
+  castTo.value = device
+  // Two players pulling the same torrent for the same film is the one thing
+  // that would make the cast worse than not casting.
+  generation++
+  src.value = ''
+}
+
+/**
+ * Stop serving the film to the network and let the download go back to normal.
+ * `release` is the one `onBeforeUnmount` deliberately skipped while a cast was
+ * running: it pauses the torrent, and the torrent is what the other device is
+ * reading from.
+ */
+async function stopCasting() {
+  // The other device first, while it still has something to read: stopping the
+  // mirror underneath it would leave the film up until the buffer ran dry and
+  // then look like the network failing. `settings.castTarget` rather than
+  // `castTo`, so this is the same call Settings makes — see `stopCast`.
+  await stopCast(settings.castTarget)
+  castTo.value = null
+  await downloads.release()
+  leave()
+}
+
 onBeforeUnmount(() => {
   generation++
-  downloads.release()
+  // Not while casting: another device is streaming this torrent from here, and
+  // `release` pauses it. Stopping the cast is what hands it back.
+  if (!castTo.value)
+    downloads.release()
 })
 
 // A magnet, a link and a copy on disk all need no TMDB, so a failed lookup is
@@ -197,9 +268,11 @@ function leave() {
 }
 
 // preventDefault marks the press as used up, which is how the remote's back key
-// knows it doesn't also have to go back a page (see plugins/dpad.client.ts).
+// knows it doesn't also have to go back a page (see plugins/dpad.client.ts) —
+// and the same file's test for "a dialog owns the screen" is what keeps Escape
+// off the film while the cast dialog is up: that press closes the dialog.
 useEventListener(window, 'keydown', (e: KeyboardEvent) => {
-  if (e.key === 'Escape') {
+  if (e.key === 'Escape' && !document.querySelector('.v-overlay--active:not(.v-tooltip)')) {
     e.preventDefault()
     leave()
   }
@@ -219,7 +292,24 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
         >
 
         <div class="relative flex max-w-xl flex-col items-center gap-3 px-6 text-center">
-          <template v-if="failure">
+          <!-- Handed over. This device keeps the torrent alive and serves it;
+               there is nothing else for it to do until the cast is stopped. -->
+          <template v-if="castTo">
+            <v-icon :icon="mdiCastConnected" color="primary" size="40" />
+            <div class="text-title-large">
+              {{ $t('Playing on {device}', { device: castTo.name }) }}
+            </div>
+            <p class="text-body-medium opacity-70">
+              {{ $t('This device is streaming the film to it. Leave Ventic running until you\'re done — closing it stops the stream.') }}
+            </p>
+            <div class="mt-2 flex gap-2">
+              <v-btn variant="tonal" :prepend-icon="mdiStop" @click="stopCasting">
+                {{ $t('Stop casting') }}
+              </v-btn>
+            </div>
+          </template>
+
+          <template v-else-if="failure">
             <v-icon :icon="mdiAlertCircleOutline" color="error" size="40" />
             <div class="text-title-large">
               {{ $t('Nothing to play') }}
@@ -276,6 +366,7 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
       <!-- :key so picking a different file/torrent gets a fresh mpv process. -->
       <mpv-player
         v-else
+        ref="player"
         :key="src"
         :src="src"
         :status="statusLine"
@@ -287,6 +378,7 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
         :season="season"
         :episode="episode"
         :live="live"
+        :start-at="startAt"
         fullscreen
         @exit="leave"
       >
@@ -294,6 +386,7 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
           <v-btn icon variant="text" density="comfortable" :title="$t('Back (Esc)')" @click="leave">
             <v-icon :icon="mdiArrowLeft" />
           </v-btn>
+          <cast-button :src="src" :play="castPlay" @casting="handOver" />
         </template>
 
         <template #info>

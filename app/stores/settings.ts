@@ -12,6 +12,7 @@ import {
   mdiTuneVariant,
   mdiWifi,
 } from '@mdi/js'
+import { StorageSerializers } from '@vueuse/core'
 import { DEFAULT_SOURCE } from '~/theme/presets'
 
 export type SectionKey = 'appearance' | 'language' | 'sources' | 'subtitles' | 'audio' | 'network' | 'storage' | 'account' | 'support' | 'about'
@@ -137,6 +138,45 @@ export const useSettingsStore = defineStore('settings', () => {
   /** Android only — no other platform can tell a metered network from a free one. */
   const wifiOnly = useLocalStorage('ventic.wifiOnly', false)
 
+  // --- Casting ---
+  /**
+   * Answer play commands from other Ventics on this network. Off by default and
+   * deliberately: it opens a port, and a television nobody asked to be cast to
+   * is a television anyone on the Wi-Fi can interrupt.
+   */
+  const castReceive = useLocalStorage('ventic.castReceive', false)
+
+  /** What this device is listed as by the one casting to it. */
+  const castName = useLocalStorage('ventic.castName', '')
+
+  /**
+   * The pairing code this device shows and expects. Generated once and kept, so
+   * the phone that has been paired stays paired — `ventic.castCode` is in
+   * `backup.ts`'s SECRET set, since a code that travelled in an export would be
+   * a code the export's reader can cast with.
+   */
+  const castCode = useLocalStorage('ventic.castCode', '')
+
+  /**
+   * The device this one casts to, remembered with the code that was typed for
+   * it so the second cast is one press. Cleared by picking another.
+   *
+   * ponytail: one device. A second television is a re-scan, which is the same
+   * two taps as picking it from a list would have been.
+   *
+   * The serializer is spelled out because the default is `null`, and that is the
+   * one default VueUse cannot read a type from: it falls back to `String(value)`,
+   * which stored the device as the literal "[object Object]". It came back as
+   * that string, `pick` read an `address` off it and got `undefined`, and the
+   * dialog's own `!address.trim()` threw while rendering — so casting worked
+   * exactly once per install and then the dialog never opened again.
+   */
+  const castTarget = useLocalStorage<{ name: string, address: string, code: string } | null>(
+    'ventic.castTarget',
+    null,
+    { serializer: StorageSerializers.object },
+  )
+
   // --- Storage ---
   /** Where torrents are written. '' = the app's own cache folder. */
   const downloadDir = useLocalStorage('ventic.downloadDir', '')
@@ -187,5 +227,5 @@ export const useSettingsStore = defineStore('settings', () => {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, downloadDir, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, resetSubs }
+  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, castReceive, castName, castCode, castTarget, downloadDir, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, resetSubs }
 })

@@ -199,6 +199,52 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   the repo. Deliberately absent, each a project rather than a function: EPG
   (XMLTV) and a guide, catch-up and DVR, and the Xtream JSON API with its VOD
   library. `bun run check:iptv` holds the parser and those two invisible seams.
+- **Casting is the `url` path pointed sideways.** "Play this on the TV" sends a
+  *URL*, never a torrent, so the receiving device plays it exactly as it plays a
+  debrid link or a live channel — `?url=` in `watch.vue`, not a line of the
+  player changed — and the film is not fetched twice, which is the whole point
+  on a box with 8 GB of storage. Where those bytes come from is `cast_share` in
+  `src-tauri/src/cast.rs`: a **second, read-only** librqbit HTTP API on
+  `0.0.0.0:3231` over the same session. The real API stays on `127.0.0.1:3030` —
+  it can add and delete torrents, and `read_only: true` is what makes the LAN
+  copy safe to expose at all. `cast_share` is `async` for one reason and it is
+  not that it awaits: a dualstack listener registers with tokio's reactor as it
+  binds and *panics* without one, and tauri runs a sync command on the main
+  thread. The receiver (`cast_receive`, port 3232) is a two-route axum server —
+  axum was already compiled, it is librqbit's own — guarded by a four-digit code
+  the receiving screen shows, because a television anyone on the Wi-Fi can
+  interrupt is not one anybody wants. Discovery is a /24 sweep from TypeScript
+  through `tauri-plugin-http` (no mDNS, no multicast, and the address field is
+  the fallback), and the whole sending half lives in `app/utils/cast.ts` where
+  `bun run check:cast` can reach it. Two seams no compiler sees: leaving the
+  player while casting must **not** call `downloads.release()`, which pauses the
+  torrent the other device is reading from, and `Downloads.kt` polls port 3231
+  so a finished film being cast still counts as work — without it Android
+  freezes the process and the stream stops. A third seam is nobody's code
+  at all: 3231 is an **inbound** port on the *sending* machine, and a desktop
+  firewall drops the receiver's request without a word — Windows and macOS ask
+  at bind time, Linux just drops it. That is what `reachable` in cast.rs is for:
+  the receiver opens a TCP connection to the film's own URL before it emits
+  anything and answers **502** when it can't, so the complaint lands in the cast
+  dialog on the machine that has the firewall, naming the port, instead of on a
+  television across the room blaming a link that was never the problem. Nothing
+  here opens that port and nothing should — but `cast_firewall_hint` writes the
+  line out (`sudo ufw allow from <this subnet> to any port 3231 proto tcp`, or
+  the rich-rule equivalent where `firewall-cmd` is installed) and the dialog
+  shows it with a copy button, because a rule nobody can remember the syntax of
+  is a rule nobody adds. Running it stays the user's to do, and 3232 is the one
+  to open for that desktop to *receive* a cast. That hint is Linux's alone:
+  Windows and macOS put a dialog up at bind time, and Android has no firewall to
+  be caught by — which is also why casting only ever fails in one direction.
+  Stopping is its own route (`POST /ventic/stop`, `cast://stop`) rather than a
+  flag on a play: the mirror goes down a moment after Stop is pressed, so a
+  receiver that never heard it plays on until the buffer runs dry and then
+  blames the network. And the position handed over comes off the **player**, not
+  `library.resumeAt` — the stored resume point is only written on a pause or on
+  the way out, and is thrown away under a minute, so a film cast twenty minutes
+  in and never paused started the television from the top. `ventic.castCode` and `ventic.castTarget` are in `backup.ts`'s
+  `SECRET` set. LAN only and opt-in; there is no relay, no NAT traversal and no
+  account, for the same reason the library has none.
 - **The library is local and nothing syncs it.** There is no account, no server
   and no third-party service: `stores/library.ts` writes four localStorage maps
   and `app/utils/backup.ts` is the only way one moves between machines. Trakt

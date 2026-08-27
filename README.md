@@ -196,6 +196,7 @@ One component, one set of controls, three backends underneath.
 | **Volume levelling** | Quiet dialogue up, loud scenes down, in four steps — plus a dialogue boost that raises the centre channel of a 5.1 mix and nothing else. Set a default under Settings, or change the film you're watching from the player's Audio panel, which remembers that title alone |
 | **Auto-sync** | A file cut for another release is slid onto the audio's silence map (desktop only — it needs ffmpeg, which Windows bundles) |
 | **Resume** | Progress recorded as it plays, per episode, and picked back up from the card or the detail page |
+| **Casting** | Hand the film to another Ventic on the same network — it streams from the device that already has it, resuming where you were, so nothing is downloaded twice. Devices are found by sweeping the subnet; acting on a cast needs the pairing code the receiving device shows. LAN only, off until switched on under Settings → Network, and no account or server anywhere in it |
 | **Fullscreen** | Held for as long as the player is mounted; Android goes landscape and immersive |
 
 The native mpv surface paints *above* the webview, so the controls can't just be stacked over it

@@ -37,6 +37,10 @@ tauri-plugin-deep-link = "2.4.9"
 # CORS like any page. Its default features are rustls, which is what the rest of
 # this file already needs for the Android cross-compile.
 tauri-plugin-http = "2"
+# Already compiled: librqbit's own HTTP API is axum. Named here for `src/cast.rs`,
+# which puts a second (read only) HTTP server in front of the same engine, and
+# one small endpoint beside it for the play command.
+axum = "0.8"
 
 # Embedding mpv means creating an X11 child window and shaping it (see
 # src/player.rs). x11-dl's build script needs libX11 present, so it can only be

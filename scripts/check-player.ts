@@ -269,16 +269,24 @@ assert.equal(nearestFrame(frames, 900, 60), null, 'an empty is not a stand-in')
 assert.equal(nearestFrame(frames, 890, 60), null)
 assert.equal(nearestFrame(new Map(), 0, 60), null, 'an empty cache answers nothing')
 
-// The bar's tooltips are the one overlay this repo doesn't own the markup of:
-// Vuetify teleports them out of the player, so MpvPlayer's cutout selector has
-// to name Vuetify's own classes to get them punched out of mpv's window. A
-// rename upstream would break that silently, and only on X11 and Win32 — the
-// two targets a browser check can't see.
+// The bar's tooltips and the cast dialog are the overlays this repo doesn't own
+// the markup of: Vuetify teleports them out of the player, so MpvPlayer's cutout
+// selector has to name Vuetify's own classes to get them punched out of mpv's
+// window. A rename upstream would break that silently, and only on X11 and
+// Win32 — the two targets a browser check can't see. It is not a small failure:
+// an uncut dialog is one that dims the screen and then shows nothing.
+const overlay = await Bun.file('node_modules/vuetify/lib/components/VOverlay/VOverlay.js').text()
+assert.match(overlay, /'v-overlay--active': isActive/, 'vuetify still marks an open overlay the way the tracker looks for it')
 const tooltipCss = await Bun.file('node_modules/vuetify/lib/components/VTooltip/VTooltip.sass').text()
-assert.match(tooltipCss, /\.v-tooltip\n\s+> \.v-overlay__content/, 'vuetify still nests tooltip content the way the tracker looks for it')
+assert.match(tooltipCss, /\.v-tooltip\n\s+> \.v-overlay__content/, 'and still nests the content one level inside it')
 const mpv = await Bun.file('app/components/MpvPlayer.vue').text()
-assert.match(mpv, /const CUT = '\[data-cut\], \.v-tooltip > \.v-overlay__content'/, 'and the tracker still looks for it')
-assert.ok(!mpv.includes('rootEl.value?.querySelectorAll'), 'scoped to the player, a teleported tooltip is never found')
+assert.match(mpv, /const CUT = '\[data-cut\], \.v-overlay--active > \.v-overlay__content'/, 'and the tracker still looks for both')
+assert.ok(!mpv.includes('rootEl.value?.querySelectorAll'), 'scoped to the player, a teleported overlay is never found')
+
+// The other half of the same seam: Escape closes that dialog, and the player's
+// page must not take the press as "leave the film" while one is up.
+const watch = await Bun.file('app/pages/watch.vue').text()
+assert.match(watch, /Escape' && !document\.querySelector\('\.v-overlay--active/, 'Escape closes an open dialog before it leaves playback')
 
 // eslint-disable-next-line no-console
 console.log('player: ok')

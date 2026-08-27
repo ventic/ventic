@@ -82,6 +82,12 @@ const props = defineProps<{
    * will scrub inside it — which is a DVR, not a bug.
    */
   live?: boolean
+  /**
+   * Open at this many seconds instead of at whatever this device remembers.
+   * Set only by a cast: the film was being watched on another device, and this
+   * one's library has never seen it (see utils/cast.ts).
+   */
+  startAt?: number
 }>()
 
 /** Leave the player. The page owns where that goes back to — see `leave`. */
@@ -1010,11 +1016,12 @@ function viewport(dpr: number) {
 
 /**
  * What has to show through mpv's window. `[data-cut]` is this file's own bars;
- * the second half is a Vuetify tooltip, which teleports to the app root and so
- * would never be found by a search scoped to the player — leaving mpv painting
- * over the only label a bare icon button has.
+ * the second half is every Vuetify overlay — a tooltip, and the cast dialog the
+ * bar opens. Those teleport to the app root, so a search scoped to the player
+ * would never find them and mpv would paint over them: an open dialog that dims
+ * the screen and then shows nothing, which is what it did.
  */
-const CUT = '[data-cut], .v-tooltip > .v-overlay__content'
+const CUT = '[data-cut], .v-overlay--active > .v-overlay__content'
 
 /** Every overlay's rectangle, clipped to the video box and in physical pixels. */
 function cutouts(box: DOMRect, dpr: number): Rect[] {
@@ -1430,7 +1437,7 @@ async function poll() {
     applyAudio()
     await refreshTracks()
     applyPreferredSub()
-    const saved = props.media ? library.resumeAt(props.media, props.season, props.episode) : 0
+    const saved = props.startAt || (props.media ? library.resumeAt(props.media, props.season, props.episode) : 0)
     if (saved) {
       seekTo(saved)
       osd(`Resumed at ${fmt(saved)}`, 2500)
@@ -2103,7 +2110,17 @@ function fmt(s: number) {
 
 const remaining = computed(() => duration.value ? `-${fmt((duration.value - position.value) / speed.value)}` : '')
 
-defineExpose({ osd })
+/**
+ * `position` is for the one caller that can't wait for the library: casting
+ * (see pages/watch.vue). The stored resume point is written on a pause and on
+ * the way out, and `resumeAt` discards anything under a minute besides — both
+ * right for picking a film back up, both wrong for handing one over, where the
+ * answer is simply the second on screen.
+ *
+ * One call, because a second `defineExpose` replaces this one rather than
+ * adding to it.
+ */
+defineExpose({ osd, position: readonly(position) })
 </script>
 
 <template>
