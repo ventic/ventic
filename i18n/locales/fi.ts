@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Näkyy toisessa laitteessa kohdassa Asetukset → Verkko.",
   "Size": "Koko",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Oranssilla merkityt koot maksavat enemmän kaistaa kuin kuva on arvoinen.",
+  "Skip this version": "Ohita tämä versio",
   "Smallest": "Pienin",
   "Sort by": "Järjestä",
   "Source URL": "Lähteen URL",

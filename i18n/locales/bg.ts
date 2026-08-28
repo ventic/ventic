@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Показва се на другото устройство, в Настройки → Мрежа.",
   "Size": "Размер",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Размерите в оранжево струват повече трафик, отколкото картината си заслужава.",
+  "Skip this version": "Пропускане на тази версия",
   "Smallest": "Най-малко",
   "Sort by": "Подреди по",
   "Source URL": "URL на източника",

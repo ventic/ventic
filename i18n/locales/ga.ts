@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Taispeántar ar an ngléas eile é, faoi Socruithe → Líonra.",
   "Size": "Méid",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Cosnaíonn na méideanna oráiste níos mó bandaleithid ná mar is fiú an pictiúr.",
+  "Skip this version": "Scipeáil an leagan seo",
   "Smallest": "Is lú",
   "Sort by": "Sórtáil de réir",
   "Source URL": "URL na foinse",

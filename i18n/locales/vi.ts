@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Hiển thị trên thiết bị kia, trong Cài đặt → Mạng.",
   "Size": "Kích thước",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Những kích thước màu hổ phách tốn băng thông hơn giá trị hình ảnh mang lại.",
+  "Skip this version": "Bỏ qua phiên bản này",
   "Smallest": "Nhỏ nhất",
   "Sort by": "Sắp xếp theo",
   "Source URL": "URL nguồn",

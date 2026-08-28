@@ -7,6 +7,7 @@ import { contrast, fromHue, hueOf, luminance, mix, scheme, toRgb } from '../app/
 import { PRESET_LIST, PRESETS } from '../app/theme/presets'
 import { paintedTheme, themes } from '../app/theme/themes'
 import { backdropFor } from '../app/utils/tmdb'
+import vuetifyConfig from '../vuetify.config'
 
 assert.deepEqual(toRgb('#ffffff'), [255, 255, 255])
 assert.deepEqual(toRgb('fff'), [255, 255, 255], 'short form, and the hash is optional')
@@ -176,5 +177,15 @@ for (const [name, { backdrop }] of PRESET_LIST) {
   if (backdrop.blur !== undefined)
     assert.ok(backdrop.blur >= 0 && backdrop.blur <= 80, `${name}'s blur is outside what the slider can undo`)
 }
+
+// The one contrast pair no palette can fix, because it isn't a palette: a
+// button builds its own spinner and passes it no colour, meaning inherit, and
+// an unqualified `VProgressCircular` default overrides that. Left alone, every
+// filled primary button spun primary on primary — a label in on-primary and,
+// the moment it started working, nothing anyone could see. `currentColor` is
+// what hands the inherit back; `undefined` cannot be used, because
+// vuetify-nuxt-module serialises the config and drops the key.
+const btn = vuetifyConfig.defaults.VBtn as { VProgressCircular?: { color?: string } }
+assert.equal(btn.VProgressCircular?.color, 'currentColor', 'a button\'s loading spinner inherits its label colour')
 
 console.log('check-theme: ok')

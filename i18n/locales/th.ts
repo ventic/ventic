@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "แสดงอยู่บนอุปกรณ์อีกเครื่อง ใต้ การตั้งค่า → เครือข่าย",
   "Size": "ขนาด",
   "Sizes in amber cost more bandwidth than the picture is worth.": "ขนาดที่เป็นสีเหลืองอำพันใช้แบนด์วิดท์มากเกินกว่าคุณภาพของภาพที่ได้",
+  "Skip this version": "ข้ามเวอร์ชันนี้",
   "Smallest": "เล็กที่สุด",
   "Sort by": "เรียงตาม",
   "Source URL": "URL ของแหล่ง",

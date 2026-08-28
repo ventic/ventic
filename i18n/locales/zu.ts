@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Kuboniswa kwenye idivayisi, ngaphansi kwe-Izilungiselelo → Inethiwekhi.",
   "Size": "Usayizi",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Osayizi abamibalabala esikhunta badla i-bandwidth eyeqile kunaleyo isithombe esiyifanele.",
+  "Skip this version": "Yeqa le nguqulo",
   "Smallest": "Omncane kunabo bonke",
   "Sort by": "Hlela nge",
   "Source URL": "I-URL yomthombo",

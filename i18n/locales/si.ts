@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "අනෙක් උපාංගයේ, සැකසුම් → ජාලය යටතේ පෙන්වයි.",
   "Size": "ප්‍රමාණය",
   "Sizes in amber cost more bandwidth than the picture is worth.": "තැඹිලි පැහැති ප්‍රමාණ රූපයේ වටිනාකමට වඩා වැඩි කලාප පළල වැය කරයි.",
+  "Skip this version": "මෙම අනුවාදය මඟහරින්න",
   "Smallest": "කුඩාම",
   "Sort by": "මෙයට අනුව පෙළගස්වන්න",
   "Source URL": "මූලාශ්‍රයේ URL",

@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Kuvatakse teises seadmes, jaotises Seaded → Võrk.",
   "Size": "Suurus",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Oranžiga märgitud suurused kulutavad rohkem andmesidet, kui pilt väärt on.",
+  "Skip this version": "Jäta see versioon vahele",
   "Smallest": "Väikseim",
   "Sort by": "Sorteeri",
   "Source URL": "Allika URL",

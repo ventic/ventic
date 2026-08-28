@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "மற்றச் சாதனத்தில், அமைப்புகள் → பிணையம் என்பதில் காட்டப்படுகிறது.",
   "Size": "அளவு",
   "Sizes in amber cost more bandwidth than the picture is worth.": "மஞ்சள் நிற அளவுகள், படம் தரும் பயனைவிட அதிக அலைவரிசையைச் செலவிடுகின்றன.",
+  "Skip this version": "இந்தப் பதிப்பைத் தவிர்",
   "Smallest": "மிகச் சிறியது",
   "Sort by": "இதன்படி வரிசைப்படுத்து",
   "Source URL": "மூல URL",

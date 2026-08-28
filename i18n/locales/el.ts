@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Εμφανίζεται στην άλλη συσκευή, στις Ρυθμίσεις → Δίκτυο.",
   "Size": "Μέγεθος",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Τα μεγέθη με πορτοκαλί κοστίζουν περισσότερο εύρος ζώνης απ' όσο αξίζει η εικόνα.",
+  "Skip this version": "Παράλειψη αυτής της έκδοσης",
   "Smallest": "Μικρότερο",
   "Sort by": "Ταξινόμηση κατά",
   "Source URL": "URL πηγής",

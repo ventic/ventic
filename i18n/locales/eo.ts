@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Montrata sur la alia aparato, sub Agordoj → Reto.",
   "Size": "Grandeco",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Grandecoj en oranĝa kostas pli da retkapacito ol la bildo valoras.",
+  "Skip this version": "Preterlasi ĉi tiun version",
   "Smallest": "Plej malgranda",
   "Sort by": "Ordigi laŭ",
   "Source URL": "Fonta URL",

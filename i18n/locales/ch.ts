@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Ma na'annok gi otro device, gi papa' Settings → Network.",
   "Size": "Medida",
   "Sizes in amber cost more bandwidth than the picture is worth.": "I medida siha gi kulot amariyu mås ma gasta i bandwidth ki bali i litratu.",
+  "Skip this version": "Sotta este na bettsion",
   "Smallest": "Mås dikike'",
   "Sort by": "Ordena ni",
   "Source URL": "URL i source",

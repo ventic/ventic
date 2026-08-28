@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Rodoma kitame įrenginyje, skiltyje Nustatymai → Tinklas.",
   "Size": "Dydis",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Oranžine spalva pažymėti dydžiai kainuoja daugiau duomenų, nei vertas vaizdas.",
+  "Skip this version": "Praleisti šią versiją",
   "Smallest": "Mažiausias",
   "Sort by": "Rikiuoti pagal",
   "Source URL": "Šaltinio URL",

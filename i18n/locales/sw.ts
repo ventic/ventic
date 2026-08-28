@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Huonyeshwa kwenye kifaa kingine, chini ya Mipangilio → Mtandao.",
   "Size": "Ukubwa",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Ukubwa ulio kwenye rangi ya manjano hutumia data zaidi kuliko picha inavyostahili.",
+  "Skip this version": "Ruka toleo hili",
   "Smallest": "Ndogo zaidi",
   "Sort by": "Panga kwa",
   "Source URL": "URL ya chanzo",

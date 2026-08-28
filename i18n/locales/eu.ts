@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Beste gailuan erakusten da, Ezarpenak → Sarea atalean.",
   "Size": "Tamaina",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Laranjaz dauden tamainek irudiak balio duena baino banda-zabalera gehiago kontsumitzen dute.",
+  "Skip this version": "Saltatu bertsio hau",
   "Smallest": "Txikiena",
   "Sort by": "Ordenatu honela",
   "Source URL": "Iturburuaren URLa",

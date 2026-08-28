@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Ditampilkan di perangkat lain, di Pengaturan → Jaringan.",
   "Size": "Ukuran",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Ukuran yang berwarna oranye memakan lebih banyak bandwidth daripada nilai gambarnya.",
+  "Skip this version": "Lewati versi ini",
   "Smallest": "Terkecil",
   "Sort by": "Urutkan menurut",
   "Source URL": "URL sumber",

@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "ჩანს მეორე მოწყობილობაზე, აქ: პარამეტრები → ქსელი.",
   "Size": "ზომა",
   "Sizes in amber cost more bandwidth than the picture is worth.": "ნარინჯისფრად აღნიშნული ზომები მეტ ტრაფიკს ხარჯავს, ვიდრე სურათი ღირს.",
+  "Skip this version": "ამ ვერსიის გამოტოვება",
   "Smallest": "ყველაზე პატარა",
   "Sort by": "დალაგება",
   "Source URL": "წყაროს URL",

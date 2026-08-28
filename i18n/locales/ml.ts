@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "മറ്റേ ഉപകരണത്തിൽ, ക്രമീകരണങ്ങൾ → നെറ്റ്‌വർക്ക് എന്നതിൽ കാണിക്കുന്നു.",
   "Size": "വലുപ്പം",
   "Sizes in amber cost more bandwidth than the picture is worth.": "ഓറഞ്ച് നിറത്തിലുള്ള വലുപ്പങ്ങൾ ചിത്രത്തിന്റെ മൂല്യത്തെക്കാൾ കൂടുതൽ ബാൻഡ്‌വിഡ്ത്ത് ചെലവാക്കും.",
+  "Skip this version": "ഈ പതിപ്പ് ഒഴിവാക്കുക",
   "Smallest": "ഏറ്റവും ചെറുത്",
   "Sort by": "ഇതനുസരിച്ച് അടുക്കുക",
   "Source URL": "ഉറവിടത്തിന്റെ URL",

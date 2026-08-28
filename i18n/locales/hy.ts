@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Ցուցադրվում է մյուս սարքի վրա՝ «Կարգավորումներ → Ցանց» բաժնում։",
   "Size": "Չափ",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Նարնջագույնով նշված չափերն ավելի շատ թողունակություն են ծախսում, քան արժե պատկերը։",
+  "Skip this version": "Բաց թողնել այս տարբերակը",
   "Smallest": "Ամենափոքրը",
   "Sort by": "Դասավորել ըստ",
   "Source URL": "Աղբյուրի URL",

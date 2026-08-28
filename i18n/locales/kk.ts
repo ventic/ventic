@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Екінші құрылғыда, «Параметрлер → Желі» бөлімінде көрсетіледі.",
   "Size": "Өлшемі",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Қызғылт сары түспен белгіленген өлшемдер суреттің құнынан артық трафик жұмсайды.",
+  "Skip this version": "Бұл нұсқаны өткізіп жіберу",
   "Smallest": "Ең кішісі",
   "Sort by": "Сұрыптау",
   "Source URL": "Дереккөз URL мекенжайы",

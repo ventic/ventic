@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Yn cael ei ddangos ar y ddyfais arall, o dan Gosodiadau → Rhwydwaith.",
   "Size": "Maint",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Mae'r meintiau mewn oren yn costio mwy o led band nag y mae'r llun yn ei haeddu.",
+  "Skip this version": "Hepgor y fersiwn hwn",
   "Smallest": "Lleiaf",
   "Sort by": "Trefnu yn ôl",
   "Source URL": "URL y ffynhonnell",

@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Es mostra a l'altre dispositiu, a Configuració → Xarxa.",
   "Size": "Mida",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Les mides en taronja costen més amplada de banda del que val la imatge.",
+  "Skip this version": "Omet aquesta versió",
   "Smallest": "Més petit",
   "Sort by": "Ordena per",
   "Source URL": "URL de la font",

@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Wordt op het andere apparaat getoond, bij Instellingen → Netwerk.",
   "Size": "Grootte",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Groottes in oranje kosten meer bandbreedte dan het beeld waard is.",
+  "Skip this version": "Deze versie overslaan",
   "Smallest": "Kleinste",
   "Sort by": "Sorteren op",
   "Source URL": "URL van de bron",

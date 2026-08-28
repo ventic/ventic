@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Dipaparkan pada peranti satu lagi, di bawah Tetapan → Rangkaian.",
   "Size": "Saiz",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Saiz berwarna jingga memakan lebih banyak jalur lebar daripada nilai gambarnya.",
+  "Skip this version": "Langkau versi ini",
   "Smallest": "Terkecil",
   "Sort by": "Isih mengikut",
   "Source URL": "URL sumber",

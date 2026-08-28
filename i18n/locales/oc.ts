@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Afichat sus l'autre aparelh, jos Paramètres → Ret.",
   "Size": "Talha",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Las talhas en irange còstan mai de benda passanta que çò que val l'imatge.",
+  "Skip this version": "Ignorar aquesta version",
   "Smallest": "Mai pichon",
   "Sort by": "Ordenar per",
   "Source URL": "URL de la font",

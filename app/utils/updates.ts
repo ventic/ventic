@@ -40,7 +40,13 @@ export const DOWNLOAD_URL = 'https://ventic.tv/download/'
  */
 export const APK_URL = 'https://ventic.tv/apk'
 
-const API_URL = `https://api.github.com/repos/${REPO}/releases/latest`
+/**
+ * The release *list*, not `/releases/latest`: someone four versions behind
+ * wants to read what they missed, not only what is newest. It costs the same
+ * one request a launch, and `parseUpdate` already refuses a draft or a
+ * prerelease — which is the filtering `/latest` used to do for us.
+ */
+const API_URL = `https://api.github.com/repos/${REPO}/releases?per_page=20`
 
 /**
  * The newest published release, as much of it as anything here needs.
@@ -52,8 +58,10 @@ const API_URL = `https://api.github.com/repos/${REPO}/releases/latest`
 export interface Update {
   /** No leading `v` — comparable with what `getVersion()` returns. */
   version: string
-  /** The release body, verbatim markdown. Shown as plain text; nothing renders it. */
+  /** The release body, verbatim markdown. `renderNotes` turns it into markup. */
   notes: string
+  /** When it was published, ISO. A changelog of several releases wants dates. */
+  date: string
   /** The release page, for builds that can't update themselves. */
   url: string
   /** The Android package on that release, if it carries one. */
@@ -125,6 +133,7 @@ export function parseUpdate(data: unknown): Update | null {
   const r = data as {
     tag_name?: string
     body?: string
+    published_at?: string
     html_url?: string
     draft?: boolean
     prerelease?: boolean
@@ -132,26 +141,42 @@ export function parseUpdate(data: unknown): Update | null {
   } | null
 
   const version = r?.tag_name?.trim().replace(/^v/, '') ?? ''
-  // `/releases/latest` filters both out already; this is the belt to that
-  // braces, since a wrong endpoint would otherwise offer people a draft.
+  // The list endpoint hands back both, so this is the filter and not a belt to
+  // anyone else's braces: a draft is unpublished and a prerelease is not what
+  // the stable channel is for.
   if (!r || !version || r.draft || r.prerelease)
     return null
 
   return {
     version,
     notes: r.body?.trim() ?? '',
+    date: r.published_at ?? '',
     url: r.html_url || RELEASES_URL,
     apk: r.assets?.find(a => a.name?.endsWith('.apk'))?.browser_download_url ?? '',
   }
 }
 
 /**
- * Ask GitHub what the newest release is. `null` for anything that goes wrong —
+ * A page of the release list, newest first.
+ *
+ * Sorted by version rather than trusted in the order it arrives: GitHub orders
+ * by creation date, and a patch cut from an old branch after a newer release
+ * would otherwise sit at the top and be offered as the update.
+ */
+export function parseUpdates(data: unknown): Update[] {
+  return (Array.isArray(data) ? data : [data])
+    .map(parseUpdate)
+    .filter((u): u is Update => !!u)
+    .sort((a, b) => compareVersions(b.version, a.version))
+}
+
+/**
+ * Ask GitHub what it has published. An empty list for anything that goes wrong —
  * being offline is the normal case here, not an error worth surfacing.
  */
-export async function latestUpdate(): Promise<Update | null> {
+export async function latestUpdates(): Promise<Update[]> {
   try {
-    return parseUpdate(await $fetch(API_URL, {
+    return parseUpdates(await $fetch(API_URL, {
       // Unauthenticated, so this shares 60 requests an hour with everything else
       // on the same address. One check per launch stays far inside that.
       headers: { Accept: 'application/vnd.github+json' },
@@ -160,6 +185,118 @@ export async function latestUpdate(): Promise<Update | null> {
     }))
   }
   catch {
-    return null
+    return []
   }
+}
+
+const ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }
+
+/**
+ * One line of a release body, as inline markup.
+ *
+ * The escape is first and is the whole of what makes the result safe to hand to
+ * `v-html`: everything after it only ever adds tags this function wrote, and it
+ * writes **no attributes at all** — so there is nothing for a `"` to break out
+ * of and no `href` to point anywhere.
+ *
+ * A link keeps its label and loses its target on purpose, rather than becoming
+ * an `<a>`. Two reasons, and either would be enough: a bare anchor inside the
+ * Tauri webview navigates the app itself away from the bundle with no way back
+ * (every other link in here goes through `useTauriShellOpen`), and an anchor is
+ * a d-pad target — a remote would have to walk every link in a changelog to
+ * reach the Update button under it.
+ */
+function inline(text: string) {
+  return text
+    .replace(/[&<>"]/g, c => ESCAPES[c]!)
+    // GitHub's generated notes credit each change with a full pull request URL,
+    // which is thirty unreadable characters on a television. Nothing else here
+    // shortens a URL: the rest stay as text and wrap.
+    .replace(/https:\/\/github\.com\/[^\s/]+\/[^\s/]+\/pull\/(\d+)/g, '#$1')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*\w])\*([^*\n]+)\*/g, '$1<em>$2</em>')
+    .replace(/\[([^\]]+)\]\([^\s)]*\)/g, '$1')
+}
+
+/**
+ * A release body as the markup the notes block styles.
+ *
+ * Deliberately not a markdown library: the smallest is ~35 kB into a bundle a
+ * television parses at boot, for one panel — and a release body here is a
+ * heading, a bullet and the odd bit of bold.
+ *
+ * ponytail: line-based, so no nested lists, no tables and no fenced code blocks
+ * (a fence renders as its own lines). Reach for a parser if release notes ever
+ * need one.
+ */
+export function renderNotes(markdown: string): string {
+  const out: string[] = []
+  /**
+   * The block being read, held rather than emitted, because a line only says
+   * what it belongs to once the *next* one arrives. Markdown wraps freely: a
+   * bullet or a paragraph runs until a blank line, a heading or a new bullet,
+   * and every line under it belongs to what came before. Emitting per line is
+   * the bug that shape produces — every wrapped bullet in a real release body
+   * ended the list and started a paragraph halfway through a sentence.
+   */
+  const held: string[] = []
+  let item = false
+  let list = false
+
+  const flush = () => {
+    if (held.length)
+      out.push(item ? `<li>${inline(held.join(' '))}</li>` : `<p>${inline(held.join(' '))}</p>`)
+    held.length = 0
+  }
+  const endList = () => {
+    flush()
+    if (list)
+      out.push('</ul>')
+    list = false
+    item = false
+  }
+
+  for (const raw of markdown.split(/\r?\n/)) {
+    const line = raw.trim()
+
+    // A blank line ends whatever was open. So does a horizontal rule, which has
+    // nothing to draw in a block this narrow — and GitHub appends the compare
+    // link to every generated body, which is a web page nobody opens from here.
+    if (!line || /^([-*_])\1{2,}$/.test(line) || /^\*\*Full Changelog\*\*/i.test(line)) {
+      endList()
+      continue
+    }
+
+    // One whitespace and not `\s+`: with `.*` after it, a repeated class the
+    // dot also matches is a backtracking hazard, so the rest is trimmed instead.
+    const heading = line.match(/^#{1,6}\s(.*)$/)
+    if (heading) {
+      endList()
+      out.push(`<h4>${inline(heading[1]!.trim())}</h4>`)
+      continue
+    }
+
+    // Ordered lists come out as bullets: a release body uses the numbers as
+    // punctuation, and nothing here reads back an index.
+    const bullet = line.match(/^(?:[-*+]|\d+\.)\s(.*)$/)
+    if (bullet) {
+      flush()
+      if (!list)
+        out.push('<ul>')
+      list = true
+      item = true
+      held.push(bullet[1]!.trim())
+      continue
+    }
+
+    // Plain text under an open bullet is that bullet's next line, not a
+    // paragraph — markdown's lazy continuation, and what release notes are
+    // actually written in. `item` is only ever true inside a list, so the line
+    // needs no branch: it joins whichever block is being held.
+    held.push(line)
+  }
+
+  endList()
+  return out.join('')
 }

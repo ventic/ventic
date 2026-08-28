@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Shfaqet në pajisjen tjetër, te Cilësimet → Rrjeti.",
   "Size": "Madhësia",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Madhësitë me ngjyrë portokalli kushtojnë më shumë trafik sesa vlen pamja.",
+  "Skip this version": "Kapërce këtë version",
   "Smallest": "Më e vogla",
   "Sort by": "Rendit sipas",
   "Source URL": "URL-ja e burimit",

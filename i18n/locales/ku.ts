@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Li ser amûra din, di bin Mîheng → Tor de tê nîşandan.",
   "Size": "Mezinahî",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Mezinahiyên bi rengê pirteqalî ji nirxa wêneyê zêdetir firehiya bandê xerc dikin.",
+  "Skip this version": "Vê guhertoyê derbas bike",
   "Smallest": "Herî biçûk",
   "Sort by": "Rêz bike li gorî",
   "Source URL": "URL-a çavkaniyê",

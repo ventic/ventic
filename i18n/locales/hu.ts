@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "A másik eszközön látható, a Beállítások → Hálózat alatt.",
   "Size": "Méret",
   "Sizes in amber cost more bandwidth than the picture is worth.": "A narancssárgával jelölt méretek több sávszélességbe kerülnek, mint amennyit a kép ér.",
+  "Skip this version": "Verzió kihagyása",
   "Smallest": "Legkisebb",
   "Sort by": "Rendezés",
   "Source URL": "Forrás URL-je",

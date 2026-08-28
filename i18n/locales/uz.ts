@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Ikkinchi qurilmada, Sozlamalar → Tarmoq boʻlimida koʻrsatiladi.",
   "Size": "Oʻlcham",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Sariq rangdagi oʻlchamlar tasvir arzigulikdan koʻra koʻproq trafik sarflaydi.",
+  "Skip this version": "Bu versiyani o‘tkazib yuborish",
   "Smallest": "Eng kichigi",
   "Sort by": "Saralash mezoni",
   "Source URL": "Manba URL manzili",

@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Rādīts otrā ierīcē, sadaļā Iestatījumi → Tīkls.",
   "Size": "Izmērs",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Oranžā krāsā iezīmētie izmēri maksā vairāk datu, nekā attēls ir vērts.",
+  "Skip this version": "Izlaist šo versiju",
   "Smallest": "Mazākais",
   "Sort by": "Kārtot pēc",
   "Source URL": "Avota URL",

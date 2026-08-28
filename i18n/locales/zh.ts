@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "显示在对方设备的“设置 → 网络”中。",
   "Size": "大小",
   "Sizes in amber cost more bandwidth than the picture is worth.": "标为琥珀色的体积，所耗的带宽超过了画质带来的价值。",
+  "Skip this version": "跳过此版本",
   "Smallest": "体积最小",
   "Sort by": "排序方式",
   "Source URL": "来源网址",

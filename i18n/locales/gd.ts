@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "'Ga shealltainn air an uidheam eile, fo Roghainnean → Lìonra.",
   "Size": "Meud",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Cosgaidh na meudan ann an orains barrachd bann-leathainn na 's fhiach an dealbh.",
+  "Skip this version": "Leig seachad an tionndadh seo",
   "Smallest": "As lugha",
   "Sort by": "Seòrsaich a rèir",
   "Source URL": "URL an tùis",

@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Waxaa lagu tusayaa qalabka kale, hoosta Dejinta → Shabakadda.",
   "Size": "Cabbir",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Cabbirrada liinta ah waxay ka isticmaalaan xog badan intii sawirku qiimo lahaa.",
+  "Skip this version": "Ka bood nooca kan",
   "Smallest": "Ugu yar",
   "Sort by": "U kala saar",
   "Source URL": "URL-ka isha",

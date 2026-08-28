@@ -3,6 +3,13 @@
     <app-background />
     <app-drawer />
 
+    <!-- Here and not in app.vue, which would also cover the player: `watch.vue`
+         is the one page with `layout: false`, so mounting the dialog in a layout
+         is the whole of what keeps it from landing over a film — a cast arriving
+         from another device included, since that is a navigation to the same
+         page. Whether it opens at all is `shouldPrompt` in stores/updates.ts. -->
+    <update-dialog />
+
     <!-- The window never scrolls: the shell is a fixed-height column and each
          page scrolls its own content region, so the chrome stays put. -->
     <v-main class="relative z-1 h-dvh">

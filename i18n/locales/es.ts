@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Se muestra en el otro dispositivo, en Ajustes → Red.",
   "Size": "Tamaño",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Los tamaños en naranja cuestan más ancho de banda de lo que vale la imagen.",
+  "Skip this version": "Omitir esta versión",
   "Smallest": "Más pequeño",
   "Sort by": "Ordenar por",
   "Source URL": "URL de la fuente",

@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Zobrazené na druhom zariadení v Nastavenia → Sieť.",
   "Size": "Veľkosť",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Veľkosti v oranžovej stoja viac prenosu, než za koľko obraz stojí.",
+  "Skip this version": "Preskočiť túto verziu",
   "Smallest": "Najmenšie",
   "Sort by": "Zoradiť podľa",
   "Source URL": "URL zdroja",

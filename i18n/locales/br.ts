@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Diskouezet war an drevnad all, dindan Arventennoù → Rouedad.",
   "Size": "Ment",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Ar mentoù e melen a goust muioc'h a dremenvann eget na dalv ar skeudenn.",
+  "Skip this version": "Tremen ar stumm-mañ",
   "Smallest": "Bihanañ",
   "Sort by": "Urzhiañ dre",
   "Source URL": "URL ar vammenn",

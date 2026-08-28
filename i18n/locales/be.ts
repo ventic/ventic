@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Паказаны на іншай прыладзе, у раздзеле «Налады → Сетка».",
   "Size": "Памер",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Памеры, пазначаныя аранжавым, каштуюць больш трафіку, чым вартая карцінка.",
+  "Skip this version": "Прапусціць гэтую версію",
   "Smallest": "Найменшы",
   "Sort by": "Сартаваць па",
   "Source URL": "URL крыніцы",

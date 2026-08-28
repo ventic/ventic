@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "రెండో పరికరంలో, సెట్టింగ్‌లు → నెట్‌వర్క్ కింద చూపబడుతుంది.",
   "Size": "పరిమాణం",
   "Sizes in amber cost more bandwidth than the picture is worth.": "పసుపు రంగులో ఉన్న పరిమాణాలు, చిత్రం విలువ కంటే ఎక్కువ బ్యాండ్‌విడ్త్‌ను ఖర్చు చేస్తాయి.",
+  "Skip this version": "ఈ వెర్షన్‌ను దాటవేయి",
   "Smallest": "అతి చిన్నది",
   "Sort by": "దీని ప్రకారం క్రమబద్ధీకరించు",
   "Source URL": "మూలం URL",

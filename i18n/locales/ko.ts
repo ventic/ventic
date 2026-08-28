@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "다른 기기의 설정 → 네트워크에 표시됩니다.",
   "Size": "크기",
   "Sizes in amber cost more bandwidth than the picture is worth.": "주황색으로 표시된 크기는 화질에 비해 대역폭을 더 많이 씁니다.",
+  "Skip this version": "이 버전 건너뛰기",
   "Smallest": "가장 작은 것",
   "Sort by": "정렬 기준",
   "Source URL": "소스 URL",

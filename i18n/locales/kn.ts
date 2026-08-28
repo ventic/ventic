@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "ಇನ್ನೊಂದು ಸಾಧನದಲ್ಲಿ, ಸೆಟ್ಟಿಂಗ್‌ಗಳು → ನೆಟ್‌ವರ್ಕ್ ಅಡಿಯಲ್ಲಿ ತೋರಿಸಲಾಗುತ್ತದೆ.",
   "Size": "ಗಾತ್ರ",
   "Sizes in amber cost more bandwidth than the picture is worth.": "ಕಿತ್ತಳೆ ಬಣ್ಣದ ಗಾತ್ರಗಳು ಚಿತ್ರದ ಮೌಲ್ಯಕ್ಕಿಂತ ಹೆಚ್ಚು ಬ್ಯಾಂಡ್‌ವಿಡ್ತ್ ತಿನ್ನುತ್ತವೆ.",
+  "Skip this version": "ಈ ಆವೃತ್ತಿಯನ್ನು ಬಿಟ್ಟುಬಿಡಿ",
   "Smallest": "ಅತಿ ಚಿಕ್ಕದು",
   "Sort by": "ಇದರ ಪ್ರಕಾರ ವಿಂಗಡಿಸಿ",
   "Source URL": "ಮೂಲದ URL",

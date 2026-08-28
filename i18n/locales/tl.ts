@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Ipinapakita sa kabilang device, sa ilalim ng Mga Setting → Network.",
   "Size": "Laki",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Ang mga sukat na naka-amber ay mas maraming bandwidth ang nagagastos kaysa sa halaga ng larawan.",
+  "Skip this version": "Laktawan ang bersyong ito",
   "Smallest": "Pinakamaliit",
   "Sort by": "Pagsunod-sunurin ayon sa",
   "Source URL": "URL ng pinagmumulan",

@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "相手の端末の 設定 → ネットワーク に表示されます。",
   "Size": "サイズ",
   "Sizes in amber cost more bandwidth than the picture is worth.": "オレンジ色のサイズは、画質に見合わないほど通信量を消費します。",
+  "Skip this version": "このバージョンをスキップ",
   "Smallest": "最小",
   "Sort by": "並べ替え",
   "Source URL": "ソースの URL",

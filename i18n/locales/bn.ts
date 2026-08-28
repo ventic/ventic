@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "অন্য ডিভাইসে, সেটিংস → নেটওয়ার্ক-এ দেখানো হয়।",
   "Size": "আকার",
   "Sizes in amber cost more bandwidth than the picture is worth.": "কমলা রঙে দেখানো আকারগুলি ছবির মান যতটা, তার চেয়ে বেশি ব্যান্ডউইথ খরচ করে।",
+  "Skip this version": "এই সংস্করণটি এড়িয়ে যান",
   "Smallest": "সবচেয়ে ছোট",
   "Sort by": "সাজান",
   "Source URL": "উৎসের URL",

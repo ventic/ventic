@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Экинчи түзмөктө, «Жөндөөлөр → Тармак» бөлүмүндө көрсөтүлөт.",
   "Size": "Өлчөмү",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Кызгылт сары менен белгиленген өлчөмдөр сүрөттүн баасынан ашык трафик коротот.",
+  "Skip this version": "Бул версияны өткөрүп жиберүү",
   "Smallest": "Эң кичинеси",
   "Sort by": "Иреттөө",
   "Source URL": "Булактын URL дареги",

@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "روی دستگاه دیگر، در تنظیمات ← شبکه نشان داده می‌شود.",
   "Size": "اندازه",
   "Sizes in amber cost more bandwidth than the picture is worth.": "اندازه‌های نارنجی پهنای باند بیشتری از ارزش تصویر مصرف می‌کنند.",
+  "Skip this version": "رد کردن این نسخه",
   "Smallest": "کوچک‌ترین",
   "Sort by": "مرتب‌سازی بر پایهٔ",
   "Source URL": "نشانی منبع",

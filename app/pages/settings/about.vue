@@ -1,28 +1,8 @@
 <script setup lang="ts">
-import { mdiOpenInNew, mdiRestart, mdiTrayArrowDown, mdiUpdate } from '@mdi/js'
+import { mdiOpenInNew, mdiUpdate } from '@mdi/js'
 
 const settings = useSettingsStore()
 const updates = useUpdatesStore()
-const platform = ref('')
-
-onMounted(() => {
-  // Throws synchronously rather than rejecting when there is no Tauri at all,
-  // which is every `bun run dev` browser session. The version comes from the
-  // updates store, which needs it anyway to know whether it is behind.
-  try {
-    platform.value = useTauriOsPlatform()
-  }
-  catch {}
-})
-
-/**
- * Where "get it yourself" points when this copy can't replace itself — a `.deb`,
- * an AUR build, a browser, or an Android box whose installer wouldn't take our
- * APK. The project's own download page rather than the GitHub release, which is
- * a list of six files with no word about which one this machine wants.
- */
-const downloadUrl = computed(() =>
-  (platform.value === 'android' && (updates.available?.apk || APK_URL)) || DOWNLOAD_URL)
 
 // Naming the licence is half the point of this list. Windows builds carry an
 // mpv.exe, which makes handing one out redistribution of GPL software — the
@@ -52,8 +32,8 @@ function open(url: string) {
           </div>
           <div class="text-body-small opacity-70">
             {{ $t('A media library and BitTorrent player, on the desktop and on Android TV.') }}
-            <template v-if="platform">
-              · {{ platform }}
+            <template v-if="updates.platform">
+              · {{ updates.platform }}
             </template>
           </div>
         </div>
@@ -61,93 +41,23 @@ function open(url: string) {
     </settings-section>
 
     <settings-section :title="$t('Updates')">
-      <!-- Three outcomes, and on the desktop which one shows has nothing to do
-           with the platform: `capable` is about how the app was *installed*
-           (can_self_update in src-tauri/src/lib.rs). Android is the exception —
-           `apk` there means the bridge can fetch the package and hand it to the
-           system installer, which is the whole update. -->
       <template v-if="updates.available">
         <p class="text-body-medium">
           {{ $t('Ventic {version} is out', { version: updates.available.version }) }}
         </p>
 
-        <!-- The release body, as GitHub markdown. Nothing renders it and nothing
-             should: a markdown dependency for the one screen that shows release
-             notes is a poor trade, and the notes read fine as text. -->
-        <pre
-          v-if="updates.available.notes"
-          class="text-body-small max-h-60 overflow-y-auto whitespace-pre-wrap rounded-lg bg-surface-container/40 p-4 font-sans opacity-80"
-        >{{ updates.available.notes }}</pre>
-
-        <p v-if="updates.apk" class="text-body-medium opacity-70">
-          {{ $t('Ventic downloads the new package and Android asks you to confirm the install. It is signed with the same key as the copy you have, so it upgrades in place and keeps your library.') }}
-        </p>
-        <p v-else-if="!updates.canUpdate && platform === 'android'" class="text-body-medium opacity-70">
-          {{ $t('Android installs from the package itself — download it and open it. It is signed with the same key as the copy you have, so it upgrades in place and keeps your library.') }}
-        </p>
-        <p v-else-if="!updates.canUpdate" class="text-body-medium opacity-70">
-          {{ $t('This copy wasn\'t installed by Ventic\'s own installer — a package manager, or a build from source — so whatever put it there is what updates it. Replacing the files from in here would only confuse it.') }}
-        </p>
-
-        <!-- Failing over to the download link rather than dead-ending: the
-             manifest can be missing this platform even when everything else
-             about the install is fine. -->
-        <p v-if="updates.status === 'failed'" class="text-body-medium text-error">
-          {{ $t('The update couldn\'t be installed: {error}', { error: updates.error }) }}
-        </p>
-
-        <v-progress-linear
-          v-if="updates.status === 'downloading'"
-          :model-value="updates.progress * 100"
-          :indeterminate="!updates.progress"
-          color="primary"
-          rounded
-          height="6"
-        />
-
-        <div class="flex flex-wrap items-center gap-2">
-          <v-btn
-            v-if="updates.status === 'ready'"
-            :prepend-icon="mdiRestart"
-            variant="flat"
-            color="primary"
-            @click="updates.restart()"
-          >
-            {{ $t('Restart to finish') }}
-          </v-btn>
-          <v-btn
-            v-else-if="updates.canUpdate"
-            :prepend-icon="mdiUpdate"
-            :loading="updates.status === 'downloading'"
-            variant="flat"
-            color="primary"
-            @click="updates.install()"
-          >
-            {{ $t('Update now') }}
-          </v-btn>
-          <v-btn
-            v-if="!updates.canUpdate || updates.status === 'failed'"
-            :prepend-icon="platform === 'android' ? mdiTrayArrowDown : mdiOpenInNew"
-            variant="tonal"
-            @click="open(downloadUrl)"
-          >
-            {{ platform === 'android' ? $t('Download the APK') : $t('Open the download page') }}
-          </v-btn>
-          <v-btn
-            v-if="!['downloading', 'ready', 'installing'].includes(updates.status) && !updates.dismissed"
-            variant="text"
-            @click="updates.dismiss()"
-          >
-            {{ $t('Not now') }}
-          </v-btn>
-        </div>
-
-        <p v-if="updates.status === 'ready'" class="text-body-small opacity-70">
-          {{ $t('Installed. It takes effect the next time Ventic starts.') }}
-        </p>
-        <p v-else-if="updates.status === 'installing'" class="text-body-small opacity-70">
-          {{ $t('Downloaded. Confirm the install when Android asks — Ventic closes while it happens.') }}
-        </p>
+        <!-- The same panel the launch dialog shows, so there is one state
+             machine and not two. Only the way out differs: nothing here needs a
+             "not now" — the user came to this page on purpose — but skipping
+             the version has to stay reachable, since it is what takes the badge
+             off the toolbar. -->
+        <update-panel>
+          <template #dismiss>
+            <v-btn v-if="!updates.dismissed" variant="text" @click="updates.skip()">
+              {{ $t('Skip this version') }}
+            </v-btn>
+          </template>
+        </update-panel>
       </template>
 
       <template v-else>

@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Показано на іншому пристрої, у розділі «Налаштування → Мережа».",
   "Size": "Розмір",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Розміри, позначені бурштиновим, коштують більше трафіку, ніж того варта картинка.",
+  "Skip this version": "Пропустити цю версію",
   "Smallest": "Найменший",
   "Sort by": "Сортувати за",
   "Source URL": "URL джерела",

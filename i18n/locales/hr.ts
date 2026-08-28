@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Prikazano na drugom uređaju, pod Postavke → Mreža.",
   "Size": "Veličina",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Veličine u narančastom troše više prometa nego što slika vrijedi.",
+  "Skip this version": "Preskoči ovu verziju",
   "Smallest": "Najmanje",
   "Sort by": "Poredaj po",
   "Source URL": "URL izvora",

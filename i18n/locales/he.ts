@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "מוצג במכשיר השני, תחת הגדרות ← רשת.",
   "Size": "גודל",
   "Sizes in amber cost more bandwidth than the picture is worth.": "הגדלים בכתום עולים יותר רוחב פס ממה שהתמונה שווה.",
+  "Skip this version": "דלג על גרסה זו",
   "Smallest": "הקטן ביותר",
   "Sort by": "מיין לפי",
   "Source URL": "כתובת המקור",

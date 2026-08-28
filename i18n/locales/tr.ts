@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Diğer cihazda, Ayarlar → Ağ altında gösterilir.",
   "Size": "Boyut",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Kehribar renkli boyutlar, görüntünün değerinden fazla bant genişliği harcar.",
+  "Skip this version": "Bu sürümü atla",
   "Smallest": "En küçük",
   "Sort by": "Sıralama ölçütü",
   "Source URL": "Kaynak URL'si",

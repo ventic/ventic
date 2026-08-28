@@ -385,6 +385,7 @@ export default {
   "Shown on the other device, under Settings → Network.": "Afișat pe celălalt dispozitiv, la Setări → Rețea.",
   "Size": "Dimensiune",
   "Sizes in amber cost more bandwidth than the picture is worth.": "Dimensiunile marcate cu portocaliu costă mai multă lățime de bandă decât valorează imaginea.",
+  "Skip this version": "Omite această versiune",
   "Smallest": "Cea mai mică",
   "Sort by": "Sortează după",
   "Source URL": "URL-ul sursei",
