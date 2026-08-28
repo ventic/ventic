@@ -239,7 +239,7 @@ async function toggleStremio(on: boolean | null) {
       </div>
 
       <p class="text-body-small opacity-70">
-        {{ $t('A playlist link usually contains your account details, so it is kept out of backups. Channels are read once per launch; restart the app to pick up a playlist that has changed.') }}
+        {{ $t('A playlist link usually contains your account details, so it is kept out of backups. Channels are read once per launch — Reload on the Live TV page fetches a playlist that has changed.') }}
       </p>
     </settings-section>
 

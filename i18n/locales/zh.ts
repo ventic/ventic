@@ -15,7 +15,7 @@ export default {
   "A media library and BitTorrent player, on the desktop and on Android TV.": "一个媒体库和 BitTorrent 播放器，可用于桌面和 Android TV。",
   "A page can offer a ventic:// link that opens the app with a source ready to add. The app always asks first — a link can never change what Ventic searches on its own.": "网页可以提供 ventic:// 链接，打开应用时带上一个待添加的来源。应用始终会先询问——链接永远无法自行改变 Ventic 搜索的范围。",
   "A playlist is an http:// or https:// link to an M3U file.": "播放列表是指向 M3U 文件的 http:// 或 https:// 链接。",
-  "A playlist link usually contains your account details, so it is kept out of backups. Channels are read once per launch; restart the app to pick up a playlist that has changed.": "播放列表链接通常包含你的账号信息，因此不会写入备份。频道在每次启动时读取一次；若播放列表有变动，请重启应用以获取。",
+  "A playlist link usually contains your account details, so it is kept out of backups. Channels are read once per launch — Reload on the Live TV page fetches a playlist that has changed.": "播放列表链接通常包含你的账号信息，因此不会写入备份。频道在每次启动时读取一次——若播放列表有变动，可在直播电视页面点击重新加载播放列表。",
   "A stereo release has no separate dialogue channel, so there the speech frequencies are lifted instead — which helps, but it lifts whatever else is up there with them.": "立体声版本没有独立的对白声道，因此那里改为提升语音频段——有帮助，但同一频段里的其他声音也会跟着变响。",
   "A track already inside the file is used first, then one that came with the download, and only then is OpenSubtitles searched. Picking a different language while watching changes this setting too.": "优先使用文件里自带的字幕轨，其次是随下载一起来的，最后才去 OpenSubtitles 搜索。观看时改选其他语言，也会一并改动这项设置。",
   "About": "关于",

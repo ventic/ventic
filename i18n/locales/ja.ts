@@ -15,7 +15,7 @@ export default {
   "A media library and BitTorrent player, on the desktop and on Android TV.": "デスクトップと Android TV で動く、メディアライブラリ兼 BitTorrent プレーヤー。",
   "A page can offer a ventic:// link that opens the app with a source ready to add. The app always asks first — a link can never change what Ventic searches on its own.": "ウェブページは ventic:// リンクを提示でき、アプリを開いてソースを追加できる状態にします。アプリは必ず先に確認します。リンクが Ventic の検索先を勝手に変えることはできません。",
   "A playlist is an http:// or https:// link to an M3U file.": "プレイリストとは、M3U ファイルへの http:// または https:// のリンクです。",
-  "A playlist link usually contains your account details, so it is kept out of backups. Channels are read once per launch; restart the app to pick up a playlist that has changed.": "プレイリストのリンクには通常アカウント情報が含まれるため、バックアップには含めません。チャンネルは起動ごとに一度だけ読み込まれます。変更されたプレイリストを取り込むにはアプリを再起動してください。",
+  "A playlist link usually contains your account details, so it is kept out of backups. Channels are read once per launch — Reload on the Live TV page fetches a playlist that has changed.": "プレイリストのリンクには通常アカウント情報が含まれるため、バックアップには含めません。チャンネルは起動ごとに一度だけ読み込まれます。変更されたプレイリストを取り込むには、ライブ TV ページのプレイリストを再読み込みを使ってください。",
   "A stereo release has no separate dialogue channel, so there the speech frequencies are lifted instead — which helps, but it lifts whatever else is up there with them.": "ステレオ版にはセリフ専用のチャンネルがないため、代わりに音声の帯域を持ち上げます。効果はありますが、その帯域にある他の音も一緒に持ち上がります。",
   "A track already inside the file is used first, then one that came with the download, and only then is OpenSubtitles searched. Picking a different language while watching changes this setting too.": "まずファイル内にあるトラックが使われ、次にダウンロードに付いてきたもの、そのあとで初めて OpenSubtitles が検索されます。再生中に別の言語を選ぶと、この設定も変わります。",
   "About": "このアプリについて",
