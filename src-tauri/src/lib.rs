@@ -675,6 +675,7 @@ pub fn run() {
 			player::player_ipc,
 			player::player_props,
 			player::player_set_geometry,
+			player::player_cursor,
 			player::player_pointer,
 			player::player_status,
 			audio_envelope,

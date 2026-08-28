@@ -1763,13 +1763,38 @@ function onMouseMove() {
 }
 
 /**
+ * Is the mouse pointer showing? Only ever asked of the native window, where the
+ * page cannot answer: an arrow over mpv's own window belongs to that window, no
+ * stylesheet reaches it, and mpv will not hide it itself on X11 — its autohide
+ * fires only for a window holding the input focus, which an embedded one never
+ * has (src-tauri/src/player.rs). Win32 hides its own and answers with a no-op.
+ *
+ * Tracked rather than pushed every time, because `noteActivity` runs on every
+ * mouse move and every poll that sees one — five times a second, for an answer
+ * that changes twice a film.
+ */
+let pointerShown = true
+
+function showPointer(show: boolean) {
+  if (!native || show === pointerShown)
+    return
+  pointerShown = show
+  invoke('player_cursor', { visible: show }).catch(() => {})
+}
+
+/**
  * Put the chrome away, and let go of whatever it had focused: a hidden button
  * holding focus leaves a remote pressing OK at nothing it can see. Dropping it
  * costs nothing, because OK on the picture brings the bars back with the play
  * button under the cursor again (see `onKey`).
+ *
+ * The pointer goes with them. Two hours of a film is two hours of an arrow
+ * parked in the middle of it otherwise, and `cursor-none` on the root only
+ * covers the backends whose picture is the page's own.
  */
 function hideChrome() {
   ui.value = false
+  showPointer(false)
   const at = document.activeElement as HTMLElement | null
   if (at && rootEl.value?.contains(at))
     at.blur()
@@ -1777,6 +1802,7 @@ function hideChrome() {
 
 function noteActivity() {
   ui.value = true
+  showPointer(true)
   if (hideTimer)
     clearTimeout(hideTimer)
   hideTimer = null

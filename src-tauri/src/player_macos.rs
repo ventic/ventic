@@ -278,6 +278,12 @@ pub fn player_set_geometry(
 	let _ = on_main(&app, move || player_render_mac::resize_to(geometry, visible));
 }
 
+/// Nothing to do: mpv has no window here — we draw its frames into a view
+/// *under* the webview — so the pointer over the picture is the page's own and
+/// `cursor-none` on the player's root hides it.
+#[tauri::command]
+pub fn player_cursor() {}
+
 /// The webview is in front of the picture, so it sees the pointer itself and
 /// the controls un-hide from ordinary DOM events.
 #[tauri::command]

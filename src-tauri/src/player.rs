@@ -91,6 +91,8 @@ struct Embed {
 	xlib: x11_dl::xlib::Xlib,
 	display: *mut x11_dl::xlib::Display,
 	window: x11_dl::xlib::Window,
+	/// A cursor of nothing, made once — see `set_cursor`.
+	blank: x11_dl::xlib::Cursor,
 }
 // The display connection is only ever touched under `PlayerState`'s mutex, and
 // we call XInitThreads() at startup, so serialised cross-thread use is sound.
@@ -113,6 +115,28 @@ impl Embed {
 				(self.xlib.XMapWindow)(self.display, self.window);
 			} else {
 				(self.xlib.XUnmapWindow)(self.display, self.window);
+			}
+			(self.xlib.XFlush)(self.display);
+		}
+	}
+
+	/// Show or hide the mouse pointer over the video.
+	///
+	/// mpv hides its own after a second of stillness, and here it never will:
+	/// `vo_update_cursor` only acts on a window that holds the X input focus,
+	/// and a `--wid` child never gets it — the app window has it, and taking it
+	/// away would be taking the keyboard with it. So the arrow sits over the
+	/// film for two hours, which is what this answers.
+	///
+	/// The same check is why answering is two calls: mpv defines no cursor on
+	/// its window while it thinks it has nothing to hide, and a window with
+	/// none inherits its parent's — this one's.
+	fn set_cursor(&self, visible: bool) {
+		unsafe {
+			if visible {
+				(self.xlib.XUndefineCursor)(self.display, self.window);
+			} else {
+				(self.xlib.XDefineCursor)(self.display, self.window, self.blank);
 			}
 			(self.xlib.XFlush)(self.display);
 		}
@@ -158,6 +182,7 @@ impl Embed {
 
 	fn destroy(self) {
 		unsafe {
+			(self.xlib.XFreeCursor)(self.display, self.blank);
 			(self.xlib.XDestroyWindow)(self.display, self.window);
 			(self.xlib.XFlush)(self.display);
 			(self.xlib.XCloseDisplay)(self.display);
@@ -298,7 +323,18 @@ pub fn player_start(
 		(xlib.XFlush)(display);
 		w
 	};
-	let embed = Embed { xlib, display, window: child };
+	// An 8x8 bitmap of nothing, used as both shape and mask: the cursor that is
+	// drawn where the pointer is meant to be invisible. Made here because the
+	// pixmap needs a drawable and the window is one.
+	let blank = unsafe {
+		let bits = [0u8; 8];
+		let empty = (xlib.XCreateBitmapFromData)(display, child, bits.as_ptr().cast(), 8, 8);
+		let mut black = x11_dl::xlib::XColor { pixel: 0, red: 0, green: 0, blue: 0, flags: 0, pad: 0 };
+		let cursor = (xlib.XCreatePixmapCursor)(display, empty, empty, &mut black, &mut black, 0, 0);
+		(xlib.XFreePixmap)(display, empty);
+		cursor
+	};
+	let embed = Embed { xlib, display, window: child, blank };
 
 	// mpv writes its own diagnostics to the log so `player_status` can report
 	// *why* it died rather than leaving the user staring at a black box.
@@ -409,6 +445,19 @@ pub fn player_set_geometry(
 			embed.set_shape(width, height, &cutouts);
 		}
 		embed.set_visible(visible);
+	}
+}
+
+/// Hide the pointer with the chrome, and bring it back with it.
+///
+/// The frontend is the only one that knows which: mpv's own autohide is dead in
+/// an embedded window (see `Embed::set_cursor`), and no stylesheet reaches a
+/// pointer that is over another window entirely.
+#[tauri::command]
+pub fn player_cursor(state: tauri::State<'_, PlayerState>, visible: bool) {
+	let player = state.0.lock().unwrap();
+	if let Some(embed) = player.embed.as_ref() {
+		embed.set_cursor(visible);
 	}
 }
 

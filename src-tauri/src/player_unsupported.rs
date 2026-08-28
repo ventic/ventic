@@ -54,6 +54,11 @@ pub fn player_props() -> Result<String, String> {
 #[tauri::command]
 pub fn player_set_geometry() {}
 
+/// No native surface over the page, so the page's own `cursor-none` is the only
+/// answer needed — where there is a pointer at all.
+#[tauri::command]
+pub fn player_cursor() {}
+
 /// No native surface, so nothing is ever covering the pointer.
 #[tauri::command]
 pub fn player_pointer() -> Option<()> {
