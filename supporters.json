@@ -1,12 +1,12 @@
 {
   "goal": 300,
-  "raised": 25,
+  "raised": 23,
   "currency": "EUR",
   "monthly": [],
   "once": [
     {
       "name": "Jim",
-      "amount": 25
+      "amount": 23
     }
   ]
 }
