@@ -48,7 +48,7 @@ const BUILD = {
     {
       member: 'mpv.exe',
       asset: 'mpv-x86_64-20260826-git-c318236b88.7z',
-      sha256: '1ccee88f10d4049906f339b6718c87bec7e94c6ec86652d4de70082959da7b27',
+      sha256: '69ed2d037f976987970d94c630496254c1d121f2e37cd4743b98465cec27882c',
       // How to find the same binary in a release this file has never seen (see
       // `resolve()`). Anchored, because every release also holds -dev, -debug,
       // -lgpl and AVX2-only (-v3) variants of the same name.
@@ -62,8 +62,8 @@ const BUILD = {
      */
     {
       member: 'ffmpeg.exe',
-      asset: 'ffmpeg-x86_64-git-a1050d48b.7z',
-      sha256: 'c67b9b4a36a2d823eefb7e33b65031778ccd90ab3fccc88a77390dbb76c4add5',
+      asset: 'ffmpeg-x86_64-git-a8c7afa7d.7z',
+      sha256: '506ac478f2bf4b6dd8087c33d907ca573629713fe6067fac2140edb7760b1746',
       match: /^ffmpeg-x86_64-git-[0-9a-f]+\.7z$/,
     },
   ],
