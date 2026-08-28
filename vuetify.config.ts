@@ -23,6 +23,11 @@ export default {
       color: 'primary',
       class: 'normal-case',
       rounded: 'lg',
+      // A loading button's spinner is a VProgressCircular the button creates
+      // with no colour of its own — so the default below painted it primary,
+      // which on a flat primary button is primary on primary. Undefined hands
+      // it back to currentColor, the label's own colour whatever the variant.
+      VProgressCircular: { color: undefined },
     },
     // Every filter in the app wants the same compact frosted control, so the
     // look lives here instead of on each usage.
