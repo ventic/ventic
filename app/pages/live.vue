@@ -30,11 +30,28 @@ const group = ref<string | null>(null)
 const PAGE = 120
 const shown = ref(PAGE)
 
+/**
+ * `refresh()` on its own re-runs the handler and is handed the very same list
+ * back: the playlist is fetched once per session on purpose (see
+ * `loadChannels`), which is exactly what the button beside this exists to go
+ * past. So the one press that means "ask the panel again" says so.
+ */
+let again = false
+
 const { data, pending, error, refresh } = useAsyncData(
   'live-channels',
-  () => loadChannels(settings.playlists),
+  () => {
+    const fresh = again
+    again = false
+    return loadChannels(settings.playlists, fresh)
+  },
   { lazy: true, default: () => [], watch: [() => settings.playlists.join('\n')] },
 )
+
+function reload() {
+  again = true
+  return refresh()
+}
 
 const groups = computed(() => channelGroups(data.value))
 
@@ -97,7 +114,7 @@ const failure = computed(() => error.value ? String(error.value.message ?? error
           clearable
           class="w-52 shrink-0"
         />
-        <v-btn icon variant="text" density="comfortable" :loading="pending" @click="refresh()">
+        <v-btn icon variant="text" density="comfortable" :loading="pending" @click="reload()">
           <v-icon :icon="mdiRefresh" />
           <v-tooltip activator="parent" :text="$t('Reload playlists')" />
         </v-btn>
@@ -137,7 +154,7 @@ const failure = computed(() => error.value ? String(error.value.message ?? error
           <template v-else-if="failure">
             <v-icon :icon="mdiAlertCircleOutline" color="error" />
             <span class="text-body-medium opacity-70">{{ failure }}</span>
-            <v-btn :prepend-icon="mdiRefresh" variant="tonal" size="small" @click="refresh()">
+            <v-btn :prepend-icon="mdiRefresh" variant="tonal" size="small" @click="reload()">
               {{ $t('Retry') }}
             </v-btn>
           </template>

@@ -8,7 +8,8 @@
 // jobs on it, which is a duplicate card in the middle of the grid. The order is
 // here for a third reason: it looked right on `popularity` and wasn't.
 import assert from 'node:assert'
-import { toPersonDetail, yearsSince } from '../app/utils/tmdb'
+import process from 'node:process'
+import { dateText, toPersonDetail, yearsSince } from '../app/utils/tmdb'
 import './i18n-stub'
 
 // --- Credits -----------------------------------------------------------------
@@ -78,15 +79,35 @@ assert.equal(
 
 // --- Age ---------------------------------------------------------------------
 
-const now = new Date()
-const pad = (n: number) => String(n).padStart(2, '0')
-const on = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-const shift = (days: number) => new Date(now.getFullYear() - 40, now.getMonth(), now.getDate() + days)
+// In every timezone, not just this machine's. TMDB gives a bare `YYYY-MM-DD`
+// and `new Date` reads one as midnight *UTC*, so anywhere west of Greenwich the
+// birthday landed a day early and everyone was a year older for a day — which
+// only ever showed up on a machine that wasn't the one it was written on.
+const here = process.env.TZ
+try {
+  for (const zone of ['UTC', 'America/Los_Angeles', 'America/New_York', 'Europe/Ljubljana', 'Asia/Kolkata', 'Pacific/Kiritimati']) {
+    process.env.TZ = zone
+    const now = new Date()
+    const pad = (n: number) => String(n).padStart(2, '0')
+    const on = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+    const shift = (days: number) => new Date(now.getFullYear() - 40, now.getMonth(), now.getDate() + days)
 
-assert.equal(yearsSince(on(shift(0))), 40, 'a birthday today has been had')
-assert.equal(yearsSince(on(shift(1))), 39, 'a birthday tomorrow has not')
-assert.equal(yearsSince(on(shift(-1))), 40, 'a birthday yesterday has')
-assert.equal(yearsSince(''), 0, 'no birthday is no age, never NaN')
-assert.equal(yearsSince(on(new Date(now.getFullYear() + 5, 0, 1))), 0, 'never negative')
+    assert.equal(yearsSince(on(shift(0))), 40, `a birthday today has been had (${zone})`)
+    assert.equal(yearsSince(on(shift(1))), 39, `a birthday tomorrow has not (${zone})`)
+    assert.equal(yearsSince(on(shift(-1))), 40, `a birthday yesterday has (${zone})`)
+    assert.equal(yearsSince(''), 0, `no birthday is no age, never NaN (${zone})`)
+    assert.equal(yearsSince(on(new Date(now.getFullYear() + 5, 0, 1))), 0, `never negative (${zone})`)
+
+    // And the date beside the age, for the same reason: rendered off a UTC
+    // midnight, every birthday, death and air date in the Americas read as the
+    // day before the one TMDB sent.
+    assert.match(dateText('1984-11-22'), /\b22\b/, `a date is the day TMDB named (${zone})`)
+    assert.match(dateText('2001-01-01'), /\b2001\b/, `and the year it named (${zone})`)
+    assert.equal(dateText(''), '', `no date is no text (${zone})`)
+  }
+}
+finally {
+  process.env.TZ = here
+}
 
 console.log('people: ok')

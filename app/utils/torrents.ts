@@ -86,15 +86,27 @@ function tier(quality: string) {
   return q.startsWith('4k') ? '2160p' : QUALITY_ORDER.find(t => q.startsWith(t)) ?? ''
 }
 
-/** What the user asked for, '' for "whatever streams best" — see `setQuality`. */
-let preferred = ''
+/**
+ * The tiers, best first, with whatever the user asked for moved to the front.
+ *
+ * Held rather than worked out in `rank`, which is called twice per comparison
+ * inside a sort of everything a search returned — that was a fresh array each
+ * time, for an answer that only changes when the setting does.
+ */
+let order: readonly string[] = QUALITY_ORDER
 
 /**
- * The tier to try first. Pushed in rather than read out of a store, the same as
- * `setSources`: the `check:*` scripts reach this file with no Nuxt around it.
+ * The tier to try first, '' for "whatever streams best". Pushed in rather than
+ * read out of a store, the same as `setSources`: the `check:*` scripts reach
+ * this file with no Nuxt around it.
+ *
+ * A preference moves one tier to the front and leaves the rest as they were. It
+ * is an order and not a filter, which is the whole fallback: a tier with nothing
+ * live in it has nothing to rank, so the next one down wins on its own.
  */
 export function setQuality(value: string) {
-  preferred = tier(value)
+  const want = tier(value)
+  order = want ? [want, ...QUALITY_ORDER.filter(q => q !== want)] : QUALITY_ORDER
 }
 
 /** The choices offered under Settings → Sources. */
@@ -104,15 +116,6 @@ export const QUALITIES: { value: string, title: () => string }[] = [
   { value: '1080p', title: () => $t('1080p') },
   { value: '2160p', title: () => $t('4K') },
 ]
-
-/**
- * A preference moves one tier to the front and leaves the rest as they were. It
- * is an order and not a filter, which is the whole fallback: a tier with nothing
- * live in it has nothing to rank, so the next one down wins on its own.
- */
-function order() {
-  return preferred ? [preferred, ...QUALITY_ORDER.filter(q => q !== preferred)] : QUALITY_ORDER
-}
 
 /**
  * Past this a release is a remux or a needlessly fat encode: the same picture
@@ -265,7 +268,7 @@ export function releaseKey(r: Release) {
 }
 
 function rank(t: Release) {
-  const i = order().indexOf(tier(t.quality))
+  const i = order.indexOf(tier(t.quality))
   return i === -1 ? QUALITY_ORDER.length : i
 }
 

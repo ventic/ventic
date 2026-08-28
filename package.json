@@ -15,6 +15,7 @@
     "logo": "tauri icon public/logo.svg && cp src-tauri/icons/icon.png public/logo.png",
     "i18n": "bun scripts/i18n.ts",
     "i18n:locales": "bun scripts/i18n-locales.ts",
+    "check": "bun scripts/check.ts",
     "check:i18n": "bun scripts/i18n.ts --check",
     "check:iptv": "bun scripts/check-iptv.ts",
     "check:types": "vue-tsc --noEmit",

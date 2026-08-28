@@ -9,7 +9,7 @@
 import assert from 'node:assert'
 import { readFileSync } from 'node:fs'
 import process from 'node:process'
-import { channelGroups, channelKey, filterChannels, parseM3u, playlistName } from '../app/utils/iptv'
+import { channelGroups, channelKey, fetchChannels, filterChannels, parseM3u, playlistName } from '../app/utils/iptv'
 import './i18n-stub'
 
 const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
@@ -124,6 +124,42 @@ assert.match(
   /media3-exoplayer-hls/,
   'Android needs the HLS module or every live channel fails to open',
 )
+
+// --- Reading it again ----------------------------------------------------------
+
+// A playlist is fetched once per session, which is the point — and which is
+// exactly what the Reload button beside the channel list exists to go past.
+// `refresh()` on its own re-runs the handler and is handed the cache straight
+// back, so the button did nothing at all: the one press that means "ask the
+// panel again" has to reach `loadChannels`' second argument.
+const live = read('app/pages/live.vue')
+assert.match(
+  live,
+  /loadChannels\(settings\.playlists, \w+\)/,
+  'the Live TV page must be able to load past the once-per-session cache',
+)
+assert.doesNotMatch(
+  live,
+  /@click="refresh\(\)"/,
+  'Reload and Retry must go through the wrapper that clears the cache, not refresh() alone',
+)
+
+// A playlist nobody can read has to reach the page as its own sentence. Wrapped
+// in a second Error, the first one's `String()` form *is* the message — so the
+// panel's 404 showed as "Error: … answered HTTP 404", the word Error in front
+// of a sentence that already read as one.
+const realFetch = globalThis.fetch
+globalThis.fetch = (async () => new Response('', { status: 404 })) as typeof fetch
+try {
+  await assert.rejects(fetchChannels(['https://example.invalid/list.m3u']), (e: Error) => {
+    assert.ok(!e.message.startsWith('Error:'), `a playlist failure reads as "${e.message}" on the page`)
+    assert.match(e.message, /404/, 'and it says what the panel answered')
+    return true
+  })
+}
+finally {
+  globalThis.fetch = realFetch
+}
 
 // --- The line this feature does not cross --------------------------------------
 

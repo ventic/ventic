@@ -48,10 +48,41 @@ pub const RECEIVER_PORT: u16 = 3232;
 /// same session. Set once, when the engine comes up — see `lib.rs`.
 static ENGINE: OnceLock<Api> = OnceLock::new();
 
-/// Shutdown switches, `Some` exactly while that server is running. Dropping the
-/// sender is what stops it, so `take()` is the whole of "stop".
-static MIRROR: Mutex<Option<oneshot::Sender<()>>> = Mutex::new(None);
-static RECEIVER: Mutex<Option<oneshot::Sender<()>>> = Mutex::new(None);
+/// A running server's two ends: the switch that stops it, and the word back
+/// that it has.
+///
+/// The second half is not ceremony. Dropping `stop` only *signals* the task —
+/// the socket it is listening on is closed when that task next runs and drops
+/// the future holding it, which is some time after this thread has carried on.
+/// Both of these live on a fixed port and are stopped and started again in the
+/// ordinary course of things: the receiver every time its name or its code
+/// changes, the mirror on the cast after a cast that ended. A bind onto a
+/// socket still in LISTEN fails — SO_REUSEADDR forgives a port in TIME_WAIT and
+/// nothing else — so the stop is awaited rather than assumed, and a restart is
+/// a restart rather than a coin toss that answers `Address already in use` when
+/// it loses.
+struct Shutdown {
+	stop: oneshot::Sender<()>,
+	done: oneshot::Receiver<()>
+}
+
+/// Shutdown switches, `Some` exactly while that server is running.
+static MIRROR: Mutex<Option<Shutdown>> = Mutex::new(None);
+static RECEIVER: Mutex<Option<Shutdown>> = Mutex::new(None);
+
+/// Stop whichever server that slot holds, and wait for its port to come back.
+///
+/// The lock is taken and let go inside the first statement: a std mutex must not
+/// be held across an await, and there is nothing to hold it for once the handle
+/// is out.
+async fn stop_server(slot: &Mutex<Option<Shutdown>>) {
+	let running = slot.lock().ok().and_then(|mut guard| guard.take());
+	if let Some(Shutdown { stop, done }) = running {
+		drop(stop);
+		// Err means the task is already gone, which is the same good news.
+		let _ = done.await;
+	}
+}
 
 /// Hands the engine's API to the two commands below. Called from the torrent
 /// server's own startup, which is the only thing that has one.
@@ -141,26 +172,33 @@ pub fn cast_sharing() -> bool {
 /// Start or stop the read-only engine mirror. Returns the base URL the other
 /// device should be pointed at, or None once it is stopped.
 ///
-/// Restarts rather than refusing when it is already up: the caller asking again
-/// means the answer is wanted, not that something is wrong.
+/// Asked for twice, it answers twice with the same URL and leaves the running
+/// server alone. There is nothing a restart would change — one server, one
+/// port, in front of the one session — and there is something it would break:
+/// the connection the other device is streaming through. Casting a second film
+/// while the first is still playing is exactly when this is asked again, and so
+/// is a cast refused for a mistyped code and tried once more.
 ///
-/// `async` for one reason, and it is not that anything here awaits: a dualstack
-/// listener registers with tokio's reactor as it binds and *panics* without
-/// one, and tauri runs a synchronous command on the main thread, where there is
-/// no runtime. An async command is run on the async runtime, which is ours.
-/// Binding out here rather than inside the task is what lets a port already in
-/// use come back as an error the user can read.
+/// `async` first of all because a dualstack listener registers with tokio's
+/// reactor as it binds and *panics* without one, and tauri runs a synchronous
+/// command on the main thread, where there is no runtime. An async command is
+/// run on the async runtime, which is ours. Binding out here rather than inside
+/// the task is what lets a port already in use come back as an error the user
+/// can read — and waiting for the last server to let go of that port is the
+/// other thing only an async command can do (see `Shutdown`).
 #[tauri::command]
 pub async fn cast_share(enable: bool) -> Result<Option<String>, String> {
-	if let Ok(mut guard) = MIRROR.lock() {
-		guard.take();
-	}
 	if !enable {
+		stop_server(&MIRROR).await;
 		return Ok(None);
 	}
 
-	let api = ENGINE.get().ok_or("the torrent engine hasn't started yet")?.clone();
 	let ip = local_ip().ok_or("this device has no address on a network")?;
+	if cast_sharing() {
+		return Ok(Some(format!("http://{ip}:{MIRROR_PORT}")));
+	}
+
+	let api = ENGINE.get().ok_or("the torrent engine hasn't started yet")?.clone();
 	let addr = SocketAddr::from(([0, 0, 0, 0], MIRROR_PORT));
 	// Bound here rather than inside the task so a port already taken is an error
 	// the user sees, not a line in a log nobody reads.
@@ -168,6 +206,7 @@ pub async fn cast_share(enable: bool) -> Result<Option<String>, String> {
 		.map_err(|e| format!("could not open port {MIRROR_PORT}: {e}"))?;
 
 	let (tx, rx) = oneshot::channel();
+	let (done_tx, done_rx) = oneshot::channel();
 	tauri::async_runtime::spawn(async move {
 		let server = HttpApi::new(api, Some(HttpApiOptions {
 			// The whole point: this one can be read from, never written to.
@@ -185,21 +224,27 @@ pub async fn cast_share(enable: bool) -> Result<Option<String>, String> {
 			// The sender was dropped — `cast_share(false)`, or the app going away.
 			_ = rx => {}
 		}
+		// The select's future is gone by here, and with it the socket. Only now
+		// is the port somebody else's to take — see `Shutdown`.
+		let _ = done_tx.send(());
 	});
 
 	if let Ok(mut guard) = MIRROR.lock() {
-		*guard = Some(tx);
+		*guard = Some(Shutdown { stop: tx, done: done_rx });
 	}
 	Ok(Some(format!("http://{ip}:{MIRROR_PORT}")))
 }
 
 /// Start or stop answering play commands. `name` is what the sending device
 /// lists this one as; `code` is the pairing code shown on this screen.
+///
+/// `async` for the reason `cast_share` is, plus one of its own: the settings it
+/// captures are the name and the code, so changing either restarts the listener
+/// — which means this rebinds its port far more often than the mirror does, and
+/// has to wait for the last one to let go of it first (see `Shutdown`).
 #[tauri::command]
-pub fn cast_receive(app: AppHandle, enable: bool, name: String, code: String) -> Result<(), String> {
-	if let Ok(mut guard) = RECEIVER.lock() {
-		guard.take();
-	}
+pub async fn cast_receive(app: AppHandle, enable: bool, name: String, code: String) -> Result<(), String> {
+	stop_server(&RECEIVER).await;
 	if !enable {
 		return Ok(());
 	}
@@ -210,21 +255,15 @@ pub fn cast_receive(app: AppHandle, enable: bool, name: String, code: String) ->
 
 	let state = Receiving { app, name, code };
 	let addr = SocketAddr::from(([0, 0, 0, 0], RECEIVER_PORT));
-	let listener = std::net::TcpListener::bind(addr)
-		.map_err(|e| format!("could not open port {RECEIVER_PORT}: {e}"))?;
-	listener
-		.set_nonblocking(true)
+	// Bound out here rather than inside the task so a port already taken is an
+	// error the page can act on, not a line in a log nobody reads.
+	let listener = tokio::net::TcpListener::bind(addr)
+		.await
 		.map_err(|e| format!("could not open port {RECEIVER_PORT}: {e}"))?;
 
 	let (tx, rx) = oneshot::channel();
+	let (done_tx, done_rx) = oneshot::channel();
 	tauri::async_runtime::spawn(async move {
-		let listener = match tokio::net::TcpListener::from_std(listener) {
-			Ok(listener) => listener,
-			Err(e) => {
-				eprintln!("[ventic] cast receiver could not start: {e:#}");
-				return;
-			}
-		};
 		let router = Router::new()
 			.route("/ventic", get(identity))
 			.route("/ventic/play", post(play))
@@ -239,10 +278,11 @@ pub fn cast_receive(app: AppHandle, enable: bool, name: String, code: String) ->
 			}
 			_ = rx => {}
 		}
+		let _ = done_tx.send(());
 	});
 
 	if let Ok(mut guard) = RECEIVER.lock() {
-		*guard = Some(tx);
+		*guard = Some(Shutdown { stop: tx, done: done_rx });
 	}
 	Ok(())
 }
@@ -377,7 +417,61 @@ pub fn cast_firewall_hint() -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-	use super::{authority, reachable};
+	use std::sync::Mutex;
+
+	use tokio::sync::oneshot;
+
+	use super::{authority, reachable, stop_server, Shutdown};
+
+	/// A server on a port, held the way the two real ones are.
+	///
+	/// `async move` matters and is not decoration: it puts the listener inside
+	/// the future the select is racing, so the socket goes when that future is
+	/// dropped — at the end of the select, *before* the word back. Owned by the
+	/// task instead, as both real servers would be if they didn't hand theirs to
+	/// `axum::serve` and `make_http_api_and_run`, it outlives the word by
+	/// however long the task takes to unwind, and the next bind is a coin toss.
+	fn hold(slot: &Mutex<Option<Shutdown>>, listener: tokio::net::TcpListener) {
+		let (stop, rx) = oneshot::channel();
+		let (done_tx, done) = oneshot::channel();
+		tokio::spawn(async move {
+			tokio::select! {
+				_ = async move { loop { let _ = listener.accept().await; } } => {}
+				_ = rx => {}
+			}
+			let _ = done_tx.send(());
+		});
+		*slot.lock().unwrap() = Some(Shutdown { stop, done });
+	}
+
+	/// The restart both servers do — the receiver on every change of name or
+	/// code, the mirror on the cast after a cast that ended. Dropping the switch
+	/// only *signals* the task; the socket goes when that task is next polled,
+	/// which is after this thread has already tried to bind the same fixed port
+	/// again. Get this wrong and a cast answers `Address already in use`, and
+	/// turning receiving on switches itself straight back off.
+	#[test]
+	fn restarting_frees_the_port() {
+		let rt = tokio::runtime::Runtime::new().unwrap();
+		rt.block_on(async {
+			let slot: Mutex<Option<Shutdown>> = Mutex::new(None);
+
+			// Whatever the OS hands out — the point is that it is the *same*
+			// port every time round, exactly as MIRROR_PORT and RECEIVER_PORT are.
+			let first = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+			let port = first.local_addr().unwrap().port();
+			hold(&slot, first);
+
+			for turn in 1..=5 {
+				stop_server(&slot).await;
+				let again = tokio::net::TcpListener::bind(("127.0.0.1", port))
+					.await
+					.unwrap_or_else(|e| panic!("restart {turn} could not take the port back: {e}"));
+				hold(&slot, again);
+			}
+			stop_server(&slot).await;
+		});
+	}
 
 	/// What the mirror mints, what a debrid link looks like, and the two shapes
 	/// a hand-typed address arrives in.

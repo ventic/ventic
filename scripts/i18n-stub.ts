@@ -11,4 +11,8 @@
 ;(globalThis as { $t?: (key: string, values?: Record<string, unknown>) => string }).$t
   = (key, values) => key.replace(/\{(\w+)\}/g, (_, name) => String(values?.[name] ?? ''))
 
+// The same answer the real one gives with no document to read a `lang` off,
+// which is exactly the situation here.
+;(globalThis as { uiLocale?: () => string }).uiLocale = () => 'en-US'
+
 export {}

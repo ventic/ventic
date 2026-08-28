@@ -198,8 +198,11 @@ export async function fetchChannels(urls: string[]): Promise<Channel[]> {
   // empty playlist unless the reason is passed on.
   if (!channels.length) {
     const failed = results.find(r => r.status === 'rejected')
+    // Rethrown as it came, not wrapped: `String(anError)` is "Error: …", and
+    // the page shows `.message` — so wrapping put the word "Error" in front of
+    // a sentence that already read as one.
     if (failed)
-      throw new Error(String(failed.reason))
+      throw failed.reason instanceof Error ? failed.reason : new Error(String(failed.reason))
   }
   return channels
 }

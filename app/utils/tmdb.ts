@@ -179,22 +179,40 @@ export function moneyText(amount?: number) {
   return amount.toLocaleString(uiLocale(), { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 })
 }
 
+/**
+ * A TMDB date as the reader's locale writes it.
+ *
+ * The `T00:00` is the whole of it. TMDB gives a bare `YYYY-MM-DD`, which
+ * `new Date` reads as midnight *UTC* and `toLocaleDateString` then renders in
+ * the reader's own zone — so every air date and every birthday came out a day
+ * early for everyone west of Greenwich. Adding the time with no zone on it
+ * makes it midnight *here*, which is what a date carrying no time ever meant.
+ */
 export function dateText(date?: string) {
   if (!date)
     return ''
-  return new Date(date).toLocaleDateString(uiLocale(), { day: 'numeric', month: 'short', year: 'numeric' })
+  const local = /^\d{4}-\d{2}-\d{2}$/.test(date) ? `${date}T00:00` : date
+  return new Date(local).toLocaleDateString(uiLocale(), { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-/** Whole years since a date — someone's age today, or 0 if there is no date. */
+/**
+ * Whole years since a date — someone's age today, or 0 if there is no date.
+ *
+ * Split rather than parsed. TMDB gives a bare `YYYY-MM-DD`, which `new Date`
+ * reads as midnight *UTC* — so everywhere west of Greenwich the birthday landed
+ * a day early and everyone was a year older for a day. There is no time in the
+ * string and no timezone for it to be moved between; the three numbers are the
+ * whole of it.
+ */
 export function yearsSince(date: string) {
-  if (!date)
+  const [year, month, day] = date.split('-').map(Number)
+  if (!year || !month || !day)
     return 0
-  const born = new Date(date)
   const now = new Date()
   // A birthday still to come this year hasn't been had yet.
-  const early = now.getMonth() < born.getMonth()
-    || (now.getMonth() === born.getMonth() && now.getDate() < born.getDate())
-  return Math.max(0, now.getFullYear() - born.getFullYear() - (early ? 1 : 0))
+  const early = now.getMonth() + 1 < month
+    || (now.getMonth() + 1 === month && now.getDate() < day)
+  return Math.max(0, now.getFullYear() - year - (early ? 1 : 0))
 }
 
 /**
@@ -434,8 +452,17 @@ function toDetail(raw: RawDetail, type: MediaType): MediaDetail {
 export function useMediaDetail(type: MaybeRefOrGetter<MediaType>, id: MaybeRefOrGetter<string | number>) {
   return useAsyncData(
     () => `detail-${toValue(type)}-${toValue(id)}`,
-    () => tmdb<RawDetail>(`/${toValue(type)}/${toValue(id)}`, { append_to_response: DETAIL_APPEND, include_image_language: 'en,null' }),
-    { lazy: true, watch: [() => toValue(type), () => toValue(id)], transform: raw => toDetail(raw, toValue(type)) },
+    // No id is not a lookup that fails, it is a lookup there is nothing to make:
+    // a live channel and a bare magnet both reach the player with no TMDB
+    // identity at all, and `/movie/` is a 404 on the way to the same nothing.
+    async () => toValue(id)
+      ? await tmdb<RawDetail>(`/${toValue(type)}/${toValue(id)}`, { append_to_response: DETAIL_APPEND, include_image_language: 'en,null' })
+      : null,
+    {
+      lazy: true,
+      watch: [() => toValue(type), () => toValue(id)],
+      transform: raw => raw ? toDetail(raw, toValue(type)) : null,
+    },
   )
 }
 

@@ -24,24 +24,39 @@ export default defineNuxtPlugin(() => {
   const settings = useSettingsStore()
 
   /**
+   * What the listener was last told. The first switch-on fills in a name and a
+   * code, and those are two of the three things watched below — so without this
+   * the watcher fires again on its own writes and asks Rust to restart a
+   * listener it has only just started, on a port it is still holding.
+   */
+  let applied = ''
+
+  /**
    * Bring the listener into line with the settings, filling in a name and a
    * code the first time it is switched on. Runs again whenever any of the three
    * change, so renaming this device doesn't need a restart to be seen.
    */
   async function apply() {
+    if (settings.castReceive) {
+      if (!settings.castCode)
+        settings.castCode = newCode()
+      if (!settings.castName)
+        settings.castName = isTv() ? $t('Ventic TV') : $t('Ventic')
+    }
+
+    const wanted = [settings.castReceive, settings.castName, settings.castCode].join('|')
+    if (wanted === applied)
+      return
+    applied = wanted
+
     try {
-      if (settings.castReceive) {
-        if (!settings.castCode)
-          settings.castCode = newCode()
-        if (!settings.castName)
-          settings.castName = isTv() ? $t('Ventic TV') : $t('Ventic')
-      }
       await receiveCasts(settings.castReceive, settings.castName, settings.castCode)
     }
     catch (e) {
       // A port already taken is the realistic failure, and the switch being on
       // while nothing answers is worth saying out loud rather than hiding.
       console.error('[ventic] casting to this device could not be turned on', e)
+      applied = ''
       settings.castReceive = false
     }
   }
