@@ -44,7 +44,10 @@ const roomy = computed(() => width.value ? width.value >= (props.needs ?? 740) :
 </script>
 
 <template>
-  <div ref="bar" class="flex shrink-0 items-center gap-2 px-4 pb-3 md:px-6">
+  <!-- `grow-0` on the inputs because Vuetify gives every `.v-input` `flex: 1 1
+       auto`, which beats the width a caller sets: a `w-52` filter was 588px on
+       a 1920 window, and the row's whole slack went to one dropdown. -->
+  <div ref="bar" class="flex shrink-0 items-center gap-2 px-4 pb-3 md:px-6 [&>.v-input]:grow-0">
     <!-- min-w-0 + flex-1 is what makes the chip group inside scroll rather than
          push everything else off the bar; a wide window has room for the lot, so
          it goes back to sizing itself and the filters sit beside it as before. -->
