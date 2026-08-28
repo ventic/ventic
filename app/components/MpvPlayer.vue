@@ -1939,7 +1939,7 @@ function onKey(e: KeyboardEvent) {
 // it.
 // ---------------------------------------------------------------------------
 let nativeMouse: (() => void)[] = []
-let live = true
+let mounted = true
 
 function onNativeClick() {
   noteActivity()
@@ -2055,7 +2055,7 @@ async function listenToNativeMouse() {
     ])
     // Registration is a round trip to the backend, so the player may already
     // have been torn down by the time it lands.
-    if (live)
+    if (mounted)
       nativeMouse = off
     else
       off.forEach(f => f())
@@ -2100,7 +2100,7 @@ onBeforeUnmount(() => {
   cancelAnimationFrame(rafId)
   document.documentElement.classList.remove('ventic-video')
   window.removeEventListener('keydown', onKey, true)
-  live = false
+  mounted = false
   nativeMouse.forEach(off => off())
   stopPoll()
   saveProgress()

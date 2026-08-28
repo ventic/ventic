@@ -161,6 +161,18 @@ finally {
   globalThis.fetch = realFetch
 }
 
+// A `<script setup>` binding wins over a prop of the same name in the template,
+// silently: a local `let live` made the LIVE dot show on every film, because it
+// was the mounted flag and not the channel flag being read. Nothing warns.
+const player = read('app/components/MpvPlayer.vue')
+for (const prop of player.slice(0, player.indexOf('}>()')).matchAll(/^ {2}(\w+)\??:/gm)) {
+  assert.doesNotMatch(
+    player,
+    new RegExp(`^(let|const|var|function)\\s+${prop[1]}\\b`, 'm'),
+    `MpvPlayer declares \`${prop[1]}\` twice — the local shadows the prop in the template`,
+  )
+}
+
 // --- The line this feature does not cross --------------------------------------
 
 // The app ships with no playlists and names none, exactly as it ships with no
