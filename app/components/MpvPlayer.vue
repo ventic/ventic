@@ -1139,6 +1139,29 @@ const { pause: stopPoll, resume: startPoll } = useIntervalFn(poll, 200, { immedi
 const fromEngine = computed(() => props.src.startsWith(ENGINE))
 
 /**
+ * The film is being served by the device that cast it here — `mirrored` reads
+ * the mirror's own port off the URL (see utils/cast).
+ *
+ * Worth telling apart because everything this screen can say about a failure is
+ * a sentence pointing somebody at a machine, and for a cast it is neither of the
+ * other two: not this device's engine, and not the source's link. Saying either
+ * sends them looking at the wrong one.
+ */
+const fromCast = computed(() => mirrored(props.src))
+
+/**
+ * What the spinner says while a film is opening. Three different waits look
+ * identical here and fail for three unrelated reasons — see `waitForStream`.
+ */
+const loading = computed(() => {
+  if (!waiting.value)
+    return native ? $t('Starting mpv…') : $t('Opening the stream…')
+  if (fromEngine.value)
+    return $t('Waiting for the torrent stream…')
+  return fromCast.value ? $t('Waiting for the film from the other device…') : $t('Opening the stream…')
+})
+
+/**
  * librqbit answers the stream endpoint with HTTP 500 for a short window after a
  * torrent is (re-)added, while it initialises. mpv does not retry — it fails the
  * open in ~7ms and exits, leaving a black box at 0:00. So poll the endpoint for
@@ -1242,6 +1265,15 @@ async function startPlayer() {
         errorMsg.value = probe.status
           ? $t('The torrent stream isn\'t ready yet (engine replied HTTP {status}). It may still be fetching metadata from peers.', { status: probe.status })
           : $t('Could not reach the torrent engine on 127.0.0.1:3030.')
+      }
+      else if (fromCast.value) {
+        // Nothing here is this device's to fix: the film is on the one that sent
+        // it, and the ordinary way to lose it is that machine sleeping, leaving
+        // the network, or being told to stop. Blaming "the source" sent people
+        // to the Sources screen over a television that had gone to sleep.
+        errorMsg.value = probe.status
+          ? $t('The device this was cast from answered HTTP {status}. It may have stopped serving the film.', { status: probe.status })
+          : $t('The device this was cast from couldn\'t be reached. Check it is still on and on this network.')
       }
       else {
         // Debrid links are minted per request and go stale; searching again is
@@ -2320,7 +2352,7 @@ defineExpose({ osd, position: readonly(position) })
       <template v-else-if="centre === 'loading'">
         <v-progress-circular indeterminate color="primary" size="28" width="3" />
         <div class="text-title-small">
-          {{ waiting ? $t('Waiting for the torrent stream…') : native ? $t('Starting mpv…') : $t('Opening the stream…') }}
+          {{ loading }}
         </div>
         <div v-if="status" class="text-body-small opacity-60">
           {{ status }}

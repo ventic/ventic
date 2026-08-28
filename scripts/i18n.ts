@@ -47,9 +47,13 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { extname, join, relative } from 'node:path'
 import process from 'node:process'
+import { fileURLToPath } from 'node:url'
 import * as vuetifyLocales from 'vuetify/locale'
 
-const ROOT = new URL('..', import.meta.url).pathname
+// `.pathname` would do on the machines this is usually run from and on no
+// other: a file URL's path keeps its leading slash, so Windows gets `/C:/…`
+// and every `join` below builds `\C:\…`, which opens nothing.
+const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const SRC = join(ROOT, 'app')
 const LOCALES_DIR = join(ROOT, 'i18n', 'locales')
 const TODO = 'TODO_TRANSLATION: '

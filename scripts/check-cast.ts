@@ -207,6 +207,21 @@ assert.ok(
   'stopCast tells the other device before it stops serving the film',
 )
 
+// Android's own policy is the third thing in front of the mirror, after the two
+// firewalls, and it is the only one that cannot be opened from the machine
+// complaining. A release APK whose network security config permits cleartext to
+// loopback alone can never *receive* a cast: the mirror's address is a bare LAN
+// IP, that file has no CIDR form to allow one with, and the webview's fetch and
+// ExoPlayer's open are both refused. Neither end can see it — the sender is told
+// the film is fine, because `reachable` tests it with a TCP connect from Rust,
+// which the policy does not touch.
+const android = read('src-tauri/gen/android/app/src/main/res/xml/network_security_config.xml')
+assert.ok(
+  /<base-config[^>]*cleartextTrafficPermitted="true"/.test(android),
+  'the Android network security config must permit cleartext beyond loopback — a cast is served '
+  + 'from a LAN IP literal, and there is no way to name one of those in that file',
+)
+
 // The firewall hint is Linux's alone: Windows and macOS ask at bind time and
 // Android has no firewall. A hint on those is a command that does nothing.
 assert.ok(

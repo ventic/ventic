@@ -21,8 +21,11 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
+import { fileURLToPath } from 'node:url'
 
-const ROOT = new URL('..', import.meta.url).pathname
+// fileURLToPath, not `.pathname`: the latter keeps the leading slash, so on
+// Windows every `join` off it builds `\C:\…` and opens nothing.
+const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const OUT = join(ROOT, 'i18n', 'i18n.locales.json')
 const DEFAULT = 'en'
 

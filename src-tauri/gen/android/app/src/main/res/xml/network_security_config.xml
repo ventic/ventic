@@ -1,17 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The torrent engine serves the stream over plain http on the loopback
-     interface. The webview was allowed to open that by its own rules; ExoPlayer
-     (Player.kt) opens the same URL with an ordinary http stack, which is not,
-     so say it here.
+<!-- Plain http is not an exception in this app, it is the job. Nearly every URL
+     it opens is one the *user* chose and nobody here can vouch for the scheme
+     of: the torrent engine's own API on 127.0.0.1, another Ventic's read-only
+     mirror on a bare LAN address while a cast lasts (cast.rs, port 3231), an
+     IPTV channel out of somebody's M3U, and whatever a source resolved a
+     release to.
 
-     Loopback only, and only because those bytes never leave the device — there
-     is nothing on that path to encrypt them against. Everything else stays
-     https, which is the part `android:usesCleartextTraffic` could not express:
-     it is one flag for the whole app. -->
+     This was loopback-only, and the two that are not loopback were the two that
+     broke. A cast never plays on an Android receiver: the mirror's address is a
+     LAN IP literal, Android has no way to express "the local network" here —
+     `domain` matches host names, there is no CIDR form — and everything outside
+     the list falls to `base-config`. The failure is invisible from both ends.
+     The sending device is told the film is fine, because the receiver tests it
+     with a TCP connect from Rust, which this policy does not touch; the
+     receiving device blocks the *webview's* fetch and ExoPlayer's open, so the
+     only symptom is a spinner on a television and an error blaming the link.
+     Live TV goes the same way for any channel served over http.
+
+     So: permitted, and narrowed where it can be narrowed instead — the mirror
+     is read-only, bound to the LAN for the length of one cast, and gated on a
+     pairing code (see cast.rs). `bun run check:cast` holds this file, because
+     nothing else can: tightening it compiles, installs, and fails only on
+     somebody else's TV. -->
 <network-security-config>
-    <base-config cleartextTrafficPermitted="false" />
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="false">127.0.0.1</domain>
-        <domain includeSubdomains="false">localhost</domain>
-    </domain-config>
+    <base-config cleartextTrafficPermitted="true" />
 </network-security-config>
