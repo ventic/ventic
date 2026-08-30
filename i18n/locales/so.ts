@@ -270,6 +270,7 @@ export default {
   "Not now": "Hadda maya",
   "Not supported yet": "Weli lama taageero",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Waxba ma jawaabin. Hubi in qalabka kale uu gudbinta shidan yahay, ama hoos ku qor cinwaankiisa.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Wax hubaal ah kuma jirin labaatankii daqiiqo ee u dambeeyay — filimka oo dhan waa la dhegeysanayaa…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Weli waxba lama dooran, sidaas darteed asalku hadda waa midab keli ah.",
   "Nothing downloading.": "Waxba lama soo dejinayo.",

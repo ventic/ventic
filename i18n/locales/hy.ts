@@ -270,6 +270,7 @@ export default {
   "Not now": "Հիմա ոչ",
   "Not supported yet": "Դեռ չի աջակցվում",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Ոչինչ չպատասխանեց։ Ստուգեք՝ մյուս սարքի վրա հեռարձակումը միացված է, կամ ներքևում մուտքագրեք դրա հասցեն։",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Վերջին քսան րոպեում ոչինչ հստակ չէ — լսում է ամբողջ ֆիլմը…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Դեռ ոչինչ ընտրված չէ, ուստի ֆոնը առայժմ միագույն է։",
   "Nothing downloading.": "Ոչինչ չի ներբեռնվում։",

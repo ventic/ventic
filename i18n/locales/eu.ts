@@ -270,6 +270,7 @@ export default {
   "Not now": "Orain ez",
   "Not supported yet": "Oraindik ez da onartzen",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Ez du ezerk erantzun. Egiaztatu beste gailuak igorpena piztuta duela, edo idatzi haren helbidea behean.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Ezer ziurrik ez azken hogei minutuetan: film osoa entzuten…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Oraindik ez da ezer aukeratu, beraz atzeko planoa kolore laua da oraingoz.",
   "Nothing downloading.": "Ez da ezer deskargatzen ari.",

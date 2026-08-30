@@ -270,6 +270,7 @@ export default {
   "Not now": "Niha na",
   "Not supported yet": "Hîn nayê piştgirî kirin",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Tiştek bersiv neda. Kontrol bike ka li ser amûra din weşandin vekirî ye, an navnîşana wê li jêr binivîse.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Di bîst deqeyên dawî de tiştek diyar tune — guhdariya tevahiya fîlmê tê kirin…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Hîn tiştek nehatiye hilbijartin, ji ber vê yekê paşxane niha rengekî sade ye.",
   "Nothing downloading.": "Tiştek nayê daxistin.",

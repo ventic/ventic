@@ -270,6 +270,7 @@ export default {
   "Not now": "Ne tagad",
   "Not supported yet": "Vēl netiek atbalstīts",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Neviens neatbildēja. Pārbaudiet, vai otrā ierīcē ir ieslēgta pārraidīšana, vai ievadiet tās adresi zemāk.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Pēdējās divdesmit minūtēs nekas skaidrs — klausās visu filmu…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Vēl nekas nav izvēlēts, tāpēc fons pagaidām ir vienkrāsains.",
   "Nothing downloading.": "Nekas netiek lejupielādēts.",

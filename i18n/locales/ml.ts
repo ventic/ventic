@@ -270,6 +270,7 @@ export default {
   "Not now": "ഇപ്പോൾ വേണ്ട",
   "Not supported yet": "ഇതുവരെ പിന്തുണയ്ക്കുന്നില്ല",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "ഒന്നും പ്രതികരിച്ചില്ല. മറ്റേ ഉപകരണത്തിൽ കാസ്റ്റിംഗ് ഓണാണോ എന്ന് നോക്കുക, അല്ലെങ്കിൽ താഴെ അതിന്റെ വിലാസം ടൈപ്പ് ചെയ്യുക.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "കഴിഞ്ഞ ഇരുപത് മിനിറ്റിൽ ഉറപ്പുള്ളതൊന്നുമില്ല — സിനിമ മുഴുവൻ കേൾക്കുന്നു…",
   "Nothing chosen yet, so the background is a flat colour for now.": "ഇതുവരെ ഒന്നും തിരഞ്ഞെടുത്തിട്ടില്ല, അതിനാൽ പശ്ചാത്തലം തൽക്കാലം ഒറ്റനിറമാണ്.",
   "Nothing downloading.": "ഒന്നും ഡൗൺലോഡ് ആകുന്നില്ല.",

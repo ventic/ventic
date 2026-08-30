@@ -270,6 +270,7 @@ export default {
   "Not now": "Ikke nå",
   "Not supported yet": "Ikke støttet ennå",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Ingenting svarte. Sjekk at den andre enheten har casting slått på, eller skriv inn adressen dens nedenfor.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Ingenting sikkert i de siste tjue minuttene — lytter til hele filmen…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Ingenting er valgt ennå, så bakgrunnen er en ensfarget flate inntil videre.",
   "Nothing downloading.": "Ingenting lastes ned.",

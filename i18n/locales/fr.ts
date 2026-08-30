@@ -270,6 +270,7 @@ export default {
   "Not now": "Pas maintenant",
   "Not supported yet": "Pas encore pris en charge",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Rien n'a répondu. Vérifiez que la diffusion est activée sur l'autre appareil, ou saisissez son adresse ci-dessous.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Rien de sûr sur les vingt dernières minutes — écoute du film entier…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Rien n'a encore été choisi, l'arrière-plan est donc une couleur unie pour l'instant.",
   "Nothing downloading.": "Aucun téléchargement en cours.",

@@ -270,6 +270,7 @@ export default {
   "Not now": "Ti på'go",
   "Not supported yet": "Ti siña trabiha",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Taya' manoppe. Chek kao gaige i casting mababa gi otro device, pat tuge' i address-ña gi papa'.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Taya' seguro gi uttimo bente minutu — mangekungok i entero na peliku'la…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Taya' trabiha ma ayek, pot enao un plåtu na kulot ha' i background på'go.",
   "Nothing downloading.": "Taya' mana'tutunok.",

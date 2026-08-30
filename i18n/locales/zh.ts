@@ -270,6 +270,7 @@ export default {
   "Not now": "暂不",
   "Not supported yet": "暂不支持",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "没有任何回应。请确认对方设备已打开投放，或在下方输入它的地址。",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "最近二十分钟内没有确定的结果——正在聆听整部影片…",
   "Nothing chosen yet, so the background is a flat colour for now.": "尚未选择任何图片，因此背景暂时是纯色。",
   "Nothing downloading.": "没有正在下载的内容。",

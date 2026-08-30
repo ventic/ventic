@@ -270,6 +270,7 @@ export default {
   "Not now": "לא עכשיו",
   "Not supported yet": "עדיין לא נתמך",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "שום דבר לא ענה. בדוק שהשידור מופעל במכשיר השני, או הקלד את כתובתו למטה.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "שום דבר ודאי בעשרים הדקות האחרונות — מאזין לכל הסרט…",
   "Nothing chosen yet, so the background is a flat colour for now.": "עדיין לא נבחר דבר, ולכן הרקע הוא בינתיים צבע אחיד.",
   "Nothing downloading.": "שום דבר לא בהורדה.",

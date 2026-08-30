@@ -270,6 +270,7 @@ export default {
   "Not now": "ఇప్పుడు కాదు",
   "Not supported yet": "ఇంకా మద్దతు లేదు",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "ఏదీ స్పందించలేదు. రెండో పరికరంలో ప్రసారం ఆన్‌లో ఉందో లేదో చూడండి, లేదా కింద దాని చిరునామాను టైప్ చేయండి.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "గత ఇరవై నిమిషాల్లో ఖచ్చితమైనది ఏదీ లేదు — సినిమా మొత్తాన్ని వింటోంది…",
   "Nothing chosen yet, so the background is a flat colour for now.": "ఇంకా ఏదీ ఎంచుకోలేదు, కాబట్టి నేపథ్యం ప్రస్తుతానికి ఒకే రంగు.",
   "Nothing downloading.": "ఏదీ డౌన్‌లోడ్ కావట్లేదు.",

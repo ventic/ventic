@@ -270,6 +270,7 @@ export default {
   "Not now": "Nid nawr",
   "Not supported yet": "Heb ei gefnogi eto",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Ni atebodd dim. Gwiriwch fod darlledu wedi'i droi ymlaen ar y ddyfais arall, neu teipiwch ei chyfeiriad isod.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Dim byd sicr yn yr ugain munud diwethaf — yn gwrando ar y ffilm gyfan…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Dim byd wedi'i ddewis eto, felly lliw plaen yw'r cefndir am y tro.",
   "Nothing downloading.": "Dim byd yn lawrlwytho.",

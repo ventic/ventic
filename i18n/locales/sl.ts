@@ -270,6 +270,7 @@ export default {
   "Not now": "Ne zdaj",
   "Not supported yet": "Še ni podprto",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Nič se ni odzvalo. Preveri, ali je na drugi napravi vklopljeno predvajanje, ali pa spodaj vpiši njen naslov.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "V zadnjih dvajsetih minutah nič zanesljivega — poslušam celoten film…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Zaenkrat še ni nič izbrano, zato je ozadje trenutno enobarvno.",
   "Nothing downloading.": "Nič se ne prenaša.",

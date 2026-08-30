@@ -270,6 +270,7 @@ export default {
   "Not now": "Hhayi manje",
   "Not supported yet": "Akukasekelwa",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Akuphendulanga lutho. Hlola ukuthi enye idivayisi inokusakaza kuvuliwe, noma thayipha ikheli layo ngezansi.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Akukho okuqinisekile emizuzwini engamashumi amabili edlule — ilalela ifilimu lonke…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Akukho okukhethiwe okwamanje, ngakho isizinda okwamanje ngumbala ovamile.",
   "Nothing downloading.": "Akukho okulandwayo.",

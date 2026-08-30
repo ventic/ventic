@@ -270,6 +270,7 @@ export default {
   "Not now": "Ne dabar",
   "Not supported yet": "Kol kas nepalaikoma",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Niekas neatsakė. Patikrinkite, ar kitame įrenginyje įjungtas transliavimas, arba žemiau įveskite jo adresą.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Per paskutines dvidešimt minučių nieko tikro — klausomasi viso filmo…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Kol kas nieko nepasirinkta, todėl fonas kol kas yra vientisa spalva.",
   "Nothing downloading.": "Nieko neatsiunčiama.",

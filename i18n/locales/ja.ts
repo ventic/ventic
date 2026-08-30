@@ -270,6 +270,7 @@ export default {
   "Not now": "後で",
   "Not supported yet": "まだ未対応",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "応答がありませんでした。相手の端末でキャストが有効になっているか確認するか、下にそのアドレスを入力してください。",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "直近20分では確定できませんでした — 映画全体を解析しています…",
   "Nothing chosen yet, so the background is a flat colour for now.": "まだ何も選ばれていないので、背景はいまのところ単色です。",
   "Nothing downloading.": "ダウンロード中のものはありません。",

@@ -270,6 +270,7 @@ export default {
   "Not now": "Nu acum",
   "Not supported yet": "Încă neacceptat",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Nu a răspuns nimic. Verifică dacă pe celălalt dispozitiv transmiterea este pornită sau scrie adresa lui mai jos.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Nimic sigur în ultimele douăzeci de minute — se ascultă tot filmul…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Încă nu s-a ales nimic, așa că deocamdată fundalul este o culoare uniformă.",
   "Nothing downloading.": "Nu se descarcă nimic.",

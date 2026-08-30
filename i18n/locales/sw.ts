@@ -270,6 +270,7 @@ export default {
   "Not now": "Si sasa",
   "Not supported yet": "Bado haitumiki",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Hakuna kilichojibu. Angalia kama kifaa kingine kimewasha kutuma, au andika anwani yake hapa chini.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Hakuna kilicho hakika katika dakika ishirini zilizopita — inasikiliza filamu nzima…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Bado hakuna kilichochaguliwa, hivyo mandharinyuma ni rangi moja kwa sasa.",
   "Nothing downloading.": "Hakuna kinachopakuliwa.",

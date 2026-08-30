@@ -270,6 +270,7 @@ export default {
   "Not now": "Ne nun",
   "Not supported yet": "Ankoraŭ ne subtenata",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Nenio respondis. Kontrolu ĉu la alia aparato havas transsendon ŝaltita, aŭ tajpu ĝian adreson sube.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Nenio certa en la lastaj dudek minutoj — aŭskultas la tutan filmon…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Ankoraŭ nenio elektita, do la fono estas nune plata koloro.",
   "Nothing downloading.": "Nenio elŝutiĝas.",

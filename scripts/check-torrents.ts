@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import process from 'node:process'
-import { diskBudget, ENGINE, engineReason, findReleases, haveAt, isAwkward, isBloated, limitToFiles, normalizeSource, parseRelease, pickBest, pickSubtitleFiles, pickVideoFile, planEviction, planNetwork, releaseKey, setQuality, setSources, startTorrent, streamParts, toRelease, uploadLimit, usedBytes } from '../app/utils/torrents'
+import { diskBudget, ENGINE, engineReason, findReleases, haveAt, isAwkward, isBloated, limitToFiles, normalizeSource, parseRelease, pickBest, pickSubtitleFiles, pickVideoFile, planEviction, planNetwork, releaseKey, setQuality, setSources, STALLED, startTorrent, streamParts, toRelease, uploadLimit, usedBytes } from '../app/utils/torrents'
 // Self-check for the torrent parser/ranker: `bun scripts/check-torrents.ts`.
 // The fixture is the response shape a source answers with, filled in with a
 // public-domain film. `--live <source-url> <imdb-id>` also searches for real.
@@ -720,11 +720,16 @@ assert.deepEqual(narrowedTo, [1, 4], 'and the second attempt narrows to the same
 // The stream endpoint answers 500 with "invalid state" for three unrelated
 // failures. Guessing at which one it was is how every report of this arrived
 // with nothing in it — the torrent itself is what has to be asked.
-const stats = { state: 'live', error: null as string | null }
+const stats = { state: 'live', error: null as string | null, progress_bytes: 1 }
 globalThis.fetch = (async () => Response.json({ id: 7, stats })) as typeof fetch
 
 const streamed = `${ENGINE}/torrents/7/stream/1`
 assert.equal(await engineReason(streamed), '', 'a torrent that is fine says nothing')
+// Live, connected, and not one byte: nothing is broken and nothing can be
+// fixed here — the release has no seeders, and that is what has to be said.
+stats.progress_bytes = 0
+assert.equal(await engineReason(streamed), STALLED, 'a live torrent with no bytes is a dead swarm')
+stats.progress_bytes = 1
 stats.state = 'initializing'
 assert.equal(await engineReason(streamed), 'initializing')
 stats.state = 'paused'

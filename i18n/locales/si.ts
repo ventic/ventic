@@ -270,6 +270,7 @@ export default {
   "Not now": "දැන් නොවේ",
   "Not supported yet": "තවම සහාය නොදක්වයි",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "කිසිවක් පිළිතුරු දුන්නේ නැත. අනෙක් උපාංගයේ විකාශනය ක්‍රියාත්මකද යන්න පරීක්ෂා කරන්න, නැතහොත් පහත එහි ලිපිනය ටයිප් කරන්න.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "පසුගිය මිනිත්තු විස්සේ නිශ්චිත කිසිවක් නැත — මුළු චිත්‍රපටයටම සවන් දෙමින්…",
   "Nothing chosen yet, so the background is a flat colour for now.": "තවම කිසිවක් තෝරා නැත, එබැවින් දැනට පසුබිම එක් වර්ණයකි.",
   "Nothing downloading.": "කිසිවක් බාගැනෙන්නේ නැත.",

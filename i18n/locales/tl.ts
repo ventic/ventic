@@ -270,6 +270,7 @@ export default {
   "Not now": "Hindi ngayon",
   "Not supported yet": "Hindi pa suportado",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Walang sumagot. Tingnan kung nakabukas ang pagpapadala sa kabilang device, o i-type ang address nito sa ibaba.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Walang tiyak sa nakaraang dalawampung minuto — pinakikinggan ang buong pelikula…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Wala pang napipili, kaya iisang kulay muna ang background.",
   "Nothing downloading.": "Walang nagda-download.",

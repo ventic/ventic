@@ -270,6 +270,7 @@ export default {
   "Not now": "나중에",
   "Not supported yet": "아직 지원되지 않음",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "아무 응답도 없었습니다. 다른 기기에서 전송이 켜져 있는지 확인하거나, 아래에 그 주소를 입력하세요.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "최근 20분에서는 확실한 것이 없습니다 — 영화 전체를 듣는 중…",
   "Nothing chosen yet, so the background is a flat colour for now.": "아직 아무것도 선택하지 않아 배경은 당분간 단색입니다.",
   "Nothing downloading.": "다운로드 중인 항목이 없습니다.",

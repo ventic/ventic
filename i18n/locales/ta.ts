@@ -270,6 +270,7 @@ export default {
   "Not now": "இப்போது வேண்டாம்",
   "Not supported yet": "இன்னும் ஆதரிக்கப்படவில்லை",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "எதுவும் பதிலளிக்கவில்லை. மற்றச் சாதனத்தில் அனுப்புதல் இயக்கப்பட்டுள்ளதா என்று பாருங்கள், அல்லது கீழே அதன் முகவரியைத் தட்டச்சு செய்யுங்கள்.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "கடந்த இருபது நிமிடங்களில் உறுதியாக எதுவும் இல்லை — முழுத் திரைப்படத்தையும் கேட்கிறது…",
   "Nothing chosen yet, so the background is a flat colour for now.": "இன்னும் எதுவும் தேர்வு செய்யப்படவில்லை, எனவே பின்னணி தற்போது ஒரே வண்ணமாக உள்ளது.",
   "Nothing downloading.": "எதுவும் பதிவிறங்கவில்லை.",

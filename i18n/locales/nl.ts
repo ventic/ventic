@@ -270,6 +270,7 @@ export default {
   "Not now": "Niet nu",
   "Not supported yet": "Nog niet ondersteund",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Er antwoordde niets. Controleer of casten op het andere apparaat aanstaat, of typ hieronder het adres.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Niets met zekerheid in de laatste twintig minuten — luistert naar de hele film…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Er is nog niets gekozen, dus de achtergrond is voorlopig een effen kleur.",
   "Nothing downloading.": "Er wordt niets gedownload.",

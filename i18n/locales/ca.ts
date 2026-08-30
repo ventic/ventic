@@ -270,6 +270,7 @@ export default {
   "Not now": "Ara no",
   "Not supported yet": "Encara no s'admet",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "No ha respost res. Comprova que l'altre dispositiu tingui l'enviament activat, o escriu-ne l'adreça a sota.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Res segur en els últims vint minuts: escoltant tota la pel·lícula…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Encara no s'ha triat res, així que de moment el fons és un color pla.",
   "Nothing downloading.": "No s'està baixant res.",

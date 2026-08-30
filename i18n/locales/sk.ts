@@ -270,6 +270,7 @@ export default {
   "Not now": "Teraz nie",
   "Not supported yet": "Zatiaľ nepodporované",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Nič neodpovedalo. Skontroluj, či má druhé zariadenie zapnuté odosielanie, alebo nižšie zadaj jeho adresu.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Za posledných dvadsať minút nič isté — počúvam celý film…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Zatiaľ nič nevybrané, takže pozadie je nateraz jednoliata farba.",
   "Nothing downloading.": "Nič sa nesťahuje.",

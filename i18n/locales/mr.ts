@@ -270,6 +270,7 @@ export default {
   "Not now": "आत्ता नको",
   "Not supported yet": "अजून समर्थित नाही",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "काहीच उत्तर आले नाही. दुसऱ्या उपकरणावर पाठवणे चालू आहे का ते पाहा, किंवा खाली त्याचा पत्ता लिहा.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "गेल्या वीस मिनिटांत काहीही निश्चित नाही — संपूर्ण चित्रपट ऐकत आहे…",
   "Nothing chosen yet, so the background is a flat colour for now.": "अजून काहीही निवडलेले नाही, त्यामुळे सध्या पार्श्वभूमी एकरंगी आहे.",
   "Nothing downloading.": "काहीही डाउनलोड होत नाही.",

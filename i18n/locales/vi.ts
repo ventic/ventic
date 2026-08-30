@@ -270,6 +270,7 @@ export default {
   "Not now": "Để sau",
   "Not supported yet": "Chưa hỗ trợ",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Không có phản hồi. Hãy kiểm tra xem thiết bị kia đã bật truyền chưa, hoặc nhập địa chỉ của nó bên dưới.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Không có gì chắc chắn trong hai mươi phút vừa rồi — đang nghe cả bộ phim…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Chưa chọn gì, nên hiện tại nền chỉ là một màu phẳng.",
   "Nothing downloading.": "Không có gì đang tải xuống.",

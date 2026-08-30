@@ -270,6 +270,7 @@ export default {
   "Not now": "Jangan sekarang",
   "Not supported yet": "Belum didukung",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Tidak ada yang menjawab. Periksa apakah pengiriman sudah dinyalakan di perangkat lain, atau ketik alamatnya di bawah.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Tidak ada yang pasti dalam dua puluh menit terakhir — mendengarkan seluruh film…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Belum ada yang dipilih, jadi latarnya untuk sementara warna polos.",
   "Nothing downloading.": "Tidak ada yang sedang diunduh.",

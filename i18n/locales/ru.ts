@@ -270,6 +270,7 @@ export default {
   "Not now": "Не сейчас",
   "Not supported yet": "Пока не поддерживается",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Никто не ответил. Проверьте, включена ли трансляция на другом устройстве, или введите его адрес ниже.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "За последние двадцать минут ничего определённого — слушаю весь фильм…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Пока ничего не выбрано, поэтому фон сейчас однотонный.",
   "Nothing downloading.": "Ничего не загружается.",

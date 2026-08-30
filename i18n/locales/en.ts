@@ -270,6 +270,7 @@ export default {
   "Not now": "Not now",
   "Not supported yet": "Not supported yet",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Nothing answered. Check the other device has casting switched on, or type its address below.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Nothing certain in the last twenty minutes — listening to the whole film…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Nothing chosen yet, so the background is a flat colour for now.",
   "Nothing downloading.": "Nothing downloading.",

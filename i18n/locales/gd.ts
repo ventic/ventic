@@ -270,6 +270,7 @@ export default {
   "Not now": "Chan ann an-dràsta",
   "Not supported yet": "Gun taic fhathast",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Cha do fhreagair dad. Dearbh gu bheil craoladh air a chur air air an uidheam eile, no sgrìobh an seòladh aige gu h-ìosal.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Chan eil dad cinnteach anns na fichead mionaid mu dheireadh — ag èisteachd ris an fhilm gu lèir…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Cha deach dad a thaghadh fhathast, agus mar sin 's e dath rèidh a th' anns a' chùlaibh an-dràsta.",
   "Nothing downloading.": "Chan eil dad 'ga luchdachadh a-nuas.",

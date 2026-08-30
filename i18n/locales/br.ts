@@ -270,6 +270,7 @@ export default {
   "Not now": "Ket bremañ",
   "Not supported yet": "Nann skoret c'hoazh",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "N'eus respontet netra. Gwiriit hag-eñ eo lakaet ar skignañ war an drevnad all, pe skrivit e chomlec'h dindan.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Netra sur en ugent munutenn ziwezhañ — o selaou ouzh ar film a-bezh…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Netra dibabet c'hoazh, setu ez eo al liv unvan an drekleur evit ar mare.",
   "Nothing downloading.": "Netra o pellgargañ.",

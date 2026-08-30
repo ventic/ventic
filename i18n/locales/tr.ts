@@ -270,6 +270,7 @@ export default {
   "Not now": "Şimdi değil",
   "Not supported yet": "Henüz desteklenmiyor",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Hiçbir yanıt gelmedi. Diğer cihazda yayınlamanın açık olduğunu kontrol edin ya da adresini aşağıya yazın.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Son yirmi dakikada kesin bir şey yok — filmin tamamı dinleniyor…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Henüz bir şey seçilmedi, bu yüzden arka plan şimdilik düz bir renk.",
   "Nothing downloading.": "İnen bir şey yok.",

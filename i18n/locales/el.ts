@@ -270,6 +270,7 @@ export default {
   "Not now": "Όχι τώρα",
   "Not supported yet": "Δεν υποστηρίζεται ακόμη",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Δεν απάντησε τίποτα. Ελέγξτε ότι η άλλη συσκευή έχει τη μετάδοση ενεργοποιημένη ή πληκτρολογήστε τη διεύθυνσή της παρακάτω.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Τίποτα σίγουρο στα τελευταία είκοσι λεπτά — ακούει ολόκληρη την ταινία…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Δεν έχει επιλεγεί τίποτα ακόμη, οπότε το φόντο είναι προς το παρόν ένα σκέτο χρώμα.",
   "Nothing downloading.": "Δεν γίνεται καμία λήψη.",

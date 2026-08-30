@@ -270,6 +270,7 @@ export default {
   "Not now": "Agora non",
   "Not supported yet": "Aínda non compatible",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Non respondeu nada. Comproba que o outro dispositivo teña o envío activado, ou escribe embaixo o seu enderezo.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Nada seguro nos últimos vinte minutos: escoitando a película enteira…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Aínda non escolliches nada, así que polo de agora o fondo é unha cor lisa.",
   "Nothing downloading.": "Non se está a descargar nada.",

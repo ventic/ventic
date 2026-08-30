@@ -698,6 +698,9 @@ export async function limitToFiles(id: number, indexes: number[]) {
   }
 }
 
+/** `engineReason` for a torrent the swarm never answered. Not an engine fault. */
+export const STALLED = 'stalled'
+
 /**
  * What the engine says is actually wrong with the torrent behind a stream URL.
  *
@@ -713,7 +716,14 @@ export async function engineReason(url: string) {
   const stats = parts ? (await torrentDetails(parts.id))?.stats : null
   if (!stats)
     return ''
-  return stats.error || (stats.state === 'live' ? '' : stats.state)
+  if (stats.error)
+    return stats.error
+  if (stats.state !== 'live')
+    return stats.state
+  // Live, healthy, connected — and not one byte after the whole leash. Nothing
+  // here is broken and nothing here can be fixed: the release has no seeders
+  // that will talk to us, and the only useful thing to say is "pick another".
+  return stats.progress_bytes ? '' : STALLED
 }
 
 /** One torrent with its file list — the list endpoint doesn't carry files. */

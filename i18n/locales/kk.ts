@@ -270,6 +270,7 @@ export default {
   "Not now": "Қазір емес",
   "Not supported yet": "Әзірге қолдау көрсетілмейді",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Ешнәрсе жауап бермеді. Екінші құрылғыда тарату қосулы екенін тексеріңіз немесе төменде оның мекенжайын теріңіз.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Соңғы жиырма минутта нақты ештеңе жоқ — бүкіл фильмді тыңдауда…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Әзірге ештеңе таңдалмаған, сондықтан фон әзірге біркелкі түс.",
   "Nothing downloading.": "Ештеңе жүктелмеуде.",

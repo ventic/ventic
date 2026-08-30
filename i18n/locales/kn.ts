@@ -270,6 +270,7 @@ export default {
   "Not now": "ಈಗ ಬೇಡ",
   "Not supported yet": "ಇನ್ನೂ ಬೆಂಬಲಿತವಿಲ್ಲ",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "ಯಾವುದೂ ಉತ್ತರಿಸಲಿಲ್ಲ. ಇನ್ನೊಂದು ಸಾಧನದಲ್ಲಿ ಬಿತ್ತರಣೆ ಆನ್ ಆಗಿದೆಯೇ ನೋಡಿ, ಅಥವಾ ಕೆಳಗೆ ಅದರ ವಿಳಾಸವನ್ನು ಟೈಪ್ ಮಾಡಿ.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "ಕಳೆದ ಇಪ್ಪತ್ತು ನಿಮಿಷಗಳಲ್ಲಿ ಖಚಿತವಾದದ್ದೇನೂ ಇಲ್ಲ — ಇಡೀ ಚಿತ್ರವನ್ನು ಕೇಳಲಾಗುತ್ತಿದೆ…",
   "Nothing chosen yet, so the background is a flat colour for now.": "ಇನ್ನೂ ಏನೂ ಆಯ್ಕೆಯಾಗಿಲ್ಲ, ಹಾಗಾಗಿ ಸದ್ಯಕ್ಕೆ ಹಿನ್ನೆಲೆ ಒಂದೇ ಬಣ್ಣ.",
   "Nothing downloading.": "ಏನೂ ಡೌನ್‌ಲೋಡ್ ಆಗುತ್ತಿಲ್ಲ.",

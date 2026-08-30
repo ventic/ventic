@@ -270,6 +270,7 @@ export default {
   "Not now": "Ní anois",
   "Not supported yet": "Gan tacaíocht fós",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Níor fhreagair aon rud. Deimhnigh go bhfuil craoladh casta air ar an ngléas eile, nó clóscríobh a sheoladh thíos.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Faic cinnte sna fiche nóiméad deireanacha — ag éisteacht leis an scannán ar fad…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Níl aon rud roghnaithe fós, mar sin is dath comhréidh é an cúlra go fóill.",
   "Nothing downloading.": "Níl aon rud á íoslódáil.",

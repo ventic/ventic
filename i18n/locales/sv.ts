@@ -270,6 +270,7 @@ export default {
   "Not now": "Inte nu",
   "Not supported yet": "Stöds inte än",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Inget svarade. Kontrollera att den andra enheten har casting påslaget, eller skriv in dess adress nedan.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Inget säkert under de senaste tjugo minuterna — lyssnar igenom hela filmen…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Inget valt än, så bakgrunden är en enfärgad yta så länge.",
   "Nothing downloading.": "Inget laddas ner.",

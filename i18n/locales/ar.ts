@@ -270,6 +270,7 @@ export default {
   "Not now": "ليس الآن",
   "Not supported yet": "غير مدعوم بعد",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "لم يستجب شيء. تأكّد من أن البث مفعّل على الجهاز الآخر، أو اكتب عنوانه أدناه.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "لا شيء مؤكد في العشرين دقيقة الأخيرة — الإنصات إلى الفيلم كله…",
   "Nothing chosen yet, so the background is a flat colour for now.": "لم يُختَر شيء بعد، فالخلفية لون مسطح في الوقت الحالي.",
   "Nothing downloading.": "لا شيء قيد التنزيل.",

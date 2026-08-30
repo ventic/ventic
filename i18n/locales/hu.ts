@@ -270,6 +270,7 @@ export default {
   "Not now": "Most nem",
   "Not supported yet": "Még nem támogatott",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Semmi sem válaszolt. Ellenőrizd, hogy a másik eszközön be van-e kapcsolva az átküldés, vagy írd be alább a címét.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Semmi biztos az elmúlt húsz percben — a teljes film hallgatása…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Még nincs kiválasztva semmi, így a háttér egyelőre egyszínű.",
   "Nothing downloading.": "Semmi sem töltődik le.",

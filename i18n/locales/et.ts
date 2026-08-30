@@ -270,6 +270,7 @@ export default {
   "Not now": "Mitte praegu",
   "Not supported yet": "Veel toetamata",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Miski ei vastanud. Kontrolli, kas teisel seadmel on ülekanne sisse lülitatud, või sisesta allpool selle aadress.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Viimase kahekümne minuti jooksul midagi kindlat ei leidnud — kuulan tervet filmi…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Midagi pole veel valitud, nii et taust on esialgu ühtlane värv.",
   "Nothing downloading.": "Midagi ei laadita alla.",

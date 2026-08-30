@@ -270,6 +270,7 @@ export default {
   "Not now": "Hozir emas",
   "Not supported yet": "Hali qoʻllab-quvvatlanmaydi",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Hech nima javob bermadi. Ikkinchi qurilmada uzatish yoqilganini tekshiring yoki quyida uning manzilini yozing.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Soʻnggi yigirma daqiqada aniq hech narsa yoʻq — butun film tinglanmoqda…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Hali hech narsa tanlanmagan, shuning uchun fon hozircha bir xil rangda.",
   "Nothing downloading.": "Hech narsa yuklab olinmayapti.",

@@ -270,6 +270,7 @@ export default {
   "Not now": "ไว้ก่อน",
   "Not supported yet": "ยังไม่รองรับ",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "ไม่มีอะไรตอบกลับ ตรวจสอบว่าอุปกรณ์อีกเครื่องเปิดการส่งภาพไว้แล้ว หรือพิมพ์ที่อยู่ของมันด้านล่าง",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "ยี่สิบนาทีที่ผ่านมายังไม่มีอะไรแน่ชัด — กำลังฟังทั้งเรื่อง…",
   "Nothing chosen yet, so the background is a flat colour for now.": "ยังไม่ได้เลือกอะไร พื้นหลังจึงเป็นสีพื้นไปก่อน",
   "Nothing downloading.": "ไม่มีอะไรกำลังดาวน์โหลด",

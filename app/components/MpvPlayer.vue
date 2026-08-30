@@ -1280,11 +1280,13 @@ async function startPlayer() {
         // narrowed — all of which the engine names if it is asked. A report
         // saying only "HTTP 500" is a report nobody can act on.
         const said = await engineReason(props.src) || probe.reason
-        errorMsg.value = said
-          ? $t('Torrent engine said {status}: {reason}', { status: probe.status, reason: said })
-          : probe.status
-            ? $t('The torrent stream isn\'t ready yet (engine replied HTTP {status}). It may still be fetching metadata from peers.', { status: probe.status })
-            : $t('Could not reach the torrent engine on 127.0.0.1:3030.')
+        errorMsg.value = said === STALLED
+          ? $t('Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.')
+          : said
+            ? $t('Torrent engine said {status}: {reason}', { status: probe.status, reason: said })
+            : probe.status
+              ? $t('The torrent stream isn\'t ready yet (engine replied HTTP {status}). It may still be fetching metadata from peers.', { status: probe.status })
+              : $t('Could not reach the torrent engine on 127.0.0.1:3030.')
       }
       else if (fromCast.value) {
         // Nothing here is this device's to fix: the film is on the one that sent

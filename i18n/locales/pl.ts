@@ -270,6 +270,7 @@ export default {
   "Not now": "Nie teraz",
   "Not supported yet": "Jeszcze nieobsługiwane",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "Nic nie odpowiedziało. Sprawdź, czy drugie urządzenie ma włączone przesyłanie, albo wpisz jego adres poniżej.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "Nic pewnego w ostatnich dwudziestu minutach — nasłuchiwanie całego filmu…",
   "Nothing chosen yet, so the background is a flat colour for now.": "Nic jeszcze nie wybrano, więc tło jest na razie jednolitym kolorem.",
   "Nothing downloading.": "Nic się nie pobiera.",

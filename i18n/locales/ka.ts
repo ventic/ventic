@@ -270,6 +270,7 @@ export default {
   "Not now": "ახლა არა",
   "Not supported yet": "ჯერ არ არის მხარდაჭერილი",
   "Nothing answered. Check the other device has casting switched on, or type its address below.": "არაფერს უპასუხია. შეამოწმეთ, მეორე მოწყობილობაზე გადაცემა ჩართულია თუ არა, ან ქვემოთ ჩაწერეთ მისი მისამართი.",
+  "Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.": "TODO_TRANSLATION: Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.",
   "Nothing certain in the last twenty minutes — listening to the whole film…": "ბოლო ოცი წუთის განმავლობაში ვერაფერი დადგინდა — მთელ ფილმს უსმენს…",
   "Nothing chosen yet, so the background is a flat colour for now.": "ჯერ არაფერია არჩეული, ამიტომ ფონი ამჟამად ერთფეროვანია.",
   "Nothing downloading.": "არაფერი იტვირთება.",
