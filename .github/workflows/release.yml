@@ -4,8 +4,16 @@
 #   the tag push   → this
 #
 # The release is left as a *draft*: check the artifacts, write the notes, then
-# publish. Nothing here signs anything, so macOS and Windows both warn on first
-# launch — the alternative is a paid certificate on each.
+# publish.
+#
+# Three separate signatures, none of which is the other: TAURI_SIGNING_* proves an
+# *update* came from us, the APPLE_* secrets are Gatekeeper's, and the Android
+# keystore is the identity a phone checks before it will replace an install. Each
+# is skipped when its secret is absent — the build still succeeds, it just ships a
+# bundle the OS warns about (and, for Android, one that cannot upgrade an earlier
+# install). Windows is the one that is still unsigned — and the fix there is not
+# another secret: signing the installer after the bundler has already signed it
+# invalidates the updater signature, exactly as the AppImage repack below does.
 name: Release
 
 on:
@@ -97,6 +105,20 @@ jobs:
           # takes an empty one whenever `CI` is set, which every runner sets. It
           # is wired up so that adding the passphrase is the only step then.
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          # Gatekeeper, which is a different key entirely: the one above proves a
+          # *update* came from us, these prove the .app did. Unset — the default —
+          # and the .dmg is unsigned, which is the "Ventic is damaged" dialog on
+          # every Mac that didn't build it. With an Apple Developer ID in the
+          # secrets tauri-action imports it, signs and notarizes, and nothing else
+          # about the build changes. Ignored on the other two runners.
+          # APPLE_CERTIFICATE is `base64 -i cert.p12`; APPLE_PASSWORD is an
+          # app-specific password, never the Apple ID's own.
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Ventic ${{ github.ref_name }}
@@ -152,6 +174,8 @@ jobs:
       # The runner has Homebrew, so a .dmg that still depends on it looks fine
       # here and fails on every other Mac. Fail the release instead.
       - if: runner.os == 'macOS'
+        env:
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
         run: bun scripts/build/macos/bundle-dylib.ts src-tauri/target/release/bundle/macos/Ventic.app
 
   # `latest.json` is written by all three desktop runners at once, each merging
@@ -178,6 +202,11 @@ jobs:
     # The draft release has to exist before there is anything to upload to.
     needs: desktop
     runs-on: ubuntu-latest
+    # The Play upload step is skipped without this. A step-level `if:` cannot read
+    # the `secrets` context, but it can read `env` — so the secret is lifted here
+    # rather than checked in a shell, the way the keystore below has to be.
+    env:
+      PLAY_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
@@ -216,7 +245,11 @@ jobs:
           fi
 
       # NDK comes from the runner image's ANDROID_NDK_HOME, which scripts/build/index.ts picks up.
-      - run: bun run build:android
+      # `--aab` on top of the APK: Play takes only an .aab, and every other way of
+      # getting Ventic onto a device takes only an .apk. One build, one keystore,
+      # one versionCode — so the store copy and a sideloaded TV are the same app
+      # and can replace each other.
+      - run: bun run build:android --aab
         env:
           ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/ventic.jks
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -235,6 +268,19 @@ jobs:
             exit 1
           fi
           "$ANDROID_HOME"/build-tools/36.0.0/apksigner verify --print-certs "$apk"
+
+      # Play's own review reads the *first* upload of a versionCode and there is
+      # no undo, so this lands on the internal track and is promoted by hand in the
+      # console. Nothing happens at all until the service account secret exists.
+      - name: Publish to Google Play
+        if: env.PLAY_JSON != ''
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
+          packageName: com.ventic.app
+          releaseFiles: src-tauri/gen/android/app/build/outputs/bundle/**/*.aab
+          track: internal
+          status: completed
 
       - name: Attach the APK
         env:

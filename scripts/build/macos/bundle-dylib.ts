@@ -184,10 +184,17 @@ function bundle() {
 
   // install_name_tool invalidates a Mach-O's signature, and Apple Silicon kills
   // a process whose signature is *broken* rather than ignoring it — SIGKILL with
-  // nothing in the log worth reading. This ad-hoc signature is what lets the app
+  // nothing in the log worth reading. The ad-hoc signature is what lets the app
   // start at all; it is not distribution signing and does nothing for Gatekeeper.
+  //
+  // A Developer ID in the environment (a release build) is used instead, with the
+  // hardened runtime: notarization rejects an ad-hoc signature outright, and
+  // nested code has to be signed *before* the .app around it — which is exactly
+  // where this runs, since the bundler signs that afterwards.
+  const identity = process.env.APPLE_SIGNING_IDENTITY || '-'
+  const notarizable = identity === '-' ? [] : ['--options', 'runtime', '--timestamp']
   for (const f of [exe, ...staged(STAGING)])
-    tool('codesign', ['--force', '--sign', '-', f])
+    tool('codesign', ['--force', '--sign', identity, ...notarizable, f])
 
   console.log(`\n✓ ${libs.length} dylibs staged for Contents/Resources/dylibs\n`)
 }
