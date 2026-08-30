@@ -1177,30 +1177,41 @@ async function waitForStream(url: string, timeoutMs = 60000) {
   // its whole leash failing and then blame a source that was never involved.
   // mpv opens it and reports what happened, which is the better message anyway.
   if (!/^https?:/i.test(url))
-    return { ok: true, status: 0 }
+    return { ok: true, status: 0, reason: '' }
 
   const local = url.startsWith(ENGINE)
   const deadline = Date.now() + (local ? timeoutMs : 15000)
   let status = 0
+  let reason = ''
   while (Date.now() < deadline) {
     try {
-      const res = await fetch(url, { headers: { Range: 'bytes=0-0' } })
+      // On a leash, because reading that one byte is the probe: a torrent
+      // nobody is downloading — paused by `release`, or held back by "only on
+      // Wi-Fi" — answers 206 and then sends nothing, for ever. Unbounded, the
+      // player sat on that body with a spinner and no way to say why. Aborting
+      // costs another turn of this loop, which the deadline still governs.
+      const res = await fetch(url, { headers: { Range: 'bytes=0-0' }, signal: AbortSignal.timeout(10_000) })
       status = res.status
-      // Release the connection so librqbit isn't left holding a reader.
-      await res.arrayBuffer().catch(() => {})
-      if (res.ok || res.status === 206)
-        return { ok: true, status }
+      if (res.ok || res.status === 206) {
+        // Release the connection so librqbit isn't left holding a reader.
+        await res.arrayBuffer()
+        return { ok: true, status, reason: '' }
+      }
+      // The engine puts a sentence in the body of its own errors, and it is the
+      // only account of the failure anybody gets to read.
+      reason = await res.json().then(body => String(body?.human_readable ?? '')).catch(() => '')
       // Waiting out a status only makes sense for the engine warming up. A
       // remote host answering 403 or 404 has already given its answer.
       if (!local && status >= 400 && status < 500)
-        return { ok: false, status }
+        return { ok: false, status, reason }
     }
     catch {
-      // Engine momentarily unreachable — keep waiting.
+      // Engine momentarily unreachable, or the read above ran out of leash —
+      // keep waiting.
     }
     await new Promise(r => setTimeout(r, 400))
   }
-  return { ok: false, status }
+  return { ok: false, status, reason }
 }
 
 // ---------------------------------------------------------------------------
@@ -1262,9 +1273,18 @@ async function startPlayer() {
     waiting.value = false
     if (!probe.ok) {
       if (fromEngine.value) {
-        errorMsg.value = probe.status
-          ? $t('The torrent stream isn\'t ready yet (engine replied HTTP {status}). It may still be fetching metadata from peers.', { status: probe.status })
-          : $t('Could not reach the torrent engine on 127.0.0.1:3030.')
+        // What the engine itself says, before anything this screen would rather
+        // guess. "It may still be fetching metadata from peers" was a guess, and
+        // it was wrong for every failure that actually reaches users — a torrent
+        // that errored on the disk, one left paused, one whose files were never
+        // narrowed — all of which the engine names if it is asked. A report
+        // saying only "HTTP 500" is a report nobody can act on.
+        const said = await engineReason(props.src) || probe.reason
+        errorMsg.value = said
+          ? $t('Torrent engine said {status}: {reason}', { status: probe.status, reason: said })
+          : probe.status
+            ? $t('The torrent stream isn\'t ready yet (engine replied HTTP {status}). It may still be fetching metadata from peers.', { status: probe.status })
+            : $t('Could not reach the torrent engine on 127.0.0.1:3030.')
       }
       else if (fromCast.value) {
         // Nothing here is this device's to fix: the film is on the one that sent

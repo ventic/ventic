@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import process from 'node:process'
-import { diskBudget, ENGINE, findReleases, haveAt, isAwkward, isBloated, normalizeSource, parseRelease, pickBest, pickSubtitleFiles, pickVideoFile, planEviction, planNetwork, releaseKey, setQuality, setSources, startTorrent, streamParts, toRelease, uploadLimit, usedBytes } from '../app/utils/torrents'
+import { diskBudget, ENGINE, engineReason, findReleases, haveAt, isAwkward, isBloated, limitToFiles, normalizeSource, parseRelease, pickBest, pickSubtitleFiles, pickVideoFile, planEviction, planNetwork, releaseKey, setQuality, setSources, startTorrent, streamParts, toRelease, uploadLimit, usedBytes } from '../app/utils/torrents'
 // Self-check for the torrent parser/ranker: `bun scripts/check-torrents.ts`.
 // The fixture is the response shape a source answers with, filled in with a
 // public-domain film. `--live <source-url> <imdb-id>` also searches for real.
@@ -692,6 +692,46 @@ const promise = startTorrent({
 })
 assert.equal((await promise).id, 7, 'the name arrived with the lookup, and still adopted')
 assert.ok(!requests.some(u => u.startsWith('https://a.example')), 'and the sources were never asked')
+
+// --- Narrowing a torrent to the file being watched -----------------------------
+// The engine refuses `update_only_files` outright while a torrent is still
+// initialising, which is the state a magnet is in the moment the add answers.
+// Giving up on that first refusal leaves the torrent un-narrowed, and watching
+// one episode then pulls the whole season pack onto an 8 GB TV box.
+let narrowing = 0
+let narrowedTo: number[] = []
+globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+  narrowing++
+  if (narrowing === 1) {
+    return Response.json(
+      { human_readable: 'can\'t update initializing torrent' },
+      { status: 500 },
+    )
+  }
+  narrowedTo = JSON.parse(String(init?.body)).only_files
+  return Response.json({})
+}) as typeof fetch
+
+await limitToFiles(7, [1, 4])
+assert.equal(narrowing, 2, 'a refusal while initialising is retried, not swallowed')
+assert.deepEqual(narrowedTo, [1, 4], 'and the second attempt narrows to the same files')
+
+// --- What the engine says went wrong ------------------------------------------
+// The stream endpoint answers 500 with "invalid state" for three unrelated
+// failures. Guessing at which one it was is how every report of this arrived
+// with nothing in it — the torrent itself is what has to be asked.
+const stats = { state: 'live', error: null as string | null }
+globalThis.fetch = (async () => Response.json({ id: 7, stats })) as typeof fetch
+
+const streamed = `${ENGINE}/torrents/7/stream/1`
+assert.equal(await engineReason(streamed), '', 'a torrent that is fine says nothing')
+stats.state = 'initializing'
+assert.equal(await engineReason(streamed), 'initializing')
+stats.state = 'paused'
+assert.equal(await engineReason(streamed), 'paused', 'paused serves headers and no bytes — say so')
+stats.error = 'error writing to file 0'
+assert.equal(await engineReason(streamed), 'error writing to file 0', 'a real error beats the state')
+assert.equal(await engineReason('https://debrid.example/dl/abc.mkv'), '', 'nothing to ask about a link')
 
 globalThis.fetch = realFetch
 setSources([])

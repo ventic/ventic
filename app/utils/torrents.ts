@@ -678,11 +678,42 @@ export function pickSubtitleFiles(files: EngineFile[], video: number): number[] 
  * episodes down while you watch one of them.
  */
 export async function limitToFiles(id: number, indexes: number[]) {
-  await fetch(`${ENGINE}/torrents/${id}/update_only_files`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ only_files: indexes }),
-  }).catch(() => {}) // best effort: failing here only costs disk, not playback
+  // Retried, because the engine refuses this outright while the torrent is
+  // still initialising ("can't update initializing torrent") — and that is
+  // exactly the state a magnet is in the moment `POST /torrents` answers. The
+  // race is won on a desktop and lost on a TV box, and losing it is not the
+  // cosmetic failure the old comment here assumed: nothing narrows the torrent,
+  // so watching one episode quietly pulls the whole season pack onto a device
+  // with 8 GB of storage. A `catch` alone never saw it either — the refusal is
+  // a 500 with a body, which `fetch` reports as a perfectly good response.
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const ok = await fetch(`${ENGINE}/torrents/${id}/update_only_files`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ only_files: indexes }),
+    }).then(res => res.ok).catch(() => false)
+    if (ok)
+      return
+    await new Promise(resolve => setTimeout(resolve, 300))
+  }
+}
+
+/**
+ * What the engine says is actually wrong with the torrent behind a stream URL.
+ *
+ * The stream endpoint answers 500 for three unrelated reasons — the torrent is
+ * still initialising, it is in an error state, or it holds no metadata — and
+ * says the same "invalid state" about all of them. The torrent itself carries
+ * the sentence worth reading, and a *paused* one carries none at all: it serves
+ * headers and then never a byte, which looks identical to buffering. Naming
+ * either is the difference between a bug report and a fix.
+ */
+export async function engineReason(url: string) {
+  const parts = streamParts(url)
+  const stats = parts ? (await torrentDetails(parts.id))?.stats : null
+  if (!stats)
+    return ''
+  return stats.error || (stats.state === 'live' ? '' : stats.state)
 }
 
 /** One torrent with its file list — the list endpoint doesn't carry files. */
