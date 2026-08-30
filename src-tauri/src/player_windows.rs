@@ -684,6 +684,14 @@ pub struct Pointer {
 	over: bool,
 }
 
+/// Nothing to do here, and that is the whole difference between the two embeds:
+/// Win32 asks whether the pointer is over the client area before hiding it, not
+/// whether the window holds the keyboard focus, so mpv's own `cursor-autohide`
+/// works in a child window and answers this for us. X11 asks about focus, which
+/// an embedded window never has — see `Embed::set_cursor` in player.rs.
+#[tauri::command]
+pub fn player_cursor() {}
+
 /// Poll the cursor, since the webview never sees one that is over the native
 /// surface and so cannot tell that the mouse moved there.
 ///

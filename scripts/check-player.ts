@@ -305,5 +305,26 @@ assert.match(lib, /awake::keep_awake/, 'and lib.rs hands it to the frontend')
 // timeout that works again after the credits and one that never does.
 assert.match(mpv, /watch\(\(\) => started\.value && !paused\.value/, 'and pausing lets the screen go')
 
+// The pointer over the picture is the same shape of seam, and fails the same
+// silent way. On X11 the arrow belongs to mpv's window rather than the page, and
+// mpv itself will not hide it: its autohide only ever acts on a window holding
+// the X input focus, which a `--wid` child never has. So the frontend has to say
+// when, every backend has to answer to the name, and nothing compiles the
+// agreement — a rename is an arrow sitting in the middle of a two-hour film.
+assert.match(mpv, /invoke\('player_cursor', \{ visible: show \}\)/, 'the player asks for the pointer by name')
+assert.match(mpv, /function hideChrome\(\) \{\n\s+ui\.value = false\n\s+showPointer\(false\)/, 'the chrome going away takes it with it')
+assert.match(mpv, /function noteActivity\(\) \{\n\s+ui\.value = true\n\s+showPointer\(true\)/, 'and coming back brings it back')
+assert.match(lib, /player::player_cursor/, 'lib.rs hands it to the frontend')
+for (const backend of ['player.rs', 'player_windows.rs', 'player_macos.rs', 'player_unsupported.rs']) {
+  const src = await Bun.file(`src-tauri/src/${backend}`).text()
+  assert.match(src, /pub fn player_cursor\(/, `${backend} answers to it — a backend without it does not compile`)
+}
+// X11 is the one that does real work, and it works by inheritance: mpv defines
+// no cursor on its own window while it believes it has nothing to hide, so the
+// blank one goes on the parent window this side owns.
+const x11 = await Bun.file('src-tauri/src/player.rs').text()
+assert.match(x11, /XDefineCursor\)\(self\.display, self\.window, self\.blank\)/, 'hiding defines the blank cursor on the embed window')
+assert.match(x11, /XUndefineCursor\)\(self\.display, self\.window\)/, 'and showing hands it back to the webview\'s own')
+
 // eslint-disable-next-line no-console
 console.log('player: ok')
