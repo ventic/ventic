@@ -28,3 +28,6 @@ src-tauri/dylibs
 # in the flathub repo rather than this one. The generated manifest also has the
 # TMDB token substituted into it.
 packaging/flatpak/generated
+
+# Working tree for scripts/build/android/ffmpeg.ts (media3 + FFmpeg sources).
+.ffmpeg-build

@@ -42,6 +42,7 @@
     "build": "bun scripts/build/index.ts",
     "build:windows": "bun scripts/build/index.ts windows",
     "build:android": "bun scripts/build/index.ts android",
+    "build:android-ffmpeg": "bun scripts/build/android/ffmpeg.ts",
     "build:play": "bun scripts/build/index.ts play"
   },
   "dependencies": {

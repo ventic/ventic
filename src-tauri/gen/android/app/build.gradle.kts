@@ -112,6 +112,14 @@ dependencies {
     // this module is on the classpath — without it every channel fails as an
     // unreadable progressive stream.
     implementation("androidx.media3:media3-exoplayer-hls:1.8.0")
+    // Software audio decoding, for when the device's own decoder says yes and
+    // then dies — see `retryInSoftware` in Player.kt for why that is not
+    // hypothetical. Google does not publish this module to Maven (it links
+    // FFmpeg, which is licensed separately), so it is built from the media3
+    // source with scripts/build/android/ffmpeg.ts and checked in as an .aar.
+    // A file dependency carries no POM, so its own api dependency is named here.
+    implementation(files("libs/media3-decoder-ffmpeg-1.8.0.aar"))
+    implementation("androidx.media3:media3-decoder:1.8.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.4")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.0")

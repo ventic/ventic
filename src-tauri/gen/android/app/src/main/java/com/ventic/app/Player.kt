@@ -19,6 +19,7 @@ import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.common.Tracks
 import androidx.media3.common.text.CueGroup
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.decoder.ffmpeg.FfmpegLibrary
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
@@ -82,6 +83,21 @@ class VenticPlayer(private val activity: MainActivity) {
   private var loudness: LoudnessEnhancer? = null
   private var equalizer: Equalizer? = null
 
+  /**
+   * Decode audio with FFmpeg instead of the device's own decoder.
+   *
+   * Off until the platform has actually failed — see `onPlayerError`. The
+   * hardware path is the one that can hand a Dolby bitstream straight to a
+   * receiver over HDMI, and `FfmpegAudioRenderer` answers FORMAT_HANDLED
+   * without ever asking whether the sink could have passed the stream through,
+   * so preferring it from the start would quietly end passthrough for every TV
+   * that has it.
+   */
+  private var softwareAudio = false
+
+  /** The file being played, so the software retry can re-open it. */
+  private var opened = ""
+
   /** Target gain in millibels — see `audio-normalize` in setProp. */
   private var gainMb = 0
 
@@ -113,6 +129,11 @@ class VenticPlayer(private val activity: MainActivity) {
     failure = null
     running = true
     cues = ""
+    opened = url
+    // Each film gets its own go on the hardware: one bad E-AC-3 track must not
+    // cost every later one its passthrough. At most one retry per file — the
+    // flag is set before the rebuild, so a second failure surfaces normally.
+    softwareAudio = false
     onMain {
       val p = ensure()
       view?.visibility = View.VISIBLE
@@ -211,9 +232,14 @@ class VenticPlayer(private val activity: MainActivity) {
     val p = ExoPlayer.Builder(activity)
       .setRenderersFactory(
         DefaultRenderersFactory(activity)
-          // MediaCodec first; the FFmpeg extension, if this build was made with
-          // one, only picks up what the device itself has no decoder for.
-          .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
+          // MediaCodec first, until it has proved it can't — see `softwareAudio`.
+          .setExtensionRendererMode(
+            if (softwareAudio) {
+              DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER
+            } else {
+              DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON
+            },
+          )
           // Cheap TV boxes advertise decoders that then fail to initialise.
           .setEnableDecoderFallback(true),
       )
@@ -223,6 +249,7 @@ class VenticPlayer(private val activity: MainActivity) {
     p.setWakeMode(C.WAKE_MODE_LOCAL)
     p.addListener(object : Player.Listener {
       override fun onPlayerError(error: PlaybackException) {
+        if (retryInSoftware(error)) return
         running = false
         failure = describe(error)
       }
@@ -237,6 +264,12 @@ class VenticPlayer(private val activity: MainActivity) {
         cues = cueGroup.cues.mapNotNull { it.text?.toString() }.joinToString("\n").trim()
       }
     })
+
+    view?.let { existing ->
+      existing.player = p
+      player = p
+      return p
+    }
 
     val v = PlayerView(activity).apply {
       useController = false
@@ -268,6 +301,47 @@ class VenticPlayer(private val activity: MainActivity) {
     view = v
     player = p
     return p
+  }
+
+  /**
+   * A decoder that said yes and then died, given one more go in software.
+   *
+   * Android answers `format_supported=YES` for E-AC-3 on a device whose only
+   * decoder is the vendor's, then that decoder rejects the first frame of a
+   * stream FFmpeg decodes without a complaint. There is no second decoder for
+   * `setEnableDecoderFallback` to reach for and often no second audio track
+   * either, so one frame ended the whole film — which is what "it plays in
+   * other apps" meant, since every other player carries FFmpeg.
+   *
+   * So: hardware first, and this once the hardware has actually failed. Posted
+   * rather than run here because releasing a player inside its own listener is
+   * asking for trouble, and `softwareAudio` is set before the post so a second
+   * error on the way down cannot start a third attempt.
+   */
+  private fun retryInSoftware(error: PlaybackException): Boolean {
+    val decoding = error.errorCode in
+      PlaybackException.ERROR_CODE_DECODER_INIT_FAILED..
+      PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED
+    if (softwareAudio || !decoding || opened.isEmpty() || !FfmpegLibrary.isAvailable()) {
+      return false
+    }
+
+    softwareAudio = true
+    val at = player?.currentPosition ?: 0L
+    main.post {
+      val old = player
+      player = null
+      slots = emptyList()
+      old?.release()
+
+      val p = ensure()
+      p.volume = if (muted) 0f else vol / 100f
+      p.setMediaItem(MediaItem.fromUri(opened))
+      p.prepare()
+      if (at > 0) p.seekTo(at)
+      p.play()
+    }
+    return true
   }
 
   private fun setProp(name: String, value: Any?) {
