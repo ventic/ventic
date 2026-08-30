@@ -139,6 +139,18 @@ function open(url: string) {
       <p class="text-body-small opacity-70">
         {{ $t('Ventic is MIT licensed. The components it is built on keep their own terms, listed above; on Windows the bundled mpv is GPL software and its licence and offer of source sit next to the application\'s executable.') }}
       </p>
+
+      <!-- Linked rather than restated: one copy of the policy, on the site,
+           where an edit to it is visible in public history. Store listings
+           point at the same URL. -->
+      <p class="text-body-small opacity-70">
+        {{ $t('Ventic collects nothing about you: no account, no telemetry, no crash reports and no server to send them to. The privacy policy lists every request the app makes and every permission it asks for.') }}
+      </p>
+      <div>
+        <v-btn :append-icon="mdiOpenInNew" variant="tonal" size="small" @click="open('https://ventic.tv/privacy')">
+          {{ $t('Privacy policy') }}
+        </v-btn>
+      </div>
     </settings-section>
   </div>
 </template>
