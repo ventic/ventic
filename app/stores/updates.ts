@@ -19,6 +19,11 @@ import { invoke } from '@tauri-apps/api/core'
  * path. Android's package manager only replaces a package with one signed by the
  * same key, and keeps the library when it does.
  *
+ * And Android is really two answers, told apart at runtime rather than at build
+ * time, because one APK is shipped to both: a copy Google Play installed neither
+ * may nor can replace itself (`play`, and `fromPlayStore` for why), so it is
+ * pointed at the store listing instead.
+ *
  * A third question sits on top of those two: *may we interrupt the user about
  * it*. That is `shouldPrompt`, and it is deliberately the narrowest of the
  * three — see it below.
@@ -69,6 +74,16 @@ export const useUpdatesStore = defineStore('updates', () => {
    * up falls back to the download link instead of offering a dead button.
    */
   const apk = computed(() => canInstallApk())
+
+  /**
+   * Google Play put this copy here, so Google Play is what replaces it — see
+   * `fromPlayStore`. Deliberately *not* folded into `canUpdate` below: this is
+   * the .deb and AUR case, not the Android one. Play has very probably updated
+   * the app already and will do it again tonight without being asked, so the
+   * badge and the panel stay and nothing ever interrupts; all the panel changes
+   * is where its "get it yourself" button points.
+   */
+  const play = computed(() => fromPlayStore())
 
   /** Can this copy install the update itself, by either route? */
   const canUpdate = computed(() => capable.value || apk.value)
@@ -224,5 +239,5 @@ export const useUpdatesStore = defineStore('updates', () => {
 
   const restart = () => useTauriProcessRelaunch()
 
-  return { current, platform, releases, capable, apk, canUpdate, busy, status, error, progress, missed, available, dismissed, prompted, shouldPrompt, notNow, skip, check, install, restart }
+  return { current, platform, releases, capable, apk, play, canUpdate, busy, status, error, progress, missed, available, dismissed, prompted, shouldPrompt, notNow, skip, check, install, restart }
 })

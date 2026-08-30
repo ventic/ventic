@@ -1,6 +1,6 @@
 // Self-check for the update notice: `bun scripts/check-updates.ts`.
 //
-// Four things worth holding still. The version compare decides whether people
+// Five things worth holding still. The version compare decides whether people
 // are told about a release at all — get it backwards and the app either nags
 // for ever about a version it already runs, or never mentions one. The GitHub
 // release shape is somebody else's to change: a renamed field that quietly
@@ -9,7 +9,9 @@
 // safety argument. And a dialog that shows itself at launch is one bad
 // condition away from being a nag, so every clause that holds it back is
 // asserted here, along with the two seams — a layout and a scroll container —
-// that no compiler sees.
+// that no compiler sees. And one APK serves both Google Play and ventic.tv, so
+// the last section holds the runtime test that keeps a Play install from trying
+// to replace itself with a package signed by the wrong key.
 import assert from 'node:assert'
 import { readFileSync } from 'node:fs'
 import { APK_URL, compareVersions, DOWNLOAD_URL, isNewer, parseUpdate, parseUpdates, RELEASES_URL, renderNotes } from '../app/utils/updates'
@@ -271,5 +273,52 @@ assert.ok(
 for (const url of [APK_URL, DOWNLOAD_URL, RELEASES_URL])
   assert.ok(url.startsWith('https://'), `${url} is https`)
 assert.ok(kotlin.includes('startsWith("https://")'), 'and Kotlin refuses anything else')
+
+// --- Except when Google Play installed it ------------------------------------
+// One APK answers both distributions, so *which* route an update takes is
+// decided at runtime from the install source. Nothing here is visible to a
+// compiler and the failure needs a real store listing to reproduce: Play
+// re-signs what it ships, so a Play copy that fetches ventic.tv's APK downloads
+// a hundred megabytes and dies at Android's signature check with "App not
+// installed" and no reason — and Play's own policy forbids the attempt besides.
+
+const panel = readFileSync(new URL('../app/components/UpdatePanel.vue', import.meta.url), 'utf8')
+
+for (const method of ['installer', 'openStore']) {
+  assert.ok(kotlin.includes(`fun ${method}(`), `MainActivity answers ${method}()`)
+  assert.ok(platform.includes(`${method}?.(`), `and platform.ts is what calls it`)
+}
+
+// The one string the whole decision rests on, spelled the same on both sides of
+// a bridge no compiler checks. A typo here is a Play install that quietly goes
+// back to updating itself.
+for (const [file, name] of [[kotlin, 'Kotlin'], [platform, 'platform.ts']] as const)
+  assert.ok(file.includes('com.android.vending'), `${name} knows Play's package name`)
+
+// The gate itself, in the one function every caller goes through.
+assert.ok(
+  /export function canInstallApk\(\)[\s\S]{0,200}?!fromPlayStore\(\)/.test(platform),
+  'canInstallApk() is false on a Play install',
+)
+// And again in Kotlin — unreachable from our own UI, and there so that a policy
+// review can read the rule without unpacking the JavaScript bundle.
+assert.ok(
+  /fun installUpdate\([\s\S]{0,600}?installer\(\) == PLAY_STORE/.test(kotlin),
+  'and installUpdate refuses one outright',
+)
+
+// A Play install is the .deb case, not the Android one: Play has most likely
+// updated the app already, so it keeps the badge and is never interrupted. That
+// is exactly what leaving `play` out of `canUpdate` buys, and folding it in
+// would turn the store link into a launch dialog.
+assert.ok(store.includes('const play = computed(() => fromPlayStore())'), 'the store exposes it')
+const canUpdateLine = store.split('\n').find(l => l.includes('const canUpdate =')) ?? ''
+assert.ok(canUpdateLine && !canUpdateLine.includes('play'), 'and canUpdate leaves it out, so no dialog interrupts')
+
+// The panel's one remaining job: point "get it yourself" at the store. An
+// intent and not a URL — `market://` means nothing to a webview, and the https
+// form opens a browser on top of the app instead of the Play app.
+assert.ok(panel.includes('openStore()'), 'the panel opens the listing rather than a download')
+assert.ok(panel.includes('updates.play'), 'and asks the store which copy this is')
 
 console.log('check-updates: ok')

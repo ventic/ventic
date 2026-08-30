@@ -40,7 +40,8 @@
     "tauri:dev:android": "bun scripts/build/index.ts android-dev",
     "build": "bun scripts/build/index.ts",
     "build:windows": "bun scripts/build/index.ts windows",
-    "build:android": "bun scripts/build/index.ts android"
+    "build:android": "bun scripts/build/index.ts android",
+    "build:play": "bun scripts/build/index.ts play"
   },
   "dependencies": {
     "@fontsource-variable/roboto": "^5.3.0",

@@ -4,6 +4,7 @@
  *   bun run build              → whatever the machine you're on can make natively
  *   bun run build windows      → a Windows .exe, cross-compiled from Linux
  *   bun run build android      → an APK for phones / Android TV boxes
+ *   bun run build play         → the .aab Google Play takes, same code
  *   bun run build android-dev  → run on an attached device, hot-reloading
  *
  * Everything here is a preflight check plus a `tauri` invocation. The checks
@@ -358,7 +359,24 @@ function androidEnv(): Record<string, string> {
 
 const ANDROID_ABIS = ['aarch64', 'armv7', 'x86_64']
 
-function buildAndroid(extra: string[]) {
+/**
+ * An APK to hand out, or the .aab Google Play takes — the same build either way.
+ *
+ * Play has not accepted an APK for a new app in years, and the bundle is not
+ * just a container swap: Play re-splits it per device and **re-signs** what it
+ * ships, so the copy a phone gets from the store carries Google's key and the
+ * APK on ventic.tv carries ours. Android will not upgrade one to the other in
+ * either direction — the two installs are as unrelated as two different apps,
+ * and moving between them means uninstalling, which takes the library with it
+ * (there is no sync; see app/utils/backup.ts). That is also the whole reason
+ * `installer()` exists in MainActivity: a Play copy has to be told to update
+ * through Play, because trying it our way fails at Android's signature check
+ * after a hundred-megabyte download.
+ *
+ * The keystore in the environment is therefore the *upload* key here, not the
+ * one devices verify. Google holds that one.
+ */
+function buildAndroid(extra: string[], aab = false) {
   // Belt and braces: cargo's release profile emits no debug info to begin with, so
   // this is a no-op there. It stays because `--debug` is still a supported override
   // via `extra`, and that build otherwise carries a debugger's worth of DWARF —
@@ -368,6 +386,21 @@ function buildAndroid(extra: string[]) {
   // than in Cargo.toml so `tauri:dev` on the desktop keeps its full backtraces;
   // with `--target` in play cargo won't apply it to host build scripts.
   const env = { ...androidEnv(), RUSTFLAGS: '-Cstrip=debuginfo' }
+
+  // An unsigned APK is at least installable over adb; an unsigned bundle is
+  // nothing at all — Play rejects the upload — so this is worth catching before
+  // a full release compile rather than after one.
+  if (aab && !process.env.ANDROID_KEYSTORE_PATH) {
+    die(
+      'ANDROID_KEYSTORE_PATH is not set, and Play will not take an unsigned bundle.\n'
+      + '  Under Play App Signing this is the *upload* key — generate it once and never\n'
+      + '  lose it, because Play accepts uploads from no other:\n'
+      + '    keytool -genkey -v -keystore ventic-upload.jks -keyalg RSA -keysize 2048 \\\n'
+      + '      -validity 10000 -alias upload\n'
+      + '  Then set ANDROID_KEYSTORE_PATH, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS\n'
+      + '  and ANDROID_KEY_PASSWORD (see app/build.gradle.kts).',
+    )
+  }
 
   // This used to be a debug build, because a release APK comes out *unsigned* and
   // Android refuses to install one — and there was no keystore to sign with. There
@@ -379,8 +412,21 @@ function buildAndroid(extra: string[]) {
   // The cost is R8: it renames anything it thinks is unreachable, and the
   // JavascriptInterface bridges are reachable only from the frontend. proguard-rules.pro
   // keeps them — check playback and TV detection still work after touching that file.
-  console.log(`\n→ Building a signed release APK for ${ANDROID_ABIS.join(' + ')}\n`)
-  run(['tauri', 'android', 'build', '--apk', '--target', ...ANDROID_ABIS, ...extra], env)
+  console.log(`\n→ Building a signed release ${aab ? 'AAB' : 'APK'} for ${ANDROID_ABIS.join(' + ')}\n`)
+  run(['tauri', 'android', 'build', aab ? '--aab' : '--apk', '--target', ...ANDROID_ABIS, ...extra], env)
+
+  if (aab) {
+    const bundle = 'src-tauri/gen/android/app/build/outputs/bundle/universalRelease/'
+    console.log(
+      `\n✓ Bundle written under ${bundle}\n\n`
+      + 'Upload it at https://play.google.com/console — your app → Testing or\n'
+      + 'Production → Create new release.\n\n'
+      + 'Play never accepts a versionCode it has already seen, and only ever a higher\n'
+      + 'one, so a rejected upload usually means the version in tauri.conf.json did not\n'
+      + 'move. All three ABIs go in the one bundle; Play splits it per device.\n',
+    )
+    return
+  }
 
   const out = 'src-tauri/gen/android/app/build/outputs/apk/universal/release/'
   console.log(
@@ -526,7 +572,9 @@ else if (target === 'windows')
   await buildWindows(extra)
 else if (target === 'android')
   buildAndroid(extra)
+else if (target === 'play')
+  buildAndroid(extra, true)
 else if (target === 'android-dev')
   await devAndroid(extra)
 else
-  die(`Unknown target "${target}". Use: desktop | windows | android | android-dev`)
+  die(`Unknown target "${target}". Use: desktop | windows | android | play | android-dev`)

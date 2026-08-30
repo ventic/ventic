@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { mdiOpenInNew, mdiRestart, mdiTrayArrowDown, mdiUpdate } from '@mdi/js'
+import { mdiGooglePlay, mdiOpenInNew, mdiRestart, mdiTrayArrowDown, mdiUpdate } from '@mdi/js'
 
 /**
  * Everything the app has to say about a release that is out, and everything
@@ -16,13 +16,24 @@ const updates = useUpdatesStore()
 const android = computed(() => updates.platform === 'android')
 
 /**
- * Where "get it yourself" points when this copy can't replace itself — a `.deb`,
- * an AUR build, a browser, or an Android box whose installer wouldn't take our
- * APK. The project's own download page rather than the GitHub release, which is
- * a list of six files with no word about which one this machine wants.
+ * The "get it yourself" button, for every copy that can't replace itself — a
+ * `.deb`, an AUR build, a browser, an Android box whose installer wouldn't take
+ * our APK, and a Play install, which could and may not.
+ *
+ * One object rather than three ternaries in the template, because the three
+ * answers share no shape: Play opens its listing through an *intent* and not a
+ * URL (a `market://` link means nothing to a webview), Android downloads the APK
+ * of the exact release named on screen, and everything else gets the project's
+ * own download page rather than the GitHub release, which is a list of six files
+ * with no word about which one this machine wants.
  */
-const downloadUrl = computed(() =>
-  (android.value && (updates.available?.apk || APK_URL)) || DOWNLOAD_URL)
+const getIt = computed(() => {
+  if (updates.play)
+    return { icon: mdiGooglePlay, label: $t('Open Google Play'), go: () => openStore() }
+  if (android.value)
+    return { icon: mdiTrayArrowDown, label: $t('Download the APK'), go: () => open(updates.available?.apk || APK_URL) }
+  return { icon: mdiOpenInNew, label: $t('Open the download page'), go: () => open(DOWNLOAD_URL) }
+})
 
 /**
  * The changelog, which is every release between the one running and the newest
@@ -55,6 +66,9 @@ function open(url: string) {
          is the whole update. -->
     <p v-if="updates.apk" class="text-body-medium opacity-70">
       {{ $t('Ventic downloads the new package and Android asks you to confirm the install. It is signed with the same key as the copy you have, so it upgrades in place and keeps your library.') }}
+    </p>
+    <p v-else-if="updates.play" class="text-body-medium opacity-70">
+      {{ $t('Google Play installed this copy, so Google Play updates it — usually on its own, in the background. Open the listing to do it now.') }}
     </p>
     <p v-else-if="!updates.canUpdate && android" class="text-body-medium opacity-70">
       {{ $t('Android installs from the package itself — download it and open it. It is signed with the same key as the copy you have, so it upgrades in place and keeps your library.') }}
@@ -107,11 +121,11 @@ function open(url: string) {
       </v-btn>
       <v-btn
         v-if="!updates.canUpdate || updates.status === 'failed'"
-        :prepend-icon="android ? mdiTrayArrowDown : mdiOpenInNew"
+        :prepend-icon="getIt.icon"
         variant="tonal"
-        @click="open(downloadUrl)"
+        @click="getIt.go()"
       >
-        {{ android ? $t('Download the APK') : $t('Open the download page') }}
+        {{ getIt.label }}
       </v-btn>
 
       <!-- Putting it off stops being an option once it is under way: there is

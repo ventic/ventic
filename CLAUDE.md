@@ -314,6 +314,27 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   to fetch a build by hand (a `.deb`, an AUR build, a browser) goes to
   `DOWNLOAD_URL`, the project's own page — the GitHub release is six files with
   no word on which one this machine wants.
+- **Google Play is a fourth answer, and one APK has to serve both.** The same
+  build ships to the store and to `ventic.tv`, so which update route a copy takes
+  is decided at *runtime*: `installer()` on the `VenticScreen` bridge asks Android
+  who installed this package, and `com.android.vending` is Play. That copy is
+  pointed at its listing (`openStore()` — an intent, because `market://` means
+  nothing to a webview) and never fetches an APK, for two independent reasons.
+  Play forbids an app it distributes from updating itself by any other route, and
+  it *couldn't* anyway: Play re-signs what it ships, so our package carries the
+  wrong key and Android refuses it — after the whole download, at the last
+  screen, with "App not installed" and no reason. `canInstallApk()` is the gate
+  every caller goes through; Kotlin refuses one too, which is unreachable from
+  our own UI and is there so a policy review can read the rule without unpacking
+  the JS bundle. In the store it is the `play` computed, deliberately left *out*
+  of `canUpdate`: this is the `.deb` case and not the Android one — Play has
+  probably updated the app already, so the badge stays, nothing interrupts, and
+  all the panel changes is where its button points. That same re-signing is why
+  nobody can move between the two installs without uninstalling, which takes the
+  library with it — send them to `backup.ts` first. `bun run build:play` makes
+  the `.aab` Play wants (it has not taken an APK for a new app in years) and
+  wants the *upload* key in `ANDROID_KEYSTORE_PATH`; `check:updates` holds the
+  bridge seam and the gate.
 - **The AppImage is rewritten after it is signed.**
   `scripts/build/linux/appimage.ts` strips libwayland and repacks *after*
   tauri-action has already put a signature for the original file into

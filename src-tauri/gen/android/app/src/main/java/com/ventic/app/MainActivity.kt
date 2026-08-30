@@ -38,6 +38,9 @@ class MainActivity : TauriActivity() {
 
     /** The new build, in this app's own folder — nothing else may read it. */
     private const val UPDATE_APK = "update.apk"
+
+    /** Google Play, as it records itself against everything it installs. */
+    private const val PLAY_STORE = "com.android.vending"
   }
 
   /** DownloadManager's id for the APK being fetched, or -1 for none. */
@@ -353,6 +356,52 @@ class MainActivity : TauriActivity() {
     }
 
     /**
+     * Which app put this one on the device: "com.android.vending" for Google
+     * Play, a file manager or another store for a sideload, and "" when Android
+     * will not say — an `adb install`, or a device that has forgotten.
+     *
+     * The whole update path turns on this one string, because one artifact
+     * cannot know in advance where it will end up. A copy Play installed may not
+     * replace itself — Play forbids an app it distributes from updating by any
+     * other route, and it would fail anyway, since Play re-signs what it ships
+     * and Android refuses an upgrade signed with a different key. So a Play
+     * install is sent to the store listing, and every other copy fetches the APK
+     * exactly as before.
+     */
+    @JavascriptInterface
+    fun installer(): String = runCatching {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        packageManager.getInstallSourceInfo(packageName).installingPackageName
+      } else {
+        @Suppress("DEPRECATION")
+        packageManager.getInstallerPackageName(packageName)
+      }
+    }.getOrNull() ?: ""
+
+    /**
+     * Open this app's Play Store page — the whole of what a Play install does
+     * about an update, since Play itself has usually done it already.
+     *
+     * `market://` first, so it lands in the Play app rather than a browser; the
+     * https form covers a device where Play is disabled or was never there.
+     * False when neither opens and the caller keeps its own text on screen —
+     * same shape as `openStorageSettings`, and for the same reason: a dead
+     * button on a television is worse than none.
+     */
+    @JavascriptInterface
+    fun openStore(): Boolean {
+      for (uri in listOf(
+        "market://details?id=$packageName",
+        "https://play.google.com/store/apps/details?id=$packageName",
+      )) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
+          .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        if (runCatching { startActivity(intent) }.isSuccess) return true
+      }
+      return false
+    }
+
+    /**
      * Fetch a new build of Ventic and hand it to Android's package installer.
      *
      * There is no updater plugin on Android and there could not be one: an app
@@ -372,6 +421,13 @@ class MainActivity : TauriActivity() {
      */
     @JavascriptInterface
     fun installUpdate(url: String): String {
+      // A Play install updates through Play and nothing here may change that —
+      // see `installer`. The page already knows and offers the store instead, so
+      // this is unreachable from our own UI; it is here because it is the copy of
+      // the rule that lives in the APK, where a policy review can read it without
+      // unpacking the JavaScript bundle.
+      if (installer() == PLAY_STORE) return "store"
+
       // The installer refuses to hear from an app that is not on the "install
       // unknown apps" list (API 26+), and that switch is the user's to flip on a
       // screen only the system can show. Asked here rather than at launch,

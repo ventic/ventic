@@ -89,12 +89,45 @@ export interface ApkInstall {
   progress?: number
 }
 
+/** Google Play, as it records itself against everything it installs. */
+const PLAY_STORE = 'com.android.vending'
+
+/**
+ * Did Google Play put this copy here?
+ *
+ * One APK answers both distributions, so this is what decides where an update
+ * comes from — and the two routes are not interchangeable. Play re-signs what it
+ * ships, so the package on ventic.tv carries a different key and Android refuses
+ * it as an upgrade: a self-update on a Play install would download a hundred
+ * megabytes and die at the last screen with "App not installed" and no reason
+ * given. Play also forbids an app it distributes from updating itself by any
+ * other route.
+ *
+ * False for a sideload, an `adb install`, a device that has forgotten, and every
+ * desktop build — all of which are the copies that do update themselves.
+ */
+export function fromPlayStore() {
+  return bridge()?.installer?.() === PLAY_STORE
+}
+
+/**
+ * Open this app's Play Store listing, which is a Play install's whole answer to
+ * an update. False when there is no Play on the device to open.
+ */
+export function openStore() {
+  return bridge()?.openStore?.() ?? false
+}
+
 /**
  * Can this build fetch a new APK and open the installer on it? Android only —
  * everywhere else updating is the Tauri updater plugin's, or nobody's.
+ *
+ * A Play install is Android and still says no: it *could*, and it must not. The
+ * gate is here rather than at the one call site so that a second caller can't
+ * miss it — Kotlin refuses one too, for a reader rather than for us.
  */
 export function canInstallApk() {
-  return !!bridge()?.installUpdate
+  return !!bridge()?.installUpdate && !fromPlayStore()
 }
 
 /**
@@ -103,7 +136,7 @@ export function canInstallApk() {
  * `permission` means the user has been sent to the "install unknown apps"
  * switch and can try again once they have flipped it.
  */
-export type ApkProblem = '' | 'permission' | 'insecure' | 'unavailable' | 'failed'
+export type ApkProblem = '' | 'permission' | 'insecure' | 'unavailable' | 'failed' | 'store'
 
 export function installApk(url: string): ApkProblem {
   return (bridge()?.installUpdate?.(url) ?? 'unavailable') as ApkProblem
@@ -129,6 +162,8 @@ function bridge() {
       openStorageSettings?: () => boolean
       installUpdate?: (url: string) => string
       updateProgress?: () => string
+      installer?: () => string
+      openStore?: () => boolean
     }
   }).VenticScreen
 }
