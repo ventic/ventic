@@ -30,7 +30,7 @@
  * the Xcode command line tools the build already needs.
  */
 import { execFileSync } from 'node:child_process'
-import { chmodSync, copyFileSync, existsSync, readdirSync, realpathSync, rmSync } from 'node:fs'
+import { chmodSync, copyFileSync, existsSync, readdirSync, readFileSync, realpathSync, rmSync } from 'node:fs'
 import { basename, dirname, join, resolve } from 'node:path'
 import process from 'node:process'
 
@@ -52,6 +52,68 @@ function tool(cmd: string, args: string[]) {
 
 function staged(dir: string) {
   return existsSync(dir) ? readdirSync(dir).filter(f => f.endsWith('.dylib')).map(f => join(dir, f)) : []
+}
+
+export function version(s: string): number[] {
+  return s.split('.').map(Number)
+}
+
+export function newer(a: number[], b: number[]): boolean {
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const d = (a[i] ?? 0) - (b[i] ?? 0)
+    if (d !== 0)
+      return d > 0
+  }
+  return false
+}
+
+/**
+ * The oldest macOS a Mach-O will load on, out of its `otool -l` — LC_BUILD_VERSION's
+ * `minos`, the highest of them for a fat file. Null for something built before
+ * 10.14, which is below any floor worth checking.
+ *
+ * Takes the text rather than the path so scripts/check-macos.ts can reach it
+ * from a machine with no otool on it.
+ */
+export function minos(otool: string): number[] | null {
+  let floor: number[] | null = null
+  for (const m of otool.matchAll(/^\s*minos (\S+)\s*$/gm)) {
+    const v = version(m[1]!)
+    if (!floor || newer(v, floor))
+      floor = v
+  }
+  return floor
+}
+
+/**
+ * dyld refuses a Mach-O built for a newer macOS than the one running it, and a
+ * Homebrew bottle carries the machine that built it as that floor — so the .app
+ * only runs on the CI runner's macOS or newer, however old a version its
+ * Info.plist promises. Nothing else notices: the build machine is always new
+ * enough, and the failure is a SIGKILL before main() on somebody else's Mac.
+ *
+ * So hold the libraries to the promise. bundle.macOS.minimumSystemVersion is
+ * that promise (tauri's own default is 10.13) and it is also what LSMinimumSystemVersion
+ * and MACOSX_DEPLOYMENT_TARGET are built from, which makes it the one number to
+ * compare against.
+ */
+function assertLoadable(files: string[]) {
+  const conf = JSON.parse(readFileSync('src-tauri/tauri.conf.json', 'utf8'))
+  const promised = version(conf.bundle?.macOS?.minimumSystemVersion ?? '10.13')
+
+  const bad = files
+    .map(f => [f, minos(tool('otool', ['-l', f]))] as const)
+    .filter(([, v]) => v && newer(v, promised))
+    .map(([f, v]) => `${f}\n    is built for macOS ${v!.join('.')}`)
+
+  if (bad.length) {
+    die(`The bundle says it runs on macOS ${promised.join('.')}, and ${bad.length} of its libraries won't:\n\n  ${bad.join('\n  ')}\n\n`
+      + `  dyld kills the process before main() on anything older than those. Homebrew\n`
+      + `  bottles inherit the macOS that built them, so this is the CI runner having\n`
+      + `  moved: pin it back in .github/workflows/release.yml, or raise\n`
+      + `  bundle.macOS.minimumSystemVersion in src-tauri/tauri.conf.json to match and\n`
+      + `  drop every Mac below it.`)
+  }
 }
 
 /** LC_ID_DYLIB, or null for an executable. */
@@ -151,6 +213,8 @@ function bundle() {
   const nodes = graph(exe)
   const libs = [...nodes.values()].filter(n => n.src !== exe)
 
+  assertLoadable([exe, ...libs.map(l => l.src)])
+
   // The staging directory is flat, so two libraries with one basename would
   // overwrite each other and only one of them would ever be loaded.
   const seen = new Map<string, string>()
@@ -230,11 +294,14 @@ function check(app: string) {
 
   if (bad.length)
     die(`The .app will not run without Homebrew:\n\n  ${bad.join('\n  ')}`)
+
+  assertLoadable([exe, ...libs])
   console.log(`\n✓ ${app} resolves all ${libs.length} bundled dylibs from inside itself\n`)
 }
 
-// Runs as a build hook on every platform; only macOS has anything to do.
-if (process.platform === 'darwin') {
+// Runs as a build hook on every platform; only macOS has anything to do — and
+// only when run as one, since scripts/check-macos.ts imports the parsing above.
+if (import.meta.main && process.platform === 'darwin') {
   const [app] = process.argv.slice(2)
   if (app)
     check(app)

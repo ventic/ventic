@@ -91,6 +91,19 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   `bun scripts/build/macos/bundle-dylib.ts <path.app>` re-checks a finished
   bundle, which is the only way to see the failure — the build machine has
   Homebrew, so a dylib left behind resolves fine there and nowhere else.
+- **Those bottles make the CI runner the system requirement.** A Homebrew bottle
+  records the macOS that built it as the oldest it will *load* on, and the .app
+  carries forty of them — so `macos-latest` moving to macOS 26 in July 2026
+  shipped a 0.5.1 that dyld SIGKILLed before main() on every Mac not yet
+  updated, while its Info.plist still promised 10.13. Nothing noticed, because
+  the build machine is always new enough. Two numbers now have to agree: the
+  runner pinned in `.github/workflows/release.yml` and
+  `bundle.macOS.minimumSystemVersion` in `tauri.conf.json` (Tauri's own default
+  is 10.13, which the bundled dylibs cannot honour — set it). `bun run
+  check:macos` compares them on any machine, and `bundle-dylib.ts` reads each
+  dylib's real `minos` at bundle time and fails the build on a drift. Don't
+  unpin that runner; pinning it *older* is a Homebrew question, since it bottles
+  only the three most recent macOS.
 - **The volume levelling is one setting and two implementations**, because
   there is no filter graph on Android. `app/utils/audio.ts` owns both: mpv is
   handed a `lavfi` chain over the `af` command (dynaudnorm for the levelling,
@@ -115,7 +128,8 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   (`check:dpad`, `check:torrents`, `check:subtitles`, `check:theme`,
   `check:library`, `check:player`, `check:swipe`, `check:boot`,
   `check:perf`, `check:android-downloads`, `check:updates`, `check:supporters`,
-  `check:audio`, `check:people`, `check:cast`, `check:iptv`, `check:i18n`).
+  `check:audio`, `check:people`, `check:cast`, `check:iptv`, `check:i18n`,
+  `check:macos`).
   Add to those rather than pulling in a test framework. `bun run check` runs
   every one of them — it reads the names out of package.json rather than holding
   a list, so a check added today is in that sweep today. `bun run check:types` is

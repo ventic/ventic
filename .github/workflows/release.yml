@@ -51,7 +51,19 @@ jobs:
           # Apple Silicon only. A universal build would have to link a universal
           # libmpv, and Homebrew bottles are single-arch — the x86_64 half fails
           # at the linker. An Intel .dmg needs an Intel runner, not a flag.
-          - os: macos-latest
+          #
+          # Pinned, never `macos-latest`: a Homebrew bottle carries the OS it was
+          # built on as its *minimum*, and the .app carries those bottles — so the
+          # runner image is the oldest macOS Ventic runs on. `macos-latest` moved
+          # to macOS 26 in July 2026 and 0.5.1 shipped dylibs that dyld refused on
+          # macOS 15 ("built for macOS 26 which is newer than running OS"), which
+          # is a crash before main() on every Mac that isn't up to date. Keep this
+          # in step with bundle.macOS.minimumSystemVersion in tauri.conf.json;
+          # scripts/build/macos/bundle-dylib.ts fails the build when they drift.
+          # Older is better, but not below what Homebrew still bottles — it builds
+          # for the three most recent macOS, and an unbottled formula is a source
+          # build the runner has no time for.
+          - os: macos-15
             args: ''
             targets: ''
     runs-on: ${{ matrix.os }}
