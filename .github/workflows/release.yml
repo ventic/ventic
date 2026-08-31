@@ -237,6 +237,15 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
+      # The one job whose artifact carries a seam no compiler sees: the FFmpeg
+      # audio decoder is a checked-in .aar, built against one media3 and loaded
+      # beside the Maven copy of the same classes, so a version bumped on one
+      # side alone is a NoSuchMethodError at the first film — on a television,
+      # after the release is out. `check:player` holds that agreement (and the
+      # rest of the sweep is seconds), so a tag that would ship it fails here
+      # instead of on somebody's TV.
+      - run: bun run check
+
       # The APK is debug-signed, and the debug key is per-machine — so on a fresh
       # runner every release was signed by a different certificate and the phone
       # rejected each new one as an upgrade. One keystore, held as a secret,

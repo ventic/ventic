@@ -326,5 +326,38 @@ const x11 = await Bun.file('src-tauri/src/player.rs').text()
 assert.match(x11, /XDefineCursor\)\(self\.display, self\.window, self\.blank\)/, 'hiding defines the blank cursor on the embed window')
 assert.match(x11, /XUndefineCursor\)\(self\.display, self\.window\)/, 'and showing hands it back to the webview\'s own')
 
+// --- Software audio, for the decoder that says yes and then dies ------------------
+// Android answers `format_supported=YES` for E-AC-3 on a device whose only
+// decoder is the vendor's Dolby one, and that decoder then rejects the first
+// frame of streams FFmpeg decodes without a complaint. There is no second
+// decoder for `setEnableDecoderFallback` to reach for and usually no second
+// audio track in the file, so one frame ended the whole film — which is exactly
+// what "the same link plays in other apps" meant: every other player has FFmpeg.
+//
+// Four things have to agree here and nothing compiles the agreement. The .aar is
+// built against one media3 and then loaded beside the Maven copy of the same
+// classes, so bumping either side alone is a NoSuchMethodError at the first
+// film. A renamed file is a build that never sees the module. And dropping
+// either renderer mode leaves a fallback that still compiles and no longer
+// falls back. Every one of those fails at runtime, on somebody's television.
+const gradle = await Bun.file('src-tauri/gen/android/app/build.gradle.kts').text()
+const recipe = await Bun.file('scripts/build/android/ffmpeg.ts').text()
+const kotlin = await Bun.file('src-tauri/gen/android/app/src/main/java/com/ventic/app/Player.kt').text()
+
+const versions = [...gradle.matchAll(/androidx\.media3:[\w-]+:([\d.]+)/g)].map(m => m[1]!)
+assert.ok(versions.length >= 3, 'the media3 modules are still declared')
+assert.equal(new Set(versions).size, 1, `every androidx.media3 module is on one version (found ${[...new Set(versions)].join(', ')})`)
+assert.ok(recipe.includes(`const MEDIA3 = '${versions[0]}'`), 'and the .aar is built against that same one')
+
+const aar = gradle.match(/implementation\(files\("libs\/([^"]+\.aar)"\)\)/)?.[1]
+assert.ok(aar, 'the FFmpeg decoder .aar is on the classpath')
+assert.ok(recipe.includes(aar!), 'and the build script writes that exact filename')
+// Checked in, because CI only ever checks it out — it never builds one.
+assert.ok(await Bun.file(`src-tauri/gen/android/app/libs/${aar}`).exists(), `libs/${aar} is committed`)
+
+assert.match(kotlin, /EXTENSION_RENDERER_MODE_ON/, 'the device decoder is still tried first, so a receiver keeps its passthrough')
+assert.match(kotlin, /EXTENSION_RENDERER_MODE_PREFER/, 'and the retry is what reaches for FFmpeg')
+assert.match(kotlin, /FfmpegLibrary\.isAvailable\(\)/, 'which is skipped unless the library really shipped')
+
 // eslint-disable-next-line no-console
 console.log('player: ok')

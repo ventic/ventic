@@ -222,9 +222,15 @@ clicks included, while the video window itself never resizes.
   not a process there: the app links libmpv, asks for `vo=libmpv`, and draws the frames itself
   into an OpenGL view *under* the webview, with the page made see-through down to the video box.
   Same picture in the same place, same controls, same IPC protocol underneath.
-- **ExoPlayer plays what the device has.** A TV box: Dolby (AC-3, E-AC-3/DDP), HEVC, usually AV1.
-  A mid-range phone: often none of those, because Dolby is licensed per device. DTS and TrueHD
-  are rare on both — they need Media3's FFmpeg extension, an NDK build that isn't bundled here.
+- **ExoPlayer plays what the device has, and falls back to FFmpeg for sound when it doesn't.**
+  Video is the device's own: HEVC everywhere, AV1 on most TV boxes and newer phones. Audio tries
+  the device first — a TV wired to a receiver keeps its Dolby bitstream that way — and when that
+  decoder fails, the player rebuilds on a bundled FFmpeg audio decoder and carries on from where
+  the sound stopped. It has to: Android reports E-AC-3 as supported on devices whose only decoder
+  is the vendor's, that decoder rejects streams FFmpeg decodes without complaint, and a WEB-DL
+  usually carries one audio track — so one frame used to end the whole film. AC-3, E-AC-3/DDP,
+  DTS, TrueHD, FLAC and ALAC therefore play on any device, in software if it comes to that.
+  See `scripts/build/android/ffmpeg.ts` for how that decoder is built.
 - **`<video>` is the narrow one.** Chromium is built with Dolby and DTS off whatever the hardware
   can do, so a release carrying one plays as a picture with no sound. **x264 + AAC always plays.**
   It also offers only external subtitles and no audio-track menu, because Chromium's demuxer

@@ -44,6 +44,29 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   `native` flag rather than two players — a new control needs no second
   implementation, but a new mpv property does need a line in the shim's `READ`.
   `bun run check:player` covers the translation.
+- **A decoder may say yes and then die, so Android carries its own.** Android
+  answers `format_supported=YES` for E-AC-3 on a device whose only decoder is
+  the vendor's Dolby one (`media_codecs_dolby_c2.xml` is the sole file on a
+  Pixel that mentions eac3), and that decoder then rejects the first frame of
+  streams FFmpeg decodes without a complaint — `work failed to complete: 14`,
+  fourteen milliseconds after a clean configure. There is nothing for
+  `setEnableDecoderFallback` to reach for, because it only covers a decoder that
+  fails to *initialise* and there is no second decoder anyway, and a WEB-DL
+  usually carries one audio track — so one frame ended the whole film. That is
+  what "the same link plays in other apps" meant: every other Android player
+  ships FFmpeg. `retryInSoftware` in `Player.kt` is the answer, and the shape of
+  it matters. The device decoder is tried **first** and the FFmpeg renderer only
+  after it has actually failed, because `FfmpegAudioRenderer` answers
+  FORMAT_HANDLED without ever asking whether the sink could have passed the
+  stream through — preferring it from the start would quietly end Dolby
+  passthrough for every TV wired to a receiver. The flag resets per film, so one
+  bad track costs the next one nothing, and the retry is posted rather than run
+  inside the listener that reported the error. The decoder itself is not on
+  Maven (it links FFmpeg, licensed separately), so `bun run
+  build:android-ffmpeg` builds it from the media3 and FFmpeg sources and the
+  ~3 MB `.aar` is committed under `app/libs/` — CI only ever checks it out. Four
+  files have to agree on a version and a filename and nothing compiles the
+  agreement; `bun run check:player` holds them.
 - **Nothing tells the desktop a film is on, so the app does.** Two hours of
   playback is two hours of no input, which every idle timer reads as an empty
   room — the screen blanks, or the machine suspends, mid-film. mpv would
