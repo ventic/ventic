@@ -290,6 +290,17 @@ jobs:
           fi
           "$ANDROID_HOME"/build-tools/36.0.0/apksigner verify --print-certs "$apk"
 
+      # Until GOOGLE_PLAY_SERVICE_ACCOUNT exists the step below is skipped and the
+      # .aab is built and binned, leaving the console with nothing to upload — and
+      # it can't be rebuilt on a laptop, because the signing key is a secret here.
+      # So keep it downloadable. The .aab is deliberately not a release asset: it
+      # installs nowhere, and every human wants the .apk beside it.
+      - uses: actions/upload-artifact@v5
+        with:
+          name: play-bundle
+          path: src-tauri/gen/android/app/build/outputs/bundle/**/*.aab
+          if-no-files-found: error
+
       # Play's own review reads the *first* upload of a versionCode and there is
       # no undo, so this lands on the internal track and is promoted by hand in the
       # console. Nothing happens at all until the service account secret exists.
