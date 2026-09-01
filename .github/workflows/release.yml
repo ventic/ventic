@@ -104,6 +104,45 @@ jobs:
       - if: runner.os == 'macOS'
         run: brew install mpv
 
+      # Gatekeeper signing, and the one seam that has to be a step rather than an
+      # `env:` entry. A secret that does not exist still *defines* its variable,
+      # as the empty string — and tauri's bundler asks whether APPLE_CERTIFICATE
+      # is set, not whether it holds anything. So a repo with no Apple Developer
+      # ID got through the whole compile and died running `security import` on a
+      # zero-byte certificate. Exporting from here means an account-less build
+      # sees no Apple variables at all and ships the .app unsigned, which is what
+      # every release before this one did.
+      #
+      # APPLE_CERTIFICATE is `base64 -i cert.p12`; APPLE_PASSWORD is an
+      # app-specific password, never the Apple ID's own.
+      - name: Stage the Apple signing identity
+        if: runner.os == 'macOS'
+        env:
+          CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          ID: ${{ secrets.APPLE_ID }}
+          APP_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          if [ -z "$CERTIFICATE" ]; then
+            echo "::notice::No APPLE_CERTIFICATE — the .app ships unsigned, as before."
+            exit 0
+          fi
+          # `base64 -i` wraps its output, so the certificate needs the heredoc
+          # form; the rest are single-line.
+          {
+            echo "APPLE_CERTIFICATE<<VENTIC_CERT_EOF"
+            echo "$CERTIFICATE"
+            echo "VENTIC_CERT_EOF"
+            echo "APPLE_CERTIFICATE_PASSWORD=$CERTIFICATE_PASSWORD"
+            echo "APPLE_SIGNING_IDENTITY=$SIGNING_IDENTITY"
+            echo "APPLE_ID=$ID"
+            echo "APPLE_PASSWORD=$APP_PASSWORD"
+            echo "APPLE_TEAM_ID=$TEAM_ID"
+          } >> "$GITHUB_ENV"
+
       # Uploads the bundles *and* latest.json, which is what the in-app updater
       # reads. Each runner merges its own platforms into the copy already on the
       # release, so one file ends up describing all three — and it is written
@@ -125,20 +164,10 @@ jobs:
           # takes an empty one whenever `CI` is set, which every runner sets. It
           # is wired up so that adding the passphrase is the only step then.
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          # Gatekeeper, which is a different key entirely: the one above proves a
-          # *update* came from us, these prove the .app did. Unset — the default —
-          # and the .dmg is unsigned, which is the "Ventic is damaged" dialog on
-          # every Mac that didn't build it. With an Apple Developer ID in the
-          # secrets tauri-action imports it, signs and notarizes, and nothing else
-          # about the build changes. Ignored on the other two runners.
-          # APPLE_CERTIFICATE is `base64 -i cert.p12`; APPLE_PASSWORD is an
-          # app-specific password, never the Apple ID's own.
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          # Gatekeeper is a different key entirely: the one above proves an
+          # *update* came from us, the Apple one proves the .app did. Those
+          # variables are deliberately absent here — "Stage the Apple signing
+          # identity" above exports them, and only when there is a certificate.
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Ventic ${{ github.ref_name }}
