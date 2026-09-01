@@ -31,6 +31,12 @@ env:
   # 2 GB ceiling there while passing everywhere else. Give every runner the same
   # headroom rather than the Mac a special case.
   NODE_OPTIONS: --max-old-space-size=4096
+  # setup-bun's default resolves to whatever it considers latest, which lagged
+  # the bun that wrote bun.lock — and a lockfile from a newer bun is simply
+  # unreadable ("Unknown lockfile version"), so --frozen-lockfile fails before a
+  # line of ours runs. Pin it to the version developing here, and move both
+  # together.
+  BUN_VERSION: 1.4.0
 
 jobs:
   desktop:
@@ -70,6 +76,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.targets }}
@@ -199,6 +207,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
       # Absent when the Linux job had no signing key, so this must not fail the
       # release — the script skips on a signature that isn't there.
       - uses: actions/download-artifact@v5
@@ -222,6 +232,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
