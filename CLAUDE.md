@@ -304,13 +304,60 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   in and never paused started the television from the top. `ventic.castCode` and `ventic.castTarget` are in `backup.ts`'s
   `SECRET` set. LAN only and opt-in; there is no relay, no NAT traversal and no
   account, for the same reason the library has none.
-- **The library is local and nothing syncs it.** There is no account, no server
-  and no third-party service: `stores/library.ts` writes four localStorage maps
-  and `app/utils/backup.ts` is the only way one moves between machines. Trakt
-  used to be the second copy and was taken out when it stopped being free —
-  don't reintroduce a sync client, a scrobbler or a "connect an account" button
-  on the way to something else. *Settings → Account* says a sync isn't supported
-  yet, and that panel is where the real one lands.
+- **The library is local, and the sync has no server of ours in it.** There is
+  no account and no third-party service: `stores/library.ts` writes five
+  localStorage maps, `app/utils/backup.ts` turns every `ventic.` key into one
+  file, and `app/utils/sync.ts` leaves that file somewhere the *user* already
+  has. Trakt used to be the second copy and was taken out when it stopped being
+  free — don't reintroduce a scrobbler or a "connect an account" button on the
+  way to something else.
+- **The sync is the backup file, fetched before it is written and merged rather
+  than assigned.** That is the whole difference between the two: a restore is
+  "this file wins", a sync is two devices that were both used. Three things make
+  it converge and none of them are obvious. Entries merge **one at a time** by
+  the timestamp they already carried (`progress.at`, and a favourite's value
+  *is* its timestamp), so a film watched on the laptop and an episode watched on
+  the TV both survive. A deletion is an **absence**, which is indistinguishable
+  from an entry the other device added — so `ventic.deleted` records one, and
+  without it unfavouriting a film means the other screen hands it straight back,
+  for ever; `library.ts` writes those through `forget()` at every delete
+  including `clear()`, under names that have to match the localStorage key
+  suffixes `mergeKeys` looks them up by. And a single value (a theme, a subtitle
+  size) has no timestamp, so it is a **three-way** merge against
+  `config.base` — where both sides moved, the *file* wins, not because it is
+  righter but because "mine wins" leaves two screens pushing their own version
+  at each other for ever. `bun run check:sync` holds all of it.
+- **What syncs is three switches, and preferences is off.** `groupOf` in
+  `sync.ts` is the whole table: watch state, sources, and everything else as the
+  catch-all — so a preference added tomorrow syncs the day it is written, the
+  same bargain `backup.ts` makes. A subtitle size that suits a laptop is the
+  wrong one across a living room, which is why that group ships off. `NEVER` is
+  the harder rule: a key naming *this* machine (`cached`, `local`,
+  `downloadDir`, `ground`, `castName`) never travels whatever is switched on,
+  and credentials never reach `sync.ts` at all because `makeBackup` drops the
+  SECRET set first — which is also what stops the sync syncing its own password.
+  A group a device has switched **off** is neither read nor written: the file
+  keeps what another device put there, or a laptop with Preferences off would
+  quietly wipe two other screens' settings.
+- **The transport is a `PUT` and a `GET` against an address the user types**,
+  which is WebDAV — what a Nextcloud, an ownCloud, a NAS, a hosted drive or an
+  `rclone serve` all hand out, with no OAuth client to register, no review to
+  pass and no per-user cap. The same line the source list holds: no default
+  address, no bundled provider, no link to one. Dropbox and Google Drive are not
+  more code, they are an app registration and a scope review — Drive's
+  `drive.appdata` is a *sensitive* scope, so an unverified build is capped at
+  100 testers — and the day one exists it is a second `pull`/`push` pair under
+  the same merge and nothing else changes. It goes through
+  `tauri-plugin-http` for the reason `iptv.ts` does: somebody's own server sends
+  no CORS header.
+- **A pull has to be made visible in a page that is already running.** Every
+  store read its localStorage ref once at setup, and the browser fires `storage`
+  only for *other* documents — so `write()` in `stores/sync.ts` dispatches the
+  `StorageEvent` itself, which is exactly what VueUse's `useStorage` does for its
+  own writes. That is what lets the merge know no store's name. `plugins/
+  sync.client.ts` decides *when*: at boot, every five minutes, on the way to the
+  background (Android freezes the process, so that is the last chance), and on
+  leaving the player — the one moment the other screen is actually waiting for.
 - Go through the store for watch state anyway: `record`, `finish`, `setWatched`,
   `toggleFavourite`, `toggleWatchlist` own the rules about what counts as
   watched. Don't write `progress`/`favourites`/`watchlist` from a component.

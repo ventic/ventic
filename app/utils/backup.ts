@@ -4,8 +4,9 @@
  * Everything the app remembers — what you have watched, how far, favourites and
  * the watchlist, the sources you added, every preference on the settings page — lives in
  * localStorage. That is one cleared webview away from gone, and it does not
- * travel between a laptop and a TV box. There is no account to sync it to, so
- * the file *is* the sync: write one, carry it over, read it back.
+ * travel between a laptop and a TV box on its own. So the file: write one, carry
+ * it over, read it back. `utils/sync.ts` is the same object left somewhere both
+ * devices can reach — it is built here, and *merged* there rather than applied.
  *
  * Pure functions over a storage-shaped object, so `bun run check:library`
  * exercises them without a browser; the file dialogs live in settings/Account.vue.
@@ -26,8 +27,12 @@ const PREFIX = 'ventic.'
  * `ventic.trakt` held an OAuth token in versions that had a Trakt sign-in. The
  * sync is gone but the key is still sitting in those installs' storage, so it
  * stays on this list rather than starting to land in backup files.
+ *
+ * `ventic.sync` holds the password to somebody's own drive, and is what stops
+ * the sync in `utils/sync.ts` from ever syncing its own credentials outward:
+ * this set is dropped before that file sees a key at all.
  */
-const SECRET = new Set([`${PREFIX}trakt`, `${PREFIX}tmdbKey`, `${PREFIX}playlists`, `${PREFIX}castCode`, `${PREFIX}castTarget`])
+const SECRET = new Set([`${PREFIX}trakt`, `${PREFIX}tmdbKey`, `${PREFIX}playlists`, `${PREFIX}castCode`, `${PREFIX}castTarget`, `${PREFIX}sync`])
 
 export interface Backup {
   app: 'ventic'

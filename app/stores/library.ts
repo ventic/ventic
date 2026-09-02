@@ -6,11 +6,11 @@ type ListName = 'favourites' | 'watchlist'
 
 /**
  * Everything the app remembers about what you have watched: progress, watched
- * marks, history, favourites and the watchlist. This device and nothing else —
- * there is no account and no server, so `utils/backup.ts` is how a library
- * moves between machines.
+ * marks, history, favourites and the watchlist. Local, and with no account
+ * behind it: `utils/backup.ts` is how a library moves between machines by hand,
+ * and `utils/sync.ts` is how it does so on its own.
  *
- * Four flat records in localStorage rather than a database. A card
+ * Five flat records in localStorage rather than a database. A card
  * snapshot is ~300 bytes, so the 5MB budget holds roughly ten thousand of them;
  * add pruning the day someone actually fills it.
  */
@@ -40,6 +40,23 @@ export const useLibraryStore = defineStore('library', () => {
    * Live TV grid.
    */
   const favouriteChannels = useLocalStorage<Record<string, number>>('ventic.liveFavourites', {})
+
+  /**
+   * What this device has deleted, `<map>:<entry>` -> when. Only sync reads it
+   * (see utils/sync.ts): a merge is two libraries put together entry by entry,
+   * and an entry that is simply *absent* from one of them is indistinguishable
+   * from one the other device added — so without this, unfavouriting a film on
+   * the laptop means the television hands it straight back, and keeps handing it
+   * back for ever. Pruned on write; a deletion older than that has reached every
+   * screen that was ever going to hear about it.
+   */
+  const deleted = useLocalStorage<Record<string, number>>('ventic.deleted', {})
+
+  /** `forget('favourites:movie:603')` — the map name is the localStorage key's suffix. */
+  function forget(...keys: string[]) {
+    const now = Date.now()
+    deleted.value = { ...pruneDeleted(deleted.value), ...Object.fromEntries(keys.map(key => [key, now])) }
+  }
 
   // Rewritten only when something visible changed: `record` calls this every
   // couple of seconds, and a fresh object every time would rewrite the whole
@@ -213,6 +230,7 @@ export const useLibraryStore = defineStore('library', () => {
       // this map, so a zeroed row left behind keeps the title listed — and its
       // fresh `at` would sort it to the top on the way out.
       delete progress.value[key]
+      forget(`progress:${key}`)
     }
   }
 
@@ -235,10 +253,13 @@ export const useLibraryStore = defineStore('library', () => {
   function toggle(list: ListName, m: Media) {
     const store = list === 'favourites' ? favourites : watchlist
     const key = titleKey(m.type, m.id)
-    if (key in store.value)
+    if (key in store.value) {
       delete store.value[key]
-    else
+      forget(`${list}:${key}`)
+    }
+    else {
       store.value[key] = Date.now()
+    }
     remember(m)
   }
 
@@ -248,10 +269,13 @@ export const useLibraryStore = defineStore('library', () => {
 
   function toggleChannelFavourite(name: string) {
     const key = channelKey(name)
-    if (key in favouriteChannels.value)
+    if (key in favouriteChannels.value) {
       delete favouriteChannels.value[key]
-    else
+      forget(`liveFavourites:${key}`)
+    }
+    else {
       favouriteChannels.value[key] = Date.now()
+    }
   }
 
   const toggleFavourite = (m: Media) => toggle('favourites', m)
@@ -259,11 +283,17 @@ export const useLibraryStore = defineStore('library', () => {
 
   /** Settings → Storage: forget the lot. */
   function clear() {
+    // Tombstoned rather than merely dropped: with sync on, an emptied library
+    // that another screen still holds is a library that comes straight back.
+    const gone = ([['progress', progress], ['favourites', favourites], ['watchlist', watchlist], ['liveFavourites', favouriteChannels]] as const)
+      .flatMap(([name, map]) => Object.keys(map.value).map(key => `${name}:${key}`))
+
     media.value = {}
     progress.value = {}
     favourites.value = {}
     watchlist.value = {}
     favouriteChannels.value = {}
+    forget(...gone)
   }
 
   return {
@@ -272,6 +302,7 @@ export const useLibraryStore = defineStore('library', () => {
     favourites,
     watchlist,
     favouriteChannels,
+    deleted,
     remember,
     resumeRow,
     history,

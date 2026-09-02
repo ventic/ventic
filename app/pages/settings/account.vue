@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { Backup } from '~/utils/backup'
 import {
-  mdiAccountCircleOutline,
+  mdiCloudSyncOutline,
   mdiContentSaveOutline,
   mdiFolderOpenOutline,
+  mdiLinkOff,
   mdiRestore,
+  mdiSync,
 } from '@mdi/js'
 import { isTauri } from '@tauri-apps/api/core'
 import { documentDir } from '@tauri-apps/api/path'
@@ -24,6 +26,26 @@ const FILE = 'ventic-backup.json'
 const DOCUMENTS = useTauriFsBaseDirectory.Document
 
 const library = useLibraryStore()
+const sync = useSyncStore()
+
+/**
+ * A folder on a server the user already has, and nothing else. WebDAV is the one
+ * thing every hosted drive and every NAS speaks without an OAuth client to
+ * register or a review to pass — see utils/sync.ts for why that is the whole
+ * answer for now.
+ */
+const showPassword = ref(false)
+
+/**
+ * The one address in the app that names a service, and it is storage rather
+ * than a source — the line in the README is about where films come from, not
+ * where a JSON file is kept. It earns the place by working exactly as typed:
+ * everything else is a shape somebody has to fill their own server into.
+ */
+const KOOFR = 'https://app.koofr.net/dav/Koofr'
+
+const lastSynced = computed(() =>
+  sync.config.at ? new Date(sync.config.at).toLocaleString(uiLocale()) : '')
 
 const error = ref('')
 const note = ref('')
@@ -105,18 +127,122 @@ function apply() {
   <div class="flex flex-col gap-8">
     <settings-section
       :title="$t('Sync')"
-      :hint="$t('Ventic keeps your library on this device. Carrying it to another screen is the backup file below.')"
+      :hint="$t('Keep what you have watched in step across every screen you use Ventic on. There is no Ventic account and no server of ours in the middle: the app keeps one small file in storage you already have, and every device reads and writes that same file.')"
     >
-      <!-- Text only, so nothing here for the d-pad to walk into. -->
-      <v-card rounded="xl" class="panel flex flex-col items-start gap-3 p-6">
-        <v-icon :icon="mdiAccountCircleOutline" size="48" class="opacity-40" />
-        <div class="text-title-medium">
-          {{ $t('Not supported yet') }}
-        </div>
-        <p class="text-body-medium max-w-prose opacity-70">
-          {{ $t('There is no account to sign in to and nothing syncs to a server. What you watch, how far you got, your favourites and your watchlist are all stored on this device and never leave it. Syncing between screens is planned; until then, the backup below is how a library moves.') }}
+      <p class="text-body-medium max-w-prose opacity-70">
+        {{ $t('Anything that speaks WebDAV works — a hosted drive, a Nextcloud or ownCloud, a NAS, or any server of your own that accepts a file. Paste the address of a folder there and Ventic keeps a {file} inside it. Nothing is uploaded until you do.', { file: 'ventic-sync.json' }) }}
+      </p>
+
+      <!-- One address that works as typed, because "anything that speaks
+           WebDAV" is not something you can paste. -->
+      <p class="text-body-small max-w-prose opacity-70">
+        {{ $t('Koofr is the quickest to set up: sign up, make an app password under Preferences, then use {url} with your email as the username. A Nextcloud or ownCloud one looks like {other} instead.', {
+          url: KOOFR,
+          other: 'https://your-server/remote.php/dav/files/you',
+        }) }}
+      </p>
+
+      <v-text-field
+        v-model="sync.config.url"
+        :label="$t('Address of a folder')"
+        :placeholder="KOOFR"
+        persistent-placeholder
+        density="comfortable"
+        variant="outlined"
+        hide-details
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
+      />
+
+      <div class="flex flex-wrap gap-3">
+        <v-text-field
+          v-model="sync.config.user"
+          :label="$t('Username')"
+          density="comfortable"
+          variant="outlined"
+          hide-details
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+          class="min-w-56 flex-1"
+        />
+        <v-text-field
+          v-model="sync.config.pass"
+          :label="$t('Password')"
+          :type="showPassword ? 'text' : 'password'"
+          density="comfortable"
+          variant="outlined"
+          hide-details
+          class="min-w-56 flex-1"
+        />
+      </div>
+
+      <!-- A checkbox rather than the icon inside the field: an overlaid button
+           there is one more thing for a d-pad crossing the row to fall into. -->
+      <v-checkbox
+        v-model="showPassword"
+        density="compact"
+        hide-details
+        :label="$t('Show password')"
+      />
+
+      <p class="text-body-small max-w-prose opacity-70">
+        {{ $t('Most servers let you make a password that only works for one app — use one of those here rather than the password to your whole account. It is stored on this device and is the one thing a backup file never carries.') }}
+      </p>
+
+      <div class="text-title-small mt-2">
+        {{ $t('What travels') }}
+      </div>
+      <div v-for="group in SYNC_GROUPS" :key="group.key">
+        <v-switch
+          v-model="sync.config.groups[group.key]"
+          color="primary"
+          density="comfortable"
+          hide-details
+          :label="group.title()"
+        />
+        <p class="text-body-small max-w-prose opacity-70">
+          {{ group.hint() }}
         </p>
-      </v-card>
+      </div>
+
+      <p class="text-body-small max-w-prose opacity-70">
+        {{ $t('Downloaded files, the folder they are kept in, your playlists and anything holding a password stay on this device whatever is switched on.') }}
+      </p>
+
+      <div class="mt-2 flex flex-wrap items-center gap-2">
+        <v-btn
+          :prepend-icon="mdiSync"
+          variant="tonal"
+          :loading="sync.running"
+          :disabled="!sync.on"
+          @click="sync.run()"
+        >
+          {{ $t('Sync now') }}
+        </v-btn>
+        <v-btn
+          v-if="sync.on"
+          :prepend-icon="mdiLinkOff"
+          variant="text"
+          @click="sync.disconnect()"
+        >
+          {{ $t('Stop syncing') }}
+        </v-btn>
+      </div>
+
+      <v-alert v-if="sync.error" type="warning" variant="tonal" density="compact" :text="sync.error" />
+      <p v-else-if="lastSynced" class="text-body-medium opacity-70">
+        <v-icon :icon="mdiCloudSyncOutline" size="18" class="mr-1" />
+        {{ $t('Last synced {at}.', { at: lastSynced }) }}
+      </p>
+      <p v-else-if="sync.on" class="text-body-medium opacity-70">
+        {{ $t('Not synced yet. Press Sync now, or wait — Ventic syncs on its own every few minutes and whenever a film ends.') }}
+      </p>
+
+      <p class="text-body-small max-w-prose opacity-70">
+        {{ $t('Two screens are merged rather than one overwriting the other, so watching something on one and something else on the other keeps both. Removing a film from a list removes it everywhere.') }}
+      </p>
     </settings-section>
 
     <settings-section
