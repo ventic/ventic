@@ -39,7 +39,49 @@ env:
   BUN_VERSION: 1.4.0
 
 jobs:
+  # A draft release is not keyed on its tag — nothing stops a second one being
+  # created under the same name, and tauri-action creates one per matrix job.
+  # Three of them starting in the same second is exactly what happened to
+  # v0.5.3: two half-full drafts, one holding the Mac and Windows bundles and
+  # the other Linux and Android, each with a latest.json describing only its own
+  # half. So the draft is made once, here, and every job is handed its id.
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      id: ${{ steps.draft.outputs.id }}
+    steps:
+      - name: Create the draft release
+        id: draft
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          # Re-running a tag has to land on the draft that is already there
+          # rather than adding another one — which is the whole point of this job.
+          rel=$(gh api "repos/$REPO/releases?per_page=100" \
+            --jq "[.[] | select(.tag_name == \"$TAG\")] | first // empty")
+          if [ -n "$rel" ]; then
+            # Uploading into a release people can already see would replace the
+            # artifacts under them. Stop, as tauri-action itself used to.
+            if [ "$(jq -r .draft <<<"$rel")" != true ]; then
+              echo "::error::$TAG is already published. Delete the release or bump the version."
+              exit 1
+            fi
+            id=$(jq -r .id <<<"$rel")
+            echo "Reusing draft $id."
+          else
+            # The numeric REST id, which is what tauri-action's releaseId takes —
+            # `gh release view --json id` answers the GraphQL node id instead.
+            id=$(gh api "repos/$REPO/releases" -f tag_name="$TAG" \
+              -f name="Ventic $TAG" -F draft=true --jq .id)
+            echo "Created draft $id."
+          fi
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+
   desktop:
+    needs: release
     strategy:
       fail-fast: false
       matrix:
@@ -169,12 +211,9 @@ jobs:
           # variables are deliberately absent here — "Stage the Apple signing
           # identity" above exports them, and only when there is a certificate.
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: Ventic ${{ github.ref_name }}
-          # v1 fails rather than uploading when the tag's release exists and is
-          # no longer a draft, so re-running this after publishing is an error
-          # and not a silent no-op. Delete the release first, or re-tag.
-          releaseDraft: true
+          # The id, never tagName: given a tag and no id, every matrix job
+          # creates its own release (see the `release` job above).
+          releaseId: ${{ needs.release.outputs.id }}
           args: ${{ matrix.args }}
           # Windows builds both, and the updater installs whichever this names.
           # NSIS: it is per-user, so `installMode: passive` can run it without a
