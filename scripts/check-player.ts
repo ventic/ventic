@@ -359,5 +359,21 @@ assert.match(kotlin, /EXTENSION_RENDERER_MODE_ON/, 'the device decoder is still 
 assert.match(kotlin, /EXTENSION_RENDERER_MODE_PREFER/, 'and the retry is what reaches for FFmpeg')
 assert.match(kotlin, /FfmpegLibrary\.isAvailable\(\)/, 'which is skipped unless the library really shipped')
 
+// --- A link the source resolved itself is somebody else's host ------------------
+// `waitForStream` is the one thing in the player bound by CORS, and it is the
+// gate every stream passes before mpv or ExoPlayer is handed it. The local
+// engine sends `Access-Control-Allow-Origin`; a debrid host, an IPTV panel and
+// a cast mirror send nothing. Probed with the webview's own fetch they all
+// throw, the retry loop swallows the throw, and a link that plays perfectly is
+// reported as "could not be reached" fifteen seconds later — which is what
+// every debrid release did. Nothing compiles this: the wrong fetch is still
+// valid TypeScript and still passes on the engine, which is the one URL a
+// developer tests with.
+const probe = mpv.match(/async function waitForStream[\s\S]*?\n\}/)?.[0] ?? ''
+assert.ok(probe, 'waitForStream is still the pre-flight before a stream is opened')
+assert.match(probe, /tauriFetch/, 'a remote link is probed through Rust, where CORS does not apply')
+assert.doesNotMatch(probe, /\bfetch\(url/, 'and never with the webview\'s own fetch')
+assert.match(mpv, /import \{ fetch as tauriFetch \} from '@tauri-apps\/plugin-http'/, 'which is where that comes from')
+
 // eslint-disable-next-line no-console
 console.log('player: ok')

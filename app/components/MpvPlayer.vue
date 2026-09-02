@@ -35,6 +35,7 @@ import {
 } from '@mdi/js'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
+import { fetch as tauriFetch } from '@tauri-apps/plugin-http'
 
 // Player for the embedded native mpv engine. mpv renders into a surface that
 // the Rust backend keeps glued to `boxEl` below (see `player_start` /
@@ -1181,6 +1182,15 @@ async function waitForStream(url: string, timeoutMs = 60000) {
 
   const local = url.startsWith(ENGINE)
   const deadline = Date.now() + (local ? timeoutMs : 15000)
+  // The local engine sends CORS headers and nobody else does. A debrid link, a
+  // channel and a cast mirror are all somebody else's host answering a
+  // `tauri://` origin, so the webview's own fetch never sees the reply — it
+  // throws, this loop swallows it, and a link that plays perfectly is reported
+  // as "could not be reached". Through Rust that rule doesn't exist, which is
+  // the same reason `iptv.ts` fetches a playlist that way. The stream itself
+  // never comes this way: mpv, ExoPlayer and `<video>` open the URL themselves
+  // and none of the three is bound by CORS either.
+  const http = local || !('__TAURI_INTERNALS__' in globalThis) ? globalThis.fetch : tauriFetch
   let status = 0
   let reason = ''
   while (Date.now() < deadline) {
@@ -1190,7 +1200,7 @@ async function waitForStream(url: string, timeoutMs = 60000) {
       // Wi-Fi" — answers 206 and then sends nothing, for ever. Unbounded, the
       // player sat on that body with a spinner and no way to say why. Aborting
       // costs another turn of this loop, which the deadline still governs.
-      const res = await fetch(url, { headers: { Range: 'bytes=0-0' }, signal: AbortSignal.timeout(10_000) })
+      const res = await http(url, { headers: { Range: 'bytes=0-0' }, signal: AbortSignal.timeout(10_000) })
       status = res.status
       if (res.ok || res.status === 206) {
         // Release the connection so librqbit isn't left holding a reader.
