@@ -355,9 +355,13 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   only for *other* documents — so `write()` in `stores/sync.ts` dispatches the
   `StorageEvent` itself, which is exactly what VueUse's `useStorage` does for its
   own writes. That is what lets the merge know no store's name. `plugins/
-  sync.client.ts` decides *when*: at boot, every five minutes, on the way to the
-  background (Android freezes the process, so that is the last chance), and on
-  leaving the player — the one moment the other screen is actually waiting for.
+  sync.client.ts` decides *when*: at boot, every five minutes, on leaving the
+  player — the one moment another screen is actually waiting for — and on
+  `visibilitychange` in **both** directions. Both, because `run()` is one round
+  trip: going away is the last chance to send anything (Android freezes the
+  process, and the timer with it), and coming back is a device that has missed
+  every tick since it was put down, which is exactly the case the feature is
+  for.
 - Go through the store for watch state anyway: `record`, `finish`, `setWatched`,
   `toggleFavourite`, `toggleWatchlist` own the rules about what counts as
   watched. Don't write `progress`/`favourites`/`watchlist` from a component.
