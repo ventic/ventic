@@ -150,10 +150,23 @@ export const useSettingsStore = defineStore('settings', () => {
   const castName = useLocalStorage('ventic.castName', '')
 
   /**
-   * The pairing code this device shows and expects. Generated once and kept, so
-   * the phone that has been paired stays paired — `ventic.castCode` is in
-   * `backup.ts`'s SECRET set, since a code that travelled in an export would be
-   * a code the export's reader can cast with.
+   * Ask a device casting here for the pairing code below.
+   *
+   * On by default, and a separate switch rather than an empty `castCode`: that
+   * key is in `backup.ts`'s SECRET set, so a restored backup arrives with
+   * receiving switched on and no code at all — and "no code yet" would then be
+   * indistinguishable from "this household doesn't want one", which is the
+   * difference between a device that mints itself a code and a device open to
+   * everything on the Wi-Fi.
+   */
+  const castAsk = useLocalStorage('ventic.castAsk', true)
+
+  /**
+   * The pairing code this device shows and expects. Minted once and kept, so
+   * the phone that has been paired stays paired, and editable so it can be a
+   * number somebody actually remembers — `ventic.castCode` is in `backup.ts`'s
+   * SECRET set, since a code that travelled in an export would be a code the
+   * export's reader can cast with.
    */
   const castCode = useLocalStorage('ventic.castCode', '')
 
@@ -227,5 +240,5 @@ export const useSettingsStore = defineStore('settings', () => {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, castReceive, castName, castCode, castTarget, downloadDir, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, resetSubs }
+  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, castReceive, castName, castAsk, castCode, castTarget, downloadDir, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, resetSubs }
 })

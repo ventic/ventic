@@ -167,18 +167,20 @@ async function toggleStremio(on: boolean | null) {
       </div>
 
       <div class="flex items-start gap-2">
-        <v-text-field
-          v-model="url"
-          :label="$t('Source URL')"
-          placeholder="https://… or stremio://…"
-          variant="solo-filled"
-          density="comfortable"
-          rounded="lg"
-          flat
-          :error-messages="error"
-          @keydown.enter="add"
-          @update:model-value="error = ''"
-        />
+        <tv-field :label="$t('Source URL')" class="flex-1">
+          <v-text-field
+            v-model="url"
+            :label="$t('Source URL')"
+            placeholder="https://… or stremio://…"
+            variant="solo-filled"
+            density="comfortable"
+            rounded="lg"
+            flat
+            :error-messages="error"
+            @keydown.enter="add"
+            @update:model-value="error = ''"
+          />
+        </tv-field>
         <v-btn :prepend-icon="mdiPlus" variant="tonal" size="large" class="mt-1" @click="add">
           {{ $t('Add') }}
         </v-btn>
@@ -221,18 +223,20 @@ async function toggleStremio(on: boolean | null) {
       </div>
 
       <div class="flex items-start gap-2">
-        <v-text-field
-          v-model="playlist"
-          :label="$t('Playlist URL')"
-          placeholder="https://…"
-          variant="solo-filled"
-          density="comfortable"
-          rounded="lg"
-          flat
-          :error-messages="playlistError"
-          @keydown.enter="addPlaylist"
-          @update:model-value="playlistError = ''"
-        />
+        <tv-field :label="$t('Playlist URL')" class="flex-1">
+          <v-text-field
+            v-model="playlist"
+            :label="$t('Playlist URL')"
+            placeholder="https://…"
+            variant="solo-filled"
+            density="comfortable"
+            rounded="lg"
+            flat
+            :error-messages="playlistError"
+            @keydown.enter="addPlaylist"
+            @update:model-value="playlistError = ''"
+          />
+        </tv-field>
         <v-btn :prepend-icon="mdiPlus" variant="tonal" size="large" class="mt-1" @click="addPlaylist">
           {{ $t('Add') }}
         </v-btn>

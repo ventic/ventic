@@ -33,24 +33,39 @@ export default defineNuxtPlugin(() => {
 
   /**
    * Bring the listener into line with the settings, filling in a name and a
-   * code the first time it is switched on. Runs again whenever any of the three
+   * code the first time it is switched on. Runs again whenever any of them
    * change, so renaming this device doesn't need a restart to be seen.
    */
   async function apply() {
-    if (settings.castReceive) {
-      if (!settings.castCode)
-        settings.castCode = newCode()
-      if (!settings.castName)
-        settings.castName = isTv() ? $t('Ventic TV') : $t('Ventic')
-    }
+    if (settings.castReceive && !settings.castName)
+      settings.castName = isTv() ? $t('Ventic TV') : $t('Ventic')
 
-    const wanted = [settings.castReceive, settings.castName, settings.castCode].join('|')
+    // A backup carries `castReceive` but never `castCode` — that one is SECRET —
+    // so a restored device wakes up asking for a code it hasn't got. Mint one,
+    // but only on the way up: doing it whenever the box is empty rewrites the
+    // field under the fingers of somebody clearing it to type their own, which
+    // is the whole point of the field being editable. Switching either switch on
+    // mints one too, in settings/network.vue.
+    if (!applied && settings.castReceive && settings.castAsk && !settings.castCode)
+      settings.castCode = newCode()
+
+    // No code at all is a deliberate answer and Rust reads it as one: a
+    // household that wants any of its own screens to be able to hand a film to
+    // the television without reading four digits off it first. It is never the
+    // default, and never something an empty setting falls into by accident —
+    // an empty box while a code *is* being asked for is neither answer, so the
+    // listener stays down rather than standing open to the network for as long
+    // as it takes somebody to type a new one.
+    const code = settings.castAsk ? settings.castCode : ''
+    const on = settings.castReceive && (!settings.castAsk || !!code)
+
+    const wanted = [on, settings.castName, code].join('|')
     if (wanted === applied)
       return
     applied = wanted
 
     try {
-      await receiveCasts(settings.castReceive, settings.castName, settings.castCode)
+      await receiveCasts(on, settings.castName, code)
     }
     catch (e) {
       // A port already taken is the realistic failure, and the switch being on
@@ -62,13 +77,21 @@ export default defineNuxtPlugin(() => {
   }
 
   watch(
-    () => [settings.castReceive, settings.castName, settings.castCode].join('|'),
+    () => [settings.castReceive, settings.castName, settings.castAsk, settings.castCode].join('|'),
     () => apply(),
     { immediate: true },
   )
 
-  listen<CastPlay>('cast://play', event => {
-    navigateTo({ path: localePath('/watch'), query: castRoute(event.payload) })
+  listen<CastPlay>('cast://play', async event => {
+    const player = localePath('/watch')
+    // Casting the same film again lands on the *identical* route, and a router
+    // does nothing with one of those — so a cast that failed on this screen
+    // could never be retried from the other device: the second command arrived,
+    // was accepted, and left the spinner from the first one exactly where it
+    // was. Leaving the player first makes every command a fresh start.
+    if (useRouter().currentRoute.value.path === player)
+      await navigateTo(localePath('/'))
+    await navigateTo({ path: player, query: castRoute(event.payload) })
   }).catch(() => {}) // no Tauri under `bun run dev`, and nothing to listen to
 
   // The sending device pressed Stop. It stops serving the film a moment later,

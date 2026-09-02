@@ -142,40 +142,44 @@ function apply() {
         }) }}
       </p>
 
-      <v-text-field
-        v-model="sync.config.url"
-        :label="$t('Address of a folder')"
-        :placeholder="KOOFR"
-        persistent-placeholder
-        density="comfortable"
-        variant="outlined"
-        hide-details
-        autocapitalize="off"
-        autocorrect="off"
-        spellcheck="false"
-      />
-
-      <div class="flex flex-wrap gap-3">
+      <tv-field :label="$t('Address of a folder')">
         <v-text-field
-          v-model="sync.config.user"
-          :label="$t('Username')"
+          v-model="sync.config.url"
+          :label="$t('Address of a folder')"
+          :placeholder="KOOFR"
+          persistent-placeholder
           density="comfortable"
           variant="outlined"
           hide-details
           autocapitalize="off"
           autocorrect="off"
           spellcheck="false"
-          class="min-w-56 flex-1"
         />
-        <v-text-field
-          v-model="sync.config.pass"
-          :label="$t('Password')"
-          :type="showPassword ? 'text' : 'password'"
-          density="comfortable"
-          variant="outlined"
-          hide-details
-          class="min-w-56 flex-1"
-        />
+      </tv-field>
+
+      <div class="flex flex-wrap gap-3">
+        <tv-field :label="$t('Username')" class="min-w-56 flex-1">
+          <v-text-field
+            v-model="sync.config.user"
+            :label="$t('Username')"
+            density="comfortable"
+            variant="outlined"
+            hide-details
+            autocapitalize="off"
+            autocorrect="off"
+            spellcheck="false"
+          />
+        </tv-field>
+        <tv-field :label="$t('Password')" class="min-w-56 flex-1">
+          <v-text-field
+            v-model="sync.config.pass"
+            :label="$t('Password')"
+            :type="showPassword ? 'text' : 'password'"
+            density="comfortable"
+            variant="outlined"
+            hide-details
+          />
+        </tv-field>
       </div>
 
       <!-- A checkbox rather than the icon inside the field: an overlaid button

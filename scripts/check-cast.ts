@@ -116,6 +116,27 @@ assert.ok(
   'the foreground service must stay up for a cast with nothing downloading',
 )
 
+// The sweep and the film compete for the same network, and the film loses: 253
+// probes in flight while the other device is opening the stream left it on a
+// spinner until its own leash ran out. Pressing Play only once the sweep had
+// finished was the workaround people found for themselves.
+const button = read('app/components/CastButton.vue')
+const send = /async function start\(\)[\s\S]*?\n\}/.exec(button)?.[0] ?? ''
+assert.ok(
+  send.indexOf('hunt?.abort()') > 0 && send.indexOf('hunt?.abort()') < send.indexOf('sendPlay('),
+  'the subnet sweep must be stopped before a film is handed over',
+)
+
+// A second cast of the same film is the identical route, and a router does
+// nothing with one of those — so a cast that failed on the television could
+// never be retried from the phone: the command arrived, was accepted, and left
+// the first attempt's spinner exactly where it was.
+const listener = read('app/plugins/cast.client.ts')
+assert.ok(
+  /currentRoute\.value\.path === player\)[\s\S]{0,80}navigateTo\(localePath\('\/'\)\)/.test(listener),
+  'a cast landing on the player it is already showing must leave it first',
+)
+
 // The exposed engine is read-only. Without this, anything on the network can
 // add and delete torrents on a device that was only asked to play a film.
 assert.ok(
@@ -131,6 +152,25 @@ assert.ok(
 assert.ok(
   /command\.code = String::new\(\)/.test(rust),
   'the code must be blanked before the command reaches the page',
+)
+// …and the one way past that check is a device with no code at all, which is a
+// switch somebody has to find and turn off. Both handlers, or Stop becomes the
+// one command a paired sender cannot give.
+assert.equal(
+  (rust.match(/!state\.code\.is_empty\(\) && command\.code != state\.code/g) ?? []).length,
+  2,
+  'play and stop both skip the check only for a device that asks for no code',
+)
+assert.ok(
+  /useLocalStorage\('ventic\.castAsk', true\)/.test(settings),
+  'a pairing code is asked for unless the user says otherwise',
+)
+// The window that would otherwise open: clearing the box to type a code of your
+// own leaves `castAsk` on and `castCode` empty, and Rust reads an empty code as
+// "ask for none" — so the listener has to stay down instead.
+assert.ok(
+  /const on = settings\.castReceive && \(!settings\.castAsk \|\| !!code\)/.test(listener),
+  'an empty code while a code is being asked for must switch the listener off, not open it',
 )
 
 // A film the receiving device cannot fetch is refused while the sender is still

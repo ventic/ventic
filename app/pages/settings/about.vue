@@ -101,19 +101,21 @@ function open(url: string) {
 
       <!-- The way back from a revoked bundled token without shipping a release.
            Empty is the normal state — nobody should need this to use the app. -->
-      <v-text-field
-        v-model.trim="settings.tmdbKey"
-        :label="$t('Your own TMDB read token')"
-        :placeholder="$t('Leave empty to use the built-in one')"
-        variant="solo-filled"
-        density="comfortable"
-        rounded="lg"
-        flat
-        autocomplete="off"
-        spellcheck="false"
-        :hint="$t('Only needed if the app stops loading artwork and titles. Create one free under your TMDB account settings, API, “API Read Access Token”. It is kept out of backup files.')"
-        persistent-hint
-      />
+      <tv-field :label="$t('Your own TMDB read token')">
+        <v-text-field
+          v-model.trim="settings.tmdbKey"
+          :label="$t('Your own TMDB read token')"
+          :placeholder="$t('Leave empty to use the built-in one')"
+          variant="solo-filled"
+          density="comfortable"
+          rounded="lg"
+          flat
+          autocomplete="off"
+          spellcheck="false"
+          :hint="$t('Only needed if the app stops loading artwork and titles. Create one free under your TMDB account settings, API, “API Read Access Token”. It is kept out of backup files.')"
+          persistent-hint
+        />
+      </tv-field>
     </settings-section>
 
     <settings-section :title="$t('Built on')">

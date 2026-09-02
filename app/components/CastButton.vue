@@ -101,6 +101,15 @@ async function start() {
   if (!device || busy.value)
     return
 
+  // Stop sweeping first. 253 addresses are 253 connections this device is
+  // opening while the other one is trying to pull the first megabyte of a film
+  // *from* it, and the stream is what loses: the television sat on a spinner
+  // until its own 15-second leash ran out. Waiting for the sweep to finish
+  // before pressing Play was the workaround people found by themselves — this
+  // is that, minus the waiting. Nothing needs finding once a device is picked.
+  hunt?.abort()
+  scanning.value = false
+
   busy.value = true
   error.value = null
   // Turning the mirror on is the one part worth undoing if this fails: it opens
@@ -201,30 +210,37 @@ onBeforeUnmount(() => hunt?.abort())
             />
           </v-list>
 
-          <p v-else-if="!scanning" class="text-body-small opacity-70">
-            {{ $t('Nothing answered. Check the other device has casting switched on, or type its address below.') }}
-          </p>
+          <!-- The one failure that isn't a failure: a device nobody switched
+               on. Said as an alert rather than a grey line, because it is the
+               first thing to check and the fix is on the other screen. -->
+          <v-alert v-else-if="!scanning" type="info" variant="tonal" density="compact" class="text-body-small">
+            {{ $t('Nothing answered. On the other device, switch on Settings → Network → “Let other devices play films on this one”, then search again — or type its address below.') }}
+          </v-alert>
         </div>
 
-        <v-text-field
-          v-model="address"
-          :label="$t('Address')"
-          placeholder="192.168.1.42"
-          density="comfortable"
-          variant="outlined"
-          hide-details
-        />
+        <tv-field :label="$t('Address')">
+          <v-text-field
+            v-model="address"
+            :label="$t('Address')"
+            placeholder="192.168.1.42"
+            density="comfortable"
+            variant="outlined"
+            hide-details
+          />
+        </tv-field>
 
-        <v-text-field
-          v-model="code"
-          :label="$t('Pairing code')"
-          :hint="$t('Shown on the other device, under Settings → Network.')"
-          persistent-hint
-          density="comfortable"
-          variant="outlined"
-          inputmode="numeric"
-          maxlength="8"
-        />
+        <tv-field :label="$t('Pairing code')">
+          <v-text-field
+            v-model="code"
+            :label="$t('Pairing code')"
+            :hint="$t('Shown on the other device, under Settings → Network. Leave it empty if that device doesn\'t ask for one.')"
+            persistent-hint
+            density="comfortable"
+            variant="outlined"
+            inputmode="numeric"
+            maxlength="8"
+          />
+        </tv-field>
 
         <div v-if="error" class="flex flex-col gap-2">
           <p class="text-body-small text-error">

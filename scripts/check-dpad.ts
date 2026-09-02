@@ -4,7 +4,7 @@ import type { Box } from '../app/utils/dpad'
 // a horizontal row, and the player's control bar. After them comes the other
 // half of the remote — BACK, which is Kotlin's to catch and the page's to answer.
 import assert from 'node:assert'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { pickDirection } from '../app/utils/dpad'
 
 function box(left: number, top: number, width: number, height: number): Box {
@@ -208,5 +208,28 @@ assert.match(
   /if \(isFinishing[^)]*\) \{\s*Process\.killProcess\(Process\.myPid\(\)\)/,
   'a finishing activity takes the process with it',
 )
+
+// --- Text fields a remote can walk past ---------------------------------------
+// On a television a field that merely *has* focus puts the on-screen keyboard
+// over the whole screen, and a d-pad crosses every field on a settings page on
+// its way down it. `TvField` parks each one under a transparent button; a bare
+// `<v-text-field>` anywhere else is a screen a remote cannot get past without
+// dismissing a keyboard nobody asked for.
+function vueFiles(dir: URL): URL[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap(entry => entry.isDirectory()
+    ? vueFiles(new URL(`${entry.name}/`, dir))
+    : entry.name.endsWith('.vue') ? [new URL(entry.name, dir)] : [])
+}
+
+for (const file of vueFiles(new URL('../app/', import.meta.url))) {
+  const source = readFileSync(file, 'utf8')
+  if (!source.includes('<v-text-field') || file.pathname.endsWith('TvField.vue'))
+    continue
+  assert.ok(
+    source.includes('<tv-field'),
+    `${file.pathname.split('/app/')[1]} has a text field outside <tv-field> — on a TV that raises `
+    + 'the keyboard the moment a remote passes it',
+  )
+}
 
 console.info('d-pad picker: ok')

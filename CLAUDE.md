@@ -270,12 +270,22 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   not that it awaits: a dualstack listener registers with tokio's reactor as it
   binds and *panics* without one, and tauri runs a sync command on the main
   thread. The receiver (`cast_receive`, port 3232) is a two-route axum server —
-  axum was already compiled, it is librqbit's own — guarded by a four-digit code
+  axum was already compiled, it is librqbit's own — guarded by a pairing code
   the receiving screen shows, because a television anyone on the Wi-Fi can
-  interrupt is not one anybody wants. Discovery is a /24 sweep from TypeScript
+  interrupt is not one anybody wants. That code is *the household's*: minted as
+  four digits when receiving is switched on, editable to a number somebody can
+  remember, and switchable off entirely (`castAsk`) for a front room where
+  reading digits off the TV is the only friction left. Off is never a default
+  and never an accident — an empty box while `castAsk` is on takes the listener
+  *down* rather than opening it, because Rust reads an empty code as "asks for
+  none", and `castCode` is SECRET so a restored backup arrives without one.
+  Discovery is a /24 sweep from TypeScript
   through `tauri-plugin-http` (no mDNS, no multicast, and the address field is
   the fallback), and the whole sending half lives in `app/utils/cast.ts` where
-  `bun run check:cast` can reach it. Two seams no compiler sees: leaving the
+  `bun run check:cast` can reach it. That sweep must stop before a film is
+  handed over: 253 probes in flight are 253 connections competing with the one
+  the other device is opening to pull the film, which showed up as a television
+  that spun for ever unless you waited for the list to fill first. Two seams no compiler sees: leaving the
   player while casting must **not** call `downloads.release()`, which pauses the
   torrent the other device is reading from, and `Downloads.kt` polls port 3231
   so a finished film being cast still counts as work — without it Android

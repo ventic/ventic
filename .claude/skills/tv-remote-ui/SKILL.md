@@ -106,7 +106,8 @@ Run `bun run check:dpad` after touching the geometry.
    that merely *has* focus puts the on-screen keyboard over the whole screen,
    and a remote crosses the app bar's search box to reach Downloads and
    Settings. So a field a d-pad can pass sits `inert` under a transparent
-   `<button>` (`AppBar.vue`), and OK on that button is what focuses it. It has
+   `<button>` — `TvField`, which every `<v-text-field>` in the app sits inside
+   (`check:dpad` holds that), and OK on that button is what focuses it. It has
    to be a button: the WebView drops OK for an `<input>` it thinks can't be
    edited, and Android only raises the keyboard for a focus that happens inside
    a real press — `nextTick` after the click still counts, a timer seconds later

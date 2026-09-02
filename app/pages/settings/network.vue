@@ -19,6 +19,17 @@ onMounted(async () => {
   sharing.value = await sharingEngine()
 })
 
+/**
+ * Turning either casting switch on has to leave a code behind: a device asking
+ * for one it hasn't got answers nothing at all (see plugins/cast.client.ts).
+ * Minted here rather than whenever the box is empty — that rewrites the field
+ * under somebody clearing it to type a number they can actually remember.
+ */
+function arm() {
+  if (settings.castReceive && settings.castAsk && !settings.castCode)
+    settings.castCode = newCode()
+}
+
 /** Why the last Stop didn't fully land, for the screen it was pressed on. */
 const stopped = ref('')
 
@@ -106,41 +117,72 @@ function label(value: number) {
         density="comfortable"
         hide-details
         :label="$t('Let other devices play films on this one')"
+        @update:model-value="arm"
       />
 
       <template v-if="settings.castReceive">
-        <v-text-field
-          v-model="settings.castName"
-          :label="$t('This device is called')"
+        <tv-field :label="$t('This device is called')">
+          <v-text-field
+            v-model="settings.castName"
+            :label="$t('This device is called')"
+            density="comfortable"
+            variant="outlined"
+            hide-details
+          />
+        </tv-field>
+
+        <v-switch
+          v-model="settings.castAsk"
+          color="primary"
           density="comfortable"
-          variant="outlined"
           hide-details
+          :label="$t('Ask for a pairing code')"
+          @update:model-value="arm"
         />
 
-        <div class="flex flex-wrap items-end gap-6">
-          <div>
-            <div class="text-headline-small tabular-nums">
-              {{ settings.castCode || '—' }}
-            </div>
-            <div class="text-label-medium opacity-70">
-              {{ $t('Pairing code') }}
-            </div>
-          </div>
-          <div>
-            <div class="text-headline-small tabular-nums">
-              {{ address || '—' }}
-            </div>
-            <div class="text-label-medium opacity-70">
-              {{ $t('Address on this network') }}
-            </div>
-          </div>
-          <v-btn variant="text" :prepend-icon="mdiRefresh" @click="settings.castCode = newCode()">
+        <!-- The code is editable, not just re-rollable: four random digits are
+             four digits nobody remembers, and the one thing this guards is a
+             television in your own front room. Any length, so a household can
+             use a number it already knows. -->
+        <div v-if="settings.castAsk" class="flex flex-wrap items-start gap-3">
+          <tv-field :label="$t('Pairing code')" class="min-w-48 flex-1">
+            <v-text-field
+              v-model.trim="settings.castCode"
+              :label="$t('Pairing code')"
+              density="comfortable"
+              variant="outlined"
+              inputmode="numeric"
+              maxlength="8"
+              autocomplete="off"
+              spellcheck="false"
+              hide-details
+            />
+          </tv-field>
+          <v-btn variant="text" class="mt-2" :prepend-icon="mdiRefresh" @click="settings.castCode = newCode()">
             {{ $t('New code') }}
           </v-btn>
         </div>
 
-        <p class="text-body-medium opacity-70">
+        <div>
+          <div class="text-headline-small tabular-nums">
+            {{ address || '—' }}
+          </div>
+          <div class="text-label-medium opacity-70">
+            {{ $t('Address on this network') }}
+          </div>
+        </div>
+
+        <p v-if="settings.castAsk" class="text-body-medium opacity-70">
           {{ $t('Type these into the other device when it asks. The code is what stops anyone else on this network putting something on your screen, so it never travels in a backup.') }}
+        </p>
+        <p v-else class="text-body-medium text-warning">
+          {{ $t('Without a code, anything on this network can play a film on this screen — fine at home, worth switching back on anywhere else.') }}
+        </p>
+
+        <!-- An empty code with the switch on answers nothing and looks like a
+             device that has simply stopped working. -->
+        <p v-if="settings.castAsk && !settings.castCode" class="text-body-small text-error">
+          {{ $t('Set a code, or turn the code off — this device answers nothing until one of the two is true.') }}
         </p>
       </template>
 

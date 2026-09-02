@@ -52,7 +52,7 @@ export const GROUP_DEFAULTS: Groups = { library: true, sources: true, preference
  * Credentials don't need listing: `makeBackup` drops the SECRET set before this
  * file ever sees a key, which is also why the sync's own settings can't sync.
  */
-const NEVER = new Set(['cached', 'local', 'downloadDir', 'touched', 'peakUpload', 'ground', 'updateSkipped', 'castReceive', 'castName', 'sync'])
+const NEVER = new Set(['cached', 'local', 'downloadDir', 'touched', 'peakUpload', 'ground', 'updateSkipped', 'castReceive', 'castName', 'castAsk', 'sync'])
 
 /** Watch state — the reason anybody asked for this. */
 const LIBRARY = new Set(['media', 'progress', 'favourites', 'watchlist', 'liveFavourites', 'deleted'])

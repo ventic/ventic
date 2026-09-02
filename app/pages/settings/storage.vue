@@ -125,14 +125,16 @@ async function openFolder() {
         ? $t('Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.')
         : $t('Where films and episodes are written. Torrents already downloaded stay where they are.')"
     >
-      <v-text-field
-        v-model="settings.downloadDir"
-        :label="$t('Folder')"
-        :placeholder="$t('Default: the app\'s own cache folder')"
-        persistent-placeholder
-        hide-details
-        :readonly="!!volumes"
-      />
+      <tv-field :label="$t('Folder')">
+        <v-text-field
+          v-model="settings.downloadDir"
+          :label="$t('Folder')"
+          :placeholder="$t('Default: the app\'s own cache folder')"
+          persistent-placeholder
+          hide-details
+          :readonly="!!volumes"
+        />
+      </tv-field>
 
       <!-- One button per drive rather than a radio group: it is the shape a
            remote already knows, and the free space is the whole reason to pick

@@ -12,7 +12,9 @@
 //!
 //!   * the **receiver** (`cast_receive`) — one endpoint another device posts a
 //!     play command to, guarded by the pairing code the receiving screen shows.
-//!     Without it, anyone on the Wi-Fi could put anything on your television.
+//!     Without it, anyone on the Wi-Fi could put anything on your television —
+//!     which is why the code is on by default, and why a household that would
+//!     rather not read one off a television has to switch it off itself.
 //!   * the **mirror** (`cast_share`) — a second librqbit HTTP API, **read only**
 //!     and bound to the LAN, so the other device can pull the film over http
 //!     range exactly as this one's own player does. The engine's real API stays
@@ -236,7 +238,11 @@ pub async fn cast_share(enable: bool) -> Result<Option<String>, String> {
 }
 
 /// Start or stop answering play commands. `name` is what the sending device
-/// lists this one as; `code` is the pairing code shown on this screen.
+/// lists this one as; `code` is the pairing code shown on this screen — empty
+/// means this device answers to anything on its own network, which the settings
+/// screen makes somebody ask for and never falls into on its own (see
+/// `castAsk`). It is the LAN either way: nothing here is reachable from outside
+/// it, and the mirror it guards is read-only.
 ///
 /// `async` for the reason `cast_share` is, plus one of its own: the settings it
 /// captures are the name and the code, so changing either restarts the listener
@@ -247,10 +253,6 @@ pub async fn cast_receive(app: AppHandle, enable: bool, name: String, code: Stri
 	stop_server(&RECEIVER).await;
 	if !enable {
 		return Ok(());
-	}
-	// A blank code would pair with anything that forgot to send one.
-	if code.is_empty() {
-		return Err("a pairing code is required".into());
 	}
 
 	let state = Receiving { app, name, code };
@@ -328,8 +330,9 @@ async fn reachable(url: &str) -> bool {
 async fn play(State(state): State<Receiving>, Json(mut command): Json<Play>) -> StatusCode {
 	// A four-digit code read off a television and typed on a phone, over a
 	// network the sender is already on: what matters is that a wrong one is
-	// refused, not how long refusing it took.
-	if command.code != state.code {
+	// refused, not how long refusing it took. A device with no code set has been
+	// told to ask for none — see `cast_receive`.
+	if !state.code.is_empty() && command.code != state.code {
 		return StatusCode::FORBIDDEN;
 	}
 	command.code = String::new();
@@ -357,7 +360,7 @@ async fn play(State(state): State<Receiving>, Json(mut command): Json<Play>) -> 
 /// served from goes down a moment later, so a receiver that never heard this
 /// would carry on until its buffer ran dry and then blame the network.
 async fn stop(State(state): State<Receiving>, Json(command): Json<Stop>) -> StatusCode {
-	if command.code != state.code {
+	if !state.code.is_empty() && command.code != state.code {
 		return StatusCode::FORBIDDEN;
 	}
 	match state.app.emit("cast://stop", ()) {
