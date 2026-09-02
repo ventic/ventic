@@ -4,6 +4,7 @@ import { mdiBookmark, mdiBookmarkOutline, mdiHeart, mdiHeartOutline, mdiInformat
 
 const ui = useUiStore()
 const library = useLibraryStore()
+const { smAndDown } = useDisplay()
 
 const { data: trending } = useAsyncData(
   'home-trending',
@@ -78,22 +79,27 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
         </p>
 
         <!-- gap-y: on a phone the posters wrap under the buttons, and a bare
-             gap-2 leaves them touching. -->
+             gap-2 leaves them touching. Four `large` controls come to 372px,
+             which is wider than a phone — so below sm they take the normal
+             size, and the two icons are one element so a wrap can never leave
+             a lone heart on a line of its own. -->
         <div class="flex flex-wrap items-end gap-x-2 gap-y-3 pt-1">
-          <v-btn :prepend-icon="mdiPlay" size="large" :to="library.resumeLink(featured)">
+          <v-btn :prepend-icon="mdiPlay" :size="smAndDown ? 'default' : 'large'" :to="library.resumeLink(featured)">
             {{ $t('Play') }}
           </v-btn>
-          <v-btn :prepend-icon="mdiInformationOutline" size="large" variant="tonal" :to="mediaLink(featured)">
+          <v-btn :prepend-icon="mdiInformationOutline" :size="smAndDown ? 'default' : 'large'" variant="tonal" :to="mediaLink(featured)">
             {{ $t('Details') }}
           </v-btn>
-          <v-btn icon variant="text" color="white" size="large" @click="library.toggleWatchlist(featured)">
-            <v-icon :icon="library.inWatchlist(featured) ? mdiBookmark : mdiBookmarkOutline" :color="library.inWatchlist(featured) ? 'primary' : undefined" />
-            <v-tooltip activator="parent" :text="library.inWatchlist(featured) ? $t('Remove from watchlist') : $t('Add to watchlist')" />
-          </v-btn>
-          <v-btn icon variant="text" color="white" size="large" @click="library.toggleFavourite(featured)">
-            <v-icon :icon="library.isFavourite(featured) ? mdiHeart : mdiHeartOutline" :color="library.isFavourite(featured) ? 'primary' : undefined" />
-            <v-tooltip activator="parent" :text="library.isFavourite(featured) ? $t('Remove from favourites') : $t('Favourite')" />
-          </v-btn>
+          <div class="flex items-center">
+            <v-btn icon variant="text" color="white" :size="smAndDown ? 'default' : 'large'" @click="library.toggleWatchlist(featured)">
+              <v-icon :icon="library.inWatchlist(featured) ? mdiBookmark : mdiBookmarkOutline" :color="library.inWatchlist(featured) ? 'primary' : undefined" />
+              <v-tooltip activator="parent" :text="library.inWatchlist(featured) ? $t('Remove from watchlist') : $t('Add to watchlist')" />
+            </v-btn>
+            <v-btn icon variant="text" color="white" :size="smAndDown ? 'default' : 'large'" @click="library.toggleFavourite(featured)">
+              <v-icon :icon="library.isFavourite(featured) ? mdiHeart : mdiHeartOutline" :color="library.isFavourite(featured) ? 'primary' : undefined" />
+              <v-tooltip activator="parent" :text="library.isFavourite(featured) ? $t('Remove from favourites') : $t('Favourite')" />
+            </v-btn>
+          </div>
 
           <v-spacer />
 

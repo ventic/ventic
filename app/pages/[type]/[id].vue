@@ -114,12 +114,14 @@ const playLabel = computed(() => [
 
     <template v-else>
       <section class="px-4 pb-8 pt-4 md:px-6">
-        <div class="flex flex-col gap-6 sm:flex-row sm:items-end">
-          <div class="aspect-2/3 w-32 shrink-0 overflow-hidden rounded-2xl shadow-2xl sm:w-44 lg:w-52">
+        <div class="media-hero">
+          <div class="media-hero-poster">
             <media-poster :src="posterUrl(media?.poster, 'w500')" :alt="media?.title" />
           </div>
 
-          <div v-if="media" class="flex min-w-0 flex-1 flex-col gap-3">
+          <!-- The title keeps the poster company; everything else goes below
+               both of them until there is room for a column. -->
+          <div v-if="media" class="flex min-w-0 flex-col gap-2 self-center">
             <!-- max-w-full: a wordmark is a wide image, and `max-w-md` alone is
                  wider than a phone — the title ran off the side of the screen. -->
             <img
@@ -128,14 +130,16 @@ const playLabel = computed(() => [
               :alt="media.title"
               class="max-h-16 max-w-full self-start object-contain drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)] sm:max-h-24 sm:max-w-md"
             >
-            <h1 v-else class="text-headline-large font-bold drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)]">
+            <h1 v-else class="text-headline-medium font-bold drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)] sm:text-headline-large">
               {{ media.title }}
             </h1>
 
             <p v-if="media.tagline" class="text-body-medium italic opacity-60">
               {{ media.tagline }}
             </p>
+          </div>
 
+          <div v-if="media" class="media-hero-body">
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-body-small opacity-75">
               <span class="flex items-center gap-1 opacity-100">
                 <v-icon :icon="mdiStar" size="14" class="text-amber-400" />
@@ -158,7 +162,7 @@ const playLabel = computed(() => [
 
             <dl v-if="credits.length" class="grid grid-cols-1 gap-x-6 gap-y-1 text-body-small sm:grid-cols-2 lg:max-w-2xl">
               <div v-for="row in credits" :key="row.label" class="flex gap-2">
-                <dt class="shrink-0 opacity-50">
+                <dt class="w-20 shrink-0 opacity-50">
                   {{ row.label }}
                 </dt>
                 <dd class="truncate opacity-85">
@@ -217,26 +221,32 @@ const playLabel = computed(() => [
                 :episode="target?.episode"
                 :size="mobile ? 'default' : 'large'"
               />
-              <v-spacer v-if="mobile" />
-              <!-- Whole-title mark. For a show that's a manual override — the
-                   app can't know every episode has been seen without a season
-                   fetch, and the per-episode ticks already say it. -->
-              <v-btn icon variant="text" color="on-surface" :size="mobile ? 'default' : 'large'" @click="library.toggleWatched(media)">
-                <v-icon :icon="library.isWatched(media) ? mdiEye : mdiEyeOutline" :color="library.isWatched(media) ? 'primary' : undefined" />
-                <v-tooltip activator="parent" :text="library.isWatched(media) ? $t('Mark unwatched') : $t('Mark watched')" />
-              </v-btn>
-              <v-btn icon variant="text" color="on-surface" :size="mobile ? 'default' : 'large'" @click="library.toggleWatchlist(media)">
-                <v-icon :icon="library.inWatchlist(media) ? mdiBookmark : mdiBookmarkOutline" :color="library.inWatchlist(media) ? 'primary' : undefined" />
-                <v-tooltip activator="parent" :text="library.inWatchlist(media) ? $t('Remove from watchlist') : $t('Add to watchlist')" />
-              </v-btn>
-              <v-btn icon variant="text" color="on-surface" :size="mobile ? 'default' : 'large'" @click="library.toggleFavourite(media)">
-                <v-icon :icon="library.isFavourite(media) ? mdiHeart : mdiHeartOutline" :color="library.isFavourite(media) ? 'primary' : undefined" />
-                <v-tooltip activator="parent" :text="library.isFavourite(media) ? $t('Remove from favourites') : $t('Favourite')" />
-              </v-btn>
+              <!-- One element, so the three can never be split across two
+                   lines — a lone heart under the row was what wrapping did.
+                   Below sm they take a line of their own; from there on the
+                   auto margin pins them to the end of whichever line they land
+                   on, which is what the spacer here used to do. -->
+              <div class="flex w-full items-center gap-1 sm:ms-auto sm:w-auto">
+                <!-- Whole-title mark. For a show that's a manual override — the
+                     app can't know every episode has been seen without a season
+                     fetch, and the per-episode ticks already say it. -->
+                <v-btn icon variant="text" color="on-surface" :size="mobile ? 'default' : 'large'" @click="library.toggleWatched(media)">
+                  <v-icon :icon="library.isWatched(media) ? mdiEye : mdiEyeOutline" :color="library.isWatched(media) ? 'primary' : undefined" />
+                  <v-tooltip activator="parent" :text="library.isWatched(media) ? $t('Mark unwatched') : $t('Mark watched')" />
+                </v-btn>
+                <v-btn icon variant="text" color="on-surface" :size="mobile ? 'default' : 'large'" @click="library.toggleWatchlist(media)">
+                  <v-icon :icon="library.inWatchlist(media) ? mdiBookmark : mdiBookmarkOutline" :color="library.inWatchlist(media) ? 'primary' : undefined" />
+                  <v-tooltip activator="parent" :text="library.inWatchlist(media) ? $t('Remove from watchlist') : $t('Add to watchlist')" />
+                </v-btn>
+                <v-btn icon variant="text" color="on-surface" :size="mobile ? 'default' : 'large'" @click="library.toggleFavourite(media)">
+                  <v-icon :icon="library.isFavourite(media) ? mdiHeart : mdiHeartOutline" :color="library.isFavourite(media) ? 'primary' : undefined" />
+                  <v-tooltip activator="parent" :text="library.isFavourite(media) ? $t('Remove from favourites') : $t('Favourite')" />
+                </v-btn>
+              </div>
             </div>
           </div>
 
-          <div v-else class="flex min-w-0 flex-1 flex-col gap-3">
+          <div v-else class="media-hero-body self-center">
             <div class="animate-pulse h-10 w-2/3 max-w-sm rounded-lg bg-surface-container/60" />
             <div class="animate-pulse h-4 w-40 rounded bg-surface-container/60" />
             <div class="animate-pulse h-20 w-full max-w-2xl rounded-lg bg-surface-container/60" />

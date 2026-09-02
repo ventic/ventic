@@ -50,7 +50,10 @@ const cue = computed(() => {
   const scale = FRAME / 720
   const stroke = s.outline * scale
   return {
-    fontFamily: s.font,
+    // The stack, not the bare name: this box is the only thing that says what a
+    // font choice looks like, and a family the webview hasn't got draws as its
+    // default serif rather than as anything you picked. See subtitleFontCss.
+    fontFamily: subtitleFontCss(s.font),
     fontSize: `${s.size * scale}px`,
     fontWeight: s.bold ? 700 : 400,
     color: s.color,

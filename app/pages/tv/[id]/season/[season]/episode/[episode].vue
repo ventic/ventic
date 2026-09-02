@@ -7,6 +7,7 @@ definePageMeta({
 
 const route = useRoute()
 const ui = useUiStore()
+const { mobile } = useDisplay()
 
 const id = computed(() => String(route.params.id))
 const seasonNumber = computed(() => Number(route.params.season))
@@ -53,7 +54,7 @@ const credits = computed(() => {
           </v-btn>
         </div>
 
-        <div class="flex flex-col gap-6 lg:flex-row lg:items-end">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
           <!-- Stills are 16:9, so this hero is wide where the show page is tall. -->
           <div class="aspect-video w-full shrink-0 overflow-hidden rounded-2xl shadow-2xl lg:w-2xl">
             <media-poster :src="stillUrl(episode?.still, 'w780')" :alt="episode?.name" />
@@ -83,7 +84,7 @@ const credits = computed(() => {
 
             <dl v-if="credits.length" class="grid grid-cols-1 gap-x-6 gap-y-1 text-body-small sm:grid-cols-2">
               <div v-for="row in credits" :key="row.label" class="flex gap-2">
-                <dt class="shrink-0 opacity-50">
+                <dt class="w-20 shrink-0 opacity-50">
                   {{ row.label }}
                 </dt>
                 <dd class="truncate opacity-85">
@@ -93,7 +94,12 @@ const credits = computed(() => {
             </dl>
 
             <div class="flex flex-wrap items-center gap-2 pt-2">
-              <v-btn :prepend-icon="mdiPlay" size="large" :to="watchLink('tv', id, seasonNumber, episodeNumber)">
+              <v-btn
+                :prepend-icon="mdiPlay"
+                :size="mobile ? 'default' : 'large'"
+                :block="mobile"
+                :to="watchLink('tv', id, seasonNumber, episodeNumber)"
+              >
                 {{ $t('Play') }}
               </v-btn>
               <download-button
@@ -102,7 +108,7 @@ const credits = computed(() => {
                 :imdb-id="show?.imdbId"
                 :season="seasonNumber"
                 :episode="episodeNumber"
-                size="large"
+                :size="mobile ? 'default' : 'large'"
               />
               <torrent-picker
                 :id="id"
@@ -110,21 +116,21 @@ const credits = computed(() => {
                 :imdb-id="show?.imdbId"
                 :season="seasonNumber"
                 :episode="episodeNumber"
-                size="large"
+                :size="mobile ? 'default' : 'large'"
               />
               <local-file-button
                 :id="id"
                 type="tv"
                 :season="seasonNumber"
                 :episode="episodeNumber"
-                size="large"
+                :size="mobile ? 'default' : 'large'"
               />
               <watched-button
                 :show-id="id"
                 :season="seasonNumber"
                 :episode="episodeNumber"
                 :show="show"
-                size="large"
+                :size="mobile ? 'default' : 'large'"
               />
             </div>
           </div>

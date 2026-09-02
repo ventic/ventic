@@ -86,19 +86,21 @@ const gridStyle = computed(() => ({
 
     <template v-else>
       <section class="px-4 pb-8 pt-4 md:px-6">
-        <div class="flex flex-col gap-6 sm:flex-row sm:items-end">
-          <div class="aspect-2/3 w-32 shrink-0 overflow-hidden rounded-2xl shadow-2xl sm:w-44 lg:w-52 [&_img]:object-top">
+        <div class="media-hero">
+          <div class="media-hero-poster [&_img]:object-top">
             <media-poster :src="profileUrl(person?.profile, 'h632')" :alt="person?.name" :icon="mdiAccountOutline" />
           </div>
 
-          <div v-if="person" class="flex min-w-0 flex-1 flex-col gap-3">
-            <h1 class="text-headline-large font-bold drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)]">
-              {{ person.name }}
-            </h1>
+          <!-- The name keeps the portrait company; the facts and the biography
+               go below both of them until there is room for a column. -->
+          <h1 v-if="person" class="text-headline-medium min-w-0 self-center font-bold drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)] sm:text-headline-large">
+            {{ person.name }}
+          </h1>
 
+          <div v-if="person" class="media-hero-body">
             <dl v-if="facts.length" class="grid grid-cols-1 gap-x-6 gap-y-1 text-body-small sm:grid-cols-2 lg:max-w-2xl">
               <div v-for="row in facts" :key="row.label" class="flex gap-2">
-                <dt class="shrink-0 opacity-50">
+                <dt class="w-20 shrink-0 opacity-50">
                   {{ row.label }}
                 </dt>
                 <dd class="truncate opacity-85">
@@ -125,7 +127,7 @@ const gridStyle = computed(() => ({
             </v-btn>
           </div>
 
-          <div v-else class="flex min-w-0 flex-1 flex-col gap-3">
+          <div v-else class="media-hero-body self-center">
             <div class="animate-pulse h-10 w-2/3 max-w-sm rounded-lg bg-surface-container/60" />
             <div class="animate-pulse h-4 w-40 rounded bg-surface-container/60" />
             <div class="animate-pulse h-20 w-full max-w-2xl rounded-lg bg-surface-container/60" />

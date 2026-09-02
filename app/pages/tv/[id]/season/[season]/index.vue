@@ -38,16 +38,16 @@ const others = computed(() => show.value?.seasons.filter(s => s.number !== numbe
           {{ show?.title ?? $t('Back to show') }}
         </v-btn>
 
-        <div class="flex flex-col gap-6 sm:flex-row sm:items-end">
-          <div class="aspect-2/3 w-32 shrink-0 overflow-hidden rounded-2xl shadow-2xl sm:w-40">
+        <div class="media-hero">
+          <div class="media-hero-poster">
             <media-poster :src="posterUrl(season?.poster ?? show?.poster, 'w342')" :alt="season?.name" />
           </div>
 
-          <div class="flex min-w-0 flex-1 flex-col gap-3">
-            <h1 class="text-headline-large font-bold drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)]">
-              {{ season?.name ?? $t('Season {number}', { number }) }}
-            </h1>
+          <h1 class="text-headline-medium min-w-0 self-center font-bold drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)] sm:text-headline-large">
+            {{ season?.name ?? $t('Season {number}', { number }) }}
+          </h1>
 
+          <div class="media-hero-body">
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-body-small opacity-75">
               <span v-if="season?.air">{{ dateText(season.air) }}</span>
               <span v-if="season?.episodes.length">{{ $t('{count} episodes', { count: season.episodes.length }) }}</span>

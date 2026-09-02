@@ -111,6 +111,27 @@ export default defineConfig({
      * width — a `pl-` here sits in a later layer and would collapse it.
      */
     'safe-inset': 'pt-[var(--safe-top)] pb-[var(--safe-bottom)]',
+
+    /**
+     * The header a detail page opens with — a film's, a person's, a season's.
+     * Three classes rather than one, because they are one layout: a grid, not
+     * two flex columns.
+     *
+     * Flex could only align the two columns at one end or the other, and a
+     * poster is 300px beside a column of text that is nearer 600 — bottom
+     * stranded it under 400px of nothing, which is what this replaces, and top
+     * would leave the same hole underneath. So the poster keeps company with
+     * the *title* alone, and the body (overview, credits, buttons) takes the
+     * full width beneath both. Past `md` — the width at which the app stops
+     * calling itself mobile — the poster spans down instead and the body
+     * tucks in beside it, which is the desktop layout unchanged.
+     *
+     * `self-start` on the poster: it is sized by its aspect ratio, and a grid
+     * item's default `stretch` would fight that over a two-row span.
+     */
+    'media-hero': 'grid grid-cols-[7rem_1fr] gap-x-5 gap-y-5 sm:grid-cols-[9rem_1fr] sm:gap-x-6 md:grid-cols-[11rem_1fr] lg:grid-cols-[13rem_1fr]',
+    'media-hero-poster': 'aspect-2/3 self-start overflow-hidden rounded-2xl shadow-2xl md:row-span-2',
+    'media-hero-body': 'col-span-2 flex min-w-0 flex-col gap-3 md:col-span-1',
   },
   theme: {
     breakpoint: breakpoints,

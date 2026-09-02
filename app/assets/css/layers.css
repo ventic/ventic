@@ -45,6 +45,14 @@
     text-decoration: none;
   }
 
+  /* The UA gives every `dd` a 40px inline-start margin and Vuetify's reset
+     doesn't touch it, so the fact lists on the detail pages had a hole between
+     each label and its value that no gap in the markup accounted for. The
+     column those values line up in is the `dt`'s width, set where they're used. */
+  dd {
+    margin-inline-start: 0;
+  }
+
   /* Headings are here for semantics/screen readers; the look comes from the
      .text-h* class on them, which sits in a later layer and so wins. */
   h1,

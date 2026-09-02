@@ -22,7 +22,9 @@ import {
   stripCaptions,
   subRuntime,
   SUBTITLE_DEFAULTS,
+  SUBTITLE_FONTS,
   subtitleCss,
+  subtitleFontCss,
   subtitleLift,
   subtitleProps,
   synced,
@@ -342,6 +344,27 @@ assert.equal(subtitleCss(SUBTITLE_DEFAULTS, 1440).fontSize, '76.0px', 'twice the
 assert.equal(subtitleCss(SUBTITLE_DEFAULTS, 0).fontSize, '38.0px', 'an unmeasured box falls back to 720')
 assert.equal(subtitleCss(SUBTITLE_DEFAULTS, 720).backgroundColor, 'transparent', 'no box asked for')
 assert.equal(subtitleCss({ ...SUBTITLE_DEFAULTS, background: 0.5 }, 720).backgroundColor, 'rgba(0,0,0,0.5)')
+
+// Every offered font has to reach the webview as something it can actually
+// draw. A bare family name it hasn't got is not a near miss — it falls back to
+// the browser's default serif, so the choice silently does nothing. Roboto is
+// the one the app carries itself, and @fontsource-variable registers it under a
+// name of its own; the rest have to name the generic they are a kind of, which
+// is also what fontconfig hands mpv on a machine without them.
+for (const font of SUBTITLE_FONTS) {
+  const stack = subtitleFontCss(font)
+  assert.ok(stack.startsWith(font) || stack.includes(`'${font} Variable'`), `${font} leads its own stack`)
+  assert.ok(
+    /(?:^|[\s,])(?:sans-serif|serif|monospace)$/.test(stack),
+    `${font} ends in a generic the webview always has, got "${stack}"`,
+  )
+}
+assert.equal(
+  subtitleFontCss('Roboto'),
+  `'Roboto Variable', Roboto, sans-serif`,
+  'the bundled family is named first — plain Roboto misses it and is not installed on a desktop',
+)
+assert.equal(subtitleCss({ ...SUBTITLE_DEFAULTS, font: 'Georgia' }, 720).fontFamily, 'Georgia, Times, serif')
 
 // Lifting the line clear of the player's menu, which otherwise covers it —
 // mpv's subtitles are drawn inside its own window, under everything the page

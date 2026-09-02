@@ -812,6 +812,40 @@ export const SUBTITLE_DEFAULTS: SubtitleStyle = {
 /** The fonts every desktop and Android build can be assumed to resolve. */
 export const SUBTITLE_FONTS = ['sans-serif', 'serif', 'monospace', 'Roboto', 'Arial', 'Verdana', 'Georgia']
 
+/**
+ * The same choice as a CSS font stack, for the two places the *webview* draws
+ * the subtitles rather than mpv: the `<video>` fallback (Android, a browser)
+ * and the settings page's preview.
+ *
+ * The stored value is the name fontconfig knows, because mpv is what draws them
+ * on a desktop — but a webview handed a family it hasn't got falls back to its
+ * own default, which is a serif, and not to anything the choice resembled.
+ * Measured on Linux: `Roboto`, `Verdana` and `Georgia` all rendered as the same
+ * unknown-family fallback, so three of the seven silently did nothing.
+ *
+ * Roboto is the one the app itself carries — `@fontsource-variable/roboto`
+ * registers it as **Roboto Variable**, so asking for plain `Roboto` missed the
+ * font sitting in the bundle. The system name stays behind it for Android,
+ * where Roboto really is installed. The rest name the generic they are a kind
+ * of, which is also what fontconfig substitutes for mpv, so the preview and the
+ * player agree about what a machine without Georgia is going to show you.
+ *
+ * Not @nuxt/fonts: it resolves families over the network at build time (see the
+ * `css` block in nuxt.config), Arial, Verdana and Georgia aren't Google's to
+ * serve, and a webfont does nothing for mpv, which is what actually renders
+ * subtitles on every desktop build.
+ */
+const FONT_STACK: Record<string, string> = {
+  Roboto: `'Roboto Variable', Roboto, sans-serif`,
+  Arial: 'Arial, Helvetica, sans-serif',
+  Verdana: 'Verdana, Geneva, sans-serif',
+  Georgia: 'Georgia, Times, serif',
+}
+
+export function subtitleFontCss(font: string) {
+  return FONT_STACK[font] ?? font
+}
+
 /** mpv colours are `#AARRGGBB`, alpha first and 0xff opaque. */
 function mpvColor(hex: string, alpha = 1) {
   const a = Math.round(Math.min(1, Math.max(0, alpha)) * 255).toString(16).padStart(2, '0')
@@ -874,7 +908,7 @@ export function subtitleCss(style: SubtitleStyle, height: number) {
   const scale = (height || 720) / 720
   const px = style.size * scale
   return {
-    fontFamily: style.font,
+    fontFamily: subtitleFontCss(style.font),
     fontSize: `${px.toFixed(1)}px`,
     fontWeight: style.bold ? '700' : '400',
     color: style.color,
