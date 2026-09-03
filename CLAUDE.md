@@ -432,7 +432,19 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   library with it — send them to `backup.ts` first. `bun run build:play` makes
   the `.aab` Play wants (it has not taken an APK for a new app in years) and
   wants the *upload* key in `ANDROID_KEYSTORE_PATH`; `check:updates` holds the
-  bridge seam and the gate.
+  bridge seam and the gate. **The bundle is one permission short of the APK**,
+  which is why it is a second Gradle run and not `--aab` on the first: Play
+  refuses an upload that so much as *asks* for `REQUEST_INSTALL_PACKAGES`
+  (its permitted core purposes are a fixed list, and "updates itself" is on
+  none of them), whatever the runtime gate does. `build:play` sets
+  `ORG_GRADLE_PROJECT_venticPlay`, and `build.gradle.kts` answers the manifest's
+  `${installPermission}` placeholder with INTERNET — asked for twice, which is
+  legal and already granted, so the bundle gains nothing and loses the one Play
+  objects to. Play's other demand is a console
+  form rather than code: any `FOREGROUND_SERVICE_*` permission has to be
+  declared under *App content → Foreground service permissions*, with a video
+  of a download continuing off screen. That one is `DownloadService`'s and
+  stays.
 - **The AppImage is rewritten after it is signed.**
   `scripts/build/linux/appimage.ts` strips libwayland and repacks *after*
   tauri-action has already put a signature for the original file into

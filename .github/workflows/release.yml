@@ -346,11 +346,21 @@ jobs:
           fi
 
       # NDK comes from the runner image's ANDROID_NDK_HOME, which scripts/build/index.ts picks up.
-      # `--aab` on top of the APK: Play takes only an .aab, and every other way of
-      # getting Ventic onto a device takes only an .apk. One build, one keystore,
-      # one versionCode — so the store copy and a sideloaded TV are the same app
-      # and can replace each other.
-      - run: bun run build:android --aab
+      # Play takes only an .aab, and every other way of getting Ventic onto a
+      # device takes only an .apk. Two invocations rather than one `--aab`,
+      # because the two manifests differ by exactly one permission: the .apk may
+      # install an APK (that is how it updates itself) and the bundle may not
+      # even ask, or Play rejects the upload. Same keystore and same versionCode
+      # either way. The second run recompiles nothing — cargo and the frontend
+      # are already up to date, and only the manifest changed under it.
+      - run: bun run build:android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/ventic.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      - run: bun run build:play
         env:
           ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/ventic.jks
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -369,6 +379,24 @@ jobs:
             exit 1
           fi
           "$ANDROID_HOME"/build-tools/36.0.0/apksigner verify --print-certs "$apk"
+
+      # The one difference between the two artifacts, checked on the artifacts
+      # themselves rather than on the source that was supposed to produce them.
+      # Play blocks the *upload* on this, so getting it wrong costs a whole
+      # release cycle; an .aab's manifest is protobuf, but a permission name is
+      # a plain string inside it, so grep is enough to tell.
+      - name: Verify only the APK asks to install packages
+        run: |
+          aab=$(find src-tauri/gen/android/app/build/outputs/bundle -name '*.aab' | head -1)
+          apk=src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk
+          if unzip -p "$aab" base/manifest/AndroidManifest.xml | grep -qa REQUEST_INSTALL_PACKAGES; then
+            echo "::error::The bundle asks for REQUEST_INSTALL_PACKAGES — Play will refuse the upload. See app/build.gradle.kts."
+            exit 1
+          fi
+          "$ANDROID_HOME"/build-tools/36.0.0/aapt2 dump permissions "$apk" | grep -q REQUEST_INSTALL_PACKAGES || {
+            echo "::error::The APK lost REQUEST_INSTALL_PACKAGES, so it can no longer update itself."
+            exit 1
+          }
 
       # Until GOOGLE_PLAY_SERVICE_ACCOUNT exists the step below is skipped and the
       # .aab is built and binned, leaving the console with nothing to upload — and

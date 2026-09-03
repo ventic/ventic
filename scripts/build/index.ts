@@ -385,7 +385,25 @@ function buildAndroid(extra: string[], aab = false) {
   // `strip=symbols`), so a panic in logcat still names functions. Set here rather
   // than in Cargo.toml so `tauri:dev` on the desktop keeps its full backtraces;
   // with `--target` in play cargo won't apply it to host build scripts.
-  const env = { ...androidEnv(), RUSTFLAGS: '-Cstrip=debuginfo' }
+  const env: Record<string, string> = { ...androidEnv(), RUSTFLAGS: '-Cstrip=debuginfo' }
+
+  // The one thing the two artifacts no longer share. Play rejects a bundle that
+  // asks for REQUEST_INSTALL_PACKAGES — self-updating is not one of its permitted
+  // uses, and a Play copy never does it anyway (canInstallApk) — so the bundle
+  // must not ask, while the .apk on ventic.tv still must. It travels as a Gradle
+  // property through the environment because the tauri CLI forwards no arguments
+  // of its own to Gradle; app/build.gradle.kts turns it into the placeholder.
+  // Which is also why the two can no longer come out of one invocation:
+  if (!aab && extra.includes('--aab')) {
+    die(
+      'Build the bundle with `bun run build:play`, not `--aab` here.\n'
+      + '  The .aab and the .apk stopped being the same build the day Play started\n'
+      + '  rejecting REQUEST_INSTALL_PACKAGES: one Gradle run cannot emit both\n'
+      + '  manifests, and this one would strip the permission from the APK too.',
+    )
+  }
+  if (aab)
+    env.ORG_GRADLE_PROJECT_venticPlay = '1'
 
   // An unsigned APK is at least installable over adb; an unsigned bundle is
   // nothing at all — Play rejects the upload — so this is worth catching before

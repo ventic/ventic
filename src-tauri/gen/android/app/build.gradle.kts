@@ -45,6 +45,20 @@ android {
     }
     defaultConfig {
         manifestPlaceholders["usesCleartextTraffic"] = "false"
+        // Which copy may install an APK. Play's permitted uses for
+        // REQUEST_INSTALL_PACKAGES are a fixed list — browser, assistant,
+        // messaging, file manager, MDM — and self-updating is on none of them;
+        // Play forbids a copy it distributes from updating by any other route,
+        // which is why canInstallApk() already says no there. So the bundle
+        // must not even ask, or the upload is rejected before review. Naming
+        // INTERNET a second time is how a manifest un-asks: a repeated
+        // permission is legal and this one is already granted, so the bundle
+        // asks for nothing it did not ask for before.
+        // Set through the environment by scripts/build/index.ts, because the
+        // tauri CLI passes nothing of its own down to Gradle.
+        manifestPlaceholders["installPermission"] =
+            if (project.hasProperty("venticPlay")) "android.permission.INTERNET"
+            else "android.permission.REQUEST_INSTALL_PACKAGES"
         applicationId = "com.ventic.app"
         minSdk = 24
         targetSdk = 36

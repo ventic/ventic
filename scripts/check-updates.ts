@@ -256,8 +256,8 @@ assert.ok(store.includes(`'installing'`), 'the store has Android\'s end state, w
 // without the provider path FileProvider throws on the URI it is handed —
 // both fail at the last step, after a 100 MB download.
 assert.ok(
-  manifest.includes('android.permission.REQUEST_INSTALL_PACKAGES'),
-  'the manifest asks for REQUEST_INSTALL_PACKAGES',
+  /android:name="\$\{installPermission\}"/.test(manifest),
+  'the manifest asks for the install permission — build.gradle.kts names it, see the bottom of this file',
 )
 assert.ok(
   readFileSync(
@@ -320,5 +320,31 @@ assert.ok(canUpdateLine && !canUpdateLine.includes('play'), 'and canUpdate leave
 // form opens a browser on top of the app instead of the Play app.
 assert.ok(panel.includes('openStore()'), 'the panel opens the listing rather than a download')
 assert.ok(panel.includes('updates.play'), 'and asks the store which copy this is')
+
+// --- And the same rule, spelled in the bundle Play actually reads -------------
+// Runtime is only half of it: Play rejects an upload that so much as *asks* for
+// REQUEST_INSTALL_PACKAGES, whatever the code does with it, because none of its
+// permitted core purposes is "updates itself". So the .aab drops the permission
+// and the .apk keeps it — three files agreeing on one placeholder name, none of
+// which any compiler reads, and the failure is a release blocked in the console
+// with a build to redo.
+const gradle = readFileSync(new URL('../src-tauri/gen/android/app/build.gradle.kts', import.meta.url), 'utf8')
+const build = readFileSync(new URL('./build/index.ts', import.meta.url), 'utf8')
+
+assert.ok(
+  /manifestPlaceholders\["installPermission"\][\s\S]{0,200}?hasProperty\("venticPlay"\)[\s\S]{0,120}?REQUEST_INSTALL_PACKAGES/.test(gradle),
+  'and build.gradle.kts fills it from the venticPlay property',
+)
+assert.ok(
+  build.includes('ORG_GRADLE_PROJECT_venticPlay'),
+  'which the bundle build sets — as an env var, since the tauri CLI forwards nothing to Gradle',
+)
+// One Gradle run cannot emit two manifests, so the APK and the bundle are two
+// invocations now. `bun run build:android --aab` would quietly strip the
+// permission from the APK as well and take self-updating out of every sideload.
+assert.ok(
+  /extra\.includes\('--aab'\)/.test(build),
+  'and building the bundle the old way is refused rather than half-done',
+)
 
 console.log('check-updates: ok')
