@@ -1,4 +1,4 @@
-import type { DiskSpace, EngineTorrent } from '~/utils/torrents'
+import type { DiskSpace, EngineFile, EngineTorrent } from '~/utils/torrents'
 import { mdiAlertCircleOutline, mdiCheckCircleOutline, mdiFormatListBulleted, mdiPauseCircleOutline, mdiTrayArrowDown } from '@mdi/js'
 import { invoke } from '@tauri-apps/api/core'
 
@@ -70,6 +70,15 @@ export const useDownloadsStore = defineStore('downloads', () => {
 
   function cachedFor(key: string) {
     return (key && cached.value[key]) || null
+  }
+
+  /**
+   * The same map read backwards: which title a torrent, or one file in it, was
+   * downloaded for. This is what lets the downloads page play something as the
+   * film it is rather than as a bare magnet — see `filedAs`.
+   */
+  function titleFor(hash: string, index: number | null = null, file?: EngineFile) {
+    return filedAs(cached.value, hash, index, file)
   }
 
   /**
@@ -466,6 +475,7 @@ export const useDownloadsStore = defineStore('downloads', () => {
     release,
     metered,
     cachedFor,
+    titleFor,
     localFor,
     setLocal,
     start,

@@ -12,6 +12,8 @@
  * ours — the fan-out below is the entire "plugin system".
  */
 import { deviceCodecs, hasNativePlayer } from './htmlvideo'
+// Explicit, not auto-imported: the check script loads this file outside Nuxt.
+import { parseKey, progressKey } from './library'
 
 /**
  * Sources to search, in the order they were added. Empty until the user adds
@@ -562,6 +564,45 @@ function filePath(f: EngineFile) {
 function episodeIn(name: string) {
   const m = name.match(/\bs(\d{1,2})[\s._-]*e(\d{1,3})(?!\d)|\b(\d{1,2})x(\d{2})(?!\d)/i)
   return m ? { season: Number(m[1] ?? m[3]), episode: Number(m[2] ?? m[4]) } : null
+}
+
+/**
+ * What a torrent — or one file inside it — was downloaded *for*: `ventic.cached`
+ * read backwards. That map is the only record of which title fetched which
+ * copy, and without it the downloads page plays a bare magnet: no id, so the
+ * player has nothing to record progress against and the film never reaches
+ * History or Continue watching.
+ *
+ * A season pack is the awkward one, because it only ever gains an entry for the
+ * episode that was actually asked for. The rest are read off the file name —
+ * which is safe here and nowhere else: the pack's siblings already say which
+ * show this is, so the name is only being trusted for the episode number it
+ * spells out.
+ *
+ * Empty when nothing filed it (a pasted magnet is nobody's title) and empty
+ * rather than a guess when a pack is ambiguous — a wrong id writes progress
+ * onto a film nobody watched, which is worse than writing none.
+ */
+export function filedAs(
+  cached: Record<string, { hash: string, file: number }>,
+  hash: string,
+  index: number | null = null,
+  file?: EngineFile,
+) {
+  const mine = Object.entries(cached).filter(([, c]) => c.hash === hash)
+
+  // Nothing says which file the whole-torrent Play button will land on, so one
+  // entry is an answer and two are a coin toss.
+  if (index == null)
+    return mine.length === 1 ? mine[0]![0] : ''
+
+  const exact = mine.find(([, c]) => c.file === index)
+  if (exact)
+    return exact[0]
+
+  const ep = file && episodeIn(filePath(file))
+  const show = mine.map(([key]) => parseKey(key)).find(k => k.type === 'tv' && k.season)
+  return ep && show ? progressKey('tv', show.id, ep.season, ep.episode) : ''
 }
 
 /**

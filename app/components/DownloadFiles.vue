@@ -14,8 +14,9 @@ import { mdiContentCopy, mdiFolderOpenOutline, mdiPlayCircleOutline } from '@mdi
 const props = defineProps<{ torrent: EngineTorrent }>()
 
 const emit = defineEmits<{
-  /** Play one file out of the pack. */
-  play: [index: number]
+  /** Play one file out of the pack. The file itself so the downloads page can
+      read the episode off its name — see `filedAs`. */
+  play: [index: number, file: EngineFile]
   /** Open a folder — the file's own, or the torrent's root with no file given. */
   open: [file?: EngineFile]
   /** Something worth a snackbar happened. */
@@ -104,7 +105,7 @@ async function copyMagnet() {
         <span class="w-9 shrink-0 text-right text-body-small tabular-nums opacity-55">
           {{ progress(index).toFixed(0) }}%
         </span>
-        <v-btn icon size="x-small" variant="text" color="on-surface" @click="emit('play', index)">
+        <v-btn icon size="x-small" variant="text" color="on-surface" @click="emit('play', index, file)">
           <v-icon :icon="mdiPlayCircleOutline" size="18" />
           <v-tooltip activator="parent" :text="$t('Play this file')" />
         </v-btn>

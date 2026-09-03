@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import process from 'node:process'
-import { diskBudget, ENGINE, engineReason, findReleases, haveAt, isAwkward, isBloated, limitToFiles, normalizeSource, parseRelease, pickBest, pickSubtitleFiles, pickVideoFile, planEviction, planNetwork, releaseKey, setQuality, setSources, STALLED, startTorrent, streamParts, toRelease, uploadLimit, usedBytes } from '../app/utils/torrents'
+import { diskBudget, ENGINE, engineReason, filedAs, findReleases, haveAt, isAwkward, isBloated, limitToFiles, normalizeSource, parseRelease, pickBest, pickSubtitleFiles, pickVideoFile, planEviction, planNetwork, releaseKey, setQuality, setSources, STALLED, startTorrent, streamParts, toRelease, uploadLimit, usedBytes } from '../app/utils/torrents'
 // Self-check for the torrent parser/ranker: `bun scripts/check-torrents.ts`.
 // The fixture is the response shape a source answers with, filled in with a
 // public-domain film. `--live <source-url> <imdb-id>` also searches for real.
@@ -223,6 +223,26 @@ assert.equal(pickVideoFile(pack, null, { season: 2, episode: 2 }), 0, 'no match 
 assert.equal(pickVideoFile([{ name: 'Show 1x02 HDTV.avi', length: 5, included: true }], null, { season: 1, episode: 2 }), 0)
 // Once the engine has been narrowed to one file, that's the one to play back.
 assert.equal(pickVideoFile(pack.map((f, i) => ({ ...f, included: i === 2 })), null), 2)
+
+// --- What the downloads page plays something *as* -----------------------------
+// `ventic.cached` read backwards. Get this wrong and playing from Downloads is
+// a bare magnet: it plays, and nothing about it is ever remembered.
+
+const filed = {
+  'movie:4808': { hash: 'aaa', file: 0 },
+  'tv:1396:1:2': { hash: 'pack', file: 1 },
+}
+assert.equal(filedAs(filed, 'aaa'), 'movie:4808', 'one entry for the hash is the answer')
+assert.equal(filedAs(filed, 'aaa', 0), 'movie:4808')
+assert.equal(filedAs(filed, 'nope'), '', 'a pasted magnet is nobody\'s title')
+assert.equal(filedAs(filed, 'pack', 1), 'tv:1396:1:2', 'the file it was filed under')
+// The rest of a pack was never filed — the siblings give the show, the name the
+// episode. Neither half is trusted on its own.
+assert.equal(filedAs(filed, 'pack', 2, pack[2]), 'tv:1396:1:10', 'S01E10 off the file name')
+assert.equal(filedAs(filed, 'pack', 2), '', 'no file, no episode, no guess')
+assert.equal(filedAs(filed, 'aaa', 1, pack[2]), '', 'a movie hash never becomes an episode')
+assert.equal(filedAs({ ...filed, 'tv:1396:1:1': { hash: 'pack', file: 0 } }, 'pack'), '', 'two episodes of one pack and no file: nothing says which would play')
+assert.equal(filedAs(filed, 'pack', 0, { name: 'video.mkv', length: 1, included: true, components: ['Example.Show.S01E01.1080p', 'video.mkv'] }), 'tv:1396:1:1', 'the episode can be in the folder rather than the file name')
 
 // --- Subtitles shipped inside the torrent -------------------------------------
 

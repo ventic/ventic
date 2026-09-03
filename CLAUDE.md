@@ -146,7 +146,14 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   directly: the store files the info hash under the title's progress key
   (`ventic.cached`), and that map is what lets an already-downloaded film play
   with no TMDB lookup, no source search and no peers. Call the util straight and
-  the title silently loses its offline copy.
+  the title silently loses its offline copy. That map is also read *backwards*
+  (`filedAs`), because the downloads page is the one screen that starts from a
+  torrent rather than from a title: without it Play there is a bare magnet, and
+  a bare magnet plays perfectly and is then forgotten — no progress, no History,
+  no Continue watching. A season pack only ever has an entry for the episode
+  that was asked for, so the rest are read off the file name — safe only there,
+  since the pack's siblings already say which show it is. Ambiguous means no
+  id at all: writing progress onto the wrong film is worse than writing none.
 - Logic worth trusting has a `bun run check:*` script beside it
   (`check:dpad`, `check:torrents`, `check:subtitles`, `check:theme`,
   `check:library`, `check:player`, `check:swipe`, `check:boot`,

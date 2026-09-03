@@ -65,14 +65,26 @@ function stats(t: EngineTorrent) {
   return t.stats
 }
 
-/** The player takes it from the engine by hash, so nothing is re-downloaded. */
-function play(t: EngineTorrent, index?: number) {
+/**
+ * The player takes it from the engine by hash, so nothing is re-downloaded.
+ *
+ * The title it was downloaded for goes along too, when the store can still say
+ * (`titleFor`). Without it this is a bare magnet — which plays perfectly and is
+ * then forgotten the moment the player closes: no progress, no History, no
+ * Continue watching. The magnet stays regardless, so the file already on the
+ * disk is what plays, and the season/episode steers the pick inside a pack.
+ */
+function play(t: EngineTorrent, index?: number, file?: EngineFile) {
+  const key = downloads.titleFor(t.info_hash, index ?? null, file)
+  const of = key ? parseKey(key) : null
   navigateTo({
     path: localePath('/watch'),
     query: {
       magnet: magnetForHash(t.info_hash),
       title: t.name ?? '',
       ...index == null ? {} : { file: String(index) },
+      ...of ? { type: of.type, id: String(of.id) } : {},
+      ...of?.season ? { s: String(of.season), e: String(of.episode) } : {},
     },
   })
 }
@@ -255,7 +267,7 @@ function liveText(t: EngineTorrent) {
         <download-files
           v-if="openHash === item.info_hash"
           :torrent="item"
-          @play="index => play(item, index)"
+          @play="(index, file) => play(item, index, file)"
           @open="file => openFolder(item, file)"
           @notify="message => toast = message"
         />
@@ -380,7 +392,7 @@ function liveText(t: EngineTorrent) {
             <div class="mb-2">
               <download-files
                 :torrent="item"
-                @play="index => play(item, index)"
+                @play="(index, file) => play(item, index, file)"
                 @open="file => openFolder(item, file)"
                 @notify="message => toast = message"
               />
