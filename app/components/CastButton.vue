@@ -42,6 +42,14 @@ const code = ref('')
 
 let hunt: AbortController | null = null
 
+/**
+ * The sweep itself, so a cast can wait for it to be *down* rather than merely
+ * asked to stop. Aborting is a request: the probes already in Rust's hands end
+ * a moment later, and that moment is exactly the one the other device spends
+ * opening its connection.
+ */
+let sweeping: Promise<unknown> | null = null
+
 /** Ticked for a moment after a copy, so the press has an answer. */
 const copied = ref(false)
 
@@ -82,10 +90,11 @@ async function scan() {
 
   scanning.value = true
   try {
-    await findDevices(self, device => {
+    sweeping = findDevices(self, device => {
       if (!devices.value.some(known => known.address === device.address))
         devices.value.push(device)
     }, signal)
+    await sweeping
   }
   finally {
     if (!signal.aborted)
@@ -109,6 +118,12 @@ async function start() {
   // is that, minus the waiting. Nothing needs finding once a device is picked.
   hunt?.abort()
   scanning.value = false
+  // And wait for it to actually be down. `abort` only stops the loop handing out
+  // more addresses; what competes with the other device is the handful already
+  // in flight, which is why pressing Play the moment the dialog opens behaved
+  // differently from pressing it once the list had filled.
+  await sweeping?.catch(() => {})
+  sweeping = null
 
   busy.value = true
   error.value = null

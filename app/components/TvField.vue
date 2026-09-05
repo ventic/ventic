@@ -36,9 +36,17 @@ function edit() {
  * Park it again on the way out. Not while focus is still inside: a clear button,
  * a password's reveal toggle and the field itself pass focus between them, and
  * `blur` alone would close the keyboard mid-word.
+ *
+ * And not for focus going *nowhere*. Opening the field removes the button the
+ * press landed on, which drops focus to the body and fires this with no
+ * `relatedTarget` at all — read as "left the field", that parked it again a tick
+ * before `edit` could focus the input, so OK on a field appeared to do nothing
+ * whatever. Somewhere else is a `relatedTarget`; nowhere is this component
+ * taking its own cover away.
  */
 function leave(e: FocusEvent) {
-  if (isTv() === true && !box.value?.contains(e.relatedTarget as Node | null))
+  const to = e.relatedTarget as Node | null
+  if (isTv() === true && to && !box.value?.contains(to))
     typing.value = false
 }
 </script>

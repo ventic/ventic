@@ -73,6 +73,13 @@ export default defineNuxtPlugin(() => {
       // rather than hidden, so its links would otherwise still be targets.
       if (el.closest('.v-navigation-drawer:not(.v-navigation-drawer--active)'))
         return false
+      // An inert element cannot take focus, so aiming at one is a press that
+      // does nothing at all. `TvField` parks its input that way under a
+      // transparent button of exactly the same size — and an exact tie goes to
+      // whichever comes first in the DOM, which is the input. That is why the
+      // remote could never reach "This device is called" or the pairing code.
+      if (el.closest('[inert]'))
+        return false
       const r = el.getBoundingClientRect()
       return r.width > 0 && r.height > 0
     })

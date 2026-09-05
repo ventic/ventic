@@ -1171,6 +1171,14 @@ const loading = computed(() => {
  * A direct link gets the same probe on a much shorter leash: it is either
  * serving or it isn't, and an expired one should say so rather than spend a
  * minute looking like it's buffering.
+ *
+ * A cast mirror is neither, and reading it as a link is what made casting look
+ * broken. It *is* an engine warming up — the same librqbit, over a LAN — and it
+ * is slower than ours because the first request is what wakes the file up:
+ * measured on the television, the first byte took the full ten seconds a single
+ * attempt is allowed and only the second one answered, which left three seconds
+ * of the link's fifteen-second budget standing between a cast and a spinner that
+ * never ends. It gets the engine's patience, since that is what it is.
  */
 async function waitForStream(url: string, timeoutMs = 60000) {
   // A file on this disk is either there or it isn't, and there is nothing to
@@ -1181,7 +1189,10 @@ async function waitForStream(url: string, timeoutMs = 60000) {
     return { ok: true, status: 0, reason: '' }
 
   const local = url.startsWith(ENGINE)
-  const deadline = Date.now() + (local ? timeoutMs : 15000)
+  // An engine either way — ours over loopback, or another Ventic's over the LAN
+  // — so both are worth waiting out. Only a host that is nobody's engine gets
+  // the short leash.
+  const deadline = Date.now() + (local || mirrored(url) ? timeoutMs : 15000)
   // The local engine sends CORS headers and nobody else does. A debrid link, a
   // channel and a cast mirror are all somebody else's host answering a
   // `tauri://` origin, so the webview's own fetch never sees the reply — it

@@ -294,5 +294,26 @@ assert.equal(
   'MpvPlayer exposes everything through one defineExpose',
 )
 
+// Calling the sweep off has to reach the requests, not just the loop handing out
+// addresses. `abort` on its own leaves the probes already in Rust's hands
+// running, and those are the connections that compete with the other device
+// opening its own — which is why casting the moment the dialog opened behaved
+// differently from casting once the list had filled. Two halves, neither of
+// which a compiler sees: the signal has to arrive at the probe, and the cast has
+// to wait for the sweep to be down rather than merely asked to stop.
+const probe = /export async function probeDevice[\s\S]*?\n\}/.exec(read('app/utils/cast.ts'))?.[0] ?? ''
+assert.ok(probe, 'probeDevice is still the single probe the sweep is made of')
+assert.match(probe, /signal\?\.addEventListener\('abort'/, 'calling the sweep off aborts a probe already in flight')
+assert.match(
+  read('app/utils/cast.ts'),
+  /probeDevice\(addresses\[next\+\+\]!, \d+, signal\)/,
+  'and the sweep hands each probe that signal',
+)
+assert.match(
+  button,
+  /hunt\?\.abort\(\)[\s\S]{0,400}await sweeping\?\./,
+  'a cast waits for the sweep to be down before handing the film over',
+)
+
 console.log('cast: ok')
 process.exit(0)

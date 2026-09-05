@@ -215,6 +215,29 @@ assert.match(
 // its way down it. `TvField` parks each one under a transparent button; a bare
 // `<v-text-field>` anywhere else is a screen a remote cannot get past without
 // dismissing a keyboard nobody asked for.
+// The parking only works if the picker skips what it parks. The input keeps its
+// box while inert, and the covering button is `inset-0` over the same box — an
+// exact tie, which `pickDirection` gives to the first in document order: the
+// input. Focusing an inert element does nothing, so the press was swallowed and
+// the field could not be reached at all.
+assert.match(
+  plugin,
+  /el\.closest\('\[inert\]'\)\s*\)[\t\v\f\r \xA0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n\s*return false/,
+  'the picker skips inert elements — they cannot take focus, so aiming at one does nothing',
+)
+
+// Opening one is the other half, and it went wrong the moment the first half
+// started working: `edit()` removes the button the press landed on, which drops
+// focus to the body and fires `focusout` with a null `relatedTarget`. Parking on
+// that undoes the press a tick before the input is focused — OK on a field did
+// nothing at all. Only focus that actually landed somewhere else parks it.
+const field = readFileSync(new URL('../app/components/TvField.vue', import.meta.url), 'utf8')
+assert.match(
+  field,
+  /const to = e\.relatedTarget[\s\S]{0,200}&& to &&/,
+  'TvField parks only for focus that went somewhere, not for focus going nowhere',
+)
+
 function vueFiles(dir: URL): URL[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap(entry => entry.isDirectory()
     ? vueFiles(new URL(`${entry.name}/`, dir))

@@ -132,12 +132,26 @@ export function castRoute(play: CastPlay): Record<string, string> {
 // Through tauri-plugin-http, not the webview's fetch: another device on the LAN
 // sends no `Access-Control-Allow-Origin` either (see utils/iptv.ts).
 
-/** Is there a Ventic at this address? Its name if so, null for anything else. */
-export async function probeDevice(address: string, timeout = 700): Promise<CastDevice | null> {
+/**
+ * Is there a Ventic at this address? Its name if so, null for anything else.
+ *
+ * `signal` is the sweep being called off, and it has to reach the request rather
+ * than only the loop around it: a probe that is already in flight is a request
+ * Rust is still holding, and "stop looking, I've picked one" has to mean the
+ * connections stop too (see `start` in CastButton).
+ */
+export async function probeDevice(address: string, timeout = 700, signal?: AbortSignal): Promise<CastDevice | null> {
+  // The two reasons a probe ends, as one signal. `AbortSignal.any` says this in
+  // a line and is deliberately not used: the oldest webview this bundle targets
+  // is Chrome 111 (see boot-diagnostics), and it landed in 116.
+  const stop = new AbortController()
+  const timer = setTimeout(() => stop.abort(), timeout)
+  const called = () => stop.abort()
+  signal?.addEventListener('abort', called)
   try {
     const res = await tauriFetch(`http://${address}:${CAST_PORT}/ventic`, {
       connectTimeout: timeout,
-      signal: AbortSignal.timeout(timeout),
+      signal: stop.signal,
     })
     if (!res.ok)
       return null
@@ -149,6 +163,10 @@ export async function probeDevice(address: string, timeout = 700): Promise<CastD
   }
   catch {
     return null
+  }
+  finally {
+    clearTimeout(timer)
+    signal?.removeEventListener('abort', called)
   }
 }
 
@@ -165,7 +183,7 @@ export async function findDevices(self: string, onFound: (device: CastDevice) =>
   // time every one of them out together, which reads as finding nothing.
   const workers = Array.from({ length: Math.min(32, addresses.length) }, async () => {
     while (next < addresses.length && !signal?.aborted) {
-      const device = await probeDevice(addresses[next++]!)
+      const device = await probeDevice(addresses[next++]!, 700, signal)
       if (device && !signal?.aborted)
         onFound(device)
     }
