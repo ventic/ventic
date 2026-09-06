@@ -41,7 +41,7 @@
 		"devUrl": "http://localhost:3000"
 	},
 	"productName": "Ventic",
-	"version": "0.5.5",
+	"version": "0.6.0",
 	"identifier": "com.ventic.app",
 	"plugins": {
 		"updater": {
