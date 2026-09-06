@@ -188,10 +188,10 @@ onBeforeUnmount(() => hunt?.abort())
     icon
     variant="text"
     density="comfortable"
-    :title="$t('Play on another device')"
     @click="open = true"
   >
     <v-icon :icon="mdiCast" />
+    <v-tooltip activator="parent" :text="$t('Play on another device')" />
   </v-btn>
 
   <v-dialog v-model="open" max-width="520">
@@ -275,10 +275,10 @@ onBeforeUnmount(() => hunt?.abort())
                 icon
                 variant="text"
                 density="comfortable"
-                :title="$t('Copy')"
                 @click="copy(error.command)"
               >
                 <v-icon :icon="copied ? mdiCheck : mdiContentCopy" size="18" />
+                <v-tooltip activator="parent" :text="$t('Copy')" />
               </v-btn>
             </div>
           </template>

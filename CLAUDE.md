@@ -631,11 +631,15 @@ be published:
   it is exactly the affordance a television must not get. Write
   `v-tooltip:top="$t('…')"` on the element instead (the directive; the
   `<v-tooltip activator="parent" :text="…" />` child does the same where a
-  component is in the way). `title` on a *component* is a prop and is untouched
-  — `v-card`, `settings-section`, `library-browser` all take one. The
-  `vue/no-restricted-syntax` pair in `eslint.config.mjs` fails `bun run lint` on
-  a native one, which is the only reason this stays fixed: a native tooltip is
-  invisible in review and looks deliberate on screen.
+  component is in the way). A `title` on a *component* is only a prop where the
+  component declares one — `v-card`, `settings-section`, `library-browser` do;
+  `v-btn`, `v-icon` and `v-slider` do not, and each quietly passed it through to
+  its root element and grew the native tooltip that way. So the
+  `vue/no-restricted-syntax` pair in `eslint.config.mjs` works off an allow-list
+  (`TITLE_PROP`) rather than off the tag being lowercase: a new component with a
+  title prop fails `bun run lint` until it is named there, which is the safe
+  direction to fail in. Lint is the only reason this stays fixed — a native
+  tooltip is invisible in review and looks deliberate on screen.
 - **Hold a card for what hover used to offer.** The favourite, watchlist and
   watched buttons on a card are `tabindex="-1"` pointer extras, so a finger and
   a remote never reached them. `MediaMenu.vue` is those four as a sheet, mounted

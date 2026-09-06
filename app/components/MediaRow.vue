@@ -40,7 +40,7 @@ const hover = ref(false)
 
     <div class="min-w-0 flex-1">
       <div class="flex items-center gap-2">
-        <v-icon v-if="watched" :icon="mdiCheck" size="16" color="primary" :title="$t('Watched')" />
+        <v-icon v-if="watched" v-tooltip:top="$t('Watched')" :icon="mdiCheck" size="16" color="primary" />
         <span class="truncate text-title-small">{{ media.title }}</span>
         <span class="shrink-0 text-body-small opacity-55">{{ media.year || $t('unknown') }}</span>
         <span v-if="media.rating" class="flex shrink-0 items-center gap-0.5 text-body-small opacity-80">

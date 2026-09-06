@@ -392,8 +392,9 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
         @exit="leave"
       >
         <template #start>
-          <v-btn icon variant="text" density="comfortable" :title="$t('Back (Esc)')" @click="leave">
+          <v-btn icon variant="text" density="comfortable" @click="leave">
             <v-icon :icon="mdiArrowLeft" />
+            <v-tooltip activator="parent" :text="$t('Back (Esc)')" />
           </v-btn>
           <cast-button :src="src" :play="castPlay" @casting="handOver" />
         </template>

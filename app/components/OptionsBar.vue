@@ -89,7 +89,6 @@ const roomy = computed(() => width.value ? width.value >= (props.needs ?? 740) :
         :max="300"
         :step="10"
         :prepend-icon="mdiImageSizeSelectSmall"
-        :title="$t('Poster size')"
       />
     </div>
 

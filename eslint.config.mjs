@@ -1,6 +1,11 @@
 import antfu from '@antfu/eslint-config'
 import nuxtConfig from './.nuxt/eslint.config.mjs'
 
+// Components here that declare a `title` *prop* and render it as a heading. Any
+// other `title` lands on a DOM element as the browser's own tooltip — see the
+// vue/no-restricted-syntax rule below.
+const TITLE_PROP = 'cast-row|library-browser|media-slider|mpv-player|scroll-row|settings-section|v-card|v-expansion-panel|v-list-item'
+
 export default antfu({
   vue: true,
   typescript: true,
@@ -22,17 +27,20 @@ export default antfu({
       registeredComponentsOnly: false,
       ignores: [],
     }],
-    // A `title` on a plain element is the *browser's* tooltip: an unstyled OS
-    // box, half a second late, ignoring the theme, and no way to reach it from
-    // a remote. Vuetify's is the app's own — `v-tooltip:top="…"` on the
-    // element, and layers.css hides all of them on a television, which the
-    // native one would have gone on showing. `title` on a component is a prop
-    // (v-card, settings-section, …) and is untouched.
+    // A `title` attribute is the *browser's* tooltip: an unstyled OS box, half a
+    // second late, in the system font, and unreachable from a remote — and it
+    // is the one tooltip `html.tv .v-tooltip { display: none }` in layers.css
+    // cannot hide, so it is exactly the affordance a television must not get.
+    // Use `v-tooltip:top="…"`, or a `<v-tooltip activator="parent" :text>`
+    // child where the component has room for one.
+    // Everything outside TITLE_PROP is flagged, components included: one that
+    // doesn't consume the prop passes it straight to its root element, which is
+    // how `v-btn`, `v-icon` and `v-slider` each grew a native tooltip.
     'vue/no-restricted-syntax': ['error', {
-      selector: 'VElement[rawName=/^[a-z][a-z0-9]*$/] > VStartTag > VAttribute[directive=false][key.name=\'title\']',
+      selector: `VElement:not([rawName=/^(${TITLE_PROP})$/]) > VStartTag > VAttribute[directive=false][key.name='title']`,
       message: 'Native tooltip: use v-tooltip:top="…" instead of title="…".',
     }, {
-      selector: 'VElement[rawName=/^[a-z][a-z0-9]*$/] > VStartTag > VAttribute[directive=true][key.name.name=\'bind\'][key.argument.name=\'title\']',
+      selector: `VElement:not([rawName=/^(${TITLE_PROP})$/]) > VStartTag > VAttribute[directive=true][key.name.name='bind'][key.argument.name='title']`,
       message: 'Native tooltip: use v-tooltip:top="…" instead of :title="…".',
     }],
   },
