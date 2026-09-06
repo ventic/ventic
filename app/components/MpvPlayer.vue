@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import type { AudioSettings, Leveller } from '~/utils/audio'
 import type { PlayerEngine } from '~/utils/htmlvideo'
+import type { KeyAction } from '~/utils/keys'
 import type { Subtitle, SubtitleFile, SubtitleLanguage } from '~/utils/subtitles'
 import type { Media } from '~/utils/tmdb'
 import type { PieceMap } from '~/utils/torrents'
@@ -1971,31 +1972,32 @@ function speedStep(delta: number) {
   return SPEEDS[Math.max(0, Math.min(SPEEDS.length - 1, next))] ?? 1
 }
 
-const KEYS: Record<string, () => void> = {
-  ' ': togglePlay,
-  'k': togglePlay,
+/** What each shortcut does; which key does it is the user's (utils/keys.ts). */
+const ACTIONS: Record<KeyAction, () => void> = {
+  play: togglePlay,
   // OK on a remote, with nothing focused for the browser to click: bring the
   // chrome up and put the cursor on play, rather than toggling something the
   // screen gives no sign of. A second press then pauses.
-  'Enter': () => focusChrome(),
-  'ArrowLeft': () => seekBy(-5),
-  'ArrowRight': () => seekBy(5),
-  'j': () => seekBy(-10),
-  'l': () => seekBy(10),
-  'ArrowUp': () => nudgeVolume(5),
-  'ArrowDown': () => nudgeVolume(-5),
-  'm': toggleMute,
-  'f': toggleFullscreen,
-  'c': toggleSubs,
-  's': () => openMenu('subs'),
-  // mpv's own subtitle-delay pair, kept because muscle memory expects them.
-  'z': () => nudgeDelay(-0.1),
-  'Z': () => nudgeDelay(0.1),
-  '[': () => setSpeed(speedStep(-1)),
-  ']': () => setSpeed(speedStep(1)),
-  'Home': () => seekTo(0),
-  'End': () => seekTo(Math.max(0, duration.value - 5)),
+  controls: () => focusChrome(),
+  back: () => seekBy(-5),
+  forward: () => seekBy(5),
+  backMore: () => seekBy(-10),
+  forwardMore: () => seekBy(10),
+  volumeUp: () => nudgeVolume(5),
+  volumeDown: () => nudgeVolume(-5),
+  mute: toggleMute,
+  fullscreen: toggleFullscreen,
+  subs: toggleSubs,
+  subsMenu: () => openMenu('subs'),
+  subDelayBack: () => nudgeDelay(-0.1),
+  subDelayForward: () => nudgeDelay(0.1),
+  subDelayReset: () => nudgeDelay(-subDelay.value),
+  slower: () => setSpeed(speedStep(-1)),
+  faster: () => setSpeed(speedStep(1)),
+  start: () => seekTo(0),
+  end: () => seekTo(Math.max(0, duration.value - 5)),
 }
+const keyed = computed(() => keysByChord(settings.keys))
 
 /**
  * Where a remote picks up: the chrome comes back and the cursor lands on play,
@@ -2038,7 +2040,8 @@ function onKey(e: KeyboardEvent) {
   }
 
   // Down out of the picture is how a remote reaches the bar in the first place.
-  if (e.key === 'ArrowDown') {
+  // Only there: a keyboard reaches it with Enter, and has down for the volume.
+  if (e.key === 'ArrowDown' && onAndroid()) {
     e.preventDefault()
     focusChrome()
     return
@@ -2048,7 +2051,8 @@ function onKey(e: KeyboardEvent) {
   const digit = /^\d$/.test(e.key) && duration.value
     ? () => seekTo(duration.value * (Number(e.key) / 10))
     : null
-  const run = KEYS[e.key] ?? digit
+  const action = keyed.value[chord(e)]
+  const run = action ? ACTIONS[action] : digit
   if (!run)
     return
   e.preventDefault()

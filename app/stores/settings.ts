@@ -1,10 +1,12 @@
 import type { AudioSettings } from '~/utils/audio'
+import type { KeyOverrides } from '~/utils/keys'
 import type { SubtitleStyle } from '~/utils/subtitles'
 import {
   mdiAccountCircleOutline,
   mdiFolderOutline,
   mdiHeartOutline,
   mdiInformationOutline,
+  mdiKeyboardOutline,
   mdiPaletteOutline,
   mdiPowerPlugOutline,
   mdiSubtitlesOutline,
@@ -15,7 +17,7 @@ import {
 import { StorageSerializers } from '@vueuse/core'
 import { DEFAULT_SOURCE } from '~/theme/presets'
 
-export type SectionKey = 'appearance' | 'language' | 'sources' | 'subtitles' | 'audio' | 'network' | 'storage' | 'account' | 'support' | 'about'
+export type SectionKey = 'appearance' | 'language' | 'sources' | 'subtitles' | 'audio' | 'keyboard' | 'network' | 'storage' | 'account' | 'support' | 'about'
 
 /**
  * The sidebar of the settings layout, in the order it lists them. A `value` is
@@ -33,6 +35,10 @@ export const SECTIONS: { value: SectionKey, title: () => string, icon: string }[
   { value: 'sources', title: () => $t('Sources'), icon: mdiPowerPlugOutline },
   { value: 'subtitles', title: () => $t('Subtitles'), icon: mdiSubtitlesOutline },
   { value: 'audio', title: () => $t('Audio'), icon: mdiTuneVariant },
+  // A keyboard is a desktop thing: on Android the remote's keys are the d-pad
+  // plugin's, and a phone has none worth binding. Decided here rather than in
+  // the two lists that draw this table, so neither has to know.
+  ...(onAndroid() ? [] : [{ value: 'keyboard' as const, title: () => $t('Keyboard'), icon: mdiKeyboardOutline }]),
   { value: 'network', title: () => $t('Network'), icon: mdiWifi },
   { value: 'storage', title: () => $t('Storage'), icon: mdiFolderOutline },
   { value: 'account', title: () => $t('Account'), icon: mdiAccountCircleOutline },
@@ -236,9 +242,13 @@ export const useSettingsStore = defineStore('settings', () => {
     audioByTitle.value = rememberAudio(audioByTitle.value, key, next, audio.value)
   }
 
+  // --- Keyboard ---
+  /** The player shortcuts the user moved, by action — see utils/keys.ts. */
+  const keys = useLocalStorage<KeyOverrides>('ventic.keys', {})
+
   function resetSubs() {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, castReceive, castName, castAsk, castCode, castTarget, downloadDir, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, resetSubs }
+  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, castReceive, castName, castAsk, castCode, castTarget, downloadDir, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, keys, resetSubs }
 })

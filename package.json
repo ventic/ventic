@@ -18,6 +18,7 @@
     "check": "bun scripts/check.ts",
     "check:i18n": "bun scripts/i18n.ts --check",
     "check:iptv": "bun scripts/check-iptv.ts",
+    "check:keys": "bun scripts/check-keys.ts",
     "check:types": "vue-tsc --noEmit",
     "check:android-downloads": "bun scripts/check-android-downloads.ts",
     "check:audio": "bun scripts/check-audio.ts",
