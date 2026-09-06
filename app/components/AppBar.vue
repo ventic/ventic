@@ -45,7 +45,6 @@ watch(() => route.path, () => {
       @click="router.back()"
     >
       <v-icon :icon="mdiArrowLeft" />
-      <v-tooltip activator="parent" :text="$t('Back')" />
     </v-btn>
 
     <!-- The search fills the row on a phone: `flex-1` grows it, `max-w-120` caps
