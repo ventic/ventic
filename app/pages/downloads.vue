@@ -271,7 +271,7 @@ async function add() {
         :class="expanded === t.info_hash && 'bg-surface-container/45'"
       >
         <div class="flex items-center gap-1 px-2 py-1.5 sm:gap-2">
-          <span class="grid size-9 shrink-0 place-items-center rounded-full" :class="STATUS_LOOK[torrentStatus(t)].class" :title="TORRENT_STATUS[torrentStatus(t)].text()">
+          <span v-tooltip:top="TORRENT_STATUS[torrentStatus(t)].text()" class="grid size-9 shrink-0 place-items-center rounded-full" :class="STATUS_LOOK[torrentStatus(t)].class">
             <svg viewBox="0 0 24 24" class="size-5 fill-current"><path :d="STATUS_LOOK[torrentStatus(t)].icon" /></svg>
           </span>
 
@@ -283,7 +283,7 @@ async function add() {
             @click="toggleOpen(t)"
             @contextmenu.prevent="openMenu(t, $event)"
           >
-            <div class="truncate text-body-medium" :title="t.name ?? t.info_hash">
+            <div v-tooltip:top="t.name ?? t.info_hash" class="truncate text-body-medium">
               {{ t.name ?? t.info_hash }}
             </div>
             <div class="mt-1.5 h-1 overflow-hidden rounded-full bg-on-surface/12">
@@ -296,27 +296,27 @@ async function add() {
             <div class="mt-1 truncate text-body-small tabular-nums opacity-60">
               {{ meta(t) }}
             </div>
-            <div v-if="t.stats?.error" class="truncate text-body-small text-error" :title="t.stats.error">
+            <div v-if="t.stats?.error" v-tooltip:top="t.stats.error" class="truncate text-body-small text-error">
               {{ t.stats.error }}
             </div>
           </button>
 
-          <button type="button" :class="ACT" :title="$t('Play')" @click="play(t)">
+          <button v-tooltip:top="$t('Play')" type="button" :class="ACT" @click="play(t)">
             <svg viewBox="0 0 24 24" class="size-6 fill-current"><path :d="mdiPlay" /></svg>
           </button>
           <!-- Off a phone's row, where three buttons left the name two words
                wide; the menu carries it there. -->
           <button
+            v-tooltip:top="t.stats?.state === 'paused' ? $t('Resume') : $t('Pause')"
             type="button"
             class="hidden sm:grid"
             :class="ACT"
             :disabled="t.stats?.finished"
-            :title="t.stats?.state === 'paused' ? $t('Resume') : $t('Pause')"
             @click="toggle(t)"
           >
             <svg viewBox="0 0 24 24" class="size-6 fill-current"><path :d="t.stats?.state === 'paused' ? mdiPlay : mdiPause" /></svg>
           </button>
-          <button type="button" :class="ACT" :title="$t('More')" @click="openMenu(t, $event)">
+          <button v-tooltip:top="$t('More')" type="button" :class="ACT" @click="openMenu(t, $event)">
             <svg viewBox="0 0 24 24" class="size-6 fill-current"><path :d="mdiDotsVertical" /></svg>
           </button>
         </div>

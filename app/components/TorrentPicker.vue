@@ -212,11 +212,11 @@ async function download(t: Release) {
             >
               <div class="min-w-0 flex-1 basis-full sm:basis-0">
                 <div class="flex items-center gap-2">
-                  <span class="truncate text-body-medium" :title="t.name">{{ t.name }}</span>
+                  <span v-tooltip:top="t.name" class="truncate text-body-medium">{{ t.name }}</span>
                   <v-chip v-if="best && releaseKey(t) === releaseKey(best)" size="x-small" color="primary" :text="$t('Best')" class="shrink-0" />
                 </div>
                 <!-- Season packs name the episode here and nowhere else. -->
-                <div v-if="t.file" class="truncate text-body-small opacity-50" :title="t.file">
+                <div v-if="t.file" v-tooltip:top="t.file" class="truncate text-body-small opacity-50">
                   {{ t.file }}
                 </div>
               </div>

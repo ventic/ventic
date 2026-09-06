@@ -37,10 +37,10 @@ const reserve = computed(() => `${ui.castWidth}px ${Math.round(ui.castWidth * 1.
              clips anything outside it, so the first face would lose its ring. -->
         <div class="pointer-events-none absolute inset-0 rounded-xl opacity-0 ring-2 ring-inset ring-primary transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100" />
       </div>
-      <div class="truncate pt-2 text-label-medium" :title="person.name">
+      <div v-tooltip:top="person.name" class="truncate pt-2 text-label-medium">
         {{ person.name }}
       </div>
-      <div class="line-clamp-2 text-label-small opacity-55" :title="person.role">
+      <div v-tooltip:top="person.role" class="line-clamp-2 text-label-small opacity-55">
         {{ person.role }}
       </div>
     </nuxt-link>

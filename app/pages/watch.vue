@@ -413,13 +413,13 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
 
             <!-- Swarm figures, so only while a torrent is what's playing. -->
             <div v-if="stats" class="flex shrink-0 items-center gap-3 text-body-small opacity-70">
-              <span class="flex items-center gap-1" :title="$t('Download speed')">
+              <span v-tooltip:top="$t('Download speed')" class="flex items-center gap-1">
                 <v-icon :icon="mdiDownload" size="14" />{{ speed }}
               </span>
-              <span class="flex items-center gap-1" :title="$t('Connected peers')">
+              <span v-tooltip:top="$t('Connected peers')" class="flex items-center gap-1">
                 <v-icon :icon="mdiAccountGroup" size="14" />{{ peers }}
               </span>
-              <span class="tabular-nums" :title="$t('Downloaded')">{{ progressPct.toFixed(0) }}%</span>
+              <span v-tooltip:top="$t('Downloaded')" class="tabular-nums">{{ progressPct.toFixed(0) }}%</span>
               <span class="hidden opacity-50 xl:inline">
                 {{ bytesText(stats.progress_bytes) }} / {{ bytesText(stats.total_bytes) }}
               </span>

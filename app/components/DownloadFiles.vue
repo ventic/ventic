@@ -62,7 +62,7 @@ async function setIncluded(index: number, included: boolean) {
 
 <template>
   <div class="flex flex-col gap-0.5 rounded-xl bg-surface-container/40 px-2 py-2 sm:px-3">
-    <div class="truncate px-2 pb-1 text-body-small opacity-55" :title="torrent.output_folder">
+    <div v-tooltip:top="torrent.output_folder" class="truncate px-2 pb-1 text-body-small opacity-55">
       {{ torrent.output_folder }}
     </div>
 
@@ -84,7 +84,7 @@ async function setIncluded(index: number, included: boolean) {
           class="shrink-0 grow-0"
           @update:model-value="value => setIncluded(index, !!value)"
         />
-        <span class="min-w-0 flex-1 truncate text-body-small" :title="file.name">{{ file.name }}</span>
+        <span v-tooltip:top="file.name" class="min-w-0 flex-1 truncate text-body-small">{{ file.name }}</span>
       </div>
 
       <div class="flex items-center gap-2 pl-10 sm:gap-3 sm:pl-0">
@@ -95,10 +95,10 @@ async function setIncluded(index: number, included: boolean) {
         <span class="w-9 shrink-0 text-right text-body-small tabular-nums opacity-55">
           {{ progress(index).toFixed(0) }}%
         </span>
-        <button type="button" :class="ACT" :title="$t('Play this file')" @click="emit('play', index, file)">
+        <button v-tooltip:top="$t('Play this file')" type="button" :class="ACT" @click="emit('play', index, file)">
           <svg viewBox="0 0 24 24" class="size-5 fill-current"><path :d="mdiPlay" /></svg>
         </button>
-        <button v-if="canReveal" type="button" :class="ACT" :title="$t('Open containing folder')" @click="emit('open', file)">
+        <button v-if="canReveal" v-tooltip:top="$t('Open containing folder')" type="button" :class="ACT" @click="emit('open', file)">
           <svg viewBox="0 0 24 24" class="size-5 fill-current"><path :d="mdiFolderOpenOutline" /></svg>
         </button>
       </div>

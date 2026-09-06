@@ -624,6 +624,18 @@ be published:
   player stays (left/right on it is the only way to scrub), and the colour
   spectrum stays for a mouse but hides itself on a television, as does the
   poster-size slider on the browse bar. `bun run check:steps` holds both.
+- **A tooltip is `v-tooltip`, never `title`.** A `title` attribute is the
+  *browser's* tooltip — an unstyled OS box, half a second late, in the system
+  font on the system grey, and unreachable from a remote. Worse, it is the one
+  tooltip `layers.css`'s `html.tv .v-tooltip { display: none }` cannot hide, so
+  it is exactly the affordance a television must not get. Write
+  `v-tooltip:top="$t('…')"` on the element instead (the directive; the
+  `<v-tooltip activator="parent" :text="…" />` child does the same where a
+  component is in the way). `title` on a *component* is a prop and is untouched
+  — `v-card`, `settings-section`, `library-browser` all take one. The
+  `vue/no-restricted-syntax` pair in `eslint.config.mjs` fails `bun run lint` on
+  a native one, which is the only reason this stays fixed: a native tooltip is
+  invisible in review and looks deliberate on screen.
 - **Hold a card for what hover used to offer.** The favourite, watchlist and
   watched buttons on a card are `tabindex="-1"` pointer extras, so a finger and
   a remote never reached them. `MediaMenu.vue` is those four as a sheet, mounted

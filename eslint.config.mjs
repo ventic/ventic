@@ -22,6 +22,19 @@ export default antfu({
       registeredComponentsOnly: false,
       ignores: [],
     }],
+    // A `title` on a plain element is the *browser's* tooltip: an unstyled OS
+    // box, half a second late, ignoring the theme, and no way to reach it from
+    // a remote. Vuetify's is the app's own — `v-tooltip:top="…"` on the
+    // element, and layers.css hides all of them on a television, which the
+    // native one would have gone on showing. `title` on a component is a prop
+    // (v-card, settings-section, …) and is untouched.
+    'vue/no-restricted-syntax': ['error', {
+      selector: 'VElement[rawName=/^[a-z][a-z0-9]*$/] > VStartTag > VAttribute[directive=false][key.name=\'title\']',
+      message: 'Native tooltip: use v-tooltip:top="…" instead of title="…".',
+    }, {
+      selector: 'VElement[rawName=/^[a-z][a-z0-9]*$/] > VStartTag > VAttribute[directive=true][key.name.name=\'bind\'][key.argument.name=\'title\']',
+      message: 'Native tooltip: use v-tooltip:top="…" instead of :title="…".',
+    }],
   },
 }, {
   rules: {
