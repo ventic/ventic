@@ -15,7 +15,6 @@
 // no Mac to notice, and hold the otool parsing that enforces it at bundle time.
 import assert from 'node:assert'
 import { readFileSync } from 'node:fs'
-import process from 'node:process'
 import { minos, newer, version } from './build/macos/bundle-dylib'
 
 const read = (p: string) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8')
