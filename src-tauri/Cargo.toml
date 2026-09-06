@@ -1,6 +1,6 @@
 [package]
 name = "ventic"
-version = "0.5.4"
+version = "0.5.5"
 description = "A media library and BitTorrent player, on desktop and Android TV"
 authors = [ "Tilen Pirih" ]
 license = "MIT"
