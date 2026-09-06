@@ -1,69 +1,76 @@
 <script setup lang="ts">
-import type { DataTableHeader } from 'vuetify'
+import type { StatusKey } from '~/stores/downloads'
 import type { EngineFile, EngineTorrent } from '~/utils/torrents'
 import {
   mdiAlertCircleOutline,
-  mdiArrowLeft,
+  mdiArrowUp,
+  mdiCheck,
+  mdiContentCopy,
   mdiDeleteOutline,
+  mdiDotsVertical,
   mdiFolderOpenOutline,
+  mdiMagnetOn,
   mdiMagnify,
-  mdiMenu,
   mdiPause,
   mdiPlay,
-  mdiPlayCircleOutline,
+  mdiProgressClock,
   mdiTrayArrowDown,
 } from '@mdi/js'
 
-definePageMeta({ layout: 'downloads' })
-
-const ui = useUiStore()
+/**
+ * The transfer list. One list for every screen — a row that stacks its stats
+ * under the name is the same row at 400px and at 1400 — and nothing Vuetify
+ * inside it: a poll rebuilds every torrent every two seconds, and a hundred
+ * rows of progress bars, chips, buttons and tooltips were a hundred rows of a
+ * dozen components each re-rendering on every tick. Plain elements patch as a
+ * few text nodes, and `content-visibility` keeps the rows off screen from
+ * costing a paint at all, which is the same bargain the poster grids make.
+ *
+ * The state filters that used to be a sidebar are chips above the list, so the
+ * page lives in the ordinary layout: the sidebar on a desktop, the bar along
+ * the bottom on a phone, and one fewer shell to keep in step with them.
+ */
 const downloads = useDownloadsStore()
-const { mobile, lgAndUp } = useDisplay()
-
-const removing = ref<EngineTorrent | null>(null)
-const toast = ref('')
 const canReveal = canOpenFolder()
 
-// The table owns the sort now; the store only decides which torrents are in the
-// list. Empty = the store's order, newest addition first.
-const sortBy = ref<{ key: string, order?: boolean | 'asc' | 'desc' }[]>([])
+/** Which torrent's files are open — one at a time, so one open row is one request (see DownloadFiles). */
+const expanded = ref<string | null>(null)
+const removing = ref<EngineTorrent | null>(null)
+const toast = ref('')
 
 /**
- * `value` is what the table sorts on, the `item.<key>` slots are what it draws.
- * Below lg the three live-stat columns leave the array rather than being hidden
- * in CSS, so the expanded row's colspan stays right.
+ * The row whose menu is up, and the button it opened from — one menu for the
+ * whole list rather than one per row, which is what keeps a row free of
+ * overlays. A long press on the row (or a held OK on a television) opens the
+ * same menu at the row, exactly as a card's sheet opens — see MediaMenu.
  */
-const headers = computed<DataTableHeader<EngineTorrent>[]>(() => [
-  { key: 'data-table-expand', width: 44 },
-  { key: 'name', title: $t('Name'), value: t => t.name ?? t.info_hash },
-  { key: 'size', title: $t('Size'), value: t => t.stats?.total_bytes ?? 0, align: 'end', width: 88, nowrap: true },
-  { key: 'progress', title: $t('Progress'), value: percentOf, width: 176, nowrap: true },
-  { key: 'status', title: $t('Status'), value: torrentStatus, width: 116 },
-  ...lgAndUp.value
-    ? [
-        { key: 'speed', title: $t('Down'), value: (t: EngineTorrent) => t.stats?.live?.download_speed.mbps ?? 0, align: 'end', width: 100, nowrap: true },
-        { key: 'peers', title: $t('Peers'), value: (t: EngineTorrent) => t.stats?.live?.snapshot.peer_stats.live ?? 0, align: 'end', width: 84 },
-        // The engine only gives ETA as prose ("1h 20m"), so there's nothing to sort on.
-        { key: 'eta', title: $t('ETA'), sortable: false, align: 'end', width: 100, nowrap: true },
-      ] as DataTableHeader<EngineTorrent>[]
-    : [],
-  { key: 'actions', title: '', sortable: false, align: 'end', width: 168 },
-])
+const menuFor = ref<EngineTorrent | null>(null)
+const menuAt = ref<HTMLElement | null>(null)
 
-// Which torrent's files are on screen. `expand-strategy="single"` holds the
-// table to one, and the card list follows the same rule — the file list fetches
-// when it mounts (see DownloadFiles.vue), so one open row is one request.
-//
-// Keyed by info_hash, not the engine's numeric id: the poll hands back freshly
-// built objects every two seconds, so anything watching an EngineTorrent would
-// see a change — and refetch the file list — on every tick.
-const expanded = ref<string[]>([])
-
-const openHash = computed(() => expanded.value[0] ?? null)
-
-function stats(t: EngineTorrent) {
-  return t.stats
+function openMenu(t: EngineTorrent, e: Event) {
+  menuAt.value = e.currentTarget as HTMLElement
+  menuFor.value = t
 }
+
+/** Run one menu action and close the menu behind it. */
+function pick(fn: () => unknown) {
+  const t = menuFor.value
+  menuFor.value = null
+  if (t)
+    fn()
+}
+
+/** How a state is drawn at the head of a row: shape as well as colour. */
+const STATUS_LOOK: Record<StatusKey, { icon: string, class: string }> = {
+  downloading: { icon: mdiTrayArrowDown, class: 'bg-primary/15 text-primary' },
+  done: { icon: mdiCheck, class: 'bg-success/15 text-success' },
+  paused: { icon: mdiPause, class: 'bg-warning/15 text-warning' },
+  checking: { icon: mdiProgressClock, class: 'bg-info/15 text-info' },
+  error: { icon: mdiAlertCircleOutline, class: 'bg-error/15 text-error' },
+}
+
+/** A row's icon buttons — plain, for the reason the row is. */
+const ACT = 'grid size-10 shrink-0 place-items-center border-0 rounded-lg bg-transparent text-on-surface opacity-75 transition-colors hover:bg-surface-container-high hover:opacity-100 focus-visible:bg-surface-container-high focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30'
 
 /**
  * The player takes it from the engine by hash, so nothing is re-downloaded.
@@ -95,7 +102,8 @@ async function toggle(t: EngineTorrent) {
 
 async function remove(t: EngineTorrent, keepFiles: boolean) {
   removing.value = null
-  expanded.value = expanded.value.filter(hash => hash !== t.info_hash)
+  if (expanded.value === t.info_hash)
+    expanded.value = null
   await downloads.act(t.id, keepFiles ? 'forget' : 'delete')
 }
 
@@ -118,6 +126,11 @@ async function openFolder(t: EngineTorrent, file?: EngineFile) {
   }
 }
 
+async function copyMagnet(t: EngineTorrent) {
+  await navigator.clipboard.writeText(magnetForHash(t.info_hash))
+  toast.value = $t('Magnet link copied.')
+}
+
 async function all(action: 'pause' | 'start') {
   await Promise.all(downloads.list.map(t => torrentAction(t.id, action).catch(() => {})))
   await downloads.refresh()
@@ -125,155 +138,199 @@ async function all(action: 'pause' | 'start') {
 
 const paused = computed(() => downloads.counts.paused)
 
-/** Tapping a card is how the file list opens on a phone, the same as a row. */
+/** The whole row is the expander, rather than a 44px chevron at the end of it. */
 function toggleOpen(t: EngineTorrent) {
-  expanded.value = openHash.value === t.info_hash ? [] : [t.info_hash]
+  expanded.value = expanded.value === t.info_hash ? null : t.info_hash
 }
 
 /**
- * "3.1 MB/s · 12 peers · 8m left", minus whatever the engine hasn't got yet.
- * The card has one line for all three, where the table has a column each.
+ * "62% · 1.4 GB · 3.1 MB/s · 12 peers · 8m left", minus whatever the engine
+ * hasn't got yet. One line under the name, where a table had a column each.
  */
-function liveText(t: EngineTorrent) {
-  const live = t.stats?.live
+function meta(t: EngineTorrent) {
+  const s = t.stats
+  const live = s?.live
   return [
-    live?.download_speed.human_readable,
-    live?.snapshot.peer_stats.live ? `${live.snapshot.peer_stats.live} peers` : '',
+    `${percentOf(t).toFixed(0)}%`,
+    bytesText(s?.total_bytes ?? 0),
+    // A finished torrent downloads nothing; "0 B/s" beside it reads as stuck.
+    s?.finished ? '' : live?.download_speed.human_readable,
+    live?.snapshot.peer_stats.live ? $t('{count} peers', { count: live.snapshot.peer_stats.live }) : '',
     // Nothing is "8m left" once it has finished, whatever the engine still says.
-    !t.stats?.finished && live?.time_remaining?.human_readable ? `${live.time_remaining.human_readable} left` : '',
+    !s?.finished && live?.time_remaining?.human_readable ? $t('{time} left', { time: live.time_remaining.human_readable }) : '',
   ].filter(Boolean).join(' · ')
+}
+
+function mbps(value: number) {
+  return $t('{rate} MiB/s', { rate: value.toFixed(1) })
+}
+
+// --- Adding a magnet by hand --------------------------------------------------
+
+const adding = ref(false)
+const magnet = ref('')
+const addError = ref('')
+const busy = ref(false)
+
+/**
+ * A hand-pasted magnet is added whole — unlike the app's own downloads, which
+ * narrow to the one file being watched. The file list is where you trim it.
+ */
+async function add() {
+  busy.value = true
+  addError.value = ''
+  try {
+    await addTorrent(magnet.value.trim())
+    await downloads.refresh()
+    adding.value = false
+    magnet.value = ''
+  }
+  catch (e) {
+    addError.value = e instanceof Error ? e.message : String(e)
+  }
+  finally {
+    busy.value = false
+  }
 }
 </script>
 
 <template>
   <div class="h-full min-h-0 flex flex-col">
-    <div class="shrink-0 flex items-center gap-2 px-3 py-3 sm:px-4">
-      <!-- Always-on way out of the transfers shell — the menu button beside it
-           only opens the state filters, so this is the only exit on a phone. -->
-      <v-btn icon variant="text" color="on-surface" :to="localePath('/')">
-        <v-icon :icon="mdiArrowLeft" />
-        <v-tooltip activator="parent" :text="$t('Back')" />
-      </v-btn>
-      <v-btn v-if="mobile" :icon="mdiMenu" variant="text" color="on-surface" @click="ui.drawer = true" />
+    <div class="shrink-0 flex flex-col gap-2 px-3 pb-3 md:px-6">
+      <div class="flex items-center gap-2">
+        <h1 class="text-title-large shrink-0">
+          {{ $t('Downloads') }}
+        </h1>
 
-      <!-- The same parked field the app bar uses, for the same reason: a remote
-           crosses this box on its way along the row, and a text field that
-           merely has focus puts the on-screen keyboard over the whole screen. -->
+        <!-- Speeds for the whole engine, where the sidebar's footer used to
+             show them. Hidden on a phone, where every row carries its own. -->
+        <span class="hidden items-center gap-3 pl-2 text-body-small tabular-nums opacity-55 sm:flex">
+          <span class="flex items-center gap-1">
+            <v-icon :icon="mdiTrayArrowDown" size="14" />{{ mbps(downloads.speed.down) }}
+          </span>
+          <span class="flex items-center gap-1">
+            <v-icon :icon="mdiArrowUp" size="14" />{{ mbps(downloads.speed.up) }}
+          </span>
+          <!-- Why a film you watched last month is no longer here. -->
+          <span v-if="isFinite(downloads.budget)" class="hidden md:inline">
+            · {{ bytesText(downloads.used) }} / {{ bytesText(downloads.budget) }}
+            <v-tooltip activator="parent" :text="$t('Cache limit for this device. Over it, the least recently played torrents are deleted.')" />
+          </span>
+        </span>
+
+        <v-spacer />
+
+        <v-btn icon variant="text" color="on-surface" :disabled="!downloads.list.length" @click="all(paused ? 'start' : 'pause')">
+          <v-icon :icon="paused ? mdiPlay : mdiPause" />
+          <v-tooltip activator="parent" :text="paused ? $t('Resume all') : $t('Pause all')" />
+        </v-btn>
+        <v-btn :prepend-icon="mdiMagnetOn" variant="tonal" @click="adding = true">
+          {{ $t('Add magnet') }}
+        </v-btn>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- The state filters, with their counts. A chip group scrolls itself
+             on a phone, and a d-pad walks it the way it walks every chip row. -->
+        <v-chip-group
+          v-model="downloads.filter"
+          mandatory
+          selected-class="bg-primary text-on-primary font-medium"
+          class="min-w-0 flex-1"
+        >
+          <v-chip v-for="f in FILTERS" :key="f.value" :value="f.value" :prepend-icon="f.icon" size="small">
+            {{ f.title() }}
+            <span class="pl-1.5 tabular-nums opacity-70">{{ downloads.counts[f.value] }}</span>
+          </v-chip>
+        </v-chip-group>
+
+        <!-- The same parked field the app bar uses, for the same reason: a remote
+             crosses this box on its way along the row, and a text field that
+             merely has focus puts the on-screen keyboard over the whole screen. -->
+        <search-field
+          v-model="downloads.query"
+          :placeholder="$t('Filter torrents')"
+          class="hidden w-56 shrink-0 md:block"
+        />
+      </div>
+
       <search-field
         v-model="downloads.query"
         :placeholder="$t('Filter torrents')"
-        :density="mobile ? 'default' : 'compact'"
-        class="max-w-100 flex-1"
+        class="md:hidden"
       />
-
-      <!-- ml-auto, not a v-spacer: a spacer also grows, so on a narrow window it
-           and the search field's flex-1 split the row 50/50. Flexbox resolves
-           grow before auto margins, so the field fills first (up to its max) and
-           this margin only takes what's left over to pin the group right. -->
-      <div class="ml-auto flex items-center gap-2">
-        <span class="hidden text-body-small opacity-55 sm:inline">
-          {{ $t('{shown} shown · {active} active', { shown: downloads.list.length, active: downloads.active }) }}
-        </span>
-
-        <!-- Why a film you watched last month is no longer here. -->
-        <span v-if="isFinite(downloads.budget)" class="hidden text-body-small opacity-55 md:inline">
-          · {{ bytesText(downloads.used) }} / {{ bytesText(downloads.budget) }}
-          <v-tooltip activator="parent" :text="$t('Cache limit for this device. Over it, the least recently played torrents are deleted.')" />
-        </span>
-
-        <!-- Icon-only on a phone: the words do not fit beside a search box that
-             is already the width of the screen. -->
-        <v-btn
-          v-if="mobile"
-          :icon="paused ? mdiPlay : mdiPause"
-          variant="text"
-          color="on-surface"
-          :title="paused ? $t('Resume all') : $t('Pause all')"
-          @click="all(paused ? 'start' : 'pause')"
-        />
-        <v-btn v-else :prepend-icon="paused ? mdiPlay : mdiPause" variant="text" size="small" @click="all(paused ? 'start' : 'pause')">
-          {{ paused ? $t('Resume all') : $t('Pause all') }}
-        </v-btn>
-      </div>
     </div>
 
-    <!-- A phone gets cards instead of a table. Not Vuetify's own stacked-row
-         fallback: that ignores every `item.*` slot (VDataTableRow only calls
-         them when `mobile` is false), and the slots are all of this page — the
-         progress bars, the chips, the buttons. Eight columns of fixed widths
-         also come to nearly twice a phone's width, so the real table there is a
-         side-scroll with the actions permanently off screen. -->
-    <div v-if="mobile" class="min-h-0 flex-1 flex flex-col gap-2 overflow-y-auto px-3 pb-4">
+    <div class="min-h-0 flex-1 overflow-y-auto px-2 pb-6 md:px-4">
+      <!-- The reserved height is a closed row; an open one is measured once
+           it has been drawn, which `auto` remembers from then on. -->
       <div
-        v-for="item in downloads.list"
-        :key="item.info_hash"
-        class="flex flex-col gap-2 rounded-xl bg-surface-container/45 p-3"
+        v-for="t in downloads.list"
+        :key="t.info_hash"
+        class="rounded-xl [contain-intrinsic-size:auto_68px] [content-visibility:auto]"
+        :class="expanded === t.info_hash && 'bg-surface-container/45'"
       >
-        <!-- The card is the expander, so the whole thing is one target rather
-             than a 44px chevron. -->
-        <button class="flex flex-col gap-2 border-0 bg-transparent p-0 text-left text-on-surface" @click="toggleOpen(item)">
-          <div class="line-clamp-2 text-body-medium">
-            {{ item.name ?? item.info_hash }}
-          </div>
-          <div v-if="stats(item)?.error" class="text-body-small text-error">
-            {{ stats(item)!.error }}
-          </div>
+        <div class="flex items-center gap-1 px-2 py-1.5 sm:gap-2">
+          <span class="grid size-9 shrink-0 place-items-center rounded-full" :class="STATUS_LOOK[torrentStatus(t)].class" :title="TORRENT_STATUS[torrentStatus(t)].text()">
+            <svg viewBox="0 0 24 24" class="size-5 fill-current"><path :d="STATUS_LOOK[torrentStatus(t)].icon" /></svg>
+          </span>
 
-          <div class="w-full flex items-center gap-2">
-            <v-progress-linear
-              :model-value="percentOf(item)"
-              :color="TORRENT_STATUS[torrentStatus(item)].color"
-              height="6"
-              rounded
-              class="min-w-0 flex-1"
-            />
-            <span class="w-9 shrink-0 text-right text-body-small tabular-nums opacity-70">{{ percentOf(item).toFixed(0) }}%</span>
-          </div>
-
-          <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-body-small opacity-70">
-            <v-chip
-              size="x-small"
-              :color="TORRENT_STATUS[torrentStatus(item)].color"
-              :text="TORRENT_STATUS[torrentStatus(item)].text()"
-            />
-            <span class="tabular-nums">{{ bytesText(stats(item)?.total_bytes ?? 0) }}</span>
-            <span v-if="liveText(item)" class="tabular-nums">· {{ liveText(item) }}</span>
-          </div>
-        </button>
-
-        <div class="flex items-center justify-end gap-1">
-          <v-btn icon variant="text" color="on-surface" density="comfortable" :title="$t('Play')" @click="play(item)">
-            <v-icon :icon="mdiPlayCircleOutline" size="22" />
-          </v-btn>
-          <v-btn
-            icon
-            variant="text"
-            color="on-surface"
-            density="comfortable"
-            :disabled="stats(item)?.finished"
-            :title="stats(item)?.state === 'paused' ? $t('Resume') : $t('Pause')"
-            @click="toggle(item)"
+          <!-- The name and the bar open the file list; a right-click, a long
+               press or a held OK on them opens the menu the ⋮ does. -->
+          <button
+            type="button"
+            class="min-w-0 flex-1 border-0 rounded-lg bg-transparent px-2 py-1 text-left text-on-surface outline-none transition-colors hover:bg-surface-container-high/60 focus-visible:bg-surface-container-high/60"
+            @click="toggleOpen(t)"
+            @contextmenu.prevent="openMenu(t, $event)"
           >
-            <v-icon :icon="stats(item)?.state === 'paused' ? mdiPlay : mdiPause" size="22" />
-          </v-btn>
-          <v-btn v-if="canReveal" icon variant="text" color="on-surface" density="comfortable" :title="$t('Open folder')" @click="openFolder(item)">
-            <v-icon :icon="mdiFolderOpenOutline" size="22" />
-          </v-btn>
-          <v-btn icon variant="text" color="on-surface" density="comfortable" :title="$t('Remove')" @click="removing = item">
-            <v-icon :icon="mdiDeleteOutline" size="22" />
-          </v-btn>
+            <div class="truncate text-body-medium" :title="t.name ?? t.info_hash">
+              {{ t.name ?? t.info_hash }}
+            </div>
+            <div class="mt-1.5 h-1 overflow-hidden rounded-full bg-on-surface/12">
+              <div
+                class="h-full rounded-full transition-[width] duration-500"
+                :class="`bg-${TORRENT_STATUS[torrentStatus(t)].color}`"
+                :style="{ width: `${percentOf(t)}%` }"
+              />
+            </div>
+            <div class="mt-1 truncate text-body-small tabular-nums opacity-60">
+              {{ meta(t) }}
+            </div>
+            <div v-if="t.stats?.error" class="truncate text-body-small text-error" :title="t.stats.error">
+              {{ t.stats.error }}
+            </div>
+          </button>
+
+          <button type="button" :class="ACT" :title="$t('Play')" @click="play(t)">
+            <svg viewBox="0 0 24 24" class="size-6 fill-current"><path :d="mdiPlay" /></svg>
+          </button>
+          <!-- Off a phone's row, where three buttons left the name two words
+               wide; the menu carries it there. -->
+          <button
+            type="button"
+            class="hidden sm:grid"
+            :class="ACT"
+            :disabled="t.stats?.finished"
+            :title="t.stats?.state === 'paused' ? $t('Resume') : $t('Pause')"
+            @click="toggle(t)"
+          >
+            <svg viewBox="0 0 24 24" class="size-6 fill-current"><path :d="t.stats?.state === 'paused' ? mdiPlay : mdiPause" /></svg>
+          </button>
+          <button type="button" :class="ACT" :title="$t('More')" @click="openMenu(t, $event)">
+            <svg viewBox="0 0 24 24" class="size-6 fill-current"><path :d="mdiDotsVertical" /></svg>
+          </button>
         </div>
 
         <download-files
-          v-if="openHash === item.info_hash"
-          :torrent="item"
-          @play="(index, file) => play(item, index, file)"
-          @open="file => openFolder(item, file)"
-          @notify="message => toast = message"
+          v-if="expanded === t.info_hash"
+          :torrent="t"
+          class="mx-2 mb-2"
+          @play="(index, file) => play(t, index, file)"
+          @open="file => openFolder(t, file)"
         />
       </div>
 
-      <div v-if="!downloads.list.length" class="flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center">
+      <div v-if="!downloads.list.length" class="flex flex-col items-center justify-center gap-2 px-6 py-16 text-center">
         <template v-if="downloads.offline">
           <v-icon :icon="mdiAlertCircleOutline" color="error" size="40" />
           <span class="text-body-medium opacity-70">{{ $t('Torrent engine offline.') }}</span>
@@ -290,135 +347,26 @@ function liveText(t: EngineTorrent) {
       </div>
     </div>
 
-    <!-- `mobile: false` holds the real table together above that breakpoint —
-         the same slot problem, from the other side. The bracket variants
-         restyle Vuetify's own table parts: they land in `uno-default`, a later
-         layer than `vuetify-components`, so they win. -->
-    <v-data-table
-      v-else
-      v-model:expanded="expanded"
-      v-model:sort-by="sortBy"
-      :headers="headers"
-      :items="downloads.list"
-      :mobile="false"
-      item-value="info_hash"
-      show-expand
-      expand-strategy="single"
-      hover
-      fixed-header
-      density="comfortable"
-      :items-per-page="-1"
-      hide-default-footer
-      class="min-h-0 flex-1 bg-transparent px-1 sm:px-2 [&_table]:table-fixed [&_thead_th]:bg-surface-container/85 [&_thead_th]:text-label-medium [&_thead_th]:backdrop-blur-lg"
+    <!-- One menu for every row, opened where the row asked for it. -->
+    <v-menu
+      :model-value="!!menuFor"
+      :target="menuAt ?? undefined"
+      location="bottom end"
+      @update:model-value="open => !open && (menuFor = null)"
     >
-      <template #item.name="{ item }">
-        <div class="truncate text-body-medium" :title="item.name ?? item.info_hash">
-          {{ item.name ?? item.info_hash }}
-        </div>
-        <div v-if="stats(item)?.error" class="truncate text-body-small text-error" :title="stats(item)!.error!">
-          {{ stats(item)!.error }}
-        </div>
-      </template>
-
-      <template #item.size="{ item }">
-        <span class="text-body-small tabular-nums opacity-70">{{ bytesText(stats(item)?.total_bytes ?? 0) }}</span>
-      </template>
-
-      <template #item.progress="{ item }">
-        <div class="flex items-center gap-2">
-          <v-progress-linear
-            :model-value="percentOf(item)"
-            :color="TORRENT_STATUS[torrentStatus(item)].color"
-            height="6"
-            rounded
-            class="min-w-0 flex-1"
-          />
-          <span class="w-9 shrink-0 text-right text-body-small tabular-nums opacity-70">{{ percentOf(item).toFixed(0) }}%</span>
-        </div>
-      </template>
-
-      <template #item.status="{ item }">
-        <v-chip
-          size="x-small"
-          :color="TORRENT_STATUS[torrentStatus(item)].color"
-          :text="TORRENT_STATUS[torrentStatus(item)].text()"
+      <v-list nav density="comfortable" class="min-w-52">
+        <v-list-item
+          v-if="!menuFor?.stats?.finished"
+          :prepend-icon="menuFor?.stats?.state === 'paused' ? mdiPlay : mdiPause"
+          :title="menuFor?.stats?.state === 'paused' ? $t('Resume') : $t('Pause')"
+          rounded="lg"
+          @click="pick(() => toggle(menuFor!))"
         />
-      </template>
-
-      <template #item.speed="{ item }">
-        <span class="text-body-small tabular-nums opacity-70">{{ stats(item)?.live?.download_speed.human_readable ?? '—' }}</span>
-      </template>
-
-      <template #item.peers="{ item }">
-        <span class="text-body-small tabular-nums opacity-70">{{ stats(item)?.live?.snapshot.peer_stats.live ?? 0 }}</span>
-      </template>
-
-      <template #item.eta="{ item }">
-        <span class="text-body-small tabular-nums opacity-70">{{ stats(item)?.live?.time_remaining?.human_readable ?? '—' }}</span>
-      </template>
-
-      <template #item.actions="{ item }">
-        <div class="flex items-center justify-end">
-          <v-btn icon size="small" variant="text" color="on-surface" @click="play(item)">
-            <v-icon :icon="mdiPlayCircleOutline" size="20" />
-            <v-tooltip activator="parent" :text="$t('Play')" />
-          </v-btn>
-          <v-btn
-            icon
-            size="small"
-            variant="text"
-            color="on-surface"
-            :disabled="stats(item)?.finished"
-            @click="toggle(item)"
-          >
-            <v-icon :icon="stats(item)?.state === 'paused' ? mdiPlay : mdiPause" size="20" />
-            <v-tooltip activator="parent" :text="stats(item)?.state === 'paused' ? $t('Resume') : $t('Pause')" />
-          </v-btn>
-          <v-btn v-if="canReveal" icon size="small" variant="text" color="on-surface" @click="openFolder(item)">
-            <v-icon :icon="mdiFolderOpenOutline" size="20" />
-            <v-tooltip activator="parent" :text="$t('Open folder')" />
-          </v-btn>
-          <v-btn icon size="small" variant="text" color="on-surface" @click="removing = item">
-            <v-icon :icon="mdiDeleteOutline" size="20" />
-            <v-tooltip activator="parent" :text="$t('Remove')" />
-          </v-btn>
-        </div>
-      </template>
-
-      <!-- What's actually inside. Same component the cards use. -->
-      <template #expanded-row="{ columns, item }">
-        <tr>
-          <td :colspan="columns.length" class="!border-b-0 !p-0">
-            <div class="mb-2">
-              <download-files
-                :torrent="item"
-                @play="(index, file) => play(item, index, file)"
-                @open="file => openFolder(item, file)"
-                @notify="message => toast = message"
-              />
-            </div>
-          </td>
-        </tr>
-      </template>
-
-      <template #no-data>
-        <div class="flex flex-col items-center gap-2 py-16">
-          <template v-if="downloads.offline">
-            <v-icon :icon="mdiAlertCircleOutline" color="error" size="40" />
-            <span class="text-body-medium opacity-70">{{ $t('Torrent engine offline.') }}</span>
-          </template>
-          <template v-else-if="downloads.torrents.length">
-            <v-icon :icon="mdiMagnify" size="40" class="opacity-30" />
-            <span class="text-body-medium opacity-70">{{ $t('No torrents match this filter.') }}</span>
-          </template>
-          <template v-else>
-            <v-icon :icon="mdiTrayArrowDown" size="40" class="opacity-30" />
-            <span class="text-body-medium opacity-70">{{ $t('Nothing downloading.') }}</span>
-            <span class="text-body-small opacity-50">{{ $t('Hit Download on a movie or an episode, or paste a magnet.') }}</span>
-          </template>
-        </div>
-      </template>
-    </v-data-table>
+        <v-list-item v-if="canReveal" :prepend-icon="mdiFolderOpenOutline" :title="$t('Open folder')" rounded="lg" @click="pick(() => openFolder(menuFor!))" />
+        <v-list-item :prepend-icon="mdiContentCopy" :title="$t('Copy magnet')" rounded="lg" @click="pick(() => copyMagnet(menuFor!))" />
+        <v-list-item :prepend-icon="mdiDeleteOutline" :title="$t('Remove')" base-color="error" rounded="lg" @click="pick(() => removing = menuFor)" />
+      </v-list>
+    </v-menu>
 
     <!-- Deleting the files can't be undone, so it's never one click. -->
     <v-dialog :model-value="!!removing" max-width="460" @update:model-value="removing = null">
@@ -439,6 +387,35 @@ function liveText(t: EngineTorrent) {
           </v-btn>
           <v-btn variant="tonal" size="small" color="error" @click="remove(removing!, false)">
             {{ $t('Delete files') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="adding" max-width="560">
+      <v-card rounded="xl" class="p-2">
+        <v-card-title class="text-title-medium">
+          {{ $t('Add magnet') }}
+        </v-card-title>
+        <v-card-text>
+          <v-textarea
+            v-model="magnet"
+            placeholder="magnet:?xt=urn:btih:…"
+            rows="3"
+            autofocus
+            hide-details
+          />
+          <div v-if="addError" class="pt-2 text-body-small text-error">
+            {{ addError }}
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" size="small" @click="adding = false">
+            {{ $t('Cancel') }}
+          </v-btn>
+          <v-btn variant="tonal" size="small" :loading="busy" :disabled="!magnet.trim()" @click="add">
+            {{ $t('Add') }}
           </v-btn>
         </v-card-actions>
       </v-card>

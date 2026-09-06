@@ -51,10 +51,19 @@ pages get remote support for free as long as they follow the rules below.
   card. The first DOWN is kept, a repeat of it (about half a second in) is the
   hold, and a release with no repeat replays the kept DOWN — the click lands on
   release, as a tap's does. A hold nothing claims is swallowed, not clicked.
-- **Back** is `window.__tvBack()`: close the top dialog, else let the page claim
-  Escape (the player's menus, then leaving playback), else `router.back()`, else
-  return `false`, at which point `MainActivity` backgrounds the task. Three things
-  have to be true for any of that to run. `handleBackNavigation` must be
+- **Back** is `back()` in the plugin: close the top dialog, else let the page
+  claim Escape (the player's menus, then leaving playback), else `router.back()`,
+  else return `false` — at which point the app goes behind whatever is next
+  (`backgroundApp()`, the bridge's `leave()`). On Android it arrives through
+  **tauri's `back-button` plugin event**, which the plugin registers a listener
+  for at boot, and that registration is the whole fix for "BACK left the film
+  instead of closing the subtitle panel": tauri's own `AppPlugin` sits above
+  `MainActivity` on the back dispatcher and, with no listener, pops the
+  WebView's history itself whenever there is any — so the page was only ever
+  asked at the root. `MainActivity`'s `backToPage` (which calls
+  `window.__tvBack()`) is now the fallback for a press that lands before the
+  page has loaded. Three things still have to be true for any of that to run.
+  `handleBackNavigation` must be
   **`false`** — `WryActivity.setWebView` otherwise adds a callback of its own
   that does nothing but `webView.goBack()`, and it wins, because the dispatcher
   runs the last callback added and ours goes on in `onCreate` while wry's goes on

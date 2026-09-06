@@ -136,24 +136,27 @@ const behind = exo || (native && !overlay)
 const tv = isTv() === true
 
 /**
- * Does play/pause live in the bottom bar rather than dead centre?
- *
- * Where the picture is a native window over the page it has to: the middle of
- * the frame can only be an opaque hole, and an opaque box over the film is a
- * blindfold, not a control. A television lands in the same place from the other
- * end — the centre cluster is where a thumb already is, and a remote hasn't got
- * one. What it has is a d-pad that arrives at the bar anyway, so putting the
- * transport there costs nothing and stops the picture being covered by the one
- * control that is up the longest, on the one screen watched from across a room.
- */
-const barTransport = computed(() => overlay || tv)
-
-/**
  * A finger, not a pointer: a tap on the picture shows the chrome rather than
  * pausing, and two taps on a side seek — which is what every other player on a
  * phone does. How big anything is drawn is `big` below, not this.
  */
 const touch = useMediaQuery('(pointer: coarse)')
+
+/**
+ * Does play/pause live in the bottom bar, dead centre, rather than in the
+ * middle of the picture?
+ *
+ * Everywhere but a touchscreen. Where the picture is a native window over the
+ * page it has to: the middle of the frame can only be an opaque hole, and an
+ * opaque box over the film is a blindfold, not a control. A television lands in
+ * the same place from the other end — a remote has no thumb to put in the
+ * middle, and its d-pad arrives at the bar anyway. A desktop follows them
+ * because that is where every player it sits beside keeps it, and a cluster
+ * over the picture there was the one control up the longest. A phone is the
+ * exception because it is the one screen with a thumb already resting in the
+ * middle of it, and the one too narrow for a bar that holds everything.
+ */
+const barTransport = computed(() => overlay || tv || !touch.value)
 
 /**
  * Sized for a thumb, or for a room. A television answers `pointer: fine` — it
@@ -187,6 +190,8 @@ const ICO = computed(() => `inline-flex items-center justify-center border-0 bg-
 const ROUND = 'inline-flex items-center justify-center border-0 rounded-full bg-white/10 text-white transition-colors duration-120 hover:bg-white/22 disabled:pointer-events-none disabled:opacity-30'
 const SEEK_BTN = computed(() => `${ROUND} ${big.value ? 'h-13 w-13' : 'h-12 w-12'}`)
 const PLAY_BTN = computed(() => `${ROUND} ${big.value ? 'h-17 w-17' : 'h-16 w-16'}`)
+/** The same button in the bottom bar, where the row around it sets the scale. */
+const BAR_PLAY = computed(() => `${ROUND} ${big.value ? 'h-13 w-13' : 'h-11 w-11'}`)
 
 /** Filled button in the centre notice. */
 const BTN = 'inline-flex items-center gap-1.5 border-0 rounded-lg bg-white/12 px-3.5 py-1.75 text-label-large transition-colors duration-120 hover:bg-white/20'
@@ -200,7 +205,7 @@ const MENU_GROUP = 'px-2.5 pb-1 pt-2.5 text-label-small uppercase opacity-45'
 /** Explanatory line where a menu group has nothing to list. */
 const NOTE = 'px-2.5 py-2 text-body-small opacity-60'
 
-const TIME = 'mx-2.5 whitespace-nowrap text-body-medium tabular-nums'
+const TIME = 'whitespace-nowrap text-body-medium tabular-nums'
 
 // Slide rather than fade: a fading overlay would fade against black, not against
 // the video, because the video isn't behind it — it's beside it, through a hole.
@@ -350,8 +355,17 @@ const { height: boxHeight } = useElementSize(boxEl)
 /** The track/speed panel, measured because the subtitles have to clear it. */
 const menuEl = ref<HTMLElement | null>(null)
 const { height: menuHeight } = useElementSize(menuEl)
-/** Its own gap from the bottom of the frame — the bottom bar plus a little. */
-const menuBottom = computed(() => big.value ? 112 : 106)
+/**
+ * The bottom bar, measured: the panel sits a little above it and the subtitles
+ * lift over it. Its last visible height is kept, because the bar is `v-show`n
+ * and reads as 0 the instant it hides — and a subtitle line that dropped a
+ * frame before the bar had gone was a jump, not a lift.
+ */
+const footerEl = ref<HTMLElement | null>(null)
+const { height: footerHeight } = useElementSize(footerEl)
+const barHeight = ref(0)
+watch(footerHeight, h => h && (barHeight.value = h))
+const menuBottom = computed(() => barHeight.value + 10)
 /** Is the chrome up? Declared here because `subPos` measures against it. */
 const ui = ref(true)
 /**
@@ -911,10 +925,26 @@ const MENU_TITLES: Record<Exclude<Menu, ''>, () => string> = {
 const menuTitle = computed(() => menu.value ? MENU_TITLES[menu.value]() : '')
 const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
 
+/**
+ * The button a panel was opened from, so closing it can hand focus back there:
+ * the row that had focus unmounts with the panel, which dropped a remote onto
+ * nothing — its next press had to find the bar all over again.
+ */
+let opener: HTMLElement | null = null
+
+function closeMenu() {
+  menu.value = ''
+  const el = opener
+  opener = null
+  if (el?.isConnected && document.documentElement.classList.contains('dpad'))
+    nextTick(() => el.focus({ preventScroll: true }))
+}
+
 function openMenu(name: Exclude<Menu, ''>) {
-  menu.value = menu.value === name ? '' : name
-  if (!menu.value)
-    return
+  if (menu.value === name)
+    return closeMenu()
+  menu.value = name
+  opener = document.activeElement instanceof HTMLElement ? document.activeElement : null
   refreshTracks()
   if (name === 'subs')
     fetchExternals()
@@ -1986,7 +2016,7 @@ function onKey(e: KeyboardEvent) {
   if (e.key === 'Escape' && menu.value) {
     e.preventDefault()
     e.stopPropagation()
-    menu.value = ''
+    closeMenu()
     return
   }
 
@@ -2344,10 +2374,10 @@ defineExpose({ osd, position: readonly(position) })
          nothing. Hidden behind the centre notices below, which own the same
          patch of screen.
 
-         Only where the page draws over the picture and there is a thumb to draw
-         it for — see `barTransport` for the two that keep it in the bottom bar
-         instead. No transition for the same reason the bars slide rather than
-         fade: there is nothing behind this to fade against. -->
+         Only on a touchscreen, where a thumb is already resting here — see
+         `barTransport` for why everything else keeps it in the bottom bar. No
+         transition for the same reason the bars slide rather than fade: there
+         is nothing behind this to fade against. -->
     <div
       v-if="!barTransport"
       v-show="ui && started && !centre"
@@ -2463,7 +2493,7 @@ defineExpose({ osd, position: readonly(position) })
       >
         <header class="flex items-center justify-between border-b border-white/9 py-2 pl-3.5 pr-2 text-title-small">
           <span>{{ menuTitle }}</span>
-          <button v-tooltip:top="$t('Close')" class="!h-7 !min-w-7" :class="ICO" @click="menu = ''">
+          <button v-tooltip:top="$t('Close')" class="!h-7 !min-w-7" :class="ICO" @click="closeMenu">
             <v-icon :icon="mdiClose" size="16" />
           </button>
         </header>
@@ -2711,112 +2741,129 @@ defineExpose({ osd, position: readonly(position) })
       enter-from-class="translate-y-[115%]"
       leave-to-class="translate-y-[115%]"
     >
-      <!-- h-24 = 22 (top pad) + 16 (seek) + 8 (gap) + 38 (controls) + 12, and
-           h-25.5 the same sum with the 44px touch buttons. -->
+      <!-- Measured rather than summed (`footerEl`): the panel above it and the
+           subtitle lift both read its height, and it has three heights — a
+           phone's, a television's, a desktop's — that used to be kept in step
+           by hand. -->
       <footer
         v-show="ui"
+        ref="footerEl"
         data-cut
-        class="absolute inset-x-0 bottom-0 border-t px-5 pb-3 pt-5.5"
-        :class="[SURFACE, big ? 'h-25.5' : 'h-24']"
+        class="absolute inset-x-0 bottom-0 border-t px-4 pb-2 pt-3 sm:px-5"
+        :class="SURFACE"
         @pointerenter="hovering = true"
         @pointerleave="hovering = false"
       >
-        <player-slider
-          :model-value="position"
-          :max="duration || 1"
-          :buffered="cacheEnd"
-          :format="fmt"
-          :thumb="thumb"
-          :approx="approx"
-          :step="10"
-          :disabled="!started || !duration"
-          @update:model-value="position = $event"
-          @scrub="scrubbing = $event"
-          @hover="onHover"
-          @change="seekTo"
-        />
-
-        <div class="mt-2 flex items-center gap-0.5">
-          <!-- The transport, where the middle of the picture is no place for it
-               (see `barTransport`). Everywhere else it is the centre cluster
-               above, and this row is left as the clock and the menus. -->
-          <template v-if="barTransport">
-            <button
-              ref="playBtn"
-              v-tooltip:top="paused ? $t('Play (space)') : $t('Pause (space)')"
-              :class="ICO"
-              :disabled="!started"
-              @click="togglePlay"
-            >
-              <v-icon :icon="paused ? mdiPlay : mdiPause" size="26" />
-            </button>
-            <button v-tooltip:top="$t('Back 10s (j)')" :class="ICO" :disabled="!started" @click="seekBy(-10)">
-              <v-icon :icon="mdiRewind10" size="22" />
-            </button>
-            <button v-tooltip:top="$t('Forward 10s (l)')" :class="ICO" :disabled="!started" @click="seekBy(10)">
-              <v-icon :icon="mdiFastForward10" size="22" />
-            </button>
-          </template>
-
-          <!-- The slider only unrolls while the group is hovered, so the bar
-               stays quiet the rest of the time. Nothing hovers on a phone or a
-               TV, and both have a volume rocker of their own. -->
-          <div v-if="!big" class="group/volume flex items-center">
-            <button v-tooltip:top="muted ? $t('Unmute (m)') : $t('Mute (m)')" :class="ICO" :disabled="!started" @click="toggleMute">
-              <v-icon :icon="volumeIcon" size="22" />
-            </button>
-            <player-slider
-              class="w-0 flex-none overflow-hidden opacity-0 transition-[width,margin,opacity] duration-160 group-hover/volume:mx-1.5 group-hover/volume:w-19 group-hover/volume:opacity-100"
-              :model-value="muted ? 0 : volume"
-              :max="100"
-              :disabled="!started"
-              @update:model-value="setVolume"
-              @scrub="volumeHeld = $event"
-            />
-          </div>
-
+        <!-- Elapsed, the rail, and what is left, on one line — so the row
+             under it is only buttons. -->
+        <div class="flex items-center gap-3">
           <span v-if="live" class="flex items-center gap-1.5" :class="TIME">
             <i class="size-2 rounded-full bg-error not-italic" />{{ $t('LIVE') }}
           </span>
-          <span v-else :class="TIME">{{ fmt(position) }} <i class="not-italic opacity-45">/</i> {{ fmt(duration) }}</span>
+          <span v-else :class="TIME">{{ fmt(position) }}</span>
+          <player-slider
+            class="min-w-0 flex-1"
+            :model-value="position"
+            :max="duration || 1"
+            :buffered="cacheEnd"
+            :format="fmt"
+            :thumb="thumb"
+            :approx="approx"
+            :step="10"
+            :disabled="!started || !duration"
+            @update:model-value="position = $event"
+            @scrub="scrubbing = $event"
+            @hover="onHover"
+            @change="seekTo"
+          />
+          <span v-if="!live" class="opacity-70" :class="TIME">{{ remaining || fmt(duration) }}</span>
+        </div>
 
-          <div class="flex-1" />
+        <!-- Three columns with the transport dead centre whatever the sides
+             hold: a television has no volume and no fullscreen, a phone has
+             neither and keeps its transport on the picture, and play stays
+             under the same spot on all of them — which is where a d-pad lands
+             (see `focusChrome`). -->
+        <div class="mt-1 grid grid-cols-[1fr_auto_1fr] items-center">
+          <div class="flex items-center">
+            <!-- The slider only unrolls while the group is hovered, so the bar
+                 stays quiet the rest of the time. Nothing hovers on a phone or a
+                 TV, and both have a volume rocker of their own. -->
+            <div v-if="!big" class="group/volume flex items-center">
+              <button v-tooltip:top="muted ? $t('Unmute (m)') : $t('Mute (m)')" :class="ICO" :disabled="!started" @click="toggleMute">
+                <v-icon :icon="volumeIcon" size="22" />
+              </button>
+              <player-slider
+                class="w-0 flex-none overflow-hidden opacity-0 transition-[width,margin,opacity] duration-160 group-hover/volume:mx-1.5 group-hover/volume:w-19 group-hover/volume:opacity-100"
+                :model-value="muted ? 0 : volume"
+                :max="100"
+                :disabled="!started"
+                @update:model-value="setVolume"
+                @scrub="volumeHeld = $event"
+              />
+            </div>
+          </div>
 
-          <span v-if="remaining" class="opacity-55" :class="TIME">{{ remaining }}</span>
+          <div v-if="barTransport" class="flex items-center gap-1 sm:gap-2">
+            <button v-tooltip:top="$t('Back 10s (j)')" :class="ICO" :disabled="!started" @click="seekBy(-10)">
+              <v-icon :icon="mdiRewind10" size="24" />
+            </button>
+            <button
+              ref="playBtn"
+              v-tooltip:top="paused ? $t('Play (space)') : $t('Pause (space)')"
+              :class="BAR_PLAY"
+              :disabled="!started"
+              @click="togglePlay"
+            >
+              <v-icon :icon="paused ? mdiPlay : mdiPause" size="30" />
+            </button>
+            <button v-tooltip:top="$t('Forward 10s (l)')" :class="ICO" :disabled="!started" @click="seekBy(10)">
+              <v-icon :icon="mdiFastForward10" size="24" />
+            </button>
+            <!-- The next episode, without waiting for this one to end. `replace`
+                 for the reason the ended screen's is: Back from there should
+                 leave, not walk into a player you skipped out of. -->
+            <nuxt-link v-if="next" v-tooltip:top="next.label" replace :class="ICO" :to="next.to">
+              <v-icon :icon="mdiSkipNext" size="24" />
+            </nuxt-link>
+          </div>
+          <div v-else />
 
-          <button
-            v-tooltip:top="$t('Playback speed ([ / ])')"
-            class="px-2" :class="[ICO, menu === 'speed' && '!text-primary !opacity-100']"
-            :disabled="!started"
-            @click="openMenu('speed')"
-          >
-            <v-icon v-if="speed === 1" :icon="mdiPlaySpeed" size="20" />
-            <span v-else class="text-label-large tabular-nums">{{ speed }}×</span>
-          </button>
-          <!-- Always, now that the panel holds the levelling and the dialogue
-               boost as well: those apply to every film, and a track list was
-               the only thing here that most releases don't have. -->
-          <button
-            v-tooltip:top="$t('Audio')"
-            :class="[ICO, menu === 'audio' && '!text-primary !opacity-100']"
-            @click="openMenu('audio')"
-          >
-            <v-icon :icon="mdiSurroundSound" size="20" />
-          </button>
-          <button
-            v-tooltip:top="$t('Subtitles (s)')"
-            :class="[ICO, menu === 'subs' && '!text-primary !opacity-100']"
-            :disabled="!started"
-            @click="openMenu('subs')"
-          >
-            <v-icon :icon="subsOn ? mdiSubtitles : mdiSubtitlesOutline" size="22" />
-          </button>
-          <!-- A television has no window to be one of many, and the player is
-               already the whole screen there: the button can only ever put the
-               system bars back. -->
-          <button v-if="!tv" v-tooltip:top="windowFullscreen ? $t('Exit fullscreen (f)') : $t('Fullscreen (f)')" :class="ICO" @click="toggleFullscreen">
-            <v-icon :icon="windowFullscreen ? mdiFullscreenExit : mdiFullscreen" size="22" />
-          </button>
+          <div class="flex items-center justify-end gap-0.5">
+            <button
+              v-tooltip:top="$t('Playback speed ([ / ])')"
+              class="px-2" :class="[ICO, menu === 'speed' && '!text-primary !opacity-100']"
+              :disabled="!started"
+              @click="openMenu('speed')"
+            >
+              <v-icon v-if="speed === 1" :icon="mdiPlaySpeed" size="20" />
+              <span v-else class="text-label-large tabular-nums">{{ speed }}×</span>
+            </button>
+            <!-- Always, now that the panel holds the levelling and the dialogue
+                 boost as well: those apply to every film, and a track list was
+                 the only thing here that most releases don't have. -->
+            <button
+              v-tooltip:top="$t('Audio')"
+              :class="[ICO, menu === 'audio' && '!text-primary !opacity-100']"
+              @click="openMenu('audio')"
+            >
+              <v-icon :icon="mdiSurroundSound" size="20" />
+            </button>
+            <button
+              v-tooltip:top="$t('Subtitles (s)')"
+              :class="[ICO, menu === 'subs' && '!text-primary !opacity-100']"
+              :disabled="!started"
+              @click="openMenu('subs')"
+            >
+              <v-icon :icon="subsOn ? mdiSubtitles : mdiSubtitlesOutline" size="22" />
+            </button>
+            <!-- A television has no window to be one of many, and the player is
+                 already the whole screen there: the button can only ever put the
+                 system bars back. -->
+            <button v-if="!tv" v-tooltip:top="windowFullscreen ? $t('Exit fullscreen (f)') : $t('Fullscreen (f)')" :class="ICO" @click="toggleFullscreen">
+              <v-icon :icon="windowFullscreen ? mdiFullscreenExit : mdiFullscreen" size="22" />
+            </button>
+          </div>
         </div>
       </footer>
     </transition>

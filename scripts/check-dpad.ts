@@ -145,6 +145,15 @@ for (const hook of ['__tvBack', '__tvOk', '__tvHold']) {
   assert.ok(plugin.includes(`window.${hook} =`), `and dpad.client.ts still defines it`)
 }
 
+// Tauri's own AppPlugin sits above MainActivity on the back dispatcher and pops
+// the WebView's history itself unless the page listens for its `back-button`
+// event — measured on the set as BACK leaving a film instead of closing the
+// subtitle panel. The listener is what hands every BACK to the page, and the
+// bridge's `leave()` is the page's only way to background the app at the root.
+assert.ok(plugin.includes(`addPluginListener('app', 'back-button'`), 'the page listens for tauri\'s back-button event')
+assert.ok(activity.includes('fun leave()') && activity.includes('@JavascriptInterface'), 'and MainActivity exposes leave() on the bridge for the root case')
+assert.ok(readFileSync(new URL('../app/utils/platform.ts', import.meta.url), 'utf8').includes('leave?.()'), 'through platform.ts')
+
 // BACK arrives by two different mechanisms and the app must not care which:
 // below API 33 as a KeyEvent, and from API 33 (declared) or 35 (whether declared
 // or not) through OnBackInvokedDispatcher, where `onKeyDown` is never called at

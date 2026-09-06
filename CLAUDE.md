@@ -213,7 +213,14 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   is written for. Nothing in `MainActivity` may call `finish()`. BACK itself is
   answered on `OnBackPressedDispatcher` rather than `onKeyDown`, because
   predictive back (declared in the manifest, and unconditional from API 35) never
-  calls the latter. `bun run check:dpad` covers all of it.
+  calls the latter. And BACK reaches the page through **tauri's `back-button`
+  event**, which `plugins/dpad.client.ts` registers a listener for: tauri's own
+  `AppPlugin` holds the top of that dispatcher and, with no listener, pops the
+  WebView's history itself whenever it can — so a film with the subtitle panel
+  open was left rather than the panel closed, and `MainActivity`'s own callback
+  was never asked. With the listener every press is the page's `back()` to
+  answer; the bridge's `leave()` is how it backgrounds the app at the root.
+  `bun run check:dpad` covers all of it.
 - The engine runs *inside* the app process, so on Android "the user opened
   another app" means "the download stopped": the process is cached and then
   frozen. `DownloadService` (`gen/android/.../Downloads.kt`) is the foreground

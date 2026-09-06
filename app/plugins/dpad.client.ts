@@ -1,4 +1,5 @@
 import type { Dir } from '~/utils/dpad'
+import { addPluginListener } from '@tauri-apps/api/core'
 
 /**
  * Remote-control navigation, app-wide.
@@ -267,6 +268,28 @@ export default defineNuxtPlugin(() => {
   }
 
   window.__tvBack = back
+
+  /**
+   * Android hands BACK to the page only once the page asks for it. Tauri's own
+   * `AppPlugin` holds the top of the activity's back dispatcher — registered
+   * after MainActivity's, so it runs first — and with no listener for its
+   * `back-button` event it pops the WebView's history itself whenever there is
+   * any, falling through to MainActivity only at the root. That is why BACK
+   * closed a dialog on the home page and left a film with the subtitle panel
+   * still open: mid-history, the page was never asked. With a listener the
+   * plugin triggers this instead and pops nothing, so every BACK — a remote's
+   * key and a phone's gesture alike — is `back()`'s to answer. Nothing left to
+   * close or go back to means the app goes behind whatever is next, which is
+   * what MainActivity does for the one press that can arrive before this
+   * listener exists (see `backToPage` there).
+   */
+  if (onAndroid()) {
+    addPluginListener('app', 'back-button', () => {
+      markDpad()
+      if (!back())
+        backgroundApp()
+    }).catch(() => {})
+  }
 
   /**
    * OK, for the one control the key never reaches. A TV's DPAD_CENTER becomes a

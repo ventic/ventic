@@ -152,6 +152,24 @@ export function apkProgress(): ApkInstall {
   }
 }
 
+/**
+ * Is this the Android app at all — phone or television? The bridge below is
+ * installed by MainActivity before the page loads and by nothing else.
+ */
+export function onAndroid() {
+  return !!bridge()
+}
+
+/**
+ * Put the app behind whatever is next, as Back at the root does on Android:
+ * the task is backgrounded rather than finished, because a finished activity
+ * in a process Android kept alive is the crash described in MainActivity.
+ * A no-op everywhere else.
+ */
+export function backgroundApp() {
+  bridge()?.leave?.()
+}
+
 /** MainActivity's `Screen`, present only inside the Android app. */
 function bridge() {
   return (globalThis as {
@@ -164,6 +182,7 @@ function bridge() {
       updateProgress?: () => string
       installer?: () => string
       openStore?: () => boolean
+      leave?: () => void
     }
   }).VenticScreen
 }

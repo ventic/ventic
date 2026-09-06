@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import type { EngineFile, EngineTorrent } from '~/utils/torrents'
-import { mdiContentCopy, mdiFolderOpenOutline, mdiPlayCircleOutline } from '@mdi/js'
+import { mdiFolderOpenOutline, mdiPlay } from '@mdi/js'
 
 /**
  * What is actually inside a torrent: pick the episode you want, play any of
  * them, or tick one off to stop it downloading.
  *
- * Its own component because the transfer list draws it in two places — under an
- * expanded table row on a desktop, inside the card on a phone — and it is the
- * same list either way. Only ever mounted while something is expanded, so the
- * fetch below happens exactly when the files are wanted.
+ * Only ever mounted under the one open row, so the fetch below happens exactly
+ * when the files are wanted — and, like the row above it, drawn with plain
+ * elements: a season pack is two dozen lines, and a Vuetify button with a
+ * tooltip per line per action is a hundred components for a list that is read
+ * once and tapped once.
  */
 const props = defineProps<{ torrent: EngineTorrent }>()
 
@@ -17,16 +18,16 @@ const emit = defineEmits<{
   /** Play one file out of the pack. The file itself so the downloads page can
       read the episode off its name — see `filedAs`. */
   play: [index: number, file: EngineFile]
-  /** Open a folder — the file's own, or the torrent's root with no file given. */
-  open: [file?: EngineFile]
-  /** Something worth a snackbar happened. */
-  notify: [message: string]
+  /** Open the file's own folder. */
+  open: [file: EngineFile]
 }>()
 
 const downloads = useDownloadsStore()
 
 const files = ref<EngineFile[]>([])
 const canReveal = canOpenFolder()
+
+const ACT = 'grid size-8 shrink-0 place-items-center border-0 rounded-lg bg-transparent text-on-surface opacity-70 transition-colors hover:bg-surface-container-high hover:opacity-100 focus-visible:bg-surface-container-high focus-visible:opacity-100'
 
 async function load() {
   files.value = (await torrentDetails(props.torrent.id))?.files ?? []
@@ -57,26 +58,15 @@ async function setIncluded(index: number, included: boolean) {
   await limitToFiles(props.torrent.id, only)
   await downloads.refresh()
 }
-
-async function copyMagnet() {
-  await navigator.clipboard.writeText(magnetForHash(props.torrent.info_hash))
-  emit('notify', $t('Magnet link copied.'))
-}
 </script>
 
 <template>
-  <div class="flex flex-col gap-1 rounded-xl bg-surface-container/40 px-3 py-3 sm:px-4">
-    <div class="flex flex-wrap items-center gap-2 text-body-small opacity-55">
-      <span class="min-w-0 flex-1 truncate">{{ torrent.output_folder }}</span>
-      <v-btn v-if="canReveal" :prepend-icon="mdiFolderOpenOutline" size="x-small" variant="text" @click="emit('open')">
-        {{ $t('Open folder') }}
-      </v-btn>
-      <v-btn :prepend-icon="mdiContentCopy" size="x-small" variant="text" @click="copyMagnet">
-        {{ $t('Copy magnet') }}
-      </v-btn>
+  <div class="flex flex-col gap-0.5 rounded-xl bg-surface-container/40 px-2 py-2 sm:px-3">
+    <div class="truncate px-2 pb-1 text-body-small opacity-55" :title="torrent.output_folder">
+      {{ torrent.output_folder }}
     </div>
 
-    <div v-if="!files.length" class="py-2 text-body-small opacity-55">
+    <div v-if="!files.length" class="px-2 py-2 text-body-small opacity-55">
       {{ $t('Waiting for metadata…') }}
     </div>
 
@@ -85,9 +75,9 @@ async function copyMagnet() {
     <div
       v-for="(file, index) in files"
       :key="file.name"
-      class="flex flex-col gap-1 rounded-lg px-1 py-1.5 sm:flex-row sm:items-center sm:gap-3 sm:px-2 sm:py-1 hover:bg-surface-container-high/60"
+      class="flex flex-col gap-1 rounded-lg px-1 py-1 sm:flex-row sm:items-center sm:gap-3 sm:px-2 hover:bg-surface-container-high/60"
     >
-      <div class="flex min-w-0 items-center gap-2 sm:flex-1">
+      <div class="flex min-w-0 items-center gap-1 sm:flex-1">
         <v-checkbox-btn
           :model-value="file.included"
           density="compact"
@@ -97,22 +87,20 @@ async function copyMagnet() {
         <span class="min-w-0 flex-1 truncate text-body-small" :title="file.name">{{ file.name }}</span>
       </div>
 
-      <div class="flex items-center gap-2 pl-9 sm:gap-3 sm:pl-0">
+      <div class="flex items-center gap-2 pl-10 sm:gap-3 sm:pl-0">
         <span class="shrink-0 text-body-small tabular-nums opacity-55 sm:w-16 sm:text-right">{{ bytesText(file.length) }}</span>
-        <div class="min-w-0 flex-1 sm:w-24 sm:flex-none">
-          <v-progress-linear :model-value="progress(index)" height="4" rounded />
+        <div class="h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-on-surface/12 sm:w-24 sm:flex-none">
+          <div class="h-full rounded-full bg-primary" :style="{ width: `${progress(index)}%` }" />
         </div>
         <span class="w-9 shrink-0 text-right text-body-small tabular-nums opacity-55">
           {{ progress(index).toFixed(0) }}%
         </span>
-        <v-btn icon size="x-small" variant="text" color="on-surface" @click="emit('play', index, file)">
-          <v-icon :icon="mdiPlayCircleOutline" size="18" />
-          <v-tooltip activator="parent" :text="$t('Play this file')" />
-        </v-btn>
-        <v-btn v-if="canReveal" icon size="x-small" variant="text" color="on-surface" @click="emit('open', file)">
-          <v-icon :icon="mdiFolderOpenOutline" size="18" />
-          <v-tooltip activator="parent" :text="$t('Open containing folder')" />
-        </v-btn>
+        <button type="button" :class="ACT" :title="$t('Play this file')" @click="emit('play', index, file)">
+          <svg viewBox="0 0 24 24" class="size-5 fill-current"><path :d="mdiPlay" /></svg>
+        </button>
+        <button v-if="canReveal" type="button" :class="ACT" :title="$t('Open containing folder')" @click="emit('open', file)">
+          <svg viewBox="0 0 24 24" class="size-5 fill-current"><path :d="mdiFolderOpenOutline" /></svg>
+        </button>
       </div>
     </div>
   </div>

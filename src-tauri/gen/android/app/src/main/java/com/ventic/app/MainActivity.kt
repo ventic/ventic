@@ -238,6 +238,19 @@ class MainActivity : TauriActivity() {
     fun tv(): Boolean = isTv()
 
     /**
+     * BACK with nothing left to go back to, as the page decides it (see
+     * `back()` in plugins/dpad.client.ts). The page hears every BACK once it
+     * has registered tauri's `back-button` listener — see `backToPage` for the
+     * press that can arrive before then — so this is the one thing it cannot
+     * do for itself: put the app behind whatever is next. Never `finish()`;
+     * see `leave()`.
+     */
+    @JavascriptInterface
+    fun leave() {
+      runOnUiThread { this@MainActivity.leave() }
+    }
+
+    /**
      * Every drive this app may write a film to, as JSON — the built-in storage
      * and whatever is plugged into the USB port. A TV box ships with a couple of
      * gigabytes to its name, so a stick is often the only thing on it that can
@@ -667,6 +680,19 @@ class MainActivity : TauriActivity() {
    * claims the key and acts on the answer when it arrives. The page decides what
    * back means (close a dialog, leave the player, go back a page) and answers
    * "true" when it handled it; anything else means we are at the root.
+   *
+   * It is not the first stop, and most of the time not reached at all. Tauri's
+   * own `AppPlugin` adds a callback of its own — later than this one, from the
+   * Rust side's plugin setup, so the dispatcher runs it first — which pops the
+   * WebView's history itself whenever `canGoBack()` and only hands on to this
+   * one at the root. Measured on the set: BACK on a film with the subtitle
+   * panel open left the film, and this was never called. The page therefore
+   * registers the plugin's `back-button` listener as soon as it is up (see
+   * plugins/dpad.client.ts), after which the plugin triggers that event and
+   * pops nothing, and the page calls `Screen.leave()` for the root case. What
+   * is left for this callback is the press that lands before the page has
+   * loaded, where there is nothing to ask and backgrounding is the right answer
+   * anyway.
    */
   private val backToPage = object : OnBackPressedCallback(true) {
     override fun handleOnBackPressed() {
