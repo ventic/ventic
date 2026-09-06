@@ -56,4 +56,34 @@ for (const path of vues(root)) {
 const bar = readFileSync(new URL('../app/components/OptionsBar.vue', import.meta.url), 'utf8')
 assert.match(bar, /v-if="ui\.isGrid && !tv"/, 'the poster-size slider on the browse bar stays off a television')
 
+// --- And that the setting still reaches the grid ------------------------------
+//
+// Poster size is a *minimum* column width under `repeat(auto-fill, …)`, and a
+// cap on it is a cap on the setting: `min(cardWidth, 30%)` was three across on
+// a phone whatever the size said, so the control did nothing there at all. The
+// count auto-fill lands on is the thing worth asserting:
+const columns = (grid: number, min: number, gap = 16) => Math.max(1, Math.floor((grid + gap) / (min + gap)))
+/** The rule in the ui store, as a number: `min(cardWidth px, 50% - 8px)`. */
+const cap = (grid: number, cardWidth: number) => Math.min(cardWidth, grid / 2 - 8)
+
+const phone = 363 // a 395px viewport less MediaLayout's px-4 — the Pixel this was found on
+assert.strictEqual(columns(phone, cap(phone, px.min)), 3, 'the smallest poster is three to a phone')
+assert.strictEqual(columns(phone, cap(phone, px.max)), 2, 'and the largest is two — the size control has to move it')
+for (const grid of [300, 363, 400, 720, 1200]) {
+  for (let w = px.min; w <= px.max; w += px.step)
+    assert.ok(columns(grid, cap(grid, w)) >= 2, `one poster to a row at ${w}px in a ${grid}px grid — that is a list with the words missing`)
+}
+
+// One definition, or the refactor that copied it into three pages happens again.
+const ui = readFileSync(new URL('../app/stores/ui.ts', import.meta.url), 'utf8')
+assert.match(ui, /minmax\(min\(\$\{cardWidth\.value\}px, 50% - 8px\), 1fr\)/, 'the ui store owns the grid rule this checks')
+const appRoot = new URL('../app', import.meta.url).pathname
+for (const path of [...vues(join(appRoot, 'pages')), ...vues(join(appRoot, 'components'))]) {
+  assert.doesNotMatch(
+    readFileSync(path, 'utf8'),
+    /repeat\(auto-fill, minmax\(min\(/,
+    `${path}: a second copy of the grid rule — use ui.gridColumns`,
+  )
+}
+
 console.info('steps: ok')

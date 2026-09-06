@@ -133,12 +133,23 @@ export const useUiStore = defineStore('ui', () => {
   const profileSize = computed(() => castWidth.value * pixelRatio.value > 185 ? 'h632' as const : 'w185' as const)
 
   /**
-   * A card's width in a row: the poster size, capped at three to a phone's
-   * width — the same floor MediaLayout puts under its grid, so a row and a
-   * grid show the same posters at the same size on the same phone. Wider than
-   * three posters, it is the poster size unchanged.
+   * Every grid of cards. The poster size, but never wider than half the grid:
+   * two to a row is the floor, because one poster to a row is a list with the
+   * words missing. The 8px is half the 16px gap — at a flat 50% the second
+   * column no longer fits beside the gap and auto-fill drops to one. It is a
+   * ceiling on the *cap*, not on the setting: a cap of a fixed 30% was three
+   * across whatever the poster size said, which left the size control doing
+   * nothing at all on a phone.
    */
-  const rowCard = computed(() => `min(${cardWidth.value}px, 30vw)`)
+  const gridColumns = computed(() => `repeat(auto-fill, minmax(min(${cardWidth.value}px, 50% - 8px), 1fr))`)
+
+  /**
+   * A card's width in a row: the poster size, under the same two-to-a-phone
+   * cap `gridColumns` puts on the grid, so a row and a grid show the same
+   * posters at the same size on the same phone. Wider than that, it is the
+   * poster size unchanged.
+   */
+  const rowCard = computed(() => `min(${cardWidth.value}px, 50vw - 8px)`)
 
   const isGrid = computed(() => layout.value.startsWith('grid'))
   const isDetailed = computed(() => layout.value.endsWith('detail'))
@@ -205,5 +216,5 @@ export const useUiStore = defineStore('ui', () => {
   // Sweeping the cursor across a grid would otherwise queue a crossfade per card.
   const preview = useDebounceFn(hover, 120)
 
-  return { layout, cardWidth, castWidth, rowCard, posterSize, profileSize, rail, drawer, menuFor, pendingSource, blur, tint, backdropMode, backdropImage, backdropFollowsHover, artOverCustom, shownArt, selected, art, backdrop, isGrid, isDetailed, select, ambient, release, hover, preview }
+  return { layout, cardWidth, castWidth, gridColumns, rowCard, posterSize, profileSize, rail, drawer, menuFor, pendingSource, blur, tint, backdropMode, backdropImage, backdropFollowsHover, artOverCustom, shownArt, selected, art, backdrop, isGrid, isDetailed, select, ambient, release, hover, preview }
 })

@@ -38,14 +38,6 @@ useEventListener(scroller, 'scroll', () => {
 })
 onActivated(() => scroller.value?.scrollTo({ top: at }))
 
-// `min(…, 30%)`: a phone is narrower than two of the posters a desktop asks
-// for, and one poster to a row is a list with the words missing. Thirty
-// percent is three across — what every phone app puts there — and on anything
-// wider than three posters it is the poster size, unchanged.
-const gridStyle = computed(() => ({
-  gridTemplateColumns: `repeat(auto-fill, minmax(min(${ui.cardWidth}px, 30%), 1fr))`,
-}))
-
 // Placeholders only while the first page is in flight — later pages append below
 // the existing ones, where the spinner already lives.
 const loadingFirstPage = computed(() => props.pending && !props.items.length)
@@ -56,7 +48,7 @@ const loadingFirstPage = computed(() => props.pending && !props.items.length)
        needs somewhere to sit. scroll-py: keeps the row the d-pad just moved to
        clear of the top and bottom edges. -->
   <div ref="scroller" data-dpad-start class="h-full scroll-py-6 overflow-y-auto px-4 pb-10 pt-1 md:px-6">
-    <div v-if="ui.isGrid" class="grid gap-x-4 gap-y-5" :style="gridStyle">
+    <div v-if="ui.isGrid" class="grid gap-x-4 gap-y-5" :style="{ gridTemplateColumns: ui.gridColumns }">
       <media-card
         v-for="media in items"
         :key="`${media.type}-${media.id}`"

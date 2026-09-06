@@ -66,13 +66,6 @@ useInfiniteScroll(
   { distance: 800, canLoadMore: () => shown.value < (person.value?.credits.length ?? 0) },
 )
 const credits = computed(() => person.value?.credits.slice(0, shown.value) ?? [])
-
-// Deliberately not the browse pages' list/grid switch: this is a strip of work
-// belonging to one person, the same way "More like this" is, and both are cards.
-const gridStyle = computed(() => ({
-  // The same three-across floor as MediaLayout's, for a phone.
-  gridTemplateColumns: `repeat(auto-fill, minmax(min(${ui.cardWidth}px, 30%), 1fr))`,
-}))
 </script>
 
 <template>
@@ -141,7 +134,9 @@ const gridStyle = computed(() => ({
           {{ $t('Known for') }}
         </h2>
 
-        <div class="grid gap-x-4 gap-y-5" :style="gridStyle">
+        <!-- Deliberately not the browse pages' list/grid switch: this is a strip
+             of work belonging to one person, the same way "More like this" is. -->
+        <div class="grid gap-x-4 gap-y-5" :style="{ gridTemplateColumns: ui.gridColumns }">
           <media-card
             v-for="media in credits"
             :key="`${media.type}-${media.id}`"
