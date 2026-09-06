@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "อนุญาตให้อุปกรณ์อื่นเล่นหนังบนเครื่องนี้",
   "Levelling off": "ปิดการปรับระดับ",
   "Levelling: {level}": "การปรับระดับ: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "ดึงเสียงพูดให้เด่นขึ้นจากเสียงประกอบ ในไฟล์ 5.1 หรือ 7.1 จะเพิ่มช่องกลาง — ช่องที่มีแต่เสียงพูดเท่านั้น — ดนตรีและเสียงประกอบรอบ ๆ จึงไม่ถูกแตะ",
   "Light": "สว่าง",
   "List": "รายการ",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "คำบรรยายที่ได้จากส่วนเสริมสาธารณะซึ่ง Stremio เป็นผู้ดูแล",
   "Subtitles: {name}": "คำบรรยาย: {name}",
   "Support": "สนับสนุน",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "ซิงก์",
   "Sync now": "ซิงค์ตอนนี้",
   "Sync to the audio": "ซิงก์ให้ตรงกับเสียง",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} จาก {total}",
   "{shown} shown · {active} active": "แสดง {shown} · ทำงานอยู่ {active}",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "ดูแล้ว {titles} เรื่อง · รายการโปรด {favourites} · อยู่ในรายการที่จะดู {watchlist}",
   "{used} used": "ใช้ไป {used}",
 }

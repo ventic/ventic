@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Permite altor dispozitive să redea filme pe acesta",
   "Levelling off": "Egalizare oprită",
   "Levelling: {level}": "Egalizare: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Scoate vorbirea din efecte. La o versiune 5.1 sau 7.1 ridică canalul central — canalul pe care se află doar dialogul — așa că muzica și efectele din jur rămân neatinse.",
   "Light": "Luminos",
   "List": "Listă",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Subtitrări, obținute prin suplimente publice pe care le operează Stremio.",
   "Subtitles: {name}": "Subtitrări: {name}",
   "Support": "Susține",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Sincronizare",
   "Sync now": "Sincronizează acum",
   "Sync to the audio": "Sincronizează cu sunetul",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} din {total}",
   "{shown} shown · {active} active": "{shown} afișate · {active} active",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} titluri vizionate · {favourites} favorite · {watchlist} în lista de vizionat",
   "{used} used": "{used} folosiți",
 }

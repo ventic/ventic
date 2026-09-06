@@ -576,9 +576,55 @@ class MainActivity : TauriActivity() {
    * passed on either way — the WebView's handling is what makes OK work
    * everywhere it already does.
    */
+  /**
+   * OK, held back until it is released — so that holding it can mean something.
+   *
+   * The WebView clicks a focused link on the key's way *down*: measured on the
+   * set, `click` arrives eight milliseconds after `keydown` and half a second
+   * before `keyup`. So by the time a press could be told from a hold, the card
+   * under it had already opened. The first DOWN is therefore kept and not
+   * passed on. A repeat of it — Android sends one about half a second into a
+   * hold — is what makes it a hold: the page is told once, through
+   * `window.__tvHold` (a `contextmenu` on whatever has focus, see
+   * dpad.client.ts), and the release is then swallowed. A release with no
+   * repeat before it replays the kept DOWN and lets the UP through, which is
+   * the click it always was, on the way up instead of down — the moment a
+   * finger's click has always been.
+   *
+   * The kept event is a copy: the one passed in belongs to the input system,
+   * which recycles it behind us.
+   */
+  private var pressed: KeyEvent? = null
+  private var holding = false
+
   override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-    if (event.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
-      web?.evaluateJavascript("window.__tvOk ? window.__tvOk() : false", null)
+    if (event.keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+      if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+        pressed = KeyEvent(event)
+        holding = false
+        return true
+      }
+      if (event.action == KeyEvent.ACTION_DOWN) {
+        if (!holding) {
+          holding = true
+          web?.evaluateJavascript("window.__tvHold ? window.__tvHold() : false", null)
+        }
+        return true
+      }
+      if (event.action == KeyEvent.ACTION_UP) {
+        val down = pressed
+        pressed = null
+        if (holding || down == null || event.isCanceled) {
+          holding = false
+          return true
+        }
+        // A short press. The page opens the one control the WebView's own
+        // DPAD_CENTER handling misses (a shut Vuetify select); the key is
+        // passed on either way.
+        web?.evaluateJavascript("window.__tvOk ? window.__tvOk() : false", null)
+        super.dispatchKeyEvent(down)
+        return super.dispatchKeyEvent(event)
+      }
     }
 
     // BACK, before the WebView gets it. Turning wry's own handling off was only

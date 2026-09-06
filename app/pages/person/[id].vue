@@ -70,7 +70,8 @@ const credits = computed(() => person.value?.credits.slice(0, shown.value) ?? []
 // Deliberately not the browse pages' list/grid switch: this is a strip of work
 // belonging to one person, the same way "More like this" is, and both are cards.
 const gridStyle = computed(() => ({
-  gridTemplateColumns: `repeat(auto-fill, minmax(${ui.cardWidth}px, 1fr))`,
+  // The same three-across floor as MediaLayout's, for a phone.
+  gridTemplateColumns: `repeat(auto-fill, minmax(min(${ui.cardWidth}px, 30%), 1fr))`,
 }))
 </script>
 

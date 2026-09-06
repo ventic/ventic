@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Разрешить другим устройствам воспроизводить фильмы на этом",
   "Levelling off": "Выравнивание выкл.",
   "Levelling: {level}": "Выравнивание: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Поднимает речь над эффектами. В релизе 5.1 или 7.1 это усиливает центральный канал — канал, на котором только диалог, — так что музыка и эффекты вокруг остаются нетронутыми.",
   "Light": "Светлая",
   "List": "Список",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Субтитры, получаемые через публичные дополнения, которые обслуживает Stremio.",
   "Subtitles: {name}": "Субтитры: {name}",
   "Support": "Поддержать",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Синхронизация",
   "Sync now": "Синхронизировать сейчас",
   "Sync to the audio": "Синхронизировать со звуком",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} из {total}",
   "{shown} shown · {active} active": "Показано {shown} · активных {active}",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} тайтлов просмотрено · {favourites} в избранном · {watchlist} в списке просмотра",
   "{used} used": "{used} использовано",
 }

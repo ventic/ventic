@@ -58,7 +58,7 @@ function markEarlier() {
       :key="season.number"
       :to="seasonLink(showId, season.number)"
       class="group block shrink-0 select-none outline-none"
-      :style="{ width: `${ui.cardWidth}px` }"
+      :style="{ width: ui.rowCard }"
     >
       <div class="relative aspect-2/3 overflow-hidden rounded-xl bg-surface-container">
         <media-poster :src="posterUrl(season.poster ?? poster, ui.posterSize)" :alt="season.name" />

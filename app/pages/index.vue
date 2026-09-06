@@ -144,7 +144,7 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
           :to="entry.season ? episodeLink(entry.media.id, entry.season, entry.episode) : undefined"
           :detail="ui.isDetailed"
           class="shrink-0"
-          :style="{ width: `${ui.cardWidth}px` }"
+          :style="{ width: ui.rowCard }"
         />
       </scroll-row>
 

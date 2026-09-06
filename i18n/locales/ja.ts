@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "ほかの端末からこの端末で映画を再生できるようにする",
   "Levelling off": "音量そろえ: オフ",
   "Levelling: {level}": "音量そろえ: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "セリフを効果音から浮き上がらせます。5.1 や 7.1 のリリースではセンターチャンネル（セリフだけが入っているチャンネル）を上げるので、まわりの音楽や効果音はそのままです。",
   "Light": "ライト",
   "List": "リスト",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Stremio が運営する公開アドオン経由で取得した字幕。",
   "Subtitles: {name}": "字幕: {name}",
   "Support": "支援",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "同期",
   "Sync now": "今すぐ同期",
   "Sync to the audio": "音声に合わせて同期",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{total} 件中 {shown} 件",
   "{shown} shown · {active} active": "{shown} 件表示 · {active} 件実行中",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} 作品視聴 · お気に入り {favourites} 件 · ウォッチリスト {watchlist} 件",
   "{used} used": "{used} 使用中",
 }

@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Թույլ տալ այլ սարքերին ֆիլմեր նվագարկել այս սարքի վրա",
   "Levelling off": "Հավասարեցումն անջատված է",
   "Levelling: {level}": "Հավասարեցում: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Խոսքը դուրս է բերում էֆեկտների միջից։ 5.1 կամ 7.1 թողարկման դեպքում սա բարձրացնում է կենտրոնական ալիքը՝ այն ալիքը, որի վրա միայն երկխոսությունն է, ուստի շուրջը եղած երաժշտությունն ու էֆեկտները մնում են անփոփոխ։",
   "Light": "Բաց",
   "List": "Ցանկ",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Ենթագրեր՝ ստացված Stremio-ի սպասարկած հանրային հավելումների միջոցով։",
   "Subtitles: {name}": "Ենթագրեր՝ {name}",
   "Support": "Աջակցել",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Համաժամացում",
   "Sync now": "Համաժամացնել հիմա",
   "Sync to the audio": "Համաժամացնել ձայնի հետ",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} / {total}",
   "{shown} shown · {active} active": "{shown} ցուցադրված · {active} ակտիվ",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} վերնագիր դիտված · {favourites} ընտրյալ · {watchlist} դիտելու ցանկում",
   "{used} used": "{used} օգտագործված",
 }

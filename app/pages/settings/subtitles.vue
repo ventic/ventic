@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { mdiEarHearing, mdiFormatSize, mdiRestore } from '@mdi/js'
+import { mdiEarHearing, mdiRestore } from '@mdi/js'
 
 const settings = useSettingsStore()
 
@@ -36,6 +36,8 @@ const language = computed({
 })
 
 const COLOURS = ['#ffffff', '#f2e14c', '#9fd8ff', '#ffb787', '#c0c0c0']
+
+const percent = (value: number) => new Intl.NumberFormat(locale.value, { style: 'percent' }).format(value)
 
 /** Preview frame height. mpv sizes subtitles against a 720-tall window. */
 const FRAME = 224
@@ -126,19 +128,9 @@ const SAMPLE = computed(() => $t('It was the fall that killed him.\nNot the drop
     <settings-section :title="$t('Text')">
       <v-select v-model="settings.subs.font" :items="SUBTITLE_FONTS" :label="$t('Font')" />
 
-      <div>
-        <div class="text-label-medium opacity-70">
-          {{ $t('Size') }}
-        </div>
-        <v-slider
-          v-model="settings.subs.size"
-          :prepend-icon="mdiFormatSize"
-          :min="16"
-          :max="90"
-          :step="1"
-          thumb-label
-        />
-      </div>
+      <settings-row :label="$t('Size')">
+        <settings-stepper v-model="settings.subs.size" :min="16" :max="90" :step="4" />
+      </settings-row>
 
       <v-switch v-model="settings.subs.bold" :label="$t('Bold')" color="primary" hide-details density="compact" />
 
@@ -152,26 +144,15 @@ const SAMPLE = computed(() => $t('It was the fall that killed him.\nNot the drop
       :title="$t('Legibility')"
       :hint="$t('An outline keeps white text on a white shot readable; a background box does it more bluntly.')"
     >
-      <div>
-        <div class="text-label-medium opacity-70">
-          {{ $t('Outline') }}
-        </div>
-        <v-slider v-model="settings.subs.outline" :min="0" :max="5" :step="0.05" thumb-label />
-      </div>
-
-      <div>
-        <div class="text-label-medium opacity-70">
-          {{ $t('Background') }}
-        </div>
-        <v-slider v-model="settings.subs.background" :min="0" :max="1" :step="0.05" thumb-label />
-      </div>
-
-      <div>
-        <div class="text-label-medium opacity-70">
-          {{ $t('Vertical position') }}
-        </div>
-        <v-slider v-model="settings.subs.position" :min="50" :max="120" :step="1" thumb-label />
-      </div>
+      <settings-row :label="$t('Outline')">
+        <settings-stepper v-model="settings.subs.outline" :min="0" :max="5" :step="0.5" />
+      </settings-row>
+      <settings-row :label="$t('Background')">
+        <settings-stepper v-model="settings.subs.background" :min="0" :max="1" :step="0.1" :format="percent" />
+      </settings-row>
+      <settings-row :label="$t('Vertical position')">
+        <settings-stepper v-model="settings.subs.position" :min="50" :max="120" :step="10" />
+      </settings-row>
     </settings-section>
 
     <div>

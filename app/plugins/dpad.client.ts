@@ -290,6 +290,22 @@ export default defineNuxtPlugin(() => {
   }
 
   /**
+   * A held OK — the remote's long press. It becomes the `contextmenu` a
+   * right-click and a finger held on a card already are, on whatever has focus,
+   * so a card answers all three with one handler (see MediaMenu). MainActivity
+   * only ever sends it after keeping the press itself back — the WebView clicks
+   * a focused link on the key's way *down*, so an OK it had seen would already
+   * have opened the card under the sheet. `true` when something claimed it.
+   */
+  window.__tvHold = () => {
+    const el = document.activeElement
+    if (!(el instanceof HTMLElement) || el === document.body)
+      return false
+    markDpad()
+    return !el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }))
+  }
+
+  /**
    * Is a caret in play? A readonly field has no caret to keep — Vuetify builds
    * its selects out of an `<input readonly>`, and treating that as typing is
    * what left a remote unable to move sideways off a dropdown at all.

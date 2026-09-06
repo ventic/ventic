@@ -28,20 +28,13 @@ watch(() => route.path, () => {
   if (routeName(route) !== 'search')
     query.value = ''
 })
-
-// The hamburger means "give me more room" on desktop and "show me the nav" on
-// mobile, where the sidebar is an overlay.
-function toggleNav() {
-  if (mobile.value)
-    ui.drawer = !ui.drawer
-  else
-    ui.rail = !ui.rail
-}
 </script>
 
 <template>
   <header class="flex shrink-0 items-center gap-1 px-3 py-3 sm:gap-2 sm:px-5">
-    <v-btn :icon="mdiMenu" variant="text" color="on-surface" @click="toggleNav" />
+    <!-- "Give me more room": collapses the sidebar to icons. A phone has no
+         sidebar to collapse — its navigation is the bar along the bottom. -->
+    <v-btn v-if="!mobile" :icon="mdiMenu" variant="text" color="on-surface" @click="ui.rail = !ui.rail" />
 
     <v-btn
       v-if="routeName(route) !== 'index'"
@@ -68,16 +61,14 @@ function toggleNav() {
     />
 
     <!-- ms-auto pins the cluster to the trailing edge past the filled search
-         field. Downloads shows at every width — a phone can then glance at a
-         background download without opening the drawer — while settings and
-         account are desktop-only here: on a phone they move into the drawer,
-         the overlay this toolbar can't reach. -->
+         field. Downloads, settings and account are desktop-only here: on a
+         phone all three live in the bar along the bottom, where the More tab's
+         dot is what says a download is running. -->
     <div class="ms-auto flex items-center gap-1 sm:gap-2">
       <!-- Only here at all when there is something to say, and it goes away for
            good once the version behind it has been waved off — so it reads as a
            notification rather than as a permanent part of the toolbar. Shown at
-           every width, unlike settings and account: a phone's drawer is an
-           overlay this row can't reach, and a release is worth a detour. -->
+           every width: a release is worth a detour. -->
       <v-badge
         v-if="updates.available && !updates.dismissed"
         dot
@@ -92,6 +83,7 @@ function toggleNav() {
       </v-badge>
 
       <v-badge
+        v-if="!mobile"
         :model-value="!!downloads.active"
         :content="downloads.active"
         color="primary"
@@ -103,11 +95,11 @@ function toggleNav() {
           <v-tooltip activator="parent" :text="downloads.active ? $t('{count} downloading', { count: downloads.active }) : $t('Downloads')" />
         </v-btn>
       </v-badge>
-      <v-btn icon variant="text" color="on-surface" class="hidden sm:flex" :to="localePath('/settings/appearance')">
+      <v-btn v-if="!mobile" icon variant="text" color="on-surface" :to="localePath('/settings/appearance')">
         <v-icon :icon="mdiCogOutline" />
         <v-tooltip activator="parent" :text="$t('Settings')" />
       </v-btn>
-      <v-btn icon variant="text" color="on-surface" class="hidden sm:flex" :to="localePath('/settings/account')">
+      <v-btn v-if="!mobile" icon variant="text" color="on-surface" :to="localePath('/settings/account')">
         <v-icon :icon="mdiAccountCircle" />
         <v-tooltip activator="parent" :text="$t('Account')" />
       </v-btn>

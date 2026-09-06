@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "U ogolow qalabka kale inay filimo ku ciyaaraan kan",
   "Levelling off": "Simidda waa damsan tahay",
   "Levelling: {level}": "Simidda: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Hadalka wuxuu ka kor qaadaa saamaynta codadka. Sii-deyn 5.1 ama 7.1 ah, tani waxay kor u qaadaysaa kanaalka dhexe — kanaalka uu ku jiro wada-hadalka oo keliya — sidaas darteed muusigga iyo saamaynta ku hareeraysan lama taabto.",
   "Light": "Iftiin",
   "List": "Liis",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Qoraal hoose, laga helay kordhiyeyaal dadweyne oo Stremio maamulo.",
   "Subtitles: {name}": "Qoraalka hoose: {name}",
   "Support": "Taageer",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Isku-dubbarid",
   "Sync now": "Hadda isku waafaji",
   "Sync to the audio": "Ku isku-dubbarid codka",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} ka mid ah {total}",
   "{shown} shown · {active} active": "{shown} la muujiyay · {active} firfircoon",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} cinwaan la daawaday · {favourites} la jecel yahay · {watchlist} liiska daawashada",
   "{used} used": "{used} la isticmaalay",
 }

@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "允许其他设备在这台设备上播放影片",
   "Levelling off": "拉平：关闭",
   "Levelling: {level}": "拉平：{level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "把人声从音效中提出来。在 5.1 或 7.1 版本中，这会提升中置声道——对白所在、别无他物的那个声道——周围的音乐和音效原样保留。",
   "Light": "浅色",
   "List": "列表",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "字幕，通过 Stremio 运营的公共插件获取。",
   "Subtitles: {name}": "字幕：{name}",
   "Support": "支持",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "同步",
   "Sync now": "立即同步",
   "Sync to the audio": "与音频同步",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{total} 中的 {shown}",
   "{shown} shown · {active} active": "显示 {shown} · 活动 {active}",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "已观看 {titles} 部 · 收藏 {favourites} 部 · 待看列表 {watchlist} 部",
   "{used} used": "已用 {used}",
 }

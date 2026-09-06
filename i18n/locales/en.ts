@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Let other devices play films on this one",
   "Levelling off": "Levelling off",
   "Levelling: {level}": "Levelling: {level}",
+  "Library": "Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.",
   "Light": "Light",
   "List": "List",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Subtitles, reached through public addons Stremio operates.",
   "Subtitles: {name}": "Subtitles: {name}",
   "Support": "Support",
+  "Switch list": "Switch list",
   "Sync": "Sync",
   "Sync now": "Sync now",
   "Sync to the audio": "Sync to the audio",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} of {total}",
   "{shown} shown · {active} active": "{shown} shown · {active} active",
   "{size} GiB": "{size} GiB",
+  "{size} px": "{size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist",
   "{used} used": "{used} used",
 }

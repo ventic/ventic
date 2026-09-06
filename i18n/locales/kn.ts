@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "ಇತರ ಸಾಧನಗಳು ಇದರಲ್ಲಿ ಸಿನಿಮಾಗಳನ್ನು ಪ್ಲೇ ಮಾಡಲು ಅನುಮತಿಸಿ",
   "Levelling off": "ಸಮಗೊಳಿಸುವಿಕೆ ಆಫ್",
   "Levelling: {level}": "ಸಮಗೊಳಿಸುವಿಕೆ: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "ಮಾತನ್ನು ಪರಿಣಾಮಗಳ ಮೇಲೆ ಎತ್ತುತ್ತದೆ. 5.1 ಅಥವಾ 7.1 ಬಿಡುಗಡೆಯಲ್ಲಿ ಇದು ಕೇಂದ್ರ ಚಾನೆಲ್ ಅನ್ನು — ಸಂಭಾಷಣೆ ಮಾತ್ರ ಇರುವ ಚಾನೆಲ್ ಅನ್ನು — ಏರಿಸುತ್ತದೆ, ಆದ್ದರಿಂದ ಸುತ್ತಲಿನ ಸಂಗೀತ ಮತ್ತು ಪರಿಣಾಮಗಳು ಹಾಗೆಯೇ ಉಳಿಯುತ್ತವೆ.",
   "Light": "ತಿಳಿ",
   "List": "ಪಟ್ಟಿ",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "ಉಪಶೀರ್ಷಿಕೆಗಳು, Stremio ನಡೆಸುವ ಸಾರ್ವಜನಿಕ ಆ್ಯಡ್‌ಆನ್‌ಗಳ ಮೂಲಕ ಪಡೆದವು.",
   "Subtitles: {name}": "ಉಪಶೀರ್ಷಿಕೆಗಳು: {name}",
   "Support": "ಬೆಂಬಲ",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "ಸಿಂಕ್",
   "Sync now": "ಈಗ ಸಿಂಕ್ ಮಾಡು",
   "Sync to the audio": "ಆಡಿಯೊಗೆ ಸಿಂಕ್ ಮಾಡಿ",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{total} ರಲ್ಲಿ {shown}",
   "{shown} shown · {active} active": "{shown} ತೋರಿಸಲಾಗಿದೆ · {active} ಸಕ್ರಿಯ",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} ಶೀರ್ಷಿಕೆಗಳು ನೋಡಲಾಗಿದೆ · {favourites} ಮೆಚ್ಚಿನವು · ವೀಕ್ಷಣಾ ಪಟ್ಟಿಯಲ್ಲಿ {watchlist}",
   "{used} used": "{used} ಬಳಸಲಾಗಿದೆ",
 }

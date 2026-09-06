@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Salli muiden laitteiden toistaa elokuvia tällä",
   "Levelling off": "Tasaus pois",
   "Levelling: {level}": "Tasaus: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Nostaa puheen tehosteiden yläpuolelle. 5.1- tai 7.1-julkaisussa tämä nostaa keskikanavaa — kanavaa, jolla on vain dialogi — joten ympärillä oleva musiikki ja tehosteet jäävät koskematta.",
   "Light": "Vaalea",
   "List": "Lista",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Tekstitykset, jotka haetaan Stremion ylläpitämien julkisten lisäosien kautta.",
   "Subtitles: {name}": "Tekstitykset: {name}",
   "Support": "Tue",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Synkronointi",
   "Sync now": "Synkronoi nyt",
   "Sync to the audio": "Synkronoi ääneen",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} / {total}",
   "{shown} shown · {active} active": "{shown} näkyvissä · {active} aktiivista",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} nimikettä katsottu · {favourites} suosikkia · {watchlist} katselulistalla",
   "{used} used": "{used} käytössä",
 }

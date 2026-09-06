@@ -10,6 +10,10 @@ const ui = useUiStore()
  * of about five for every `ventic.` key put together. 1920 wide is far more
  * than a backdrop under 28px of blur can show.
  */
+const { locale } = useNuxtApp().$i18n
+const px = (value: number) => $t('{size} px', { size: value })
+const percent = (value: number) => new Intl.NumberFormat(locale.value, { style: 'percent' }).format(value)
+
 const picker = ref<HTMLInputElement | null>(null)
 const tooBig = ref(false)
 
@@ -110,10 +114,10 @@ async function choose(event: Event) {
 
     <settings-section v-if="ui.backdropMode !== 'off'" :title="$t('Blur and tint')">
       <settings-row :label="$t('Blur')">
-        <v-slider v-model="ui.blur" :min="0" :max="80" :step="2" thumb-label />
+        <settings-stepper v-model="ui.blur" :min="0" :max="80" :step="8" :format="px" />
       </settings-row>
       <settings-row :label="$t('Tint')">
-        <v-slider v-model="ui.tint" :min="0.2" :max="1" :step="0.02" thumb-label />
+        <settings-stepper v-model="ui.tint" :min="0.2" :max="1" :step="0.1" :format="percent" />
       </settings-row>
     </settings-section>
   </div>

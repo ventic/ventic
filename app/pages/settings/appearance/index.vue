@@ -8,6 +8,8 @@ import { isGenerated, themes } from '~/theme/themes'
 const settings = useSettingsStore()
 const ui = useUiStore()
 
+const tv = isTv() === true
+
 /**
  * Twenty-eight themes is more than fits on a screen, and nobody is choosing
  * between a dark one and a light one — so the list opens on the kind that is
@@ -133,7 +135,10 @@ const spectrum = `linear-gradient(to right, ${Array.from({ length: 13 }, (_, i) 
       :title="$t('Your colour')"
       :hint="$t('One colour, and Material\'s own generator works out the rest of the palette from it.')"
     >
+      <!-- The one slider left in Settings, and only off a television: a remote
+           can't drive one, and the eight swatches under it are the same colours. -->
       <v-slider
+        v-if="!tv"
         v-model="hue"
         class="spectrum"
         :style="{ '--spectrum': spectrum }"

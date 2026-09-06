@@ -140,7 +140,7 @@ const plugin = readFileSync(new URL('../app/plugins/dpad.client.ts', import.meta
 // other, so nothing but this notices when one of them is renamed. A miss is
 // silent and total: `window.__tvBack` comes back undefined, which reads as "the
 // page didn't handle it", and BACK leaves the app from every screen there is.
-for (const hook of ['__tvBack', '__tvOk']) {
+for (const hook of ['__tvBack', '__tvOk', '__tvHold']) {
   assert.ok(activity.includes(`window.${hook}`), `MainActivity calls ${hook}`)
   assert.ok(plugin.includes(`window.${hook} =`), `and dpad.client.ts still defines it`)
 }

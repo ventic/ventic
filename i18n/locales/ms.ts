@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Benarkan peranti lain memainkan filem pada peranti ini",
   "Levelling off": "Perataan dimatikan",
   "Levelling: {level}": "Perataan: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Mengangkat pertuturan daripada kesan bunyi. Pada keluaran 5.1 atau 7.1 ini menaikkan saluran tengah — saluran yang hanya mengandungi dialog — jadi muzik dan kesan di sekelilingnya kekal tidak tersentuh.",
   "Light": "Cerah",
   "List": "Senarai",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Sari kata, diperoleh melalui tambahan awam yang dikendalikan Stremio.",
   "Subtitles: {name}": "Sari kata: {name}",
   "Support": "Sokongan",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Penyegerakan",
   "Sync now": "Segerakkan sekarang",
   "Sync to the audio": "Segerakkan dengan audio",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} daripada {total}",
   "{shown} shown · {active} active": "{shown} ditunjukkan · {active} aktif",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} tajuk ditonton · {favourites} kegemaran · {watchlist} dalam senarai tontonan",
   "{used} used": "{used} digunakan",
 }

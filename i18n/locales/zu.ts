@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Vumela amanye amadivayisi adlale amafilimu kule",
   "Levelling off": "Ukulinganisa kuvaliwe",
   "Levelling: {level}": "Ukulinganisa: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Kuphakamisa inkulumo ngaphezu kwemiphumela yomsindo. Kokukhishwe nge-5.1 noma nge-7.1 lokhu kuphakamisa isiteshi esimaphakathi — isiteshi lapho kukhona ingxoxo kuphela — ngakho umculo nemiphumela ekuzungezile akuthintwa.",
   "Light": "Okukhanyayo",
   "List": "Uhlu",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Imibhalo engezansi, etholakala ngezengezo zomphakathi eziphethwe yi-Stremio.",
   "Subtitles: {name}": "Imibhalo engezansi: {name}",
   "Support": "Ukwesekwa",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Ukuvumelanisa",
   "Sync now": "Vumelanisa manje",
   "Sync to the audio": "Vumelanisa nomsindo",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} kwangu-{total}",
   "{shown} shown · {active} active": "{shown} kuboniswa · {active} kuyasebenza",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "Izihloko ezingu-{titles} zibukiwe · izintandokazi ezingu-{favourites} · {watchlist} ohlwini lokubuka",
   "{used} used": "{used} kusetshenzisiwe",
 }

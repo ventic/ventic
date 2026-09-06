@@ -42,6 +42,15 @@ pages get remote support for free as long as they follow the rules below.
   This is what makes lazily-mounted content (`v-lazy` rows) reachable at all.
 - **OK** is plain Enter — the browser clicks a focused `<a>`/`<button>` itself.
   Vuetify's list items and chips handle Enter/Space too.
+- **A held OK** is `window.__tvHold()`, which fires a `contextmenu` on whatever
+  has focus — the same event a right-click and a finger held on a card produce,
+  so a card answers all three with one handler (`MediaMenu`). The press itself
+  is MainActivity's to hold back: the WebView clicks a focused link on the
+  key's way **down** (measured on the set: `click` 8ms after `keydown`, 600ms
+  before `keyup`), so an OK the WebView had seen would already have opened the
+  card. The first DOWN is kept, a repeat of it (about half a second in) is the
+  hold, and a release with no repeat replays the kept DOWN — the click lands on
+  release, as a tap's does. A hold nothing claims is swallowed, not clicked.
 - **Back** is `window.__tvBack()`: close the top dialog, else let the page claim
   Escape (the player's menus, then leaving playback), else `router.back()`, else
   return `false`, at which point `MainActivity` backgrounds the task. Three things
@@ -129,8 +138,8 @@ Run `bun run check:dpad` after touching the geometry.
   (`res/drawable-xhdpi/tv_banner.png`, 320×180).
 - `gen/android` is committed, so edits there survive; regenerating the project
   will clobber them, so re-apply the BACK callback and the
-  `handleBackNavigation = false` beside it, the **OK forward**
-  (`dispatchKeyEvent` → `window.__tvOk`), the `VenticScreen` JS interface
+  `handleBackNavigation = false` beside it, the **OK forward and hold**
+  (`dispatchKeyEvent` → `window.__tvOk`, `window.__tvHold`), the `VenticScreen` JS interface
   (fullscreen, orientation, metered network, `tv()`), the **wide viewport**
   settings, `mediaPlaybackRequiresUserGesture = false`, `Downloads.kt` with its
   `onResume`/`onPause`/`onDestroy` hooks, the process kill in `onDestroy`, the

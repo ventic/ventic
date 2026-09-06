@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "മറ്റ് ഉപകരണങ്ങൾ ഇതിൽ സിനിമകൾ പ്ലേ ചെയ്യാൻ അനുവദിക്കുക",
   "Levelling off": "ഒരുപോലെയാക്കൽ ഓഫ്",
   "Levelling: {level}": "ഒരുപോലെയാക്കൽ: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "സംസാരത്തെ ശബ്ദവിന്യാസങ്ങൾക്ക് മുകളിലേക്ക് ഉയർത്തുന്നു. 5.1 അല്ലെങ്കിൽ 7.1 റിലീസിൽ ഇത് സെന്റർ ചാനൽ — സംഭാഷണം മാത്രമുള്ള ചാനൽ — ഉയർത്തുന്നു, അതിനാൽ ചുറ്റുമുള്ള സംഗീതവും ശബ്ദവിന്യാസങ്ങളും തൊടാതെ കിടക്കും.",
   "Light": "ഇളം",
   "List": "പട്ടിക",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "സബ്ടൈറ്റിലുകൾ, Stremio നടത്തുന്ന പൊതു ആഡ്-ഓണുകൾ വഴി ലഭിച്ചവ.",
   "Subtitles: {name}": "സബ്ടൈറ്റിലുകൾ: {name}",
   "Support": "പിന്തുണ",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "സിങ്ക്",
   "Sync now": "ഇപ്പോൾ സമന്വയിപ്പിക്കുക",
   "Sync to the audio": "ഓഡിയോയുമായി സിങ്ക് ചെയ്യുക",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{total}-ൽ {shown}",
   "{shown} shown · {active} active": "{shown} കാണിക്കുന്നു · {active} സജീവം",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} ശീർഷകങ്ങൾ കണ്ടു · {favourites} പ്രിയപ്പെട്ടവ · കാണാനുള്ള പട്ടികയിൽ {watchlist}",
   "{used} used": "{used} ഉപയോഗിച്ചു",
 }

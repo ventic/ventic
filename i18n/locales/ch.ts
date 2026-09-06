@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Sedde i otro device siha para u fanmanhugåndo mubi gi este",
   "Levelling off": "Mapuno' i na'parehu",
   "Levelling: {level}": "Na'parehu: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Ha na'takhilo' i kuentos gi hilo' i efektos. Gi release 5.1 pat 7.1 ha na'takhilo' i kanåt gi talo' — i kanåt ni sumåsaonao ha' i dialogu — pues i musika yan i efektos gi oriya siha ti mapacha.",
   "Light": "Manana",
   "List": "Lista",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Subtitulu, ma chule' ginen public addon ni ha maneha Stremio.",
   "Subtitles: {name}": "Subtitulu siha: {name}",
   "Support": "Ayuda",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Sync",
   "Sync now": "Sync på'go",
   "Sync to the audio": "Sync yan i audio",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} ginen {total}",
   "{shown} shown · {active} active": "{shown} manma'annok · {active} mama'cho'cho'",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} na titulu maegga' · {favourites} na favorite · {watchlist} gi watchlist",
   "{used} used": "{used} ma usa",
 }

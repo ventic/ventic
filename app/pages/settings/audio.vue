@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Leveller } from '~/utils/audio'
-import { mdiAccountVoice, mdiVolumeHigh } from '@mdi/js'
+import { mdiVolumeHigh } from '@mdi/js'
 
 const settings = useSettingsStore()
 
@@ -13,7 +13,7 @@ const LEVEL_HINT: Record<Leveller, () => string> = {
 }
 
 const levelHint = computed(() => LEVEL_HINT[settings.audio.normalize]())
-const boost = computed(() => settings.audio.dialogue ? `+${settings.audio.dialogue} dB` : $t('Off'))
+const boost = (value: number) => value ? `+${value} dB` : $t('Off')
 </script>
 
 <template>
@@ -32,12 +32,9 @@ const boost = computed(() => settings.audio.dialogue ? `+${settings.audio.dialog
       :title="$t('Dialogue')"
       :hint="$t('Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.')"
     >
-      <div>
-        <div class="text-label-medium flex items-center gap-2 opacity-70">
-          <v-icon :icon="mdiAccountVoice" size="18" /> {{ $t('Boost') }} · {{ boost }}
-        </div>
-        <v-slider v-model="settings.audio.dialogue" :min="0" :max="MAX_DIALOGUE" :step="1" thumb-label />
-      </div>
+      <settings-row :label="$t('Boost')">
+        <settings-stepper v-model="settings.audio.dialogue" :min="0" :max="MAX_DIALOGUE" :step="1" :format="boost" />
+      </settings-row>
       <p class="text-body-medium opacity-70">
         {{ $t('A stereo release has no separate dialogue channel, so there the speech frequencies are lifted instead — which helps, but it lifts whatever else is up there with them.') }}
       </p>

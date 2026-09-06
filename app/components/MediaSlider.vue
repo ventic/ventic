@@ -16,18 +16,18 @@ const { items, pending, done, loadMore } = useMediaFeed(() => props.request)
       :media="media"
       :detail="ui.isDetailed"
       class="shrink-0"
-      :style="{ width: `${ui.cardWidth}px` }"
+      :style="{ width: ui.rowCard }"
     />
     <div
       v-for="n in pending && !items.length ? 8 : 0"
       :key="`skeleton-${n}`"
       class="animate-pulse aspect-2/3 shrink-0 rounded-xl bg-surface-container/60"
-      :style="{ width: `${ui.cardWidth}px` }"
+      :style="{ width: ui.rowCard }"
     />
     <div
       v-if="pending && items.length"
       class="grid shrink-0 place-items-center"
-      :style="{ width: `${ui.cardWidth}px` }"
+      :style="{ width: ui.rowCard }"
     >
       <v-progress-circular />
     </div>

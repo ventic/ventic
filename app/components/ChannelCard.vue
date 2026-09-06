@@ -39,6 +39,7 @@ const reserve = computed(() => `${ui.cardWidth}px ${Math.round(ui.cardWidth * 0.
     @mouseleave="hover = false"
     @focus="hover = true"
     @blur="hover = false"
+    @contextmenu.prevent="library.toggleChannelFavourite(channel.name)"
   >
     <div class="relative aspect-video overflow-hidden rounded-xl bg-surface-container">
       <!-- `contain`: a channel logo is any shape at all, and cropping one is
@@ -70,7 +71,9 @@ const reserve = computed(() => `${ui.cardWidth}px ${Math.round(ui.cardWidth * 0.
       >
         <!-- tabindex="-1", exactly as on MediaCard: this sits on top of the
              card, so a d-pad crossing the grid would step into it instead of
-             the next channel. The card is the target; this is a pointer extra. -->
+             the next channel. The card is the target; this is a pointer extra.
+             A remote and a finger star a channel by holding it instead — the
+             `contextmenu` above, which the heart badge answers. -->
         <div v-if="hover" class="absolute inset-0 flex justify-end bg-gradient-to-b from-black/70 to-transparent">
           <v-btn
             icon

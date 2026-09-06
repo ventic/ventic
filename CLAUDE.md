@@ -159,7 +159,7 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   `check:library`, `check:player`, `check:swipe`, `check:boot`,
   `check:perf`, `check:android-downloads`, `check:updates`, `check:supporters`,
   `check:audio`, `check:people`, `check:cast`, `check:iptv`, `check:i18n`,
-  `check:macos`).
+  `check:macos`, `check:steps`).
   Add to those rather than pulling in a test framework. `bun run check` runs
   every one of them — it reads the names out of package.json rather than holding
   a list, so a check added today is in that sweep today. `bun run check:types` is
@@ -600,6 +600,35 @@ be published:
   torrent client and stay useful with zero sources. Don't gate them behind one.
 
 `bun run check:torrents` covers the empty-list, fan-out and dedupe behaviour.
+
+- **A phone has no sidebar; it has a bar along the bottom.** Below `md` the
+  default layout mounts `AppNav.vue` instead of `AppDrawer.vue`: Home, Movies,
+  TV Shows, Library (the three lists share the stop, and `LibraryBrowser`'s
+  heading is the switcher between them) and More, a sheet holding Anime, Live
+  TV, Downloads, Settings and Account. `/settings` is then a *page* — the list
+  of sections, which is what a phone's settings opens on — and only redirects
+  to the first section where there is a sidebar to list them. The transfers and
+  settings shells keep their own section drawers, so `ui.drawer` still exists
+  and the edge swipe only fires where one of those is mounted.
+- **No slider a remote has to reach.** Every value in Settings that was a
+  `v-slider` is a `settings-stepper` — less, the value, more — over a range or
+  a short list of stops (`app/utils/steps.ts`), because a 0.02-step slider is
+  forty presses to cross and up/down leave it changed. The seek bar in the
+  player stays (left/right on it is the only way to scrub), and the colour
+  spectrum stays for a mouse but hides itself on a television, as does the
+  poster-size slider on the browse bar. `bun run check:steps` holds both.
+- **Hold a card for what hover used to offer.** The favourite, watchlist and
+  watched buttons on a card are `tabindex="-1"` pointer extras, so a finger and
+  a remote never reached them. `MediaMenu.vue` is those four as a sheet, mounted
+  once in the layout and opened by one `contextmenu` event on the card: a
+  right-click, a finger held on it (the WebView fires it for a long press), or
+  a held OK. That last one is MainActivity's, and it has to *keep the press
+  back*: the WebView clicks a focused link on the key's way **down** (measured:
+  `click` eight milliseconds after `keydown`, half a second before `keyup`), so
+  the first DOWN is swallowed, a repeat of it is the hold (`window.__tvHold`),
+  and a release with no repeat replays the kept DOWN — a click on release, as a
+  tap has always been. `check:dpad` holds that hook's name across Kotlin and
+  the plugin like the other two.
 
 ## Every UI change is also a TV change
 

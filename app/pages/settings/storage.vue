@@ -87,6 +87,10 @@ async function prune() {
 }
 
 /** GiB on the slider, bytes in the store. 0 stays 0 — that's "use the disk". */
+/** The budgets on offer, in GiB; 0 is "whatever the drive has spare". */
+const CAPS = [0, 5, 10, 20, 50, 100, 200, 500]
+const cap = (value: number) => value > 0 ? $t('{size} GiB', { size: value }) : $t('Whatever the disk allows')
+
 const capGb = computed({
   get: () => Math.round(downloads.cap / 1024 ** 3),
   set: (value: number) => (downloads.cap = value * 1024 ** 3),
@@ -229,10 +233,7 @@ async function openFolder() {
       :title="$t('Cache limit')"
       :hint="$t('Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.')"
     >
-      <div class="text-label-medium opacity-70">
-        {{ capGb > 0 ? $t('{size} GiB', { size: capGb }) : $t('Whatever the disk allows') }}
-      </div>
-      <v-slider v-model="capGb" :min="0" :max="500" :step="5" thumb-label />
+      <settings-stepper v-model="capGb" :values="CAPS" :format="cap" />
 
       <div class="flex flex-col gap-1">
         <v-progress-linear :model-value="usedShare" />

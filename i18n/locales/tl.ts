@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Payagan ang ibang device na magpatugtog ng mga pelikula rito",
   "Levelling off": "Naka-off ang pagpapantay",
   "Levelling: {level}": "Pagpapantay: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Iniaangat ang salita mula sa mga epekto. Sa 5.1 o 7.1 na release, itinataas nito ang center channel — ang channel na tanging diyalogo lang ang laman — kaya hindi nagagalaw ang musika at mga epekto sa paligid.",
   "Light": "Maliwanag",
   "List": "Listahan",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Mga subtitle, naaabot sa pamamagitan ng mga pampublikong addon na pinapatakbo ng Stremio.",
   "Subtitles: {name}": "Mga subtitle: {name}",
   "Support": "Suporta",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Sync",
   "Sync now": "I-sync ngayon",
   "Sync to the audio": "I-sync sa audio",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} sa {total}",
   "{shown} shown · {active} active": "{shown} ang ipinapakita · {active} ang aktibo",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} pamagat ang napanood · {favourites} paborito · {watchlist} sa watchlist",
   "{used} used": "{used} ang nagamit",
 }

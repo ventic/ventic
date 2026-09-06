@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Να επιτρέπεται σε άλλες συσκευές να παίζουν ταινίες σε αυτήν",
   "Levelling off": "Εξισορρόπηση ανενεργή",
   "Levelling: {level}": "Εξισορρόπηση: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Βγάζει την ομιλία πάνω από τα εφέ. Σε έκδοση 5.1 ή 7.1 ανεβάζει το κεντρικό κανάλι — το κανάλι όπου βρίσκεται μόνο ο διάλογος — ώστε η μουσική και τα εφέ γύρω του να μένουν ανέπαφα.",
   "Light": "Ανοιχτό",
   "List": "Λίστα",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Υπότιτλοι, μέσω δημόσιων προσθέτων που λειτουργεί το Stremio.",
   "Subtitles: {name}": "Υπότιτλοι: {name}",
   "Support": "Υποστήριξη",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Συγχρονισμός",
   "Sync now": "Συγχρονισμός τώρα",
   "Sync to the audio": "Συγχρονισμός με τον ήχο",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} από {total}",
   "{shown} shown · {active} active": "{shown} εμφανίζονται · {active} ενεργά",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} τίτλοι προβλήθηκαν · {favourites} αγαπημένα · {watchlist} στη λίστα παρακολούθησης",
   "{used} used": "{used} σε χρήση",
 }

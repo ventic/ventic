@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Aotren trevnadoù all da lenn filmoù war hemañ",
   "Levelling off": "Kempouezañ lazhet",
   "Levelling: {level}": "Kempouezañ: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Sevel a ra ar gomz a-us d'an efedoù. En ur skignadenn 5.1 pe 7.1 e vez kreñvaet ar c'hanol kreiz — ar c'hanol ma'z emañ an dialog hepken warnañ — ha n'eo ket tizhet ar sonerezh nag an efedoù en-dro dezhañ.",
   "Light": "Sklaer",
   "List": "Roll",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Istitloù, tizhet dre astennoù foran renet gant Stremio.",
   "Subtitles: {name}": "Istitloù: {name}",
   "Support": "Skoazell",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Sinkronañ",
   "Sync now": "Goubredañ bremañ",
   "Sync to the audio": "Sinkronañ gant an aodio",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} war {total}",
   "{shown} shown · {active} active": "{shown} diskwelet · {active} oberiant",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} titl sellet · {favourites} pennroll · {watchlist} er roll sellet",
   "{used} used": "{used} implijet",
 }

@@ -2,8 +2,8 @@
  * Swipe in from the left edge to open the navigation drawer — the gesture every
  * Android app with a drawer has.
  *
- * All three drawers (browse, transfers, settings) are the same `ui.drawer`
- * flag, so one listener here covers the app rather than three copies of it.
+ * Both section drawers (transfers, settings) are the same `ui.drawer` flag, so
+ * one listener here covers the app rather than two copies of it.
  * Closing needs nothing: Vuetify's own touch handling takes over once the
  * drawer is up, and the scrim closes it on a tap.
  *
@@ -23,7 +23,11 @@ export default defineNuxtPlugin(() => {
       return
     x0 = t.clientX
     y0 = t.clientY
-    live = !ui.drawer && inSwipeZone(x0)
+    // Only where there is a drawer to open. The browse pages lost theirs to the
+    // bar along the bottom, and setting the flag with nothing listening leaves
+    // it set for the next screen that does — Settings would open with its
+    // section list already over it.
+    live = !ui.drawer && inSwipeZone(x0) && !!document.querySelector('.v-navigation-drawer--temporary')
   }, { passive: true })
 
   document.addEventListener('touchmove', e => {

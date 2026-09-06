@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Ļaut citām ierīcēm atskaņot filmas šajā",
   "Levelling off": "Izlīdzināšana izslēgta",
   "Levelling: {level}": "Izlīdzināšana: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Izceļ runu no efektiem. 5.1 vai 7.1 izlaidumā tas paceļ centrālo kanālu — kanālu, kurā ir tikai dialogs —, tāpēc apkārtējā mūzika un efekti paliek neskarti.",
   "Light": "Gaišs",
   "List": "Saraksts",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Subtitri, iegūti caur publiskiem papildinājumiem, ko uztur Stremio.",
   "Subtitles: {name}": "Subtitri: {name}",
   "Support": "Atbalstīt",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Sinhronizācija",
   "Sync now": "Sinhronizēt tagad",
   "Sync to the audio": "Sinhronizēt ar audio",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} no {total}",
   "{shown} shown · {active} active": "Rāda {shown} · aktīvi {active}",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} nosaukumi skatīti · {favourites} izlasē · {watchlist} skatīšanās sarakstā",
   "{used} used": "{used} izmantots",
 }

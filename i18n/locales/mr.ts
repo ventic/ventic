@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "इतर उपकरणांना यावर चित्रपट चालवू द्या",
   "Levelling off": "सारखं करणं बंद",
   "Levelling: {level}": "सारखं करणं: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "बोलणं ध्वनिपरिणामांच्या वर उचलतं. 5.1 किंवा 7.1 प्रतीत हे मध्यवर्ती चॅनेल — ज्यावर फक्त संवादच असतो तो चॅनेल — वाढवतं, त्यामुळे आजूबाजूचं संगीत आणि परिणाम तसेच राहतात.",
   "Light": "फिकट",
   "List": "यादी",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "उपशीर्षके, Stremio चालवत असलेल्या सार्वजनिक अ‍ॅडऑनद्वारे मिळवलेली.",
   "Subtitles: {name}": "उपशीर्षके: {name}",
   "Support": "पाठिंबा",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "समक्रमण",
   "Sync now": "आता सिंक करा",
   "Sync to the audio": "ऑडिओशी समक्रमित करा",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{total} पैकी {shown}",
   "{shown} shown · {active} active": "{shown} दाखवले · {active} सक्रिय",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} शीर्षके पाहिली · {favourites} आवडते · पाहण्याच्या यादीत {watchlist}",
   "{used} used": "{used} वापरले",
 }

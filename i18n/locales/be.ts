@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Дазволіць іншым прыладам прайграваць фільмы на гэтай",
   "Levelling off": "Выраўноўванне выкл",
   "Levelling: {level}": "Выраўноўванне: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Падымае маўленне над эфектамі. У версіі 5.1 ці 7.1 гэта ўзмацняе цэнтральны канал — канал, на якім ёсць толькі дыялог, — таму музыка і эфекты вакол застаюцца некранутымі.",
   "Light": "Светлая",
   "List": "Спіс",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Субтытры, атрыманыя праз публічныя дадаткі, якімі кіруе Stremio.",
   "Subtitles: {name}": "Субтытры: {name}",
   "Support": "Падтрымка",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Сінхранізацыя",
   "Sync now": "Сінхранізаваць зараз",
   "Sync to the audio": "Сінхранізаваць з гукам",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} з {total}",
   "{shown} shown · {active} active": "{shown} паказана · {active} актыўных",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} загалоўкаў прагледжана · {favourites} абраных · {watchlist} у спісе прагляду",
   "{used} used": "{used} выкарыстана",
 }

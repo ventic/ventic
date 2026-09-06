@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "다른 기기가 이 기기에서 영화를 재생하도록 허용",
   "Levelling off": "음량 맞추기 끄기",
   "Levelling: {level}": "음량 맞추기: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "대사를 효과음 위로 끌어올립니다. 5.1이나 7.1 릴리스에서는 센터 채널 — 대사만 담긴 채널 — 을 올리므로 주변 음악과 효과음은 그대로 남습니다.",
   "Light": "밝게",
   "List": "목록",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Stremio가 운영하는 공개 애드온을 통해 받은 자막입니다.",
   "Subtitles: {name}": "자막: {name}",
   "Support": "후원",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "동기화",
   "Sync now": "지금 동기화",
   "Sync to the audio": "오디오에 맞춰 동기화",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{total}개 중 {shown}개",
   "{shown} shown · {active} active": "{shown}개 표시 · {active}개 활성",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles}편 시청 · 즐겨찾기 {favourites}개 · 볼 목록 {watchlist}개",
   "{used} used": "{used} 사용 중",
 }

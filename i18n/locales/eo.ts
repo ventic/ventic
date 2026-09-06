@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Permesi al aliaj aparatoj ludi filmojn sur ĉi tiu",
   "Levelling off": "Egaligo malŝaltita",
   "Levelling: {level}": "Egaligo: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Levas la parolon el la efektoj. Ĉe eldono 5.1 aŭ 7.1 tio levas la centran kanalon — la kanalon, sur kiu estas nur la dialogo — do la muziko kaj la efektoj ĉirkaŭe restas netuŝitaj.",
   "Light": "Hela",
   "List": "Listo",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Subtekstoj, atingataj per publikaj kromprogramoj funkciigataj de Stremio.",
   "Subtitles: {name}": "Subtekstoj: {name}",
   "Support": "Subteno",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Sinkronigo",
   "Sync now": "Sinkronigi nun",
   "Sync to the audio": "Sinkronigi kun la sono",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} el {total}",
   "{shown} shown · {active} active": "{shown} montrataj · {active} aktivaj",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} titoloj spektitaj · {favourites} preferaĵoj · {watchlist} en la rigardolisto",
   "{used} used": "{used} uzata",
 }

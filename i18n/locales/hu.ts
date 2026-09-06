@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Más eszközök filmeket játszhassanak le ezen",
   "Levelling off": "Kiegyenlítés kikapcsolva",
   "Levelling: {level}": "Kiegyenlítés: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Kiemeli a beszédet a hangeffektek közül. Egy 5.1-es vagy 7.1-es kiadásnál a középső csatornát emeli meg — azt a csatornát, amelyen csak a párbeszéd van —, így a körülötte lévő zene és effektek érintetlenek maradnak.",
   "Light": "Világos",
   "List": "Lista",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Feliratok, a Stremio által üzemeltetett nyilvános kiegészítőkön keresztül.",
   "Subtitles: {name}": "Feliratok: {name}",
   "Support": "Támogatás",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Szinkronizálás",
   "Sync now": "Szinkronizálás most",
   "Sync to the audio": "Szinkronizálás a hanghoz",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} / {total}",
   "{shown} shown · {active} active": "{shown} látható · {active} aktív",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} cím megnézve · {favourites} kedvenc · {watchlist} a megnézendőkön",
   "{used} used": "{used} használatban",
 }

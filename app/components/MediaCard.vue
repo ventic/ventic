@@ -69,6 +69,7 @@ const reserve = computed(() => `${ui.cardWidth}px ${Math.round(ui.cardWidth * 1.
     @mouseleave="hover = false"
     @focus="hover = true; ui.hover(media)"
     @blur="hover = false"
+    @contextmenu.prevent="ui.menuFor = media"
   >
     <!-- The frame: it owns the aspect ratio and clips the zoom to the rounded
          corners. Deliberately plain — no containment and no transform, so the
@@ -105,7 +106,10 @@ const reserve = computed(() => `${ui.cardWidth}px ${Math.round(ui.cardWidth * 1.
       >
         <!-- tabindex="-1" throughout: these sit on top of the card, so a d-pad
              moving across the grid would step into them instead of the next
-             card. The card itself is the target; these are pointer extras. -->
+             card. The card itself is the target; these are pointer extras. A
+             remote and a finger get the same four through the sheet instead —
+             `contextmenu` above, which is a right-click, a long press, or a
+             held OK (see MediaMenu). -->
         <div v-if="hover" class="absolute inset-0 flex flex-col justify-between bg-gradient-to-t from-black/90 via-black/25 to-black/45">
           <div class="flex justify-end">
             <v-btn icon size="small" variant="text" color="white" tabindex="-1" @click.stop.prevent="library.toggleFavourite(media)">
@@ -138,7 +142,7 @@ const reserve = computed(() => `${ui.cardWidth}px ${Math.round(ui.cardWidth * 1.
               </div>
             </div>
             <v-spacer v-else />
-            <v-btn icon size="small" variant="text" color="white" tabindex="-1" @click.stop.prevent>
+            <v-btn icon size="small" variant="text" color="white" tabindex="-1" @click.stop.prevent="ui.menuFor = media">
               <v-icon :icon="mdiDotsVertical" size="18" />
             </v-btn>
           </div>

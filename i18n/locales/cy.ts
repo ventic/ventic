@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Gadael i ddyfeisiau eraill chwarae ffilmiau ar hon",
   "Levelling off": "Gwastatáu i ffwrdd",
   "Levelling: {level}": "Gwastatáu: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Yn codi'r lleferydd allan o'r effeithiau. Ar fersiwn 5.1 neu 7.1 mae'n codi'r sianel ganol — y sianel lle mae'r ddeialog a dim byd arall — felly ni chyffyrddir â'r gerddoriaeth na'r effeithiau o'i chwmpas.",
   "Light": "Golau",
   "List": "Rhestr",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Isdeitlau, a gyrhaeddir drwy ategion cyhoeddus y mae Stremio'n eu rhedeg.",
   "Subtitles: {name}": "Isdeitlau: {name}",
   "Support": "Cefnogi",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Cydweddu",
   "Sync now": "Cydweddu nawr",
   "Sync to the audio": "Cydamseru â'r sain",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} o {total}",
   "{shown} shown · {active} active": "{shown} yn dangos · {active} yn weithredol",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} teitl wedi'u gwylio · {favourites} ffefryn · {watchlist} ar y rhestr wylio",
   "{used} used": "{used} wedi'i ddefnyddio",
 }

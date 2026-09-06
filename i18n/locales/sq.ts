@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Lejo pajisjet e tjera të luajnë filma në këtë",
   "Levelling off": "Njësimi i çaktivizuar",
   "Levelling: {level}": "Njësimi: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "E nxjerr të folurin mbi efektet. Në një version 5.1 ose 7.1 kjo ngre kanalin qendror — kanalin ku ndodhet vetëm dialogu — kështu që muzika dhe efektet përreth mbeten të paprekura.",
   "Light": "E çelët",
   "List": "Listë",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Titra, të marra përmes shtesave publike që i mban Stremio.",
   "Subtitles: {name}": "Titrat: {name}",
   "Support": "Mbështetje",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Sinkronizimi",
   "Sync now": "Sinkronizo tani",
   "Sync to the audio": "Sinkronizo me audion",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} nga {total}",
   "{shown} shown · {active} active": "{shown} të shfaqura · {active} aktive",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} tituj të parë · {favourites} të preferuar · {watchlist} në listën për shikim",
   "{used} used": "{used} të përdorura",
 }

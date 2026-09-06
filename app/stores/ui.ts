@@ -1,6 +1,6 @@
 import type { BackdropMode } from '~/theme/presets'
 import type { Media } from '~/utils/tmdb'
-import { mdiFormatListBulleted, mdiViewGrid } from '@mdi/js'
+import { mdiBookmarkOutline, mdiFormatListBulleted, mdiHeartOutline, mdiHistory, mdiViewGrid } from '@mdi/js'
 
 // 'grid-detail' is the only grid now — kept as the value (not renamed to 'grid')
 // so `isDetailed` still reads true for it and the home sliders stay detailed.
@@ -24,6 +24,19 @@ export const LAYOUTS: { value: Layout, title: () => string, icon: string }[] = [
   { value: 'list', title: () => $t('List'), icon: mdiFormatListBulleted },
 ]
 
+/**
+ * The three lists the library is made of, in the order the sidebar shows
+ * them. A table because three places list the same three — the sidebar, the
+ * phone's Library tab, and the switcher on the pages themselves — and `value`
+ * is both the route and its name. `title` is a function for the same reason
+ * SECTIONS' is (see the settings store).
+ */
+export const LIBRARY_LISTS: { value: string, title: () => string, icon: string }[] = [
+  { value: 'favourites', title: () => $t('Favourites'), icon: mdiHeartOutline },
+  { value: 'watchlist', title: () => $t('Watchlist'), icon: mdiBookmarkOutline },
+  { value: 'history', title: () => $t('History'), icon: mdiHistory },
+]
+
 // One layout/size preference shared by every browse page instead of
 // per-page copies. Split it if the pages ever need to disagree.
 export const useUiStore = defineStore('ui', () => {
@@ -40,8 +53,16 @@ export const useUiStore = defineStore('ui', () => {
   const castWidth = useLocalStorage('ventic.castWidth', 140)
   /** Desktop: collapsed icon-only sidebar. */
   const rail = useLocalStorage('ventic.rail', false)
-  /** Mobile: the sidebar is an overlay, so it needs an open/closed state. */
+  /** Mobile: the section drawers (transfers, settings) are overlays, so they need an open/closed state. */
   const drawer = ref(false)
+
+  /**
+   * The title whose action sheet is up — see MediaMenu. A card sets it on a
+   * right-click, on a finger held on it, and on a held OK from a remote; the
+   * sheet puts it back to null. One sheet for the whole app rather than one
+   * per card, because a grid holds hundreds of cards.
+   */
+  const menuFor = ref<Media | null>(null)
 
   /**
    * A source URL that arrived on a `ventic://` link and is waiting to be
@@ -111,6 +132,14 @@ export const useUiStore = defineStore('ui', () => {
   // takes h632 rather than being upscaled — which is the whole point of enlarging it.
   const profileSize = computed(() => castWidth.value * pixelRatio.value > 185 ? 'h632' as const : 'w185' as const)
 
+  /**
+   * A card's width in a row: the poster size, capped at three to a phone's
+   * width — the same floor MediaLayout puts under its grid, so a row and a
+   * grid show the same posters at the same size on the same phone. Wider than
+   * three posters, it is the poster size unchanged.
+   */
+  const rowCard = computed(() => `min(${cardWidth.value}px, 30vw)`)
+
   const isGrid = computed(() => layout.value.startsWith('grid'))
   const isDetailed = computed(() => layout.value.endsWith('detail'))
 
@@ -176,5 +205,5 @@ export const useUiStore = defineStore('ui', () => {
   // Sweeping the cursor across a grid would otherwise queue a crossfade per card.
   const preview = useDebounceFn(hover, 120)
 
-  return { layout, cardWidth, castWidth, posterSize, profileSize, rail, drawer, pendingSource, blur, tint, backdropMode, backdropImage, backdropFollowsHover, artOverCustom, shownArt, selected, art, backdrop, isGrid, isDetailed, select, ambient, release, hover, preview }
+  return { layout, cardWidth, castWidth, rowCard, posterSize, profileSize, rail, drawer, menuFor, pendingSource, blur, tint, backdropMode, backdropImage, backdropFollowsHover, artOverCustom, shownArt, selected, art, backdrop, isGrid, isDetailed, select, ambient, release, hover, preview }
 })

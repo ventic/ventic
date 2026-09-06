@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Cho phép thiết bị khác phát phim trên thiết bị này",
   "Levelling off": "Tắt san âm lượng",
   "Levelling: {level}": "San âm lượng: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Nhấc lời thoại lên trên hiệu ứng. Với bản 5.1 hoặc 7.1, thao tác này nâng kênh trung tâm — kênh chỉ chứa lời thoại — nên nhạc và hiệu ứng xung quanh vẫn nguyên vẹn.",
   "Light": "Sáng",
   "List": "Danh sách",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Phụ đề, lấy qua các tiện ích công khai do Stremio vận hành.",
   "Subtitles: {name}": "Phụ đề: {name}",
   "Support": "Hỗ trợ",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Đồng bộ",
   "Sync now": "Đồng bộ ngay",
   "Sync to the audio": "Đồng bộ với âm thanh",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} trong {total}",
   "{shown} shown · {active} active": "hiện {shown} · {active} đang hoạt động",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "đã xem {titles} tựa · {favourites} yêu thích · {watchlist} trong danh sách xem",
   "{used} used": "đã dùng {used}",
 }

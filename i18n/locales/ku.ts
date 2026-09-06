@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Bihêle amûrên din li ser vê fîlman lê bidin",
   "Levelling off": "Hevsengkirin girtî",
   "Levelling: {level}": "Hevsengkirin: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Axaftinê ji nav efektan derdixe. Di weşana 5.1 an 7.1 de ev kanala navîn bilind dike — kanala ku tenê diyalog lê ye — loma muzîk û efektên li dora wê nayên destlêdan.",
   "Light": "Ronî",
   "List": "Lîste",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Jêrnivîs, bi navgîniya pêvekên gelemperî yên ku Stremio dimeşîne hatine wergirtin.",
   "Subtitles: {name}": "Jêrnivîs: {name}",
   "Support": "Piştgirî",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Hevdemkirin",
   "Sync now": "Niha hevdem bike",
   "Sync to the audio": "Bi dengê re hevdem bike",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} ji {total}",
   "{shown} shown · {active} active": "{shown} tên nîşandan · {active} çalak",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} sernav hatine temaşekirin · {favourites} bijare · {watchlist} di lîsteya temaşeyê de",
   "{used} used": "{used} bikaranî",
 }

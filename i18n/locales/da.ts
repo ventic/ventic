@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Lad andre enheder afspille film på denne",
   "Levelling off": "Udjævning fra",
   "Levelling: {level}": "Udjævning: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Løfter talen ud af effekterne. På en 5.1- eller 7.1-udgivelse hæves centerkanalen — kanalen, hvor dialogen er og intet andet — så musikken og effekterne omkring den er urørte.",
   "Light": "Lyst",
   "List": "Liste",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Undertekster, hentet gennem offentlige tilføjelser, som Stremio driver.",
   "Subtitles: {name}": "Undertekster: {name}",
   "Support": "Støt",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Synkronisering",
   "Sync now": "Synkroniser nu",
   "Sync to the audio": "Synkronisér med lyden",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} af {total}",
   "{shown} shown · {active} active": "{shown} vist · {active} aktive",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} titler set · {favourites} favoritter · {watchlist} på ønskelisten",
   "{used} used": "{used} brugt",
 }

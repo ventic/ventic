@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "වෙනත් උපාංගවලට මෙහි චිත්‍රපට වාදනය කිරීමට ඉඩ දෙන්න",
   "Levelling off": "සමාන කිරීම නිවා ඇත",
   "Levelling: {level}": "සමාන කිරීම: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "කථනය ශබ්ද ප්‍රයෝගවලට ඉහළින් ඔසවයි. 5.1 හෝ 7.1 නිකුතුවක මෙය මධ්‍යම නාලිකාව — දෙබස් පමණක් ඇති නාලිකාව — ඉහළ නංවයි, එබැවින් වටා ඇති සංගීතය සහ ප්‍රයෝග ස්පර්ශ නොවේ.",
   "Light": "ලා",
   "List": "ලැයිස්තුව",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "උපසිරැසි, Stremio විසින් පවත්වාගෙන යන පොදු ඇඩෝන හරහා ලබාගත්.",
   "Subtitles: {name}": "උපසිරැසි: {name}",
   "Support": "සහාය",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "සමමුහුර්තකරණය",
   "Sync now": "දැන් සමමුහුර්ත කරන්න",
   "Sync to the audio": "ශ්‍රව්‍යයට සමමුහුර්ත කරන්න",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{total} කින් {shown}",
   "{shown} shown · {active} active": "{shown} පෙන්වයි · {active} සක්‍රියයි",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "මාතෘකා {titles}ක් නරඹා ඇත · ප්‍රියතම {favourites}ක් · නැරඹීමේ ලැයිස්තුවේ {watchlist}ක්",
   "{used} used": "{used} භාවිතයි",
 }

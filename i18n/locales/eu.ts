@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Utzi beste gailuei filmak honetan erreproduzitzen",
   "Levelling off": "Berdintzea itzalita",
   "Levelling: {level}": "Berdintzea: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Hizketa efektuen gainetik ateratzen du. 5.1 edo 7.1 argitalpen batean erdiko kanala igotzen du — elkarrizketa bakarrik daukan kanala —, beraz inguruko musika eta efektuak ukitu gabe geratzen dira.",
   "Light": "Argia",
   "List": "Zerrenda",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Azpitituluak, Stremiok kudeatzen dituen gehigarri publikoen bidez lortuak.",
   "Subtitles: {name}": "Azpitituluak: {name}",
   "Support": "Laguntza",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Sinkronizazioa",
   "Sync now": "Sinkronizatu orain",
   "Sync to the audio": "Sinkronizatu audioarekin",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{total}(e)tik {shown}",
   "{shown} shown · {active} active": "{shown} erakutsita · {active} aktibo",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} izenburu ikusita · {favourites} gogoko · {watchlist} ikusteko zerrendan",
   "{used} used": "{used} erabilita",
 }

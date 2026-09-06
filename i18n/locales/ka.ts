@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "სხვა მოწყობილობებს მიეცით ამაზე ფილმების დაკვრის უფლება",
   "Levelling off": "გათანაბრება გამორთულია",
   "Levelling: {level}": "გათანაბრება: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "მეტყველებას ეფექტებიდან ამოჰყავს. 5.1 ან 7.1 გამოშვებაზე ეს ცენტრალურ არხს აძლიერებს — არხს, რომელზეც მხოლოდ დიალოგია — ამიტომ ირგვლივ მუსიკა და ეფექტები ხელუხლებელი რჩება.",
   "Light": "ღია",
   "List": "სია",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "სუბტიტრები, მიღებული Stremio-ს მიერ მართული საჯარო დამატებებით.",
   "Subtitles: {name}": "სუბტიტრები: {name}",
   "Support": "მხარდაჭერა",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "სინქრონიზაცია",
   "Sync now": "სინქრონიზაცია ახლა",
   "Sync to the audio": "ხმაზე სინქრონიზაცია",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} / {total}",
   "{shown} shown · {active} active": "{shown} ნაჩვენები · {active} აქტიური",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} სათაური ნანახი · {favourites} რჩეული · {watchlist} სანახავ სიაში",
   "{used} used": "{used} გამოყენებული",
 }

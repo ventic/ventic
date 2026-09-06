@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { mdiArrowUp, mdiCast, mdiRefresh, mdiStop, mdiTrayArrowDown } from '@mdi/js'
+import { mdiCast, mdiRefresh, mdiStop } from '@mdi/js'
 
 const settings = useSettingsStore()
 const downloads = useDownloadsStore()
@@ -54,6 +54,13 @@ async function stopSharing() {
  */
 const canMeter = meteredNetwork() !== null
 
+/**
+ * The limits on offer. Stops rather than a range: nobody wants 3.5 MiB/s, and
+ * a hundred half-megabyte steps is what made this a slider a remote couldn't
+ * cross. A value saved by that slider starts from the nearest stop.
+ */
+const LIMITS = [0, 0.5, 1, 2, 5, 10, 20, 50]
+
 /** MiB/s, matching what the engine reports and the downloads drawer shows. */
 function label(value: number) {
   return value > 0 ? $t('{rate} MiB/s', { rate: value }) : $t('Automatic')
@@ -66,19 +73,12 @@ function label(value: number) {
       :title="$t('Speed limits')"
       :hint="$t('Applied to peer traffic across every torrent. Zero hands the decision back to the app, which leaves downloads unlimited and works the seeding ceiling out from the fastest upload this connection has managed.')"
     >
-      <div>
-        <div class="text-label-medium flex items-center gap-2 opacity-70">
-          <v-icon :icon="mdiTrayArrowDown" size="18" /> {{ $t('Download') }} · {{ label(settings.downLimit) }}
-        </div>
-        <v-slider v-model="settings.downLimit" :min="0" :max="50" :step="0.5" thumb-label />
-      </div>
-
-      <div>
-        <div class="text-label-medium flex items-center gap-2 opacity-70">
-          <v-icon :icon="mdiArrowUp" size="18" /> {{ $t('Upload') }} · {{ label(settings.upLimit) }}
-        </div>
-        <v-slider v-model="settings.upLimit" :min="0" :max="50" :step="0.5" thumb-label />
-      </div>
+      <settings-row :label="$t('Download')">
+        <settings-stepper v-model="settings.downLimit" :values="LIMITS" :format="label" />
+      </settings-row>
+      <settings-row :label="$t('Upload')">
+        <settings-stepper v-model="settings.upLimit" :values="LIMITS" :format="label" />
+      </settings-row>
 
       <p class="text-body-small opacity-70">
         {{ $t('A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.') }}

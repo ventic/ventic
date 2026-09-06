@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Leisti kitiems įrenginiams groti filmus šiame",
   "Levelling off": "Suvienodinimas išjungtas",
   "Levelling: {level}": "Suvienodinimas: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Iškelia kalbą virš efektų. 5.1 ar 7.1 leidime tai pakelia centrinį kanalą — kanalą, kuriame yra tik dialogas — todėl aplinkui esanti muzika ir efektai lieka nepaliesti.",
   "Light": "Šviesi",
   "List": "Sąrašas",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Subtitrai, gaunami per viešus priedus, kuriuos valdo Stremio.",
   "Subtitles: {name}": "Subtitrai: {name}",
   "Support": "Parama",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Sinchronizavimas",
   "Sync now": "Sinchronizuoti dabar",
   "Sync to the audio": "Sinchronizuoti su garsu",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} iš {total}",
   "{shown} shown · {active} active": "Rodoma {shown} · aktyvūs {active}",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} pavadinimų žiūrėta · {favourites} mėgstamų · {watchlist} žiūrėjimo sąraše",
   "{used} used": "{used} naudojama",
 }

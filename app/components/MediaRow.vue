@@ -26,6 +26,7 @@ const hover = ref(false)
     @mouseleave="hover = false"
     @focus="hover = true; ui.hover(media)"
     @blur="hover = false"
+    @contextmenu.prevent="ui.menuFor = media"
   >
     <div class="relative aspect-2/3 w-14 shrink-0 overflow-hidden rounded-md">
       <media-poster :src="posterUrl(media.poster, 'w154')" :alt="media.title" />
@@ -53,8 +54,12 @@ const hover = ref(false)
     </div>
 
     <!-- Fixed width so mounting the buttons on hover doesn't reflow the title.
-         tabindex="-1": the row is the d-pad target, these are pointer extras. -->
-    <div class="flex w-36 shrink-0 justify-end">
+         tabindex="-1": the row is the d-pad target, these are pointer extras —
+         a remote and a finger reach the same four through the sheet, on the
+         `contextmenu` above (see MediaMenu). Not on a phone at all: nothing
+         hovers there, and 144px of room for buttons that never mount was a
+         third of the row taken from the title. -->
+    <div class="hidden w-36 shrink-0 justify-end md:flex">
       <template v-if="hover">
         <v-btn icon size="small" variant="text" color="on-surface" tabindex="-1" @click.stop.prevent="library.toggleFavourite(media)">
           <v-icon :icon="library.isFavourite(media) ? mdiHeart : mdiHeartOutline" size="18" :color="library.isFavourite(media) ? 'primary' : undefined" />
@@ -65,7 +70,7 @@ const hover = ref(false)
         <v-btn icon size="small" variant="text" color="on-surface" tabindex="-1" @click.stop.prevent="library.toggleWatched(media)">
           <v-icon :icon="watched ? mdiEye : mdiEyeOutline" size="18" :color="watched ? 'primary' : undefined" />
         </v-btn>
-        <v-btn icon size="small" variant="text" color="on-surface" tabindex="-1" @click.stop.prevent>
+        <v-btn icon size="small" variant="text" color="on-surface" tabindex="-1" @click.stop.prevent="ui.menuFor = media">
           <v-icon :icon="mdiDotsVertical" size="18" />
         </v-btn>
       </template>

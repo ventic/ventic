@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Povolit jiným zařízením přehrávat filmy na tomto",
   "Levelling off": "Vyrovnávání vypnuto",
   "Levelling: {level}": "Vyrovnávání: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Vytáhne řeč z efektů. U verze 5.1 nebo 7.1 zesílí středový kanál — kanál, na kterém jsou jen dialogy — takže hudba a efekty kolem zůstanou nedotčené.",
   "Light": "Světlý",
   "List": "Seznam",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Titulky, získané přes veřejné doplňky, které provozuje Stremio.",
   "Subtitles: {name}": "Titulky: {name}",
   "Support": "Podpořit",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Synchronizace",
   "Sync now": "Synchronizovat teď",
   "Sync to the audio": "Synchronizovat se zvukem",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} z {total}",
   "{shown} shown · {active} active": "{shown} zobrazeno · {active} aktivních",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} zhlédnutých titulů · {favourites} oblíbených · {watchlist} v seznamu ke zhlédnutí",
   "{used} used": "{used} využito",
 }

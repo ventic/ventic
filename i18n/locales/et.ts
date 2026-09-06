@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Luba teistel seadmetel filme selles esitada",
   "Levelling off": "Ühtlustamine väljas",
   "Levelling: {level}": "Ühtlustamine: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Tõstab kõne efektide seast välja. 5.1 või 7.1 väljalaskel tõstetakse keskkanalit — kanalit, kus on ainult dialoog —, nii et ümbritsev muusika ja efektid jäävad puutumata.",
   "Light": "Hele",
   "List": "Loend",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Subtiitrid, mis saadakse avalike lisandite kaudu, mida haldab Stremio.",
   "Subtitles: {name}": "Subtiitrid: {name}",
   "Support": "Toeta",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Sünkroonimine",
   "Sync now": "Sünkrooni kohe",
   "Sync to the audio": "Sünkrooni heliga",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} / {total}",
   "{shown} shown · {active} active": "{shown} kuvatud · {active} aktiivset",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} pealkirja vaadatud · {favourites} lemmikut · {watchlist} vaatamisnimekirjas",
   "{used} used": "{used} kasutusel",
 }

@@ -1,28 +1,14 @@
 <script setup lang="ts">
 import { mdiArrowLeft } from '@mdi/js'
 
-const ui = useUiStore()
-const route = useRoute()
-const { mobile } = useDisplay()
-
-const open = computed({
-  get: () => !mobile.value || ui.drawer,
-  set: value => (ui.drawer = value),
-})
-
-// Picking a section on mobile should get the overlay out of the way.
-watch(() => route.path, () => {
-  if (mobile.value)
-    ui.drawer = false
-})
+// Desktop only: a phone lists the sections as a page instead
+// (pages/settings/index.vue), so there is no overlay here to open or close.
 </script>
 
 <template>
   <v-navigation-drawer
-    v-model="open"
     :width="228"
-    :permanent="!mobile"
-    :temporary="mobile"
+    permanent
     class="panel border-none"
   >
     <nuxt-link :to="localePath('/')" class="flex items-center gap-3 px-4 py-5">

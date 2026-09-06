@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Diğer cihazların bunda film oynatmasına izin ver",
   "Levelling off": "Eşitleme kapalı",
   "Levelling: {level}": "Eşitleme: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Konuşmayı efektlerin arasından çıkarır. 5.1 veya 7.1 bir sürümde bu, orta kanalı — yalnızca diyalogun bulunduğu kanalı — yükseltir, böylece çevresindeki müzik ve efektler olduğu gibi kalır.",
   "Light": "Açık",
   "List": "Liste",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Stremio'nun işlettiği herkese açık eklentiler üzerinden ulaşılan altyazılar.",
   "Subtitles: {name}": "Altyazılar: {name}",
   "Support": "Destek",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Eşitleme",
   "Sync now": "Şimdi eşitle",
   "Sync to the audio": "Sese göre eşitle",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{total} içinden {shown}",
   "{shown} shown · {active} active": "{shown} gösteriliyor · {active} etkin",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} başlık izlendi · {favourites} favori · izleme listesinde {watchlist}",
   "{used} used": "{used} kullanıldı",
 }

@@ -14,4 +14,11 @@ declare interface Window {
    * misses. `false` means the page did nothing and the key is the WebView's.
    */
   __tvOk?: () => boolean
+
+  /**
+   * What a *held* OK calls: the remote's long press, answered as a
+   * `contextmenu` on whatever has focus. `true` means a card put its sheet up
+   * and the release must not click through to it.
+   */
+  __tvHold?: () => boolean
 }

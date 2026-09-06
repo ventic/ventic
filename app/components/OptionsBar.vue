@@ -31,6 +31,7 @@ const props = defineProps<{
 
 const ui = useUiStore()
 const { mobile } = useDisplay()
+const tv = isTv() === true
 
 const sheet = ref(false)
 
@@ -78,8 +79,10 @@ const roomy = computed(() => width.value ? width.value >= (props.needs ?? 740) :
     <!-- The wrapper does the hiding: v-input is display:grid internally, and a
          `md:flex` on it collapses the slider track to zero width. It stays on
          the bar whether or not the filters did — it is 160px and the button it
-         would sit behind says "Filters", which a poster size is not. -->
-    <div v-if="ui.isGrid" class="hidden w-40 shrink-0 md:block">
+         would sit behind says "Filters", which a poster size is not. Not on a
+         television, where a remote can't drive a slider: the same setting is a
+         stepper under Settings → Appearance → Display. -->
+    <div v-if="ui.isGrid && !tv" class="hidden w-40 shrink-0 md:block">
       <v-slider
         v-model="ui.cardWidth"
         :min="110"

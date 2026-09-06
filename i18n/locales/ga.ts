@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Lig do ghléasanna eile scannáin a sheinm ar an gceann seo",
   "Levelling off": "Cothromú múchta",
   "Levelling: {level}": "Cothromú: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Ardaíonn sé an chaint as na maisíochtaí. In eisiúint 5.1 nó 7.1 ardaítear an cainéal láir — an cainéal a bhfuil an comhrá air agus nach bhfuil aon rud eile air — mar sin fanann an ceol agus na maisíochtaí ina thimpeall gan athrú.",
   "Light": "Geal",
   "List": "Liosta",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Fotheidil, a fhaightear trí bhreiseáin phoiblí a reáchtálann Stremio.",
   "Subtitles: {name}": "Fotheidil: {name}",
   "Support": "Tacaigh",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Sioncronú",
   "Sync now": "Sioncronaigh anois",
   "Sync to the audio": "Sioncronaigh leis an bhfuaim",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} as {total}",
   "{shown} shown · {active} active": "{shown} ar taispeáint · {active} gníomhach",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} teideal feicthe · {favourites} ceanán · {watchlist} ar an liosta faire",
   "{used} used": "{used} in úsáid",
 }

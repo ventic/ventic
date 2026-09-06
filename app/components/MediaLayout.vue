@@ -38,8 +38,12 @@ useEventListener(scroller, 'scroll', () => {
 })
 onActivated(() => scroller.value?.scrollTo({ top: at }))
 
+// `min(…, 30%)`: a phone is narrower than two of the posters a desktop asks
+// for, and one poster to a row is a list with the words missing. Thirty
+// percent is three across — what every phone app puts there — and on anything
+// wider than three posters it is the poster size, unchanged.
 const gridStyle = computed(() => ({
-  gridTemplateColumns: `repeat(auto-fill, minmax(${ui.cardWidth}px, 1fr))`,
+  gridTemplateColumns: `repeat(auto-fill, minmax(min(${ui.cardWidth}px, 30%), 1fr))`,
 }))
 
 // Placeholders only while the first page is in flight — later pages append below

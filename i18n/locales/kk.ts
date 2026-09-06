@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Басқа құрылғыларға осында фильм ойнатуға рұқсат ету",
   "Levelling off": "Теңестіру өшірулі",
   "Levelling: {level}": "Теңестіру: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Сөзді эффекттердің арасынан көтереді. 5.1 немесе 7.1 нұсқада бұл орталық арнаны — тек диалог тұратын арнаны — күшейтеді, сондықтан айналасындағы музыка мен эффекттер тимей қалады.",
   "Light": "Ашық",
   "List": "Тізім",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Субтитрлер, Stremio басқаратын жария кеңейтімдер арқылы алынған.",
   "Subtitles: {name}": "Субтитрлер: {name}",
   "Support": "Қолдау",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Синхрондау",
   "Sync now": "Қазір синхрондау",
   "Sync to the audio": "Дыбысқа синхрондау",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{total} ішінен {shown}",
   "{shown} shown · {active} active": "{shown} көрсетілуде · {active} белсенді",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} атау көрілген · {favourites} таңдаулы · көру тізімінде {watchlist}",
   "{used} used": "{used} қолданылған",
 }

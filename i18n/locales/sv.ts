@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Låt andra enheter spela filmer på den här",
   "Levelling off": "Utjämning av",
   "Levelling: {level}": "Utjämning: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Lyfter talet ur effekterna. På en 5.1- eller 7.1-utgåva höjs mittkanalen — kanalen där dialogen ligger och inget annat — så att musiken och effekterna runt omkring lämnas orörda.",
   "Light": "Ljust",
   "List": "Lista",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Undertexter, hämtade via publika tillägg som Stremio driver.",
   "Subtitles: {name}": "Undertexter: {name}",
   "Support": "Stöd",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Synk",
   "Sync now": "Synkronisera nu",
   "Sync to the audio": "Synka mot ljudet",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} av {total}",
   "{shown} shown · {active} active": "{shown} visas · {active} aktiva",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} titlar sedda · {favourites} favoriter · {watchlist} i bevakningslistan",
   "{used} used": "{used} använt",
 }

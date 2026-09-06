@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "אפשר למכשירים אחרים לנגן סרטים על המכשיר הזה",
   "Levelling off": "השוואה כבויה",
   "Levelling: {level}": "השוואה: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "מרים את הדיבור מעל האפקטים. בגרסת 5.1 או 7.1 זה מגביר את הערוץ המרכזי — הערוץ שעליו נמצא הדיאלוג ותו לא — כך שהמוזיקה והאפקטים סביבו נשארים כמו שהם.",
   "Light": "בהיר",
   "List": "רשימה",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "כתוביות, מגיעות דרך הרחבות ציבוריות ש‑Stremio מפעיל.",
   "Subtitles: {name}": "כתוביות: {name}",
   "Support": "תמיכה",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "סנכרון",
   "Sync now": "סנכרן עכשיו",
   "Sync to the audio": "סנכרן לשמע",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} מתוך {total}",
   "{shown} shown · {active} active": "{shown} מוצגים · {active} פעילים",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} כותרים נצפו · {favourites} מועדפים · {watchlist} ברשימת הצפייה",
   "{used} used": "{used} בשימוש",
 }

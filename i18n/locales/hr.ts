@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Dopusti drugim uređajima reprodukciju filmova na ovom",
   "Levelling off": "Ujednačavanje isključeno",
   "Levelling: {level}": "Ujednačavanje: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Izdiže govor iz efekata. Na izdanju 5.1 ili 7.1 ovo pojačava središnji kanal — kanal na kojem je samo dijalog — pa glazba i efekti oko njega ostaju netaknuti.",
   "Light": "Svijetla",
   "List": "Popis",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Titlovi, dohvaćeni preko javnih dodataka koje vodi Stremio.",
   "Subtitles: {name}": "Titlovi: {name}",
   "Support": "Podrška",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Sinkronizacija",
   "Sync now": "Sinkroniziraj sada",
   "Sync to the audio": "Sinkroniziraj sa zvukom",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} od {total}",
   "{shown} shown · {active} active": "{shown} prikazano · {active} aktivno",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} naslova odgledano · {favourites} favorita · {watchlist} na popisu za gledanje",
   "{used} used": "{used} iskorišteno",
 }

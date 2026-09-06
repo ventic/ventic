@@ -19,6 +19,8 @@ const scales = computed(() => {
   return SCALES.map(value => ({ value, title: percent.format(value) }))
 })
 
+const px = (value: number) => $t('{size} px', { size: value })
+
 const scale = computed({
   // A value the old slider saved need not be on the list, so show the nearest —
   // it becomes one of these exactly as soon as it is touched.
@@ -34,22 +36,10 @@ const scale = computed({
         <v-select v-model="scale" :items="scales" density="comfortable" hide-details />
       </settings-row>
       <settings-row :label="$t('Poster size')">
-        <v-slider
-          v-model="ui.cardWidth"
-          :min="110"
-          :max="300"
-          :step="10"
-          thumb-label
-        />
+        <settings-stepper v-model="ui.cardWidth" :min="110" :max="300" :step="20" :format="px" />
       </settings-row>
       <settings-row :label="$t('Cast size')">
-        <v-slider
-          v-model="ui.castWidth"
-          :min="100"
-          :max="220"
-          :step="10"
-          thumb-label
-        />
+        <settings-stepper v-model="ui.castWidth" :min="100" :max="220" :step="20" :format="px" />
       </settings-row>
     </settings-section>
 

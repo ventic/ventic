@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Ruhusu vifaa vingine kucheza filamu kwenye hiki",
   "Levelling off": "Kusawazisha kumezimwa",
   "Levelling: {level}": "Kusawazisha: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Huinua usemi juu ya athari za sauti. Katika toleo la 5.1 au 7.1 hii huinua kituo cha kati — kituo chenye mazungumzo pekee — hivyo muziki na athari zinazoizunguka hazigusiwi.",
   "Light": "Nyeupe",
   "List": "Orodha",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Manukuu, yanayopatikana kupitia viongezi vya umma vinavyoendeshwa na Stremio.",
   "Subtitles: {name}": "Manukuu: {name}",
   "Support": "Msaada",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Ulandanishi",
   "Sync now": "Sawazisha sasa",
   "Sync to the audio": "Landanisha na sauti",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} kati ya {total}",
   "{shown} shown · {active} active": "{shown} zinaonyeshwa · {active} zinaendelea",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "Vichwa {titles} vimetazamwa · vipendwa {favourites} · {watchlist} kwenye orodha ya kutazama",
   "{used} used": "{used} zimetumika",
 }

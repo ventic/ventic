@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { mdiArrowLeft, mdiMenu } from '@mdi/js'
+import { mdiArrowLeft } from '@mdi/js'
 
 /**
  * The shell every section renders into: the sidebar's counterpart, holding the
@@ -9,7 +9,6 @@ import { mdiArrowLeft, mdiMenu } from '@mdi/js'
  */
 definePageMeta({ layout: 'settings' })
 
-const ui = useUiStore()
 const route = useRoute()
 const routeName = useRouteBaseName()
 const { mobile } = useDisplay()
@@ -29,13 +28,15 @@ const title = computed(() => SECTIONS.find(s => s.value === section.value)?.titl
   <div class="h-full overflow-y-scroll">
     <div class="mx-auto max-w-3xl px-4 pb-16 md:px-8">
       <div class="flex items-center gap-2 pb-5 pt-3">
-        <!-- Always-on way out of the settings shell — on a phone the menu button
-             beside it only switches sections, so this is the only exit there. -->
-        <v-btn icon variant="text" color="on-surface" :to="localePath('/')">
+        <!-- Always-on way out. On a phone a section steps back to the list of
+             sections first (settings/index.vue), which is what stands in for
+             the sidebar there. -->
+        <!-- `exact`: /settings is a prefix of every section's path, and without
+             it the button is drawn pressed on all of them. -->
+        <v-btn icon variant="text" color="on-surface" exact :to="localePath(mobile && section ? '/settings' : '/')">
           <v-icon :icon="mdiArrowLeft" />
           <v-tooltip activator="parent" :text="$t('Back')" />
         </v-btn>
-        <v-btn v-if="mobile" :icon="mdiMenu" variant="text" color="on-surface" @click="ui.drawer = true" />
         <h1 class="text-headline-medium font-bold">
           {{ title }}
         </h1>

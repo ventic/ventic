@@ -143,7 +143,7 @@ const failure = computed(() => error.value ? String(error.value.message ?? error
         <div
           v-if="visible.length"
           class="grid gap-x-4 gap-y-5"
-          :style="{ gridTemplateColumns: `repeat(auto-fill, minmax(${ui.cardWidth}px, 1fr))` }"
+          :style="{ gridTemplateColumns: `repeat(auto-fill, minmax(min(${ui.cardWidth}px, 30%), 1fr))` }"
         >
           <channel-card v-for="channel in visible" :key="channel.id" :channel="channel" />
         </div>

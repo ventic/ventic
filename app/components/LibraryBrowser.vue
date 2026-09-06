@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { LibraryKind, LibrarySort } from '~/utils/library'
 import type { Media } from '~/utils/tmdb'
-import { mdiSortVariant } from '@mdi/js'
+import { mdiChevronDown, mdiSortVariant } from '@mdi/js'
+import { LIBRARY_LISTS } from '~/stores/ui'
 
 /**
  * Favourites, the Watchlist and History are the same page three times: a list
@@ -18,7 +19,11 @@ const props = defineProps<{
   recent: string
 }>()
 
-const { lgAndUp } = useDisplay()
+const { lgAndUp, mobile } = useDisplay()
+
+// On a phone the three lists share one stop on the bar along the bottom, so
+// the heading is where you switch between them: a menu of the other two.
+const lists = computed(() => LIBRARY_LISTS.map(l => ({ title: l.title(), icon: l.icon, to: localePath(`/${l.value}`) })))
 
 /** The three the sidebar already splits the app into, plus everything. */
 const KINDS = computed<{ value: LibraryKind, title: string }[]>(() => [
@@ -67,7 +72,30 @@ const active = computed(() =>
          above it. -->
     <options-bar :active="active" :needs="1150">
       <div class="flex min-w-0 items-center gap-4">
-        <h1 class="text-title-large shrink-0">
+        <button
+          v-if="mobile"
+          type="button"
+          class="flex shrink-0 items-center gap-1 border-0 rounded-lg bg-transparent p-0 text-title-large text-on-surface"
+          :aria-label="$t('Switch list')"
+        >
+          {{ title }}
+          <v-icon :icon="mdiChevronDown" size="22" class="opacity-70" />
+          <v-menu activator="parent">
+            <v-list nav density="comfortable">
+              <v-list-item
+                v-for="list in lists"
+                :key="list.to"
+                :to="list.to"
+                :prepend-icon="list.icon"
+                :title="list.title"
+                :active="list.title === title"
+                color="primary"
+                rounded="lg"
+              />
+            </v-list>
+          </v-menu>
+        </button>
+        <h1 v-else class="text-title-large shrink-0">
           {{ title }}
         </h1>
 

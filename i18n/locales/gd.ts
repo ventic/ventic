@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Leig le uidheaman eile filmichean a chluich air an fhear seo",
   "Levelling off": "Cothromachadh dheth",
   "Levelling: {level}": "Cothromachadh: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Togaidh e a' chainnt a-mach às na h-èifeachdan. Ann an sgaoileadh 5.1 no 7.1 togaidh seo an sianal meadhanach — an sianal air a bheil an còmhradh agus nach eil dad eile — agus mar sin fanaidh an ceòl agus na h-èifeachdan mun cuairt gun bhean.",
   "Light": "Soilleir",
   "List": "Liosta",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Fo-thiotalan, air an ruigsinn tro thuilleadain phoblach a tha Stremio a' ruith.",
   "Subtitles: {name}": "Fo-thiotalan: {name}",
   "Support": "Taic",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Sioncronachadh",
   "Sync now": "Sioncronaich a-nis",
   "Sync to the audio": "Sioncronaich ris an fhuaim",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} à {total}",
   "{shown} shown · {active} active": "{shown} 'gan sealltainn · {active} gnìomhach",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} tiotal air an coimhead · {favourites} annsachd · {watchlist} air an liosta chòimhid",
   "{used} used": "{used} 'ga chleachdadh",
 }

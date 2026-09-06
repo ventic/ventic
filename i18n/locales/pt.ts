@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Permitir que outros dispositivos reproduzam filmes neste",
   "Levelling off": "Igualação desligada",
   "Levelling: {level}": "Igualação: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Tira a fala de dentro dos efeitos. Numa versão 5.1 ou 7.1 isso levanta o canal central — o canal onde está o diálogo e mais nada — então a música e os efeitos em volta ficam intactos.",
   "Light": "Claro",
   "List": "Lista",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Legendas, obtidas por complementos públicos que o Stremio opera.",
   "Subtitles: {name}": "Legendas: {name}",
   "Support": "Apoio",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Sincronização",
   "Sync now": "Sincronizar agora",
   "Sync to the audio": "Sincronizar com o áudio",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{shown} de {total}",
   "{shown} shown · {active} active": "{shown} exibidos · {active} ativos",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} títulos assistidos · {favourites} favoritos · {watchlist} na lista para assistir",
   "{used} used": "{used} em uso",
 }

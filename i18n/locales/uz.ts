@@ -224,6 +224,7 @@ export default {
   "Let other devices play films on this one": "Boshqa qurilmalarga bunda kino ijro etishga ruxsat berish",
   "Levelling off": "Tenglashtirish oʻchiq",
   "Levelling: {level}": "Tenglashtirish: {level}",
+  "Library": "TODO_TRANSLATION: Library",
   "Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.": "Nutqni effektlar orasidan koʻtaradi. 5.1 yoki 7.1 nashrda bu markaziy kanalni — faqat dialog joylashgan kanalni — kuchaytiradi, shuning uchun atrofdagi musiqa va effektlar tegilmagan qoladi.",
   "Light": "Ochiq",
   "List": "Roʻyxat",
@@ -423,6 +424,7 @@ export default {
   "Subtitles, reached through public addons Stremio operates.": "Stremio yuritadigan ommaviy qoʻshimchalar orqali olinadigan subtitrlar.",
   "Subtitles: {name}": "Subtitrlar: {name}",
   "Support": "Qoʻllab-quvvatlash",
+  "Switch list": "TODO_TRANSLATION: Switch list",
   "Sync": "Moslash",
   "Sync now": "Hozir sinxronlash",
   "Sync to the audio": "Ovozga moslash",
@@ -597,6 +599,7 @@ export default {
   "{shown} of {total}": "{total} tadan {shown} tasi",
   "{shown} shown · {active} active": "{shown} ta koʻrsatilmoqda · {active} ta faol",
   "{size} GiB": "{size} GiB",
+  "{size} px": "TODO_TRANSLATION: {size} px",
   "{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist": "{titles} ta sarlavha koʻrilgan · {favourites} ta sevimli · koʻrish roʻyxatida {watchlist} ta",
   "{used} used": "{used} band",
 }
