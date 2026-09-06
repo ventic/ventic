@@ -2478,8 +2478,9 @@ defineExpose({ osd, position: readonly(position) })
            class because `subPos` measures the subtitles against it.
 
            On a television it runs the whole height of the frame instead of
-           being a 300x188 popup in the corner: the subtitle menu is far taller
-           than 44vh once a film has tracks and settings under them, and a
+           being a popup in the corner: the subtitle menu is far taller than
+           the space above the bar once a film has tracks and settings under
+           them, and a
            remote had no way to reach the bottom of it — the press past the last
            row left for the bottom bar rather than scrolling. `data-dpad-scope`
            is the other half of that (see plugins/dpad.client.ts); Back closes
@@ -2490,8 +2491,16 @@ defineExpose({ osd, position: readonly(position) })
         data-cut
         data-dpad-scope
         class="absolute right-4 flex flex-col overflow-hidden border rounded-xl"
-        :class="[SURFACE, tv ? 'top-4 w-100' : 'max-h-[44vh] w-75']"
-        :style="{ bottom: `${menuBottom}px` }"
+        :class="[SURFACE, tv ? 'top-4 w-100' : 'w-75']"
+        :style="{
+          bottom: `${menuBottom}px`,
+          // A phone held sideways is 395px tall with two bars in it, so a
+          // fraction of the height was a menu three rows tall. Take whatever
+          // is between the two bars instead, up to a popup's worth — the top
+          // one is the same translucent surface, so growing over it makes both
+          // unreadable rather than making this one taller.
+          maxHeight: tv ? undefined : `min(28rem, calc(100% - ${menuBottom + 64}px))`,
+        }"
         @pointerenter="hovering = true"
         @pointerleave="hovering = false"
       >
