@@ -259,9 +259,18 @@ const next = computed(() => {
  * A bare magnet has no title and no page to land on; that one still steps back.
  */
 function leave() {
-  if (id.value)
-    navigateTo(mediaLink({ id: Number(id.value), type: type.value }), { replace: true })
-  else if (router.options.history.state.back)
+  if (!id.value)
+    return stepOut()
+  // The title page is a chunk of its own, and a Continue-watching start has
+  // never loaded it. A chunk that fails to arrive (the dev proxy on a TV, in
+  // the case that found this) rejects the navigation, and a rejection with no
+  // handler left the film on screen with BACK doing nothing.
+  Promise.resolve(navigateTo(mediaLink({ id: Number(id.value), type: type.value }), { replace: true })).catch(stepOut)
+}
+
+/** Back a step, or home for a player opened straight from a link. */
+function stepOut() {
+  if (router.options.history.state.back)
     router.back()
   else
     navigateTo(localePath('/'))
