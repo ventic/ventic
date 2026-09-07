@@ -1,7 +1,7 @@
 #[cfg(desktop)]
 use tauri::{
 	menu::{Menu, MenuItem},
-	tray::TrayIconBuilder
+	tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent}
 };
 use tauri::Manager;
 
@@ -748,7 +748,23 @@ pub fn run() {
 
 					TrayIconBuilder::new()
 						.menu(&menu)
-						.show_menu_on_left_click(true)
+						// Left click opens the app, right click the menu — what
+						// a tray icon does everywhere else, and the reason the
+						// window is worth hiding to one. Linux shows the menu on
+						// either whatever this says: libappindicator delivers no
+						// click at all (tray-icon's GTK backend emits none), so
+						// there the first menu item is the way in.
+						.show_menu_on_left_click(false)
+						.on_tray_icon_event(|tray, event| {
+							if let TrayIconEvent::Click {
+								button: MouseButton::Left,
+								button_state: MouseButtonState::Up,
+								..
+							} = event
+							{
+								show_window(tray.app_handle());
+							}
+						})
 						.icon(app.default_window_icon().unwrap().clone())
 						.on_menu_event(|app, event| match event.id.as_ref() {
 							"show" => {
