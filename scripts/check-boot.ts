@@ -459,5 +459,34 @@ function wordmark(hint: any) {
   )
 }
 
+// Closing the window is the other end of the same launch, and it is three files
+// that no compiler reads together. The moment a page listens for
+// `close-requested` tauri stops closing the window itself and waits for the
+// page to say so — so both halves of that decision are commands the capability
+// file has to allow, and a missing one is a window that either refuses to close
+// or refuses to stay. The tray is then the only way back to a hidden one.
+{
+  const app = readFileSync(new URL('../app/app.vue', import.meta.url), 'utf8')
+  const lib = readFileSync(new URL('../src-tauri/src/lib.rs', import.meta.url), 'utf8')
+  const desktop = JSON.parse(
+    readFileSync(new URL('../src-tauri/capabilities/desktop.json', import.meta.url), 'utf8'),
+  )
+
+  assert.match(app, /onCloseRequested/, 'the page answers the close button')
+  assert.match(app, /win\.hide\(\)/, 'and hides the window rather than letting it close')
+  for (const permission of ['core:window:allow-hide', 'core:window:allow-destroy']) {
+    assert.ok(
+      desktop.permissions.includes(permission),
+      `${permission} is granted — without it the close button silently does nothing`,
+    )
+  }
+  assert.match(
+    lib,
+    /MenuItem::with_id\(app, "show"/,
+    'the tray offers a way back to a hidden window',
+  )
+  assert.match(lib, /fn show_window/, 'which is the same one a second launch takes')
+}
+
 // eslint-disable-next-line no-console
 console.log('boot diagnostics ok')

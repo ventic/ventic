@@ -52,12 +52,17 @@ function openMenu(t: EngineTorrent, e: Event) {
   menuFor.value = t
 }
 
-/** Run one menu action and close the menu behind it. */
-function pick(fn: () => unknown) {
+/**
+ * Run one menu action on the row the menu was opened for, and close the menu
+ * behind it. The torrent is handed to the action rather than read back out of
+ * `menuFor`: closing the menu clears that ref first, so a callback that read it
+ * itself got `null` and every item silently did nothing.
+ */
+function pick(fn: (t: EngineTorrent) => unknown) {
   const t = menuFor.value
   menuFor.value = null
   if (t)
-    fn()
+    fn(t)
 }
 
 /** How a state is drawn at the head of a row: shape as well as colour. */
@@ -305,13 +310,18 @@ async function add() {
             <svg viewBox="0 0 24 24" class="size-6 fill-current"><path :d="mdiPlay" /></svg>
           </button>
           <!-- Off a phone's row, where three buttons left the name two words
-               wide; the menu carries it there. -->
+               wide; the menu carries it there.
+
+               Offered on a finished torrent too: it has nothing left to fetch,
+               but it is still seeding, and pausing that is a thing people want
+               — and a torrent paused after it finished had no way back at all,
+               since the row said "Paused" and both this and the menu item had
+               taken themselves away. -->
           <button
             v-tooltip:top="t.stats?.state === 'paused' ? $t('Resume') : $t('Pause')"
             type="button"
             class="hidden sm:grid"
             :class="ACT"
-            :disabled="t.stats?.finished"
             @click="toggle(t)"
           >
             <svg viewBox="0 0 24 24" class="size-6 fill-current"><path :d="t.stats?.state === 'paused' ? mdiPlay : mdiPause" /></svg>
@@ -355,16 +365,16 @@ async function add() {
       @update:model-value="open => !open && (menuFor = null)"
     >
       <v-list nav density="comfortable" class="min-w-52">
+        <!-- The only pause/resume a phone has: the row's own is off below `sm`. -->
         <v-list-item
-          v-if="!menuFor?.stats?.finished"
           :prepend-icon="menuFor?.stats?.state === 'paused' ? mdiPlay : mdiPause"
           :title="menuFor?.stats?.state === 'paused' ? $t('Resume') : $t('Pause')"
           rounded="lg"
-          @click="pick(() => toggle(menuFor!))"
+          @click="pick(toggle)"
         />
-        <v-list-item v-if="canReveal" :prepend-icon="mdiFolderOpenOutline" :title="$t('Open folder')" rounded="lg" @click="pick(() => openFolder(menuFor!))" />
-        <v-list-item :prepend-icon="mdiContentCopy" :title="$t('Copy magnet')" rounded="lg" @click="pick(() => copyMagnet(menuFor!))" />
-        <v-list-item :prepend-icon="mdiDeleteOutline" :title="$t('Remove')" base-color="error" rounded="lg" @click="pick(() => removing = menuFor)" />
+        <v-list-item v-if="canReveal" :prepend-icon="mdiFolderOpenOutline" :title="$t('Open folder')" rounded="lg" @click="pick(t => openFolder(t))" />
+        <v-list-item :prepend-icon="mdiContentCopy" :title="$t('Copy magnet')" rounded="lg" @click="pick(copyMagnet)" />
+        <v-list-item :prepend-icon="mdiDeleteOutline" :title="$t('Remove')" base-color="error" rounded="lg" @click="pick(t => removing = t)" />
       </v-list>
     </v-menu>
 

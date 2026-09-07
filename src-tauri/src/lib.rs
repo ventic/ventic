@@ -110,6 +110,21 @@ fn claim_stremio_if_free(app: &tauri::AppHandle) {
 #[cfg(all(desktop, not(target_os = "linux")))]
 fn claim_stremio_if_free(_app: &tauri::AppHandle) {}
 
+/// Put the window back in front of the user, from wherever it went.
+///
+/// Two callers, and neither can assume the window is merely unfocused: the
+/// close button hides it when "keep running in the background" is on (see
+/// app.vue), so `show` has to come first or focusing a hidden window does
+/// nothing at all — which is what a tray item that appears dead looks like.
+#[cfg(desktop)]
+fn show_window(app: &tauri::AppHandle) {
+	if let Some(window) = app.get_webview_window("main") {
+		let _ = window.show();
+		let _ = window.unminimize();
+		let _ = window.set_focus();
+	}
+}
+
 /// May this copy replace itself in place, or does something else own the files?
 ///
 /// The updater plugin is happy to overwrite whatever the binary sits in, and on
@@ -634,11 +649,10 @@ pub fn run() {
 	// the `deep-link` feature is what makes the second process's URL arrive as
 	// an open-url event rather than as argv nobody reads.
 	#[cfg(desktop)]
+	// Launching it again is also the way back from a window hidden to the tray —
+	// and the only way back on a desktop whose tray never loaded (see below).
 	let builder = builder.plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
-		use tauri::Manager;
-		if let Some(window) = app.get_webview_window("main") {
-			let _ = window.set_focus();
-		}
+		show_window(app);
 	}));
 
 	// In-app updates, desktop only — there is no Android build of either crate.
@@ -719,18 +733,27 @@ pub fn run() {
 				// libappindicator is dlopen'd, and its loader *panics* rather
 				// than returning an error when no appindicator library is
 				// installed — a Flatpak's runtime carries none, and neither does
-				// a minimal desktop. The tray is one Quit item; it is not worth
-				// taking the whole app down with it, so the panic is caught here
-				// rather than left to kill setup.
+				// a minimal desktop. It is not worth taking the whole app down
+				// with it, so the panic is caught here rather than left to kill
+				// setup — a desktop with no tray keeps the window it always had,
+				// and launching the app again is the way back from one hidden by
+				// `closeToTray`.
 				let tray = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+					// Not translated, unlike everything else on screen: this menu
+					// is built by Rust before any page exists, and the catalogs
+					// are the webview's.
+					let show_i = MenuItem::with_id(app, "show", "Show Ventic", true, None::<&str>)?;
 					let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-					let menu = Menu::with_items(app, &[&quit_i])?;
+					let menu = Menu::with_items(app, &[&show_i, &quit_i])?;
 
 					TrayIconBuilder::new()
 						.menu(&menu)
 						.show_menu_on_left_click(true)
 						.icon(app.default_window_icon().unwrap().clone())
 						.on_menu_event(|app, event| match event.id.as_ref() {
+							"show" => {
+								show_window(app);
+							}
 							"quit" => {
 								app.exit(0);
 							}

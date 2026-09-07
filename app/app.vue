@@ -106,6 +106,30 @@ watchEffect(() => {
   document.documentElement.style.setProperty('--frame-zoom', String(legacyZoom ? 1 / settings.uiScale : 1))
 })
 
+/**
+ * The close button, when the user has asked the app to keep running.
+ *
+ * The torrent engine is this process — closing the window is what stops every
+ * download — so a film left fetching wants somewhere to go that isn't the
+ * taskbar. Handled here rather than in Rust for the ordinary reason: the
+ * setting is a localStorage key, and only the webview can read one.
+ *
+ * The listener is what makes tauri hand the decision over at all (with none
+ * registered it closes the window itself), so it stays registered either way
+ * and answers with the setting as it is at the moment X is pressed. Getting
+ * back in is the tray's Show item, or launching the app again — see
+ * `show_window` in lib.rs.
+ */
+if (isDesktop()) {
+  const win = useTauriWebviewWindowGetCurrentWebviewWindow()
+  win.onCloseRequested(async e => {
+    if (!settings.closeToTray)
+      return
+    e.preventDefault()
+    await win.hide()
+  })
+}
+
 // One class, one block of CSS (assets/css/layers.css) — cheaper than teaching
 // every component that draws a blur or a transition about the setting, and it
 // reaches Vuetify's own styles, which no prop of ours would.

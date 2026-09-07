@@ -1,7 +1,7 @@
 {
 	"$schema": "../gen/schemas/desktop-schema.json",
 	"identifier": "desktop",
-	"description": "The tray icon, its menu and the in-app updater — all desktop-only",
+	"description": "The tray icon, its menu, the in-app updater, and the close button the page answers itself: with a close listener registered tauri stops closing the window, so `destroy` is what closes it and `hide` is what 'keep running in the background' does instead. Neither is in core:window:default.",
 	"platforms": [
 		"linux",
 		"macOS",
@@ -14,6 +14,8 @@
 	"permissions": [
 		"core:menu:default",
 		"core:tray:default",
+		"core:window:allow-hide",
+		"core:window:allow-destroy",
 		"updater:default",
 		"process:allow-restart"
 	]

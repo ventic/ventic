@@ -144,6 +144,21 @@ export const useSettingsStore = defineStore('settings', () => {
   /** Android only — no other platform can tell a metered network from a free one. */
   const wifiOnly = useLocalStorage('ventic.wifiOnly', false)
 
+  /**
+   * Desktop only: does the close button hide the window instead of quitting?
+   *
+   * The engine lives in this process, so quitting is what stops a download —
+   * there is no daemon to leave behind, and closing the window on a film that
+   * is still fetching is the thing people actually do. So it is on, and the way
+   * back is the tray: Show Ventic, or launching the app again, which forwards
+   * to this copy rather than starting a second one. Quit is on that menu too.
+   *
+   * app.vue is what acts on it. A desktop with no tray at all (no appindicator
+   * — a Flatpak runtime, a minimal session) keeps the second way back and the
+   * switch, which is why this is a setting and not a rule.
+   */
+  const closeToTray = useLocalStorage('ventic.closeToTray', true)
+
   // --- Casting ---
   /**
    * Answer play commands from other Ventics on this network. Off by default and
@@ -250,5 +265,5 @@ export const useSettingsStore = defineStore('settings', () => {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, castReceive, castName, castAsk, castCode, castTarget, downloadDir, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, keys, resetSubs }
+  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, closeToTray, castReceive, castName, castAsk, castCode, castTarget, downloadDir, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, keys, resetSubs }
 })

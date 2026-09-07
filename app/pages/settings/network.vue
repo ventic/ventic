@@ -55,6 +55,13 @@ async function stopSharing() {
 const canMeter = meteredNetwork() !== null
 
 /**
+ * Android already keeps downloading with the app off screen — that is what
+ * `DownloadService` is — so the close button is a desktop question and the
+ * setting only appears there.
+ */
+const canHide = isDesktop()
+
+/**
  * The limits on offer. Stops rather than a range: nobody wants 3.5 MiB/s, and
  * a hundred half-megabyte steps is what made this a slider a remote couldn't
  * cross. A value saved by that slider starts from the nearest stop.
@@ -104,6 +111,23 @@ function label(value: number) {
         {{ downloads.metered
           ? $t('This connection is metered right now.')
           : $t('This connection is not metered right now.') }}
+      </p>
+    </settings-section>
+
+    <settings-section
+      v-if="canHide"
+      :title="$t('Closing the window')"
+      :hint="$t('The torrent engine runs inside the app, so closing the window is what stops a download. There is nothing left running behind it.')"
+    >
+      <v-switch
+        v-model="settings.closeToTray"
+        color="primary"
+        density="comfortable"
+        hide-details
+        :label="$t('Keep downloading in the background when the window is closed')"
+      />
+      <p class="text-body-medium opacity-70">
+        {{ $t('The window is hidden instead of the app quitting, and downloads carry on. Open it again from the tray icon — or by launching Ventic, which brings the window back rather than starting a second copy. Quit from the tray icon when you actually want it to stop.') }}
       </p>
     </settings-section>
 
