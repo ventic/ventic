@@ -123,6 +123,48 @@ assert.ok(/FAT32/.test(storageScreen), 'with a written fallback when no such scr
 // and ignored — which is a download that dies at 4 GiB either way.
 assert.ok(activity.includes('FAT32_MAX'), 'MainActivity knows the FAT32 file ceiling')
 assert.ok(activity.includes('setLength'), 'and measures it rather than guessing the filesystem')
+
+// ...but that measurement is the most expensive thing in the app, and nothing
+// about it looks expensive. On a filesystem with no sparse files — exFAT and
+// FAT32, i.e. every SD card — `setLength(4 GiB)` allocates four real gigabytes,
+// which is minutes on removable flash. Three rules keep that survivable, and all
+// three are invisible in review: the failure is somebody else's phone freezing
+// solid (issue #30, docs/android-unkillable-process.md).
+function body(name: string) {
+  const at = activity.indexOf(`fun ${name}(`)
+  assert.ok(at > -1, `MainActivity still has ${name}()`)
+  // To the next declaration at the same indent, which is where the body ends.
+  const end = activity.slice(at).search(/\n {2}(?:override |private |\/\*\*)/)
+  return end > -1 ? activity.slice(at, at + end) : activity.slice(at)
+}
+
+// 1. Never on the calling thread. Every @JavascriptInterface method is
+//    *synchronous* — the WebView renderer blocks on an IPC until Kotlin returns
+//    — so a slow one is a frozen page, not a slow one.
+assert.ok(/Thread\s*\{/.test(body('probeFileLimit')), 'the probe runs on a thread of its own')
+assert.ok(
+  !body('maxFile').includes('setLength'),
+  'and maxFile() never grows the file itself, or it blocks the renderer that asked',
+)
+
+// 2. Once per drive, not once per call. The downloads store asks every ten
+//    seconds, for free space that genuinely moves; a volume's maximum file size
+//    cannot change while it is mounted.
+assert.ok(activity.includes('fileLimits'), 'measured limits are cached')
+assert.ok(/fileLimits\[[^\]]+\]\?\.let\s*\{\s*return/.test(body('maxFile')), 'and maxFile() answers from that cache')
+
+// 3. Removable drives only. Built-in storage cannot be FAT32 — Android needs
+//    POSIX permissions, xattrs and hard links out of /data — so a phone with no
+//    card slot should never pay for this at all.
+assert.ok(/if\s*\(!removable\)\s*return/.test(body('maxFile')), 'and only a removable drive is worth probing')
+assert.ok(activity.includes('maxFile(dir, free, volume?.isRemovable == true)'), 'which volumes() is what decides')
+
+// The probe's `finally` cannot run through a SIGKILL, and what it leaves is 4 GiB
+// of nothing that Android reports as the app's own storage — the "4.3 GB on a
+// fresh install" half of issue #30. Clearing it at startup is the only thing that
+// gets it off a phone that already has one.
+assert.ok(activity.includes('SIZE_PROBE'), 'the probe file is named in one place')
+assert.ok(/clearStaleProbes\(\)/.test(body('onCreate')), 'and a leftover is deleted at startup')
 assert.ok(store.includes('fileLimit'), 'the store carries it')
 assert.ok(
   /Math\.min\(budget\.value, fileLimit\.value\)/.test(store),

@@ -39,12 +39,76 @@ class MainActivity : TauriActivity() {
     /** The new build, in this app's own folder — nothing else may read it. */
     private const val UPDATE_APK = "update.apk"
 
+    /** Scratch file `probeFileLimit` grows to find a drive's maximum file size. */
+    private const val SIZE_PROBE = ".ventic-size-probe"
+
     /** Google Play, as it records itself against everything it installs. */
     private const val PLAY_STORE = "com.android.vending"
   }
 
+  /**
+   * The largest file each volume can hold, by path, once measured.
+   *
+   * A mounted volume's maximum file size cannot change, so this is asked once
+   * per drive per process rather than on every `volumes()` call — which the
+   * downloads store makes every ten seconds, for free space that *does* move.
+   */
+  private val fileLimits = java.util.concurrent.ConcurrentHashMap<String, Long>()
+
+  /** Volumes with a probe already in flight, so ten seconds later starts no second one. */
+  private val probing = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+
   /** DownloadManager's id for the APK being fetched, or -1 for none. */
   private var updateId = -1L
+
+  /**
+   * Measure a drive's maximum file size, off the calling thread.
+   *
+   * There is no way to ask a filesystem this but to try it, and the try is not
+   * cheap: on a filesystem with no sparse files — exFAT and FAT32, which is
+   * every SD card — `setLength` really does allocate four gigabytes, taking
+   * minutes on removable flash. That must not happen on the JavaBridge thread.
+   * Every `@JavascriptInterface` call is *synchronous*: the WebView's renderer
+   * blocks on an IPC until Kotlin returns, so a slow one here is a frozen page,
+   * and one on a ten-second timer is an app that never comes back. That was
+   * issue #30 — see docs/android-unkillable-process.md.
+   */
+  private fun probeFileLimit(dir: java.io.File) {
+    if (!probing.add(dir.path)) return
+    Thread {
+      val probe = java.io.File(dir, SIZE_PROBE)
+      // Wrapped, because an uncaught exception on a thread of our own takes the
+      // whole process with it — Android's default handler kills the app for any
+      // thread, not just the main one. A drive we cannot measure reports no
+      // limit, which is what it reported before there was a probe at all.
+      val limit = runCatching {
+        try {
+          java.io.RandomAccessFile(probe, "rw").use { it.setLength(FAT32_MAX + 1) }
+          0L
+        } catch (e: java.io.IOException) {
+          FAT32_MAX
+        } finally {
+          probe.delete()
+        }
+      }.getOrDefault(0L)
+      fileLimits[dir.path] = limit
+      probing.remove(dir.path)
+    }.apply { isDaemon = true; name = "ventic-fs-probe" }.start()
+  }
+
+  /**
+   * Delete a probe file an earlier run was killed in the middle of.
+   *
+   * `probeFileLimit`'s `finally` cannot run through a SIGKILL, and what it
+   * leaves behind is 4 GiB of nothing that Android reports as the app's own
+   * storage — the "4.3 GB on a fresh install" half of issue #30. Cheap to do,
+   * and the only thing that clears it off a phone that already has one.
+   */
+  private fun clearStaleProbes() {
+    for (dir in runCatching { getExternalFilesDirs(null) }.getOrNull().orEmpty().filterNotNull()) {
+      runCatching { java.io.File(dir, SIZE_PROBE).delete() }
+    }
+  }
 
   /** Whether the installer has already been opened for that file. */
   private var updateHandedOver = false
@@ -64,6 +128,8 @@ class MainActivity : TauriActivity() {
     }
 
     onBackPressedDispatcher.addCallback(this, backToPage)
+
+    clearStaleProbes()
   }
 
   /**
@@ -286,7 +352,7 @@ class MainActivity : TauriActivity() {
         val free = runCatching { StatFs(dir.path).availableBytes }.getOrDefault(0L)
         out.put(
           JSONObject().put("name", name).put("path", dir.path).put("free", free)
-            .put("writable", true).put("maxFile", maxFile(dir, free)),
+            .put("writable", true).put("maxFile", maxFile(dir, free, volume?.isRemovable == true)),
         )
       }
 
@@ -328,19 +394,22 @@ class MainActivity : TauriActivity() {
      * one syscall — the length is metadata on every filesystem here, so this
      * writes no data and takes no measurable time.
      */
-    private fun maxFile(dir: java.io.File, free: Long): Long {
+    private fun maxFile(dir: java.io.File, free: Long, removable: Boolean): Long {
       // Under a cap there isn't room to reach, the cap decides nothing, and this
       // also keeps a full disk from reading as a small-file limit.
       if (free <= FAT32_MAX) return 0L
-      val probe = java.io.File(dir, ".ventic-size-probe")
-      return try {
-        java.io.RandomAccessFile(probe, "rw").use { it.setLength(FAT32_MAX + 1) }
-        0L
-      } catch (e: java.io.IOException) {
-        FAT32_MAX
-      } finally {
-        probe.delete()
-      }
+      // Built-in storage is never FAT32 and cannot be: Android needs POSIX
+      // permissions, SELinux xattrs and hard links out of /data, none of which
+      // FAT has. So the only drive worth the probe below is a removable one, and
+      // a phone with no card slot never pays for this at all.
+      if (!removable) return 0L
+      fileLimits[dir.path]?.let { return it }
+      probeFileLimit(dir)
+      // Until the probe answers, no limit — which is the right guess, since
+      // every filesystem but FAT32 has none, and the caller re-reads this every
+      // ten seconds anyway. Claiming a 4 GiB cap we haven't measured would hide
+      // films the drive can hold perfectly well.
+      return 0L
     }
 
     /**
