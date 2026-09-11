@@ -488,5 +488,4 @@ function wordmark(hint: any) {
   assert.match(lib, /fn show_window/, 'which is the same one a second launch takes')
 }
 
-// eslint-disable-next-line no-console
 console.log('boot diagnostics ok')

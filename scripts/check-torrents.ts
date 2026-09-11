@@ -393,6 +393,8 @@ assert.deepEqual(planNetwork([9], null, [], false).start, [], 'nor is a running 
 
 assert.deepEqual(streamParts(`${ENGINE}/torrents/12/stream/3`), { id: 12, index: 3 })
 assert.equal(streamParts('https://debrid.example/file.mkv'), null, 'a plain url is not a stream')
+// Same shape, another device's engine: its ids mean nothing to ours.
+assert.equal(streamParts('http://192.168.0.191:3231/torrents/13/stream/6'), null, 'a cast mirror is not our stream')
 
 // Two 1000-byte files, 20 pieces of 100 bytes over the pair. The second one
 // starts at byte 1000, so piece 10.

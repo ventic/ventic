@@ -375,5 +375,4 @@ assert.match(probe, /tauriFetch/, 'a remote link is probed through Rust, where C
 assert.doesNotMatch(probe, /\bfetch\(url/, 'and never with the webview\'s own fetch')
 assert.match(mpv, /import \{ fetch as tauriFetch \} from '@tauri-apps\/plugin-http'/, 'which is where that comes from')
 
-// eslint-disable-next-line no-console
 console.log('player: ok')

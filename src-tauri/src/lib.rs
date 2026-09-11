@@ -542,17 +542,6 @@ async fn run_torrent_server(
 	download_dir: std::path::PathBuf,
 	session_dir: std::path::PathBuf,
 ) -> anyhow::Result<()> {
-	// librqbit's HTTP API only allows a fixed CORS allowlist by default
-	// (ports 3031/1420 + tauri://localhost). Widen it so the Nuxt dev server
-	// (any localhost port) and the packaged app can call the API from fetch().
-	// On Android the webview serves the app from http://tauri.localhost, on
-	// Windows from https://tauri.localhost.
-	// The predicate reads this env var when the server is constructed below.
-	std::env::set_var(
-		"CORS_ALLOW_REGEXP",
-		r"^(https?://localhost(:\d+)?|https?://127\.0\.0\.1(:\d+)?|tauri://localhost|https?://tauri\.localhost)$"
-	);
-
 	// Remember torrents across restarts, so a background download resumes where
 	// it left off and the downloads page isn't empty on every launch. The folder
 	// is ours: the defaults are shared with any real rqbit install on the machine.
@@ -628,6 +617,22 @@ async fn run_torrent_server(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+	// Both of these write the process environment, which is only sound while no
+	// other thread can be reading it — so they come before the runtime below
+	// starts its workers. Set from the torrent server's own task, this raced GTK
+	// and WebKit reading theirs on the main thread during startup.
+	//
+	// librqbit's HTTP API only allows a fixed CORS allowlist by default
+	// (ports 3031/1420 + tauri://localhost). Widen it so the Nuxt dev server
+	// (any localhost port) and the packaged app can call the API from fetch().
+	// On Android the webview serves the app from http://tauri.localhost, on
+	// Windows from https://tauri.localhost. Read when the HTTP API is built.
+	std::env::set_var(
+		"CORS_ALLOW_REGEXP",
+		r"^(https?://localhost(:\d+)?|https?://127\.0\.0\.1(:\d+)?|tauri://localhost|https?://tauri\.localhost)$"
+	);
+	player::init();
+
 	// librqbit needs a full-featured multi-threaded tokio runtime (DHT, uTP,
 	// HTTP streaming). Build one and hand it to Tauri's async runtime so
 	// `tauri::async_runtime::spawn` schedules onto it.
@@ -637,8 +642,6 @@ pub fn run() {
 		.expect("failed to build tokio runtime");
 	tauri::async_runtime::set(rt.handle().clone());
 	std::mem::forget(rt); // keep the runtime alive for the whole process
-
-	player::init();
 
 	let builder = tauri::Builder::default();
 

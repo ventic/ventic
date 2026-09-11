@@ -255,7 +255,7 @@ export async function findSubtitles(imdbId: string, season = 0, episode = 0, fil
   const results = await Promise.allSettled(bases.map(b => subtitlesFrom(b, path)))
   const failed = results.flatMap(r => r.status === 'rejected' ? [String(r.reason)] : [])
   if (failed.length === results.length)
-    throw new Error(`Subtitle search failed — ${failed[0]}`)
+    throw new Error($t('Subtitle search failed — {reason}', { reason: failed[0]! }))
 
   // Two addons fronting the same OpenSubtitles mirror hand back the same file
   // twice; the first base wins, so a named copy from a source outranks the

@@ -231,7 +231,7 @@ const peers = computed(() => stats.value?.live?.snapshot.peer_stats.live ?? 0)
  * "0 peers" reads as a fault rather than as "not applicable".
  */
 const statusLine = computed(() =>
-  stats.value ? `${speed.value} · ${peers.value} peers · ${progressPct.value.toFixed(0)}%` : '')
+  stats.value ? `${speed.value} · ${$t('{count} peers', { count: peers.value })} · ${progressPct.value.toFixed(0)}%` : '')
 
 const backdrop = computed(() => backdropUrl(title.value?.backdrop, 'w1280'))
 

@@ -54,4 +54,10 @@ export default antfu({
     'unused-imports/no-unused-vars': 'warn',
     'node/prefer-global/process': 'off',
   },
+}, {
+  // Command-line scripts: the console is their output, not a leftover.
+  files: ['scripts/**'],
+  rules: {
+    'no-console': 'off',
+  },
 }, nuxtConfig())

@@ -782,9 +782,14 @@ export function streamUrl(id: number, index: number) {
   return `${ENGINE}/torrents/${id}/stream/${index}`
 }
 
-/** The `{id}/stream/{index}` a stream URL names, or null for a debrid `url`. */
+/**
+ * The `{id}/stream/{index}` a stream URL names on *this* device's engine, or
+ * null for anything else. A cast mirror's URL has the same shape, but its ids
+ * are the sending device's: asked of the engine here, torrent 13 is some other
+ * film or none, and a receiving screen listed that film's subtitles as its own.
+ */
 export function streamParts(url: string) {
-  const m = /\/torrents\/(\d+)\/stream\/(\d+)/.exec(url)
+  const m = url.startsWith(ENGINE) ? /\/torrents\/(\d+)\/stream\/(\d+)/.exec(url) : null
   return m ? { id: Number(m[1]), index: Number(m[2]) } : null
 }
 

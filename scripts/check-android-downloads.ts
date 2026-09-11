@@ -222,5 +222,4 @@ assert.ok(
   'and is boxed directly, since StorageFactoryExt::boxed() would discard that',
 )
 
-// eslint-disable-next-line no-console
 console.log('android downloads: ok')

@@ -29,9 +29,11 @@ export function useMediaFeed(request: MaybeRefOrGetter<FeedRequest | null>) {
   const done = computed(() => page.value >= totalPages.value)
 
   // Bumped on reset so a response from the previous filter can't append to the
-  // new list, and the ids already rendered — TMDB repeats items across pages.
+  // new list, and the titles already rendered — TMDB repeats items across pages.
+  // Keyed by type as well as id: movies and shows are two separate id spaces,
+  // and a mixed feed (search) would otherwise drop whichever of a pair came second.
   let generation = 0
-  const seen = new Set<number>()
+  const seen = new Set<string>()
 
   async function loadMore() {
     if (pending.value || done.value)
@@ -55,12 +57,10 @@ export function useMediaFeed(request: MaybeRefOrGetter<FeedRequest | null>) {
       totalPages.value = Math.min(data.total_pages, 500)
 
       for (const result of data.results) {
-        if (seen.has(result.id))
-          continue
-        seen.add(result.id)
         const media = toMedia(result, request_.type)
-        if (!media)
+        if (!media || seen.has(titleKey(media.type, media.id)))
           continue
+        seen.add(titleKey(media.type, media.id))
         if (request_.keepGenre != null && !media.genreIds.includes(request_.keepGenre))
           continue
         items.value.push(media)

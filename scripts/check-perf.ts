@@ -157,6 +157,5 @@ assert.match(
 )
 assert.match(appearance, /v-model="settings\.reduceEffects"/, 'Appearance needs the switch')
 
-// eslint-disable-next-line no-console
 console.log('check-perf: ok')
 process.exit(0)

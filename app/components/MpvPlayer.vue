@@ -539,15 +539,15 @@ const videoName = ref('')
 async function loadReleaseSubs() {
   release.value = []
   videoName.value = ''
-  const [, id, index] = props.src.match(/\/torrents\/(\d+)\/stream\/(\d+)/) ?? []
-  if (!id)
+  const parts = streamParts(props.src)
+  if (!parts)
     return
-  const files = (await torrentDetails(Number(id)))?.files ?? []
-  const video = files[Number(index)]?.name ?? ''
+  const files = (await torrentDetails(parts.id))?.files ?? []
+  const video = files[parts.index]?.name ?? ''
   videoName.value = video
-  release.value = pickSubtitleFiles(files, Number(index)).map(i => {
+  release.value = pickSubtitleFiles(files, parts.index).map(i => {
     const f = files[i]!
-    const lang = releaseSubtitle(f.components?.join('/') ?? f.name, video, streamUrl(Number(id), i))
+    const lang = releaseSubtitle(f.components?.join('/') ?? f.name, video, streamUrl(parts.id, i))
     return { file: lang.files[0]!, lang }
   })
 }
@@ -723,7 +723,7 @@ function setAudio(t: Track) {
   ipc(['set_property', 'aid', t.id])
   // The filters follow on the next poll — see `layout`, which is what notices
   // that another track is another channel layout.
-  osd(`Audio: ${trackLabel(t)}`)
+  osd($t('Audio: {name}', { name: trackLabel(t) }))
 }
 
 function toggleSubs() {
@@ -808,7 +808,7 @@ function nudgeDelay(delta: number) {
   setDelay(Math.round((subDelay.value + delta) * 10) / 10)
   syncNote.value = ''
   guess.value = null
-  osd(`Subtitle delay ${delayText.value}`)
+  osd($t('Subtitle delay {delay}', { delay: delayText.value }))
 }
 
 /**
@@ -848,15 +848,15 @@ function applyFit(fit: Sync) {
   if (fit.speed !== 1) {
     // A rate error is global, so this one holds for the whole film rather than
     // just the scene it was measured on.
-    syncNote.value = `This file was cut for a different framerate — stretched to fit, delay ${delayText.value}.`
-    osd(`Subtitles synced (${delayText.value}, rate fixed)`, 2500)
+    syncNote.value = $t('This file was cut for a different framerate — stretched to fit, delay {delay}.', { delay: delayText.value })
+    osd($t('Subtitles synced ({delay}, rate fixed)', { delay: delayText.value }), 2500)
   }
   else if (!moved) {
-    syncNote.value = `Already in sync at ${delayText.value}.`
+    syncNote.value = $t('Already in sync at {delay}.', { delay: delayText.value })
   }
   else {
-    syncNote.value = `Delay set to ${delayText.value}.`
-    osd(`Subtitles synced (${delayText.value})`, 2000)
+    syncNote.value = $t('Delay set to {delay}.', { delay: delayText.value })
+    osd($t('Subtitles synced ({delay})', { delay: delayText.value }), 2000)
   }
 }
 
@@ -888,7 +888,7 @@ async function autoSync() {
     }
 
     if (!fit) {
-      syncNote.value = `Not enough has played yet — auto-sync needs about ${Math.round(SYNC_MIN_WINDOW / 60)} minutes of audio to be sure. Nudge the delay for now.`
+      syncNote.value = $t('Not enough has played yet — auto-sync needs about {minutes} minutes of audio to be sure. Nudge the delay for now.', { minutes: Math.round(SYNC_MIN_WINDOW / 60) })
       return
     }
 
@@ -1566,7 +1566,7 @@ async function poll() {
     const saved = props.startAt || (props.media ? library.resumeAt(props.media, props.season, props.episode) : 0)
     if (saved) {
       seekTo(saved)
-      osd(`Resumed at ${fmt(saved)}`, 2500)
+      osd($t('Resumed at {time}', { time: fmt(saved) }), 2500)
     }
   }
 }
@@ -1673,8 +1673,11 @@ function dropThumbs() {
 
 async function onDisk(at: number) {
   const parts = streamParts(props.src)
+  // A plain URL has every byte one range request away. A cast mirror is
+  // another device's torrent with nothing here to ask what it holds, and a
+  // guess of "yes" would have every hover fetch pieces over there.
   if (!parts)
-    return true // a plain URL: every byte is one range request away
+    return !fromCast.value
   pieces ??= await pieceMap(parts.id, parts.index)
   // Refetched as the download grows. A stale bitfield only ever hides a frame
   // we could have shown, never invents one we haven't got.
@@ -1962,7 +1965,7 @@ function isTypingTarget(t: HTMLElement | null) {
 
 function nudgeVolume(delta: number) {
   setVolume(Math.max(0, Math.min(100, volume.value + delta)))
-  osd(`Volume ${volume.value}%`)
+  osd($t('Volume {level}%', { level: volume.value }))
 }
 
 /** mpv reports speed as a float, so match the closest preset rather than ===. */
@@ -2266,7 +2269,19 @@ function fmt(s: number) {
   return `${h > 0 ? `${h}:` : ''}${mm}:${String(sec).padStart(2, '0')}`
 }
 
-const remaining = computed(() => duration.value ? `-${fmt((duration.value - position.value) / speed.value)}` : '')
+/**
+ * The clock the bottom bar draws, held still while the bar is hidden.
+ *
+ * `frame` moves `position` every frame, and everything in the bar read it — so
+ * the bar re-rendered at the full frame rate for the whole film, both sliders
+ * and every tooltip with it, while nobody could see it. Hidden, this reads
+ * nothing but `ui` and hands back what it last showed, so the ticking clock is
+ * no dependency of the bar at all. Held rather than zeroed, so the bar sliding
+ * away still says where it was. The cues read `position` themselves.
+ */
+const clock = computed<number>(held => ui.value ? position.value : held ?? position.value)
+
+const remaining = computed(() => duration.value ? `-${fmt((duration.value - clock.value) / speed.value)}` : '')
 
 /**
  * `position` is for the one caller that can't wait for the library: casting
@@ -2773,10 +2788,10 @@ defineExpose({ osd, position: readonly(position) })
           <span v-if="live" class="flex items-center gap-1.5" :class="TIME">
             <i class="size-2 rounded-full bg-error not-italic" />{{ $t('LIVE') }}
           </span>
-          <span v-else :class="TIME">{{ fmt(position) }}</span>
+          <span v-else :class="TIME">{{ fmt(clock) }}</span>
           <player-slider
             class="min-w-0 flex-1"
-            :model-value="position"
+            :model-value="clock"
             :max="duration || 1"
             :buffered="cacheEnd"
             :format="fmt"

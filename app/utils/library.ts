@@ -244,7 +244,6 @@ export function playedTitles(progress: Record<string, Progress>) {
   return [...latest.entries()].sort((a, b) => b[1] - a[1]).map(([title]) => title)
 }
 
-/** What a card stands in with when this device knows nothing but the id. */
 /**
  * Deliberately NOT translated. This is a sentinel as much as a label: it is
  * written into the stored card (`slim`) and read back by the library store to
@@ -285,7 +284,7 @@ export function remainingText(p?: Progress | null) {
   if (!p || p.watched || !p.duration)
     return ''
   const minutes = Math.round((p.duration - p.position) / 60)
-  return minutes > 0 ? `${runtimeText(minutes)} left` : ''
+  return minutes > 0 ? $t('{time} left', { time: runtimeText(minutes) }) : ''
 }
 
 /**
