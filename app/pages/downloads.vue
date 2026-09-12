@@ -226,7 +226,7 @@ async function add() {
         <v-spacer />
 
         <v-btn icon variant="text" color="on-surface" :disabled="!downloads.list.length" @click="all(paused ? 'start' : 'pause')">
-          <v-icon :icon="paused ? mdiPlay : mdiPause" />
+          <v-icon :icon="paused ? mdiTrayArrowDown : mdiPause" />
           <v-tooltip activator="parent" :text="paused ? $t('Resume all') : $t('Pause all')" />
         </v-btn>
         <v-btn :prepend-icon="mdiMagnetOn" variant="tonal" @click="adding = true">
@@ -324,7 +324,7 @@ async function add() {
             :class="ACT"
             @click="toggle(t)"
           >
-            <svg viewBox="0 0 24 24" class="size-6 fill-current"><path :d="t.stats?.state === 'paused' ? mdiPlay : mdiPause" /></svg>
+            <svg viewBox="0 0 24 24" class="size-6 fill-current"><path :d="t.stats?.state === 'paused' ? mdiTrayArrowDown : mdiPause" /></svg>
           </button>
           <button v-tooltip:top="$t('More')" type="button" :class="ACT" @click="openMenu(t, $event)">
             <svg viewBox="0 0 24 24" class="size-6 fill-current"><path :d="mdiDotsVertical" /></svg>
@@ -367,7 +367,7 @@ async function add() {
       <v-list nav density="comfortable" class="min-w-52">
         <!-- The only pause/resume a phone has: the row's own is off below `sm`. -->
         <v-list-item
-          :prepend-icon="menuFor?.stats?.state === 'paused' ? mdiPlay : mdiPause"
+          :prepend-icon="menuFor?.stats?.state === 'paused' ? mdiTrayArrowDown : mdiPause"
           :title="menuFor?.stats?.state === 'paused' ? $t('Resume') : $t('Pause')"
           rounded="lg"
           @click="pick(toggle)"
