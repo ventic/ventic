@@ -43,22 +43,33 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
     <!-- The panel is its own picture rather than a hole onto the app backdrop:
          that one is off entirely in two of the three backdrop modes, and a hero
          with nothing behind it is worse than no hero. -->
-    <section class="relative mx-4 mt-2 h-[42vh] min-h-64 overflow-hidden rounded-2xl md:mx-6 md:h-[46vh]">
+    <section class="relative mx-4 mt-2 h-[42vh] min-h-64 overflow-hidden rounded-2xl bg-black/75 md:mx-6 md:h-[56vh]">
       <transition
         enter-active-class="transition-opacity duration-500"
         leave-active-class="transition-opacity duration-500"
         enter-from-class="opacity-0"
         leave-to-class="opacity-0"
       >
-        <div v-if="featured" :key="featured.id" class="absolute inset-0">
+        <!-- From md up the art keeps its own 16:9 and sits right, dissolving into
+             the panel's ground under the copy: stretched across a 3:1 panel it
+             lost half its height, which is where the faces are. A phone is
+             narrower than the picture, so there it still fills the panel. Vue
+             falls back to -webkit-mask-image itself on a webview before Chrome 120. -->
+        <div
+          v-if="featured"
+          :key="featured.id"
+          class="absolute right-0 top-0 h-full w-full md:aspect-video md:w-auto md:max-w-full"
+          :style="smAndDown ? undefined : { maskImage: 'linear-gradient(to right, transparent, #000 50%)' }"
+        >
           <media-poster :src="backdropUrl(featured.backdrop, 'w1280')" :alt="featured.title" />
         </div>
       </transition>
 
       <!-- White text on somebody else's photograph: the copy needs its own
-           darkness under it, in both directions, whatever the theme is doing. -->
+           darkness under it, in both directions, whatever the theme is doing.
+           From md up the mask already is the sideways half. -->
       <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
-      <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/25 to-transparent" />
+      <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/25 to-transparent md:hidden" />
 
       <div v-if="featured" class="relative h-full flex flex-col justify-end gap-2 p-4 text-white md:p-6">
         <div class="flex items-center gap-2">
@@ -70,7 +81,7 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
           </span>
         </div>
 
-        <h1 class="max-w-3xl text-headline-medium font-bold drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)] md:text-display-small">
+        <h1 class="max-w-3xl text-headline-medium font-bold drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)] md:text-display-small xl:text-display-medium">
           {{ featured.title }}
         </h1>
 
@@ -78,7 +89,7 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
           {{ featured.overview }}
         </p>
 
-        <!-- gap-y: on a phone the posters wrap under the buttons, and a bare
+        <!-- gap-y: on a phone the pills wrap under the buttons, and a bare
              gap-2 leaves them touching. Four `large` controls come to 372px,
              which is wider than a phone — so below sm they take the normal
              size, and the two icons are one element so a wrap can never leave
@@ -87,7 +98,7 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
           <v-btn :prepend-icon="mdiPlay" :size="smAndDown ? 'default' : 'large'" :to="library.resumeLink(featured)">
             {{ $t('Play') }}
           </v-btn>
-          <v-btn :prepend-icon="mdiInformationOutline" :size="smAndDown ? 'default' : 'large'" variant="tonal" :to="mediaLink(featured)">
+          <v-btn :prepend-icon="mdiInformationOutline" :size="smAndDown ? 'default' : 'large'" variant="tonal" color="white" :to="mediaLink(featured)">
             {{ $t('Details') }}
           </v-btn>
           <div class="flex items-center">
@@ -103,22 +114,26 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
 
           <v-spacer />
 
-          <!-- Posters, not dots: they say which title you are switching to, and
-               they are a real target for a thumb and for a remote. Buttons, so
-               the d-pad reaches them from Play along the same row. -->
-          <div class="flex gap-2">
+          <!-- Pills, not posters: five ringed thumbnails were a second row of
+               cards competing with the art. Still 40px buttons, so the d-pad
+               reaches them from Play along the same row and a thumb can hit one;
+               focus switches the title, and the tooltip names it for a mouse. -->
+          <div class="flex">
             <button
               v-for="(media, index) in spotlight"
               :key="media.id"
+              v-tooltip:top="media.title"
               type="button"
-              class="h-15 w-10 shrink-0 overflow-hidden rounded-lg outline-none ring-2 ring-white/25 transition-all md:h-18 md:w-12 hover:ring-white focus-visible:ring-white"
-              :class="index === at ? 'ring-primary opacity-100' : 'opacity-60'"
+              class="group grid h-10 place-items-center rounded-full border-0 bg-transparent px-1.5"
               :aria-label="media.title"
               :aria-current="index === at"
               @click="at = index"
               @focus="at = index"
             >
-              <media-poster :src="posterUrl(media.poster, 'w185')" :alt="media.title" />
+              <span
+                class="h-1.5 rounded-full transition-all duration-300"
+                :class="index === at ? 'w-7 bg-white' : 'w-3 bg-white/40 group-hover:bg-white/75 group-focus-visible:bg-white/75'"
+              />
             </button>
           </div>
         </div>
