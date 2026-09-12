@@ -283,6 +283,9 @@ fn mpv_binary(app: &tauri::AppHandle) -> std::ffi::OsString {
 /// (i.e. the webview viewport origin). The frontend keeps this in sync via
 /// `player_set_geometry` as its DOM box moves/resizes.
 #[tauri::command]
+// Each argument is a field of the IPC payload, matched by name to what the
+// frontend sends, so they stay separate however many there are.
+#[allow(clippy::too_many_arguments)]
 pub fn player_start(
 	app: tauri::AppHandle,
 	window: tauri::WebviewWindow,

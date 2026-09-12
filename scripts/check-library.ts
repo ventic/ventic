@@ -5,7 +5,7 @@ import type { KeyStore } from '../app/utils/backup'
 import type { Media } from '../app/utils/tmdb'
 import assert from 'node:assert'
 import { applyBackup, backupSummary, makeBackup, readBackup } from '../app/utils/backup'
-import { arrange, continuing, finished, fraction, kindOf, nextEpisode, parseKey, placeholder, playedTitles, progressKey, remainingText, resumable, showEntries, slim, UNKNOWN_TITLE, watchBar, watchedInSeason } from '../app/utils/library'
+import { arrange, continuing, finished, fraction, kindOf, nextEpisode, parseKey, placeholder, playedTitles, progressKey, remainingText, resumable, showEntries, showIndex, slim, UNKNOWN_TITLE, watchBar, watchedInSeason } from '../app/utils/library'
 import { mediaLink } from '../app/utils/tmdb'
 
 // `mediaLink` runs its path through Nuxt's auto-imported `localePath`, which
@@ -228,6 +228,16 @@ assert.equal(watchBar({}, show), null)
 const bar = watchBar(stored, show)
 assert.equal(bar?.label, 'S2 E3 · 1/33')
 assert.ok(Math.abs(bar!.fraction - (1 + 1 / 6) / TOTAL) < 1e-9)
+
+// The store hands the bar its show's episodes out of one index instead of
+// scanning the map per card, so the index has to be the scan exactly — the
+// order, the same-millisecond tie and the prefix rule included.
+const everything = { ...stored, ...batch, 'tv:13:1:1': entry(0, 0, 50, true), 'tv:1396': entry(0, 0, 10, true) }
+const index = showIndex(everything)
+for (const id of ['1396', '1399', '13'])
+  assert.deepEqual(index.get(id), showEntries(everything, id), `the index agrees with a scan for show ${id}`)
+assert.deepEqual([...index.keys()].sort(), ['13', '1396', '1399'], 'films and a show marked by hand are not episodes')
+assert.deepEqual(watchBar(stored, show, showIndex(stored).get('1396')), bar, 'handing the bar its episodes changes nothing')
 
 // The finale of a season: the count says where you are, the label where you go.
 assert.deepEqual(

@@ -539,15 +539,18 @@ const videoName = ref('')
 async function loadReleaseSubs() {
   release.value = []
   videoName.value = ''
-  const parts = streamParts(props.src)
+  // Ours, or — for a film cast here — the sending device's mirror, which
+  // answers the same questions read-only and has the files on its own disk.
+  const own = streamParts(props.src)
+  const parts = own ? { ...own, engine: ENGINE } : mirrorParts(props.src)
   if (!parts)
     return
-  const files = (await torrentDetails(parts.id))?.files ?? []
+  const files = (await torrentDetails(parts.id, parts.engine))?.files ?? []
   const video = files[parts.index]?.name ?? ''
   videoName.value = video
   release.value = pickSubtitleFiles(files, parts.index).map(i => {
     const f = files[i]!
-    const lang = releaseSubtitle(f.components?.join('/') ?? f.name, video, streamUrl(parts.id, i))
+    const lang = releaseSubtitle(f.components?.join('/') ?? f.name, video, streamUrl(parts.id, i, parts.engine))
     return { file: lang.files[0]!, lang }
   })
 }

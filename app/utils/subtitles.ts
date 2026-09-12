@@ -27,6 +27,8 @@
  * won't: how long it runs, how many lines it has, and whether it is the
  * captioned cut — see `fitsRuntime`.
  */
+import { fetch as tauriFetch } from '@tauri-apps/plugin-http'
+import { mirrored } from './cast'
 import { imdbIdByTitle, runtimeText } from './tmdb'
 import { configuredSources } from './torrents'
 
@@ -401,7 +403,10 @@ export async function probe(s: Subtitle): Promise<SubtitleFile> {
 
   let text = ''
   try {
-    const res = await fetch(s.url, { signal: AbortSignal.timeout(20000) })
+    // A release's own file on a cast mirror is another device on the LAN, so it
+    // goes through Rust for the reason `torrentDetails` gives.
+    const get = mirrored(s.url) && '__TAURI_INTERNALS__' in globalThis ? tauriFetch : fetch
+    const res = await get(s.url, { signal: AbortSignal.timeout(20000) })
     text = res.ok ? await res.text() : ''
   }
   catch {

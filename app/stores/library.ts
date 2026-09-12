@@ -84,6 +84,16 @@ export const useLibraryStore = defineStore('library', () => {
 
   // --- Reads -----------------------------------------------------------------
 
+  /**
+   * Every show's episodes, newest first, worked out once per change to
+   * `progress` instead of once for every card that asks — see `showIndex`.
+   */
+  const shows = computed(() => showIndex(progress.value))
+
+  function episodesOf(showId: number | string) {
+    return shows.value.get(String(showId)) ?? []
+  }
+
   function episodeProgress(showId: number | string, season: number, episode: number) {
     return progress.value[progressKey('tv', showId, season, episode)]
   }
@@ -95,7 +105,7 @@ export const useLibraryStore = defineStore('library', () => {
 
   /** The episode a show should pick up from, before the next-episode rollover. */
   function lastEpisode(showId: number | string) {
-    const entry = showEntries(progress.value, showId)[0]
+    const entry = episodesOf(showId)[0]
     if (!entry)
       return null
     const { season, episode } = parseKey(entry[0])
@@ -110,7 +120,7 @@ export const useLibraryStore = defineStore('library', () => {
     if (m.type === 'movie')
       return progress.value[titleKey('movie', m.id)]
     // A show marked watched by hand has no episode entry to point at.
-    return showEntries(progress.value, m.id)[0]?.[1] ?? progress.value[titleKey('tv', m.id)]
+    return episodesOf(m.id)[0]?.[1] ?? progress.value[titleKey('tv', m.id)]
   }
 
   /**
@@ -120,7 +130,7 @@ export const useLibraryStore = defineStore('library', () => {
    * the whole point of it for a show.
    */
   function cardBar(m: Pick<Media, 'id' | 'type'>) {
-    return watchBar(progress.value, media.value[titleKey(m.type, m.id)] ?? (m as Media))
+    return watchBar(progress.value, media.value[titleKey(m.type, m.id)] ?? (m as Media), m.type === 'tv' ? episodesOf(m.id) : undefined)
   }
 
   /**

@@ -106,23 +106,48 @@ export function nextEpisode(
 }
 
 /**
+ * Most recently played first. Marking a run of episodes at once stamps every one
+ * of them in the same millisecond, so the latest episode has to win that tie:
+ * otherwise "watched up to E5" would have the show resuming at E1.
+ */
+function latestFirst([aKey, a]: [string, Progress], [bKey, b]: [string, Progress]) {
+  if (a.at !== b.at)
+    return b.at - a.at
+  const x = parseKey(aKey)
+  const y = parseKey(bKey)
+  return y.season - x.season || y.episode - x.episode
+}
+
+/**
  * Every episode of one show, most recently played first. The store keeps one
  * flat map, so a show's episodes are found by prefix rather than by nesting.
  */
 export function showEntries(progress: Record<string, Progress>, showId: number | string) {
   const prefix = `tv:${showId}:`
-  return Object.entries(progress)
-    .filter(([key]) => key.startsWith(prefix))
-    // Marking a run of episodes at once stamps every one of them in the same
-    // millisecond, so the latest episode has to win that tie: otherwise
-    // "watched up to E5" would have the show resuming at E1.
-    .sort(([aKey, a], [bKey, b]) => {
-      if (a.at !== b.at)
-        return b.at - a.at
-      const x = parseKey(aKey)
-      const y = parseKey(bKey)
-      return y.season - x.season || y.episode - x.episode
-    })
+  return Object.entries(progress).filter(([key]) => key.startsWith(prefix)).sort(latestFirst)
+}
+
+/**
+ * `showEntries` for every show at once, keyed by show id: one pass over the map
+ * where a grid of show cards used to make one each — every card scanning every
+ * episode ever played, for a bar that only wants its own show's handful.
+ */
+export function showIndex(progress: Record<string, Progress>) {
+  const shows = new Map<string, [string, Progress][]>()
+  for (const entry of Object.entries(progress)) {
+    // Exactly the keys that prefix matches: `tv:<id>:` and anything after it.
+    const [type, id = '', ...rest] = entry[0].split(':')
+    if (type !== 'tv' || !rest.length)
+      continue
+    const list = shows.get(id)
+    if (list)
+      list.push(entry)
+    else
+      shows.set(id, [entry])
+  }
+  for (const list of shows.values())
+    list.sort(latestFirst)
+  return shows
 }
 
 /**
@@ -204,14 +229,17 @@ export interface WatchBar {
  * episode played, which is what it always did.
  *
  * Null when there is nothing to draw — never played, or played right out.
+ *
+ * `episodes` is the show's own `showEntries`, for a caller already holding them
+ * (the store's `showIndex`); left out, they are looked up here.
  */
-export function watchBar(progress: Record<string, Progress>, m: Media): WatchBar | null {
+export function watchBar(progress: Record<string, Progress>, m: Media, episodes?: [string, Progress][]): WatchBar | null {
   if (m.type !== 'tv') {
     const p = progress[titleKey('movie', m.id)]
     return p && !p.watched && fraction(p) > 0 ? { fraction: fraction(p), label: '' } : null
   }
 
-  const entries = showEntries(progress, m.id)
+  const entries = episodes ?? showEntries(progress, m.id)
   // A show marked watched by hand has no episode entry to measure against.
   const [key, latest] = entries[0] ?? []
   const at = latest ?? progress[titleKey('tv', m.id)]

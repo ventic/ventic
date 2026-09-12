@@ -137,6 +137,9 @@ impl Player {
 /// — the pair is what lets the surface be placed by ratio instead of by a guess
 /// at the display's backing scale.
 #[tauri::command]
+// Each argument is a field of the IPC payload, matched by name to what the
+// frontend sends, so they stay separate however many there are.
+#[allow(clippy::too_many_arguments)]
 pub fn player_start(
 	app: tauri::AppHandle,
 	window: tauri::WebviewWindow,
@@ -257,6 +260,8 @@ pub fn player_props(state: tauri::State<'_, PlayerState>, names: Vec<String>) ->
 /// Track the frontend's video box. No cutouts: the page is in front of the
 /// picture here, so it needs no holes cut for it.
 #[tauri::command]
+// Named IPC fields, as `player_start`'s are.
+#[allow(clippy::too_many_arguments)]
 pub fn player_set_geometry(
 	app: tauri::AppHandle,
 	x: i32,

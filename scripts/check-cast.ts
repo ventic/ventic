@@ -8,7 +8,7 @@
 import assert from 'node:assert'
 import { readFileSync } from 'node:fs'
 import process from 'node:process'
-import { CAST_PORT, castable, castRoute, castUrl, MIRROR_PORT, mirrored, newCode, subnet } from '../app/utils/cast'
+import { CAST_PORT, castable, castRoute, castUrl, MIRROR_PORT, mirrored, mirrorParts, newCode, subnet } from '../app/utils/cast'
 import { ENGINE } from '../app/utils/torrents'
 import './i18n-stub'
 
@@ -190,6 +190,16 @@ assert.ok(
 // URL this device is serving can be blocked by this device's own firewall.
 assert.ok(mirrored(`http://192.168.1.5:${MIRROR_PORT}/torrents/3/stream/0`), 'ours to serve, ours to unblock')
 assert.ok(!mirrored(link), 'a debrid link is not this device\'s firewall to answer for')
+
+// A film cast here asks the device it came from about the release — its own
+// subtitles are on that disk, not this one — and the ids in the URL are that
+// engine's. Our own engine's URLs are not a mirror's, and nor is anything else.
+assert.deepEqual(
+  mirrorParts(`http://192.168.1.5:${MIRROR_PORT}/torrents/13/stream/6`),
+  { engine: `http://192.168.1.5:${MIRROR_PORT}`, id: 13, index: 6 },
+)
+assert.equal(mirrorParts(`${ENGINE}/torrents/13/stream/6`), null, 'our own engine is not a mirror')
+assert.equal(mirrorParts(link), null, 'nor is a debrid link')
 assert.ok(!mirrored('http://192.168.1.5:8096/stream'), 'another server on the LAN is not the mirror')
 assert.ok(!mirrored('/home/someone/a.mkv'), 'not a URL at all')
 

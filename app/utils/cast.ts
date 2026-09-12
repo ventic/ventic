@@ -201,6 +201,17 @@ export function mirrored(url: string) {
   }
 }
 
+/**
+ * The torrent and file a cast mirror's stream URL names, and the mirror to ask
+ * about them: the sending device's engine, read-only, which answers the same
+ * `GET /torrents/{id}` ours does. Null for anything that isn't a mirror — our
+ * own engine's URLs are `streamParts`', and its ids mean nothing over there.
+ */
+export function mirrorParts(url: string) {
+  const m = mirrored(url) ? /\/torrents\/(\d+)\/stream\/(\d+)/.exec(url) : null
+  return m ? { engine: new URL(url).origin, id: Number(m[1]), index: Number(m[2]) } : null
+}
+
 /** Why a cast didn't happen, and the one-line fix where there is one. */
 export interface CastProblem {
   message: string

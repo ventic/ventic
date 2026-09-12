@@ -11,6 +11,7 @@
  * and JSON, so a source needs no sandbox, no manifest, and runs no code of
  * ours — the fan-out below is the entire "plugin system".
  */
+import { fetch as tauriFetch } from '@tauri-apps/plugin-http'
 import { deviceCodecs, hasNativePlayer } from './htmlvideo'
 // Explicit, not auto-imported: the check script loads this file outside Nuxt.
 import { parseKey, progressKey } from './library'
@@ -767,10 +768,18 @@ export async function engineReason(url: string) {
   return stats.progress_bytes ? '' : STALLED
 }
 
-/** One torrent with its file list — the list endpoint doesn't carry files. */
-export async function torrentDetails(id: number): Promise<EngineTorrent | null> {
+/**
+ * One torrent with its file list — the list endpoint doesn't carry files.
+ *
+ * `engine` is ours unless a film cast here is asking the device it came from
+ * (see `mirrorParts`). That is another address on the LAN, which a webview may
+ * not be let read whatever it answers, so it goes through Rust — as every other
+ * request to another device does (utils/cast.ts).
+ */
+export async function torrentDetails(id: number, engine = ENGINE): Promise<EngineTorrent | null> {
   try {
-    const res = await fetch(`${ENGINE}/torrents/${id}`)
+    const get = engine === ENGINE || !('__TAURI_INTERNALS__' in globalThis) ? globalThis.fetch : tauriFetch
+    const res = await get(`${engine}/torrents/${id}`)
     return res.ok ? await res.json() as EngineTorrent : null
   }
   catch {
@@ -778,8 +787,8 @@ export async function torrentDetails(id: number): Promise<EngineTorrent | null> 
   }
 }
 
-export function streamUrl(id: number, index: number) {
-  return `${ENGINE}/torrents/${id}/stream/${index}`
+export function streamUrl(id: number, index: number, engine = ENGINE) {
+  return `${engine}/torrents/${id}/stream/${index}`
 }
 
 /**

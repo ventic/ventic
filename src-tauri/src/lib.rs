@@ -418,6 +418,10 @@ struct DiskSpace {
 /// `path` is the storage folder from settings, which can be on another drive
 /// than the default one; without it the app's own cache folder is measured.
 #[tauri::command]
+// The casts below are no-ops on this target and not on others: statvfs's
+// fields are `c_ulong` and `fsblkcnt_t`, which are u32 on 32-bit Android (the
+// TV boxes) and u32 for macOS's block counts. Dropping them breaks both builds.
+#[allow(clippy::unnecessary_cast)]
 fn disk_space(app: tauri::AppHandle, path: Option<String>) -> Result<DiskSpace, String> {
 	let dir = match path.as_deref().map(str::trim).filter(|p| !p.is_empty()) {
 		Some(p) => PathBuf::from(p),

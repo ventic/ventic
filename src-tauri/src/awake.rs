@@ -81,7 +81,11 @@ mod platform {
 	/// taking them on a connection of their own means the release cannot fail:
 	/// `UnInhibit` is asked politely, and then the socket goes away and the
 	/// desktop cleans up regardless.
-	static HELD: Mutex<Option<(Connection, Vec<(usize, u32)>)>> = Mutex::new(None);
+	static HELD: Mutex<Option<Held>> = Mutex::new(None);
+
+	/// The connection, and the cookie each service answered with by its index
+	/// in `SERVICES`.
+	type Held = (Connection, Vec<(usize, u32)>);
 
 	pub fn set(on: bool) {
 		let Ok(mut held) = HELD.lock() else {
