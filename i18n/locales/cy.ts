@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Mae copi sy'n llawer ysgafnach na'r lleill o'r un maint, neu heb ddigon o hadwyr i ddal i fyny, yn cael ei restru yn yr haen islaw — dyna'r 1080p sy'n 1080p ar y label yn unig.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Ni ellir darlledu ffeil o ddisg y ddyfais hon ei hun — nid oes ffordd i'r ddyfais arall ei hagor.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Mae iaith nad oes neb wedi gorffen ei chyfieithu yn syrthio'n ôl i'r Saesneg fesul llinell, felly does dim byd byth yn wag.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Mae terfyn a osodwch yma yn dal i fod mewn grym wrth chwarae hefyd, lle byddai'r nenfwd awtomatig fel arall yn gostwng yr hadu i chwarter y llinell er mwyn i'r ffrwd allu dal i fyny.",
   "A link asked Ventic to start searching:": "Gofynnodd dolen i Ventic ddechrau chwilio:",

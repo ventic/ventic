@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Una copia molto più leggera delle altre della sua stessa taglia, o con troppo pochi seeder per stare al passo, viene classificata nel livello inferiore: è il 1080p che è 1080p solo sull'etichetta.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Un file dal disco di questo dispositivo non può essere trasmesso — l'altro dispositivo non ha modo di aprirlo.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Una lingua che nessuno ha finito di tradurre ricade sull'inglese riga per riga, così non resta mai nulla vuoto.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Un limite impostato qui vale anche durante la riproduzione, dove il tetto automatico altrimenti ridurrebbe il seeding a un quarto della linea perché lo streaming stia al passo.",
   "A link asked Ventic to start searching:": "Un link ha chiesto a Ventic di iniziare a cercare su:",

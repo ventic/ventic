@@ -8,7 +8,7 @@
 import assert from 'node:assert'
 import { readFileSync } from 'node:fs'
 import process from 'node:process'
-import { CAST_PORT, castable, castRoute, castUrl, MIRROR_PORT, mirrored, mirrorParts, newCode, subnet } from '../app/utils/cast'
+import { CAST_PORT, castRoute, castUrl, MIRROR_PORT, mirrored, mirrorParts, newCode, subnet } from '../app/utils/cast'
 import { ENGINE } from '../app/utils/torrents'
 import './i18n-stub'
 
@@ -32,14 +32,11 @@ const link = 'https://example.invalid/some/film.mkv'
 assert.equal(castUrl(link, MIRROR), link)
 assert.equal(castUrl('http://example.invalid/live/one.m3u8', MIRROR), 'http://example.invalid/live/one.m3u8')
 
-// A file the user attached from this machine's own disk. Nothing on the other
-// device can open it, and the button is not drawn rather than failing late.
-assert.equal(castUrl('/home/someone/Films/thing.mkv', MIRROR), null)
-assert.equal(castUrl('C:\\Users\\someone\\thing.mkv', MIRROR), null)
-
-// `castable` is what the button asks, so it has to agree with what would happen.
-for (const src of [`${ENGINE}/torrents/1/stream/0`, link, '/home/someone/a.mkv', 'C:\\a.mkv'])
-  assert.equal(castable(src), castUrl(src, MIRROR) !== null, `castable disagrees for ${src}`)
+// A file the user attached from this machine's own disk goes out through the
+// mirror as well. Only its name travels, for the other player to read an
+// extension off: the path is `cast_share`'s, and the request never names one.
+assert.equal(castUrl('/home/someone/Films/thing.mkv', MIRROR), 'http://192.168.1.5:3231/upnp/file/thing.mkv')
+assert.equal(castUrl('C:\\Users\\someone\\my film.mkv', MIRROR), 'http://192.168.1.5:3231/upnp/file/my%20film.mkv')
 
 // --- Finding the other device -------------------------------------------------
 
@@ -324,6 +321,24 @@ assert.match(
   /hunt\?\.abort\(\)[\s\S]{0,400}await sweeping\?\./,
   'a cast waits for the sweep to be down before handing the film over',
 )
+
+// A film cast from this disk is served on the mirror's port, so a firewall in
+// the way is this device's to answer for — and there is no torrent behind it to
+// ask the sending engine about.
+const file = castUrl('/home/someone/a.mkv', MIRROR)
+assert.ok(mirrored(file), 'a file from this disk is ours to serve, ours to unblock')
+assert.equal(mirrorParts(file), null, 'and has no torrent behind it')
+
+// That URL only plays if the mirror has the route — librqbit nests the router it
+// is handed under `/upnp` — and has been told which file. The request names
+// none, so the network reaches the one being cast and nothing else on the disk.
+assert.match(
+  rust,
+  /make_http_api_and_run\(listener, Some\(Router::new\(\)\.route\("\/file\/\{name\}", get\(shared_file\)\)\)\)/,
+  'the mirror serves the file castUrl points at',
+)
+assert.match(read('app/utils/cast.ts'), /'cast_share', \{ enable, file:/, 'shareEngine tells the mirror which file')
+assert.match(button, /shareEngine\(true, props\.src\)/, 'and the cast button hands it what is playing')
 
 console.log('cast: ok')
 process.exit(0)

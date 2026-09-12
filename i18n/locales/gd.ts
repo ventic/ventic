@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Tha lethbhreac a tha fada nas aotroime na càch den aon mheud, no aig nach eil sìoladairean gu leòr gus cumail suas, air a chur san ìre gu h-ìosal — sin an 1080p nach eil na 1080p ach air an leubail.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Cha ghabh faidhle o dhiosga an uidheim seo fhèin a chraoladh — chan eil dòigh aig an uidheam eile air fhosgladh.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Cànan nach do chrìochnaich duine eadar-theangachadh, tillidh e gu Beurla loidhne air loidhne, agus mar sin cha bhi dad falamh a-riamh.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Bidh crìoch a shuidhicheas tu an-seo an sàs rè cluich cuideachd, far am biodh a' mhullach fèin-obrachail a' leigeil an t-sìolachaidh sìos gu cairteal na loidhne gus an cùm an sruth suas.",
   "A link asked Ventic to start searching:": "Dh'iarr ceangal air Ventic tòiseachadh a' lorg aig:",

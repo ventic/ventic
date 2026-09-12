@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Un kopia ni mås dikike' ki i palu siha ni parehu i mineddong-ña, pat ni didide' ha' na seeder para u sigi, ma po'lo gi nivét ni gi papa' — enao i 1080p ni 1080p ha' gi etiketa.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Un file ginen i disk-ña este na device ti siña ma cast — i otro device taya' kaminu para u baba.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Un lengguåhi ni taya' kumumple ha tradusi ha kontinuha ni Engles, liñia yan liñia, pot enao taya' nai bakånte.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "I limite ni un pega guini ha sigi ha' lokkue' anai mama'playing, sa' i automåtiko na limite siña ha bahaha i seeding asta un kuåtto na påtte i liñia para u sigi i stream.",
   "A link asked Ventic to start searching:": "Guaha link ni ha faisen si Ventic para u tutuhon manaligao gi:",

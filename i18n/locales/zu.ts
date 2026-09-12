@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Ikhophi elula kakhulu kunezinye zosayizi wayo, noma enama-seeder ambalwa kakhulu ukuze ihambisane, ibekwa ezingeni elingezansi — yileyo i-1080p eyi-1080p ngelebula kuphela.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Ifayela elivela edeskini yale divayisi uqobo alikwazi ukusakazwa — enye idivayisi ayinandlela yokulivula.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Ulimi okungekho muntu oqede ukuluhumusha lubuyela esiNgisini umugqa nomugqa, ngakho akukho lutho oluhlala lungenalutho.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Umkhawulo owusetha lapha usebenza nangesikhathi sokudlala, lapho umkhawulo ozenzakalelayo ubuzokwehlisa ukwabelana kufike engxenyeni yesine yomugqa ukuze isakazo likwazi ukuqhubeka.",
   "A link asked Ventic to start searching:": "Isixhumanisi sicele u-Ventic ukuthi aqale ukusesha:",

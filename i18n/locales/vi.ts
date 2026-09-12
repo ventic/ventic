@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Bản sao nhẹ hơn hẳn những bản cùng cỡ, hoặc có quá ít seeder để theo kịp, sẽ được xếp xuống bậc dưới — đó chính là bản 1080p chỉ là 1080p trên nhãn.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Không thể truyền tệp nằm trên ổ đĩa của chính thiết bị này — thiết bị kia không có cách nào mở nó.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Ngôn ngữ chưa ai dịch xong sẽ quay về tiếng Anh theo từng dòng, nên không bao giờ có chỗ nào bị trống.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Giới hạn bạn đặt ở đây vẫn có hiệu lực trong lúc phát, nơi mà trần tự động lẽ ra đã hạ việc chia sẻ xuống còn một phần tư đường truyền để luồng phát theo kịp.",
   "A link asked Ventic to start searching:": "Một liên kết đã yêu cầu Ventic bắt đầu tìm kiếm:",

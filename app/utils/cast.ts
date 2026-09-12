@@ -53,35 +53,31 @@ export interface CastPlay {
 }
 
 /**
- * The stream URL to hand the other device, or null when there is nothing it
- * could open.
+ * The stream URL to hand the other device.
  *
  * The engine's own address is the loopback one, which on the receiving device
  * means *its* engine — so it has to be swapped for the mirror's before it is
- * sent anywhere. Everything else is already a URL that any device can fetch.
+ * sent anywhere. A link is already a URL that any device can fetch.
  */
-export function castUrl(src: string, base: string): string | null {
+export function castUrl(src: string, base: string): string {
   if (src.startsWith(ENGINE))
     return base + src.slice(ENGINE.length)
 
   // A debrid link or a live channel: the other device fetches it from wherever
   // this one would have, and needs nothing from us but the address.
-  if (/^https?:\/\//i.test(src))
+  if (!isPath(src))
     return src
 
-  // A file on this machine's own disk (see LocalFileButton). Nothing on the
-  // other device can open a path that only exists here, and serving it would be
-  // a second file server with a second set of rules about what may leave.
-  return null
+  // A file on this machine's own disk (see LocalFileButton), served by the
+  // mirror beside the torrents — `/upnp` is where librqbit mounts a router of
+  // ours (see `shared_file` in cast.rs). Only the name travels, for the other
+  // player to read an extension off: the path goes to `cast_share` instead.
+  return `${base}/upnp/file/${encodeURIComponent(src.split(/[\\/]/).pop()!)}`
 }
 
-/**
- * Is there anything here another device could be handed? Asked before the
- * button is drawn, so a film opened from this machine's own disk offers no
- * cast rather than failing at the last step.
- */
-export function castable(src: string) {
-  return src.startsWith(ENGINE) || /^https?:\/\//i.test(src)
+/** A path on this machine's own disk rather than a URL — see LocalFileButton. */
+function isPath(src: string) {
+  return !/^https?:\/\//i.test(src)
 }
 
 /**
@@ -322,9 +318,13 @@ export async function castAddress(): Promise<string> {
  * page (the whole point is putting the phone down), but leaving it up for the
  * session would keep the film readable by the network long after it stopped
  * being played, and on Android would hold a wake lock with it.
+ *
+ * `src` is what is being cast. A file from this disk is the one thing the
+ * mirror has to be *told* about: it serves that path and no other, until the
+ * next cast or the stop replaces it.
  */
-export async function shareEngine(enable: boolean): Promise<string> {
-  return await invoke<string | null>('cast_share', { enable }) ?? ''
+export async function shareEngine(enable: boolean, src = ''): Promise<string> {
+  return await invoke<string | null>('cast_share', { enable, file: src && isPath(src) ? src : null }) ?? ''
 }
 
 /**

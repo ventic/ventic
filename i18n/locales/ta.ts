@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "தன் அளவிலுள்ள மற்றவற்றைவிட மிகவும் இலகுவான நகல், அல்லது ஈடுகொடுக்கப் போதிய சீடர்கள் இல்லாத நகல், ஒரு படி கீழே வரிசைப்படுத்தப்படுகிறது — லேபிளில் மட்டுமே 1080p ஆக இருக்கும் 1080p அதுதான்.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "இந்தச் சாதனத்தின் சொந்த வட்டில் உள்ள கோப்பை அனுப்ப முடியாது — மற்றச் சாதனத்திற்கு அதைத் திறக்க வழியில்லை.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "யாரும் முழுமையாக மொழிபெயர்க்காத மொழி வரி வரியாக ஆங்கிலத்திற்குத் திரும்புகிறது, அதனால் எதுவும் வெறுமையாக இருப்பதில்லை.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "இங்கே நீங்கள் அமைக்கும் வரம்பு இயக்கத்தின் போதும் பொருந்தும்; இல்லையெனில் தானியங்கி உச்சவரம்பு, ஸ்ட்ரீம் தொடர்ந்து இயங்க வேண்டி, சீடிங்கை இணைப்பின் கால் பங்காகக் குறைத்திருக்கும்.",
   "A link asked Ventic to start searching:": "ஒரு இணைப்பு Ventic-ஐத் தேட ஆரம்பிக்கக் கேட்டது:",

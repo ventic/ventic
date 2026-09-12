@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Nakala nyepesi zaidi kuliko nyingine za ukubwa wake, au yenye waenezaji wachache mno kuweza kuendana, hupangwa daraja moja chini — hiyo ndiyo 1080p ambayo ni 1080p kwa lebo tu.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Faili kutoka diski ya kifaa hiki chenyewe haiwezi kutumwa — kifaa kingine hakina namna ya kuifungua.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Lugha ambayo hakuna aliyemaliza kuitafsiri hurudi kwa Kiingereza mstari mmoja baada ya mwingine, hivyo hakuna kinachoachwa wazi kamwe.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Kikomo unachoweka hapa hutumika pia wakati wa kucheza, ambapo kikomo cha kiotomatiki kingeshusha upandishaji hadi robo ya laini ili mtiririko uendelee.",
   "A link asked Ventic to start searching:": "Kiungo kimeomba Ventic kuanza kutafuta:",

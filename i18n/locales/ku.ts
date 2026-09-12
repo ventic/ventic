@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Kopyayeke ku ji yên din ên heman mezinahiyê pir sivktir e, an jî ku têra bidomandinê tovker tune ne, di asta jêrîn de tê rêzkirin — ev ew 1080p e ku tenê li ser etîketê 1080p e.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Pelek ji dîska vê amûrê bi xwe nayê weşandin — amûra din tu rêyek nîne ku wê veke.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Zimanekî ku tu kesî wergera wî temam nekiriye, rêz bi rêz vedigere Îngilîzî, ji ber vê yekê tu carî tiştek vala namîne.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Sînorekî ku tu li vir datînî di dema lêdanê de jî dixebite, ku wekî din sînorê otomatîk dê tovkirinê bighîne çaryeka xetê da ku stream bikaribe bişopîne.",
   "A link asked Ventic to start searching:": "Girêdanek ji Ventic xwest ku li vir dest bi lêgerînê bike:",

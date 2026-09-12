@@ -19,17 +19,20 @@
 //!     and bound to the LAN, so the other device can pull the film over http
 //!     range exactly as this one's own player does. The engine's real API stays
 //!     on 127.0.0.1 where it has always been: it can add and delete torrents,
-//!     and nothing outside this process has any business calling it.
+//!     and nothing outside this process has any business calling it. A film
+//!     picked off this disk goes out the same door (`shared_file`).
 //!
 //! Both are LAN-only by construction. Nothing here traverses NAT, and there is
 //! no server in the middle — the same reason there is no account (see the
 //! library store).
 
 use std::net::{IpAddr, SocketAddr, UdpSocket};
+use std::path::PathBuf;
 use std::sync::{Mutex, OnceLock};
 
-use axum::extract::State;
+use axum::extract::{Request, State};
 use axum::http::StatusCode;
+use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use librqbit::api::Api;
@@ -38,6 +41,7 @@ use librqbit_dualstack_sockets::TcpListener;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter};
 use tokio::sync::oneshot;
+use tower_http::services::ServeFile;
 
 /// The read-only engine mirror another device streams the film from.
 pub const MIRROR_PORT: u16 = 3231;
@@ -72,6 +76,10 @@ struct Shutdown {
 static MIRROR: Mutex<Option<Shutdown>> = Mutex::new(None);
 static RECEIVER: Mutex<Option<Shutdown>> = Mutex::new(None);
 
+/// The file from this disk being cast, when that is what is being cast. Set by
+/// `cast_share` alone, and read by `shared_file` on every request.
+static SHARED_FILE: Mutex<Option<PathBuf>> = Mutex::new(None);
+
 /// Stop whichever server that slot holds, and wait for its port to come back.
 ///
 /// The lock is taken and let go inside the first statement: a std mutex must not
@@ -98,7 +106,7 @@ pub struct Play {
 	/// Matched against this device's own, then blanked — the page never sees it.
 	#[serde(default)]
 	code: String,
-	/// Always a URL: the mirror's stream, a debrid link, or a live channel.
+	/// Always a URL: the mirror's stream or file, a debrid link, or a live channel.
 	url: String,
 	/// TMDB's identity for the title, so the receiver files progress under the
 	/// same key its own library would have used. Empty for a bare magnet.
@@ -188,8 +196,16 @@ pub fn cast_sharing() -> bool {
 /// the task is what lets a port already in use come back as an error the user
 /// can read — and waiting for the last server to let go of that port is the
 /// other thing only an async command can do (see `Shutdown`).
+///
+/// `file` is a path on this disk, when a film picked off it is what is being
+/// cast — see `shared_file`.
 #[tauri::command]
-pub async fn cast_share(enable: bool) -> Result<Option<String>, String> {
+pub async fn cast_share(enable: bool, file: Option<String>) -> Result<Option<String>, String> {
+	// Replaced on every call rather than only ever set, so a torrent cast after a
+	// file takes the file off the network, and so does stopping.
+	if let Ok(mut guard) = SHARED_FILE.lock() {
+		*guard = file.filter(|path| enable && !path.is_empty()).map(PathBuf::from);
+	}
 	if !enable {
 		stop_server(&MIRROR).await;
 		return Ok(None);
@@ -215,7 +231,10 @@ pub async fn cast_share(enable: bool) -> Result<Option<String>, String> {
 			read_only: true,
 			..Default::default()
 		}))
-		.make_http_api_and_run(listener, None);
+		// The one door librqbit leaves for routes of our own, and it nests them
+		// under `/upnp` — so the file is at `/upnp/file/…`, a name that means
+		// nothing here and costs nothing either (see `castUrl` in utils/cast.ts).
+		.make_http_api_and_run(listener, Some(Router::new().route("/file/{name}", get(shared_file))));
 
 		tokio::select! {
 			result = server => {
@@ -235,6 +254,20 @@ pub async fn cast_share(enable: bool) -> Result<Option<String>, String> {
 		*guard = Some(Shutdown { stop: tx, done: done_rx });
 	}
 	Ok(Some(format!("http://{ip}:{MIRROR_PORT}")))
+}
+
+/// The file being cast from this disk, if one is, with the range requests a
+/// player seeks by. The request names no path — `{name}` is only there for the
+/// other device's player to read an extension off — so what the network can
+/// reach is the one file `cast_share` was handed, and only while it is cast.
+async fn shared_file(request: Request) -> Response {
+	let Some(path) = SHARED_FILE.lock().ok().and_then(|guard| guard.clone()) else {
+		return StatusCode::NOT_FOUND.into_response();
+	};
+	match ServeFile::new(path).try_call(request).await {
+		Ok(response) => response.into_response(),
+		Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response(),
+	}
 }
 
 /// Start or stop answering play commands. `name` is what the sending device
@@ -507,6 +540,30 @@ mod tests {
 
 	/// A dropped connection has to read as unreachable and a live one as fine —
 	/// get this backwards and casting either never works or never warns.
+	/// What a player seeks with: a Range comes back as 206 and exactly those
+	/// bytes. And with nothing being cast, the route hands out nothing at all.
+	#[test]
+	fn shared_file_serves_ranges() {
+		use axum::body::{to_bytes, Body};
+		use axum::http::Request;
+
+		let path = std::env::temp_dir().join(format!("ventic-cast-{}.mkv", std::process::id()));
+		std::fs::write(&path, b"abcdefgh").unwrap();
+		let rt = tokio::runtime::Runtime::new().unwrap();
+		let get = |range: &str| Request::builder().header("range", range).body(Body::empty()).unwrap();
+
+		*super::SHARED_FILE.lock().unwrap() = None;
+		assert_eq!(rt.block_on(super::shared_file(get("bytes=0-0"))).status(), 404, "nothing cast, nothing served");
+
+		*super::SHARED_FILE.lock().unwrap() = Some(path.clone());
+		let response = rt.block_on(super::shared_file(get("bytes=2-4")));
+		assert_eq!(response.status(), 206);
+		assert_eq!(&rt.block_on(to_bytes(response.into_body(), usize::MAX)).unwrap()[..], b"cde");
+
+		*super::SHARED_FILE.lock().unwrap() = None;
+		let _ = std::fs::remove_file(path);
+	}
+
 	#[test]
 	fn reachability() {
 		let rt = tokio::runtime::Runtime::new().unwrap();

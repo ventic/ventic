@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Өз көлөмүндөгү башкаларга караганда алда канча жеңил көчүрмө же үлгүрүү үчүн таратуучусу өтө аз көчүрмө бир тепкич төмөн саналат — бул жарлыгы боюнча гана 1080p болгон 1080p.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Бул түзмөктүн өз дискиндеги файлды тартуулоого болбойт — экинчи түзмөктүн аны ачууга жолу жок.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Котормосун эч ким аягына чыгарбаган тил сап-сабы менен англис тилине кайтат, ошондуктан эч качан эч нерсе бош калбайт.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Бул жерде коюлган чектөө ойнотуу учурунда да иштейт: болбосо автоматтык чек агым үлгүрсүн деп таратууну линиянын төрттөн бирине түшүрмөк.",
   "A link asked Ventic to start searching:": "Шилтеме Ventic'тен ушул жерден издей баштоону сурады:",

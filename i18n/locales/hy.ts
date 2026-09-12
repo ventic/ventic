@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Իր չափի մյուսներից շատ ավելի թեթև պատճենը, կամ այն, որի սերմնացանները շատ քիչ են՝ հասցնելու համար, դասվում է մեկ աստիճան ցածր — սա այն 1080p-ն է, որը 1080p է միայն պիտակով։",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Այս սարքի սեփական սկավառակի ֆայլը հնարավոր չէ հեռարձակել — մյուս սարքը այն բացելու ոչ մի միջոց չունի։",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Այն լեզուն, որի թարգմանությունը ոչ ոք չի ավարտել, տող առ տող վերադառնում է անգլերենին, այնպես որ ոչինչ երբեք դատարկ չի մնում։",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Այստեղ սահմանված սահմանաչափը գործում է նաև նվագարկման ընթացքում, որտեղ ինքնաշխատ առաստաղը հակառակ դեպքում սերմանումը կիջեցներ գծի մեկ քառորդին, որպեսզի հոսքը հասցնի։",
   "A link asked Ventic to start searching:": "Հղումը խնդրել է Ventic-ին սկսել որոնումն այստեղ՝",

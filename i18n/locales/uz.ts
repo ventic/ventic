@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Oʻz oʻlchamidagi boshqalardan ancha yengil boʻlgan yoki yetib borish uchun juda kam seederga ega nusxa bir pogʻona pastga joylanadi — bu yorligʻi boʻyichagina 1080p boʻlgan 1080p.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Bu qurilmaning oʻz diskidagi faylni uzatib boʻlmaydi — ikkinchi qurilmada uni ochishning imkoni yoʻq.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Hech kim tarjimasini tugatmagan til satrma-satr inglizchaga qaytadi, shuning uchun hech qachon hech yer boʻsh qolmaydi.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Bu yerda belgilagan cheklovingiz ijro vaqtida ham amal qiladi; aks holda avtomatik chegara oqim yetib borishi uchun tarqatishni kanalning chorak qismigacha tushirgan boʻlardi.",
   "A link asked Ventic to start searching:": "Bir havola Venticdan qidiruvni boshlashni soʻradi:",

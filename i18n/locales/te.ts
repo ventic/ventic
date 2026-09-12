@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "తన పరిమాణంలోని ఇతర ప్రతులకంటే చాలా తేలికైన ప్రతి, లేదా వేగం అందుకోవడానికి సీడర్లు చాలా తక్కువగా ఉన్న ప్రతి, ఒక అంచె కిందకు వస్తుంది — లేబుల్‌పై మాత్రమే 1080p అయ్యే 1080p అదే.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "ఈ పరికరం సొంత డిస్క్‌లోని ఫైల్‌ను ప్రసారం చేయలేం — దాన్ని తెరవడానికి రెండో పరికరానికి మార్గం లేదు.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "ఎవరూ పూర్తిగా అనువదించని భాష లైన్ల వారీగా ఆంగ్లానికి తిరిగి వెళ్తుంది, కాబట్టి ఏదీ ఎప్పుడూ ఖాళీగా ఉండదు.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "ఇక్కడ మీరు పెట్టే పరిమితి ప్లేబ్యాక్ సమయంలోనూ వర్తిస్తుంది; లేకపోతే ఆటోమేటిక్ గరిష్ఠ పరిమితి, స్ట్రీమ్ ఆగకుండా సాగేందుకు సీడింగ్‌ను లైన్‌లో నాలుగో వంతుకు తగ్గించేది.",
   "A link asked Ventic to start searching:": "Ventic వెతకడం ప్రారంభించమని ఒక లింక్ కోరింది:",

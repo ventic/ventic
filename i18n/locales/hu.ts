@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Az a másolat, amelyik jóval könnyebb a saját méretosztályában lévő többinél, vagy amelyiknek túl kevés seedere van ahhoz, hogy lépést tartson, egy szinttel lejjebb kerül — ez az a 1080p, ami csak a címke szerint 1080p.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Az eszköz saját lemezéről származó fájl nem küldhető át — a másik eszköz sehogy sem tudja megnyitni.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Az a nyelv, amelynek a fordítását senki sem fejezte be, soronként visszaesik az angolra, így soha semmi nem marad üresen.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Az itt beállított korlát lejátszás közben is érvényes, ahol az automatikus felső határ különben a vonal negyedére vinné le a megosztást, hogy a stream lépést tartson.",
   "A link asked Ventic to start searching:": "Egy hivatkozás arra kérte a Venticet, hogy kezdjen keresni itt:",

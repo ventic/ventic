@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "สำเนาที่เบากว่าสำเนาอื่นขนาดเดียวกันมาก หรือมีผู้แชร์น้อยเกินกว่าจะตามทัน จะถูกจัดไว้ในระดับที่ต่ำลงมาหนึ่งขั้น — นั่นคือ 1080p ที่เป็น 1080p แค่บนป้ายเท่านั้น",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "ไฟล์จากดิสก์ของอุปกรณ์เครื่องนี้เองส่งไปเล่นที่อื่นไม่ได้ — อุปกรณ์อีกเครื่องไม่มีทางเปิดมันได้",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "ภาษาที่ยังไม่มีใครแปลจนเสร็จจะย้อนกลับไปใช้ภาษาอังกฤษทีละบรรทัด ดังนั้นจึงไม่มีอะไรว่างเปล่า",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "ขีดจำกัดที่คุณตั้งไว้ที่นี่มีผลระหว่างการเล่นด้วย ซึ่งตามปกติเพดานอัตโนมัติจะลดการซีดลงเหลือหนึ่งในสี่ของสายเพื่อให้สตรีมตามทัน",
   "A link asked Ventic to start searching:": "ลิงก์หนึ่งขอให้ Ventic เริ่มค้นหา:",

@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "ასლი, რომელიც თავისივე ზომის სხვებზე ბევრად მსუბუქია, ან რომელსაც ძალიან ცოტა მთესველი ჰყავს, რომ აუწყოს, ერთი საფეხურით ქვემოთ ითვლება — ეს არის ის 1080p, რომელიც მხოლოდ იარლიყით არის 1080p.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "ამ მოწყობილობის საკუთარი დისკიდან ფაილის გადაცემა შეუძლებელია — მეორე მოწყობილობას მისი გახსნის საშუალება არ აქვს.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "ენა, რომლის თარგმანიც ვერავინ დაასრულა, სტრიქონ-სტრიქონ ინგლისურზე ბრუნდება, ასე რომ არაფერი რჩება ცარიელი.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "აქ დაყენებული ზღვარი დაკვრის დროსაც მოქმედებს, სადაც ავტომატური ჭერი სხვა შემთხვევაში დათესვას ხაზის მეოთხედამდე დასწევდა, რომ ნაკადი ჩამორჩენას ასცდეს.",
   "A link asked Ventic to start searching:": "ბმულმა Ventic-ს სთხოვა ძიების დაწყება აქ:",

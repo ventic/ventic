@@ -15,7 +15,7 @@ import { mdiCast, mdiCastConnected, mdiCheck, mdiContentCopy, mdiMagnify, mdiTel
  * Wi-Fi can interrupt is not one anybody wants.
  */
 const props = defineProps<{
-  /** What is playing here — an engine stream, a link, or a path we can't send. */
+  /** What is playing here — an engine stream, a link, or a file on this disk. */
   src: string
   /**
    * Everything but the URL: which title this is, and where it had got to.
@@ -58,9 +58,6 @@ async function copy(command: string) {
   copied.value = true
   setTimeout(() => (copied.value = false), 2000)
 }
-
-/** A path on this device's own disk is the one thing that can't be cast. */
-const sendable = computed(() => castable(props.src))
 
 function pick(device: CastDevice) {
   chosen.value = device
@@ -131,18 +128,13 @@ async function start() {
   // a port, and a cast that never happened should not leave one open.
   const wasSharing = await sharingEngine()
   try {
-    const base = await shareEngine(true)
-    const url = base ? castUrl(props.src, base) : null
-    if (!url) {
-      error.value = {
-        message: base
-          ? $t('A file from this device\'s own disk can\'t be cast — the other device has no way to open it.')
-          : $t('This device couldn\'t start serving the film to the network.'),
-      }
+    const base = await shareEngine(true, props.src)
+    if (!base) {
+      error.value = { message: $t('This device couldn\'t start serving the film to the network.') }
       return
     }
 
-    const problem = await sendPlay(device, code.value.trim(), { ...props.play(), url })
+    const problem = await sendPlay(device, code.value.trim(), { ...props.play(), url: castUrl(props.src, base) })
     if (problem) {
       error.value = problem
       return
@@ -184,7 +176,6 @@ onBeforeUnmount(() => hunt?.abort())
 
 <template>
   <v-btn
-    v-if="sendable"
     icon
     variant="text"
     density="comfortable"

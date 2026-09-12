@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Salinan yang jauh lebih ringan daripada yang lain sesaiznya, atau yang penyemainya terlalu sedikit untuk mengejar, diletakkan satu tingkat lebih rendah — itulah 1080p yang hanya 1080p pada labelnya.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Fail dari cakera peranti ini sendiri tidak boleh dihantar — peranti satu lagi tiada cara untuk membukanya.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Bahasa yang belum siap diterjemahkan sesiapa akan kembali ke bahasa Inggeris baris demi baris, jadi tiada apa-apa yang pernah kosong.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Had yang anda tetapkan di sini turut berkuat kuasa semasa main balik, di mana siling automatik sebaliknya akan menurunkan penyemaian kepada suku talian supaya strim dapat mengejar.",
   "A link asked Ventic to start searching:": "Satu pautan meminta Ventic mula mencari di:",

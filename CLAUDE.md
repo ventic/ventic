@@ -280,7 +280,11 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   `src-tauri/src/cast.rs`: a **second, read-only** librqbit HTTP API on
   `0.0.0.0:3231` over the same session. The real API stays on `127.0.0.1:3030` —
   it can add and delete torrents, and `read_only: true` is what makes the LAN
-  copy safe to expose at all. `cast_share` is `async` for one reason and it is
+  copy safe to expose at all. A film picked off this disk goes out the same
+  door: `cast_share` is handed its path and the mirror serves that one file at
+  `/upnp/file/<name>` (`/upnp` is where librqbit nests the one router of ours it
+  takes), and the request never names a path — so the LAN reaches the file being
+  cast and nothing else on the disk. `cast_share` is `async` for one reason and it is
   not that it awaits: a dualstack listener registers with tokio's reactor as it
   binds and *panics* without one, and tauri runs a sync command on the main
   thread. The receiver (`cast_receive`, port 3232) is a two-route axum server —

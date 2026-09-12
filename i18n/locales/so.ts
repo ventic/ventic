@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Nuqul aad uga fudud kuwa kale ee cabbirkiisa la mid ah, ama leh faafiyayaal aad u yar oo uusan la socon karin, waxaa lagu tiriyaa heerka ka hooseeya — kaasi waa 1080p-ga ah 1080p summadda oo keliya.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Fayl ka yimid diskiga qalabkan lafteed lama gudbin karo — qalabka kale wax uu ku furo ma laha.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Luqad aan cidina turjumaadeeda dhammaystirin waxay sadar sadar ugu noqotaa Ingiriisiga, sidaas darteed waxba weligood ma banaanaadaan.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Xadka aad halkan dhigto wuxuu shaqeeyaa xitaa inta la ciyaarayo, halkaas oo xadka toosan uu haddii kale hoos u dhigi lahaa faafinta ilaa rubuc khadka si uu socodku u soo raaco.",
   "A link asked Ventic to start searching:": "Xiriir ayaa Ventic ka codsaday inuu halkan ka bilaabo raadinta:",

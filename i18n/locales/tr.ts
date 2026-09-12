@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Kendi boyutundaki diğerlerinden çok daha hafif olan ya da yetişebilmek için fazla az seeder'ı olan bir kopya, bir alt basamağa yerleştirilir — sadece etiketinde 1080p olan 1080p budur.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Bu cihazın kendi diskindeki bir dosya yayınlanamaz — diğer cihazın onu açmasının bir yolu yok.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Kimsenin çevirisini bitirmediği bir dil satır satır İngilizceye döner, böylece hiçbir yer boş kalmaz.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Burada belirlediğiniz sınır oynatma sırasında da geçerlidir; aksi hâlde otomatik tavan, akışın yetişebilmesi için göndermeyi hattın dörtte birine düşürürdü.",
   "A link asked Ventic to start searching:": "Bir bağlantı Ventic'ten aramaya başlamasını istedi:",

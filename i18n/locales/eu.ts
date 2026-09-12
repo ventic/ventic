@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Bere tamainako besteak baino askoz arinagoa den kopia bat, edo jarraitzeko ereile gutxiegi dituena, beheko mailan sailkatzen da: hori da etiketan bakarrik 1080p den 1080pa.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Gailu honen beraren diskoko fitxategi bat ezin da igorri — beste gailuak ez du hura irekitzeko modurik.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Inork itzultzen amaitu ez duen hizkuntza bat lerroz lerro ingelesera itzultzen da, beraz ezer ez da inoiz hutsik geratzen.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Hemen ezartzen duzun mugak erreprodukzioan ere balio du, non goi-muga automatikoak bestela ereitea linearen laurdenera jaitsiko lukeen jarioak jarraitu ahal izateko.",
   "A link asked Ventic to start searching:": "Esteka batek Ventici hemen bilatzen hasteko eskatu dio:",

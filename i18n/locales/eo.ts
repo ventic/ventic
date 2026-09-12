@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Kopio multe pli malpeza ol la aliaj de sia grandeco, aŭ kun tro malmultaj semantoj por sekvi, estas vicigita en la suban nivelon — jen la 1080p, kiu estas 1080p nur laŭ la etikedo.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Dosiero el la propra disko de ĉi tiu aparato ne povas esti transsendita — la alia aparato havas neniun manieron malfermi ĝin.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Lingvo, kies tradukon neniu finis, retroiras al la angla linio post linio, do nenio iam restas malplena.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Limo, kiun vi fiksas ĉi tie, validas ankaŭ dum ludado, kie la aŭtomata plafono alie mallevus la semadon al kvarono de la linio por ke la fluo povu sekvi.",
   "A link asked Ventic to start searching:": "Ligilo petis Ventic komenci serĉi ĉe:",

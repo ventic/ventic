@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "같은 크기의 다른 것들보다 훨씬 가벼운 사본이나, 따라오기에 시더가 너무 적은 사본은 한 단계 아래로 분류됩니다 — 라벨만 1080p인 1080p가 바로 그것입니다.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "이 기기 자체 디스크에 있는 파일은 전송할 수 없습니다 — 다른 기기에서는 열 방법이 없습니다.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "아무도 번역을 끝내지 않은 언어는 한 줄씩 영어로 되돌아가므로, 비어 있는 곳은 생기지 않습니다.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "여기서 정한 제한은 재생 중에도 적용됩니다. 자동 상한이라면 스트림이 따라오도록 시딩을 회선의 4분의 1까지 떨어뜨렸을 상황입니다.",
   "A link asked Ventic to start searching:": "링크가 Ventic에 다음 위치에서 검색을 시작하도록 요청했습니다:",

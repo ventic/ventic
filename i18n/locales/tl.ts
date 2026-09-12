@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Ang kopyang mas magaan nang malayo kaysa sa iba sa laki nito, o may masyadong kakaunting seeder para makasabay, ay inilalagay sa antas na mas mababa — iyon ang 1080p na 1080p lang sa label.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Hindi maipapadala ang file mula sa sariling disk ng device na ito — walang paraan ang kabilang device para buksan ito.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Ang wikang walang nakatapos magsalin ay babalik sa Ingles nang paisa-isang linya, kaya walang kailanman nagiging blangko.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Ang limitasyong itinakda mo rito ay umiiral din habang nagpe-play, kung saan ang awtomatikong hangganan ay magbababa sana ng seeding sa isang-kapat ng linya para makasabay ang stream.",
   "A link asked Ventic to start searching:": "May link na humiling sa Ventic na magsimulang maghanap:",

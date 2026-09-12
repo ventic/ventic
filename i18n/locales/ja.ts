@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "同じサイズ帯の他より極端に軽いコピーや、追いつくにはシードが少なすぎるコピーは、ひとつ下の段に位置づけられます。ラベルだけが 1080p の 1080p とは、そういうものです。",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "この端末自身のディスクにあるファイルはキャストできません。相手の端末には開く手段がありません。",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "翻訳を誰も終えていない言語は、1行ずつ英語にフォールバックします。そのため空欄になることはありません。",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "ここで設定した上限は再生中にも適用されます。自動制御のままだと、ストリームが追いつくようにシードを回線の4分の1まで落としてしまいます。",
   "A link asked Ventic to start searching:": "リンクから Ventic に検索の開始が求められました:",

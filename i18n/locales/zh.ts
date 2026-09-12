@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "比同尺寸的其他版本轻得多，或做种数太少跟不上的副本，会被降到下一档——那种只在标签上是 1080p 的 1080p，就是这么来的。",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "本设备磁盘上的文件无法投放 — 对方设备没有办法打开它。",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "没人翻译完的语言会逐行回退到英文，所以永远不会出现空白。",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "你在这里设定的上限在播放时同样有效；否则自动上限会把做种速度压到线路的四分之一，好让串流跟得上。",
   "A link asked Ventic to start searching:": "有个链接请求 Ventic 开始搜索：",

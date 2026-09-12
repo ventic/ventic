@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "עותק קל בהרבה מהאחרים בגודלו, או שיש לו מעט מדי זורעים כדי לעמוד בקצב, מדורג בשכבה שמתחת — זהו ה-1080p שהוא 1080p רק לפי התווית.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "אי אפשר לשדר קובץ מהדיסק של המכשיר הזה עצמו — למכשיר השני אין דרך לפתוח אותו.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "שפה שאיש לא סיים לתרגם נופלת חזרה לאנגלית שורה אחר שורה, כך שדבר לעולם אינו נשאר ריק.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "מגבלה שתקבע כאן חלה גם בזמן הנגינה, שבה תקרת האוטומט הייתה אחרת מורידה את השיתוף לרבע מהקו כדי שהזרם יספיק.",
   "A link asked Ventic to start searching:": "קישור ביקש מ‑Ventic להתחיל לחפש ב:",

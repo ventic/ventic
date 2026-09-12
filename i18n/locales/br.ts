@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Un eilenn kalz skañvoc'h eget ar re all eus he ment, pe gant re nebeut a hadourien evit heuliañ, a vez renket el live dindan — setu ar 1080p n'eo 1080p nemet dre e etiketenn.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "N'haller ket skignañ ur restr eus kantenn an drevnad-mañ e-unan — n'en deus an drevnad all hent ebet d'he digeriñ.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Ur yezh n'en deus den ebet echuet an droidigezh anezhi a zistro d'ar saozneg linenn ha linenn, evel-se ne chom netra goullo morse.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Un harz lakaet amañ a dalv e-pad al lenn ivez, ma vije bet digresket ar had gant an uc'hlevel emgefre betek ur c'hard eus al linenn evit ma c'hellfe al lanv heuliañ.",
   "A link asked Ventic to start searching:": "Un ere en deus goulennet digant Ventic kregiñ da glask:",

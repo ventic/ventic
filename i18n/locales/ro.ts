@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "O copie mult mai ușoară decât celelalte de aceeași mărime sau cu prea puțini seederi ca să țină pasul e clasată cu o treaptă mai jos — acela e 1080p-ul care e 1080p doar după etichetă.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Un fișier de pe discul propriu al acestui dispozitiv nu poate fi transmis — celălalt dispozitiv nu are cum să-l deschidă.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "O limbă a cărei traducere nu a terminat-o nimeni revine la engleză rând cu rând, așa că nimic nu rămâne niciodată gol.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "O limită setată aici se aplică și în timpul redării, unde plafonul automat ar coborî altfel partajarea la un sfert din linie, ca fluxul să țină pasul.",
   "A link asked Ventic to start searching:": "Un link i-a cerut lui Ventic să înceapă căutarea la:",

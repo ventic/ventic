@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "ತನ್ನದೇ ಗಾತ್ರದ ಇತರವುಗಳಿಗಿಂತ ಬಹಳ ಹಗುರವಾದ ಪ್ರತಿ, ಅಥವಾ ಸಾಥ್ ನೀಡಲು ತೀರಾ ಕಡಿಮೆ ಸೀಡರ್‌ಗಳಿರುವ ಪ್ರತಿ, ಒಂದು ಹಂತ ಕೆಳಗೆ ಪರಿಗಣಿಸಲ್ಪಡುತ್ತದೆ — ಲೇಬಲ್‌ನಲ್ಲಿ ಮಾತ್ರ 1080p ಆಗಿರುವ 1080p ಅದೇ.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "ಈ ಸಾಧನದ ಸ್ವಂತ ಡಿಸ್ಕ್‌ನಲ್ಲಿರುವ ಫೈಲ್ ಅನ್ನು ಬಿತ್ತರಿಸಲಾಗದು — ಅದನ್ನು ತೆರೆಯಲು ಇನ್ನೊಂದು ಸಾಧನಕ್ಕೆ ದಾರಿಯಿಲ್ಲ.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "ಯಾರೂ ಅನುವಾದ ಪೂರ್ಣಗೊಳಿಸದ ಭಾಷೆ ಸಾಲಿನಿಂದ ಸಾಲಿಗೆ ಇಂಗ್ಲಿಷ್‌ಗೆ ಮರಳುತ್ತದೆ, ಹಾಗಾಗಿ ಎಂದೂ ಏನೂ ಖಾಲಿ ಉಳಿಯುವುದಿಲ್ಲ.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "ಇಲ್ಲಿ ನೀವು ಹಾಕುವ ಮಿತಿ ಪ್ಲೇ ಆಗುತ್ತಿರುವಾಗಲೂ ಅನ್ವಯವಾಗುತ್ತದೆ; ಇಲ್ಲದಿದ್ದರೆ ಸ್ವಯಂಚಾಲಿತ ಮಿತಿ ಸ್ಟ್ರೀಮ್ ಮುಂದುವರಿಯಲಿ ಎಂದು ಸೀಡಿಂಗ್ ಅನ್ನು ಲೈನಿನ ಕಾಲುಭಾಗಕ್ಕೆ ಇಳಿಸುತ್ತಿತ್ತು.",
   "A link asked Ventic to start searching:": "ಒಂದು ಲಿಂಕ್ Ventic ಗೆ ಇಲ್ಲಿ ಹುಡುಕಲು ಆರಂಭಿಸುವಂತೆ ಕೇಳಿದೆ:",

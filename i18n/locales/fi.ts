@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Kopio, joka on selvästi kevyempi kuin muut samankokoiset, tai jolla on liian vähän jakajia pysyäkseen mukana, sijoitetaan yhtä tasoa alemmas — se on se 1080p, joka on 1080p vain nimilapussa.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Tämän laitteen omalta levyltä olevaa tiedostoa ei voi lähettää — toinen laite ei pysty avaamaan sitä.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Kieli, jonka käännöstä kukaan ei ole saanut valmiiksi, palautuu englantiin rivi kerrallaan, joten mikään ei jää koskaan tyhjäksi.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Tässä asettamasi rajoitus pätee myös toiston aikana, jossa automaattinen katto muuten pudottaisi jakamisen neljäsosaan linjasta, jotta suoratoisto pysyy mukana.",
   "A link asked Ventic to start searching:": "Linkki pyysi Venticia aloittamaan haun osoitteesta:",

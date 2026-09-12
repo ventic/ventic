@@ -8,7 +8,6 @@ export default {
   "4K": "4K",
   "720p": "720p",
   "A copy far lighter than the others of its own size, or with too few seeders to keep up, is ranked as the tier below — that is the 1080p that is 1080p by label alone.": "Kopija, kas ir daudz vieglāka par citām tāda paša izmēra kopijām vai kurai ir par maz sējēju, lai paspētu, tiek ierindota pakāpi zemāk — tas ir tas 1080p, kas ir 1080p tikai pēc etiķetes.",
-  "A file from this device's own disk can't be cast — the other device has no way to open it.": "Failu no šīs ierīces paša diska nevar pārraidīt — otra ierīce to nekādi nevar atvērt.",
   "A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.": "Valoda, kuras tulkojumu neviens nav pabeidzis, rindiņu pa rindiņai atgriežas pie angļu valodas, tāpēc nekas nekad nepaliek tukšs.",
   "A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.": "Šeit iestatītais ierobežojums darbojas arī atskaņošanas laikā, kur automātiskais griests citādi samazinātu sējumu līdz ceturtdaļai līnijas, lai straume paspētu.",
   "A link asked Ventic to start searching:": "Saite lūdza Ventic sākt meklēt šeit:",
