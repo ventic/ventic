@@ -143,10 +143,11 @@ const addons = [
     infoHash: 'hints',
     behaviorHints: { filename: 'Sintel.2010.2160p.WEB-DL.DDP5.1.HEVC-GRP.mkv' },
   },
-  // GiB, "👥 N seeders", and a 🔗 line naming every scraper that found it.
+  // GiB, "👥 N seeders", the release group behind ⚙️, and behind 🔗 every
+  // scraper that found it — which is the origin, and not the group.
   {
     name: '[P2P☁️] Example\n1080p',
-    description: '📄 Sintel.2010.1080p.WEB-DL.x264.mkv\n📺 1080p | web | h264\n💾 1.51 GiB   👥 100 seeders   ⚙️ indexer-d\n🔗 scraper-a,scraper-b',
+    description: '📄 Sintel.2010.1080p.WEB-DL.x264.mkv\n📺 1080p | web | h264\n💾 1.51 GiB   👥 100 seeders   ⚙️ GRP\n🔗 scraper-a,scraper-b',
     infoHash: 'gib',
     behaviorHints: { filename: 'Sintel.2010.1080p.WEB-DL.x264.mkv', videoSize: 1625672967 },
   },
@@ -164,7 +165,7 @@ assert.deepEqual(
     ['plain', 'Sintel.2010.720p.WEB.x264', '720p', 12, '900.0 MB', 'indexer-b'],
     ['uncounted', 'Sintel.2010.2160p.UHD.BluRay.x265-GRP.mkv', '4k', null, '14.2 GB', 'hashlist'],
     ['hints', 'Sintel.2010.2160p.WEB-DL.DDP5.1.HEVC-GRP.mkv', '4k', 25, '9.8 GB', 'indexer-c'],
-    ['gib', 'Sintel.2010.1080p.WEB-DL.x264.mkv', '1080p', 100, '1.51 GiB', 'indexer-d'],
+    ['gib', 'Sintel.2010.1080p.WEB-DL.x264.mkv', '1080p', 100, '1.51 GiB', 'scraper-a'],
     ['globe', 'Sintel 2010 720p BluRay x264', '720p', 33, '850 MB', 'indexer-e'],
   ],
   'every addon read alike, and an error or a tip jar is not a release',

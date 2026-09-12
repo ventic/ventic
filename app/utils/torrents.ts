@@ -190,10 +190,11 @@ const SEEDERS = /(?:👤|👥|\bseed(?:er)?s?\s*:)\s*(?:S:\s*)?(\d+)/i
 
 /**
  * Where a result came from, first name only: "🔗 a,b,c" is every scraper that
- * found it and "🔎 a| a" a repeat. 🌐 counts only where nothing else says it,
- * because one addon spends that icon on the languages.
+ * found it and "🔎 a| a" a repeat. Asked in this order rather than read in the
+ * text's: one addon puts the release group behind ⚙ beside its 🔗, and another
+ * spends 🌐 on the languages, so each counts only where nothing before it does.
  */
-const SOURCE = [/(?:⚙|🔎|🔗|\bsource:)\uFE0F?\s*([^\s,|]+)/i, /🌐\uFE0F?\s*([^\s,|]+)/]
+const SOURCE = [/🔗\uFE0F?\s*([^\s,|]+)/, /(?:⚙|🔎|\bsource:)\uFE0F?\s*([^\s,|]+)/i, /🌐\uFE0F?\s*([^\s,|]+)/]
 
 /** A resolution, and whatever the label says after it ("4k DV | HDR"). */
 const RESOLUTION = /\b(\d{3,4}p|4k)\b(.*)/i
