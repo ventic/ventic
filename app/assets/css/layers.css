@@ -117,6 +117,33 @@
     backdrop-filter: blur(24px) saturate(140%);
   }
 
+  /* Vuetify opens a dialog or menu by fading `.v-overlay__content`, the
+     surface's parent — and an ancestor below full opacity is a backdrop root,
+     so the surface's `backdrop-filter` has nothing behind it to sample until the
+     fade ends, and the blur popped in a quarter-second after the dialog did. The
+     wrapper keeps its scale but is held opaque (`!important` outranks an
+     animation), and the surface fades itself instead: an element's own opacity
+     leaves its backdrop alone. `--active` comes off the moment it starts to
+     close, which is what the way out hangs on. */
+  .v-overlay__content:has(> .v-card, > .v-list, > .v-sheet) {
+    opacity: 1 !important;
+  }
+
+  .v-overlay__content > :is(.v-card, .v-list, .v-sheet) {
+    animation: overlay-in 225ms cubic-bezier(0, 0, 0.2, 1);
+  }
+
+  .v-overlay:not(.v-overlay--active) > .v-overlay__content > :is(.v-card, .v-list, .v-sheet) {
+    opacity: 0;
+    transition: opacity 125ms cubic-bezier(0.4, 0, 1, 1);
+  }
+
+  @keyframes overlay-in {
+    from {
+      opacity: 0;
+    }
+  }
+
   /* Vuetify's color props compile to bg-* utility classes, which this app
      doesn't ship ($color-pack: false), so panels clear their children here. */
   .panel .v-list,
