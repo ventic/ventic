@@ -26,6 +26,21 @@ const featured = computed(() => spotlight.value[Math.min(at.value, spotlight.val
 // set themselves.
 watch(featured, media => media && ui.ambient(media), { immediate: true })
 
+// The film's own wordmark, as its page shows it. All five are looked up and
+// preloaded together, so walking the pills swaps one picture for another
+// instead of flashing the plain title while each is fetched. A lookup that
+// fails leaves that one title as text.
+const { data: logos } = useAsyncData('home-logos', async () => {
+  const entries = await Promise.all(spotlight.value.map(async m =>
+    [`${m.type}${m.id}`, await titleLogo(m).catch(() => null)] as const))
+  for (const [, url] of entries) {
+    if (url)
+      new Image().src = url
+  }
+  return Object.fromEntries(entries)
+}, { lazy: true, watch: [spotlight] })
+const logo = computed(() => featured.value && logos.value?.[`${featured.value.type}${featured.value.id}`])
+
 // ponytail: no auto-advance. It moves the thing under a remote's focus ring,
 // and it is a `useIntervalFn` plus a pause-on-focus rule away if it's missed.
 
@@ -81,11 +96,20 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
           </span>
         </div>
 
-        <h1 class="max-w-3xl text-headline-medium font-bold drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)] md:text-display-small xl:text-display-medium">
+        <!-- Both limits, because a wordmark is any shape: a wide one meets the
+             width, a stacked one the height, and neither may push the copy up
+             out of a TV's 400px panel. -->
+        <img
+          v-if="logo"
+          :src="logo"
+          :alt="featured.title"
+          class="mb-1 max-h-20 max-w-[min(28rem,80%)] self-start object-contain drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)] md:max-h-[18vh] xl:max-w-[36rem]"
+        >
+        <h1 v-else class="max-w-3xl text-headline-medium font-bold drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)] md:text-display-small xl:text-display-medium">
           {{ featured.title }}
         </h1>
 
-        <p class="line-clamp-2 max-w-2xl text-body-medium opacity-85">
+        <p class="line-clamp-2 max-w-2xl text-body-medium opacity-85 lg:line-clamp-4">
           {{ featured.overview }}
         </p>
 

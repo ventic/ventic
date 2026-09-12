@@ -409,6 +409,11 @@ function jobs(crew: RawCredit[], names: string[]) {
   return [...new Set(crew.filter(c => names.includes(c.job ?? '')).map(c => c.name))]
 }
 
+/** The title treatment a screen puts in place of its heading: TMDB's English one. */
+function logoOf(images?: { logos: RawImage[] }) {
+  return images?.logos.find(l => l.iso_639_1 === 'en')?.file_path ?? null
+}
+
 function toDetail(raw: RawDetail, type: MediaType): MediaDetail {
   const base = toMedia(raw, type)!
   const crew = raw.credits?.crew ?? []
@@ -424,7 +429,7 @@ function toDetail(raw: RawDetail, type: MediaType): MediaDetail {
     certification: certificationOf(raw),
     votes: raw.vote_count ?? 0,
     released: raw.release_date ?? raw.first_air_date ?? '',
-    logo: raw.images?.logos.find(l => l.iso_639_1 === 'en')?.file_path ?? null,
+    logo: logoOf(raw.images),
     trailer: trailerOf(raw),
     cast: (raw.credits?.cast ?? []).slice(0, 20).map(toPerson),
     directors: jobs(crew, ['Director']),
@@ -464,6 +469,14 @@ export function useMediaDetail(type: MaybeRefOrGetter<MediaType>, id: MaybeRefOr
       transform: raw => raw ? toDetail(raw, toValue(type)) : null,
     },
   )
+}
+
+/**
+ * Just the logo, for a screen that shows a title without opening it — the same
+ * pick as the detail's `logo`, from the images endpoint rather than every append.
+ */
+export async function titleLogo(media: Pick<Media, 'type' | 'id'>) {
+  return logoUrl(logoOf(await tmdb<{ logos: RawImage[] }>(`/${media.type}/${media.id}/images`, { include_image_language: 'en,null' })))
 }
 
 interface RawEpisode {
