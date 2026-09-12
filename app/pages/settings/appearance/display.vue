@@ -55,7 +55,7 @@ const scale = computed({
         :label="$t('Improve performance')"
       />
       <p class="text-body-medium opacity-70">
-        {{ $t('Turns off the effects that cost the most to draw: the frosted blur behind the sidebar and menus, the blur on the background art, and the fades and slides that play as things appear or take focus. Everything stays where it was and nothing is hidden — it stops moving and goes crisp instead. Loading spinners keep turning.') }}
+        {{ $t('Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.') }}
       </p>
       <p class="text-body-medium opacity-70">
         {{ $t('It tells most while moving around with a remote, which is where the fades stack up: on the television this was measured on, that went from 3 frames a second to 23. It starts on there, and off everywhere else.') }}

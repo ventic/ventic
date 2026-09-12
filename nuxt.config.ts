@@ -42,6 +42,23 @@ const bootDiagnostics = readFileSync(new URL('app/boot-diagnostics.js', import.m
 const ground = `html{background:${GROUND}}`
 
 /**
+ * The cascade's order, said before any stylesheet can say it first.
+ *
+ * A layer ranks by where its name is first *mentioned* in document order, not
+ * by which file meant to set the order — and which sheet loads first is not
+ * ours to decide: the dev server orders its links off Vite's module graph, and
+ * an HMR update once put UnoCSS's own sheet ahead of assets/css/layers.css.
+ * That ranked every utility below every Vuetify component style, so `rounded`
+ * props lost to `.v-list-item { border-radius: 0 }` and the sidebar went
+ * square. This tag is the one sheet that always comes first, dev or built.
+ *
+ * `app` first on purpose: it holds bare element defaults, and `a { color }`
+ * must lose to `.v-btn` for links wrapped in a button. UnoCSS utilities sit
+ * after Vuetify's component styles so a utility class can override them.
+ */
+const layers = '@layer app, uno-base, uno-theme, vuetify-core, vuetify-components, vuetify-overrides, vuetify-utilities, uno-shortcuts, uno-default, vuetify-final;'
+
+/**
  * Which flag each locale gets, decided here and shipped to the app as data.
  *
  * It has to be decided exactly once. `clientBundle` below inlines these icons
@@ -133,7 +150,7 @@ export default defineNuxtConfig({
         { rel: 'icon', href: '/logo.svg' },
       ],
       style: [
-        { innerHTML: ground },
+        { innerHTML: layers + ground },
       ],
       script: [
         { innerHTML: bootDiagnostics },

@@ -102,7 +102,7 @@ assert.match(
 for (const [what, re] of [
   ['transitions', /html\.reduce-effects \*[\s\S]{0,200}?transition:\s*none\s*!important/],
   ['the frosted chrome', /html\.reduce-effects[\s\S]{0,400}?backdrop-filter:\s*none/],
-  ['the backdrop blur', /html\.reduce-effects \.ventic-backdrop\s*\{[^}]*filter:/],
+  ['the backdrop art', /html\.reduce-effects \.ventic-backdrop\s*\{[^}]*display:\s*none/],
 ] as const)
   assert.match(layers, re, `reduce-effects must drop ${what}`)
 
@@ -115,12 +115,12 @@ assert.doesNotMatch(
   'reduce-effects must not stop animations — the loading spinners are animations',
 )
 
-// The blur goes, the brightness and saturation stay: they are what stops white
-// poster art washing the text out, which is a legibility bug, not a slow frame.
+// Unblurred, a translucent surface is a window onto the page behind it — so the
+// frost can't go without the surface turning solid in the same rule.
 assert.match(
   layers,
-  /html\.reduce-effects \.ventic-backdrop\s*\{[^}]*brightness\([^)]*\)[^}]*saturate\(/,
-  'dropping the backdrop blur must keep its brightness/saturation',
+  /html\.reduce-effects \.panel[\s\S]{0,300}?backdrop-filter:\s*none;\s*background-color:\s*rgb\(var\(--v-theme-surface-container\)\)/,
+  'reduce-effects must make the frosted surfaces opaque, not only unblurred',
 )
 
 // --- The rows ---

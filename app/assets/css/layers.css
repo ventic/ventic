@@ -1,17 +1,6 @@
-/* Cascade order. Later layers win, regardless of specificity.
-   `app` sits first on purpose: it holds bare element defaults, and `a { color }`
-   must lose to `.v-btn` for links wrapped in a button. UnoCSS utilities sit
-   after Vuetify's component styles so a utility class can override them. */
-@layer app;
-
-@layer uno-base, uno-theme;
-
-@layer vuetify-core, vuetify-components, vuetify-overrides, vuetify-utilities;
-
-@layer uno-shortcuts, uno-default;
-
-@layer vuetify-final;
-
+/* Later layers win, regardless of specificity. Their order is `layers` in
+   nuxt.config.ts, inlined in the head — declared here, it only held while this
+   file happened to load before UnoCSS's own sheet. */
 @layer app {
   /* The only place a font is named. Vuetify's $heading-font-family and
      $body-font-family already default to these vars, and uno.config.ts points
@@ -184,11 +173,14 @@
 
      `backdrop-filter` is the frosted chrome — a readback and blur of everything
      behind the sidebar and every menu, redone whenever what's behind them moves.
+     The surfaces turn solid along with it: 78% of a colour with no blur under
+     it is a dialog you read the page through.
 
-     The backdrop's own `blur()` stays a blur at 0 radius rather than `none`, so
-     the brightness and saturation that keep white poster art from washing the
-     text out still apply — dropping the whole filter is a different screen, not
-     a faster one. */
+     And the art goes, leaving the theme's plain background. Unblurred, it was a
+     sharp picture behind every line of text — hard going on a laptop and worse
+     across a room — and a layer that isn't drawn is the cheapest one there is.
+     Only hidden: the chosen art is still the user's, and comes back with the
+     switch. */
   html.reduce-effects *,
   html.reduce-effects *::before,
   html.reduce-effects *::after {
@@ -196,15 +188,15 @@
   }
 
   html.reduce-effects .panel,
-  html.reduce-effects .v-navigation-drawer,
   html.reduce-effects .v-overlay__content > .v-list,
   html.reduce-effects .v-overlay__content > .v-card,
   html.reduce-effects .v-overlay__content > .v-sheet {
     backdrop-filter: none;
+    background-color: rgb(var(--v-theme-surface-container)) !important;
   }
 
   html.reduce-effects .ventic-backdrop {
-    filter: brightness(0.5) saturate(1.25) !important;
+    display: none;
   }
 
   /* Left where it is rather than folded into the rule above: the art never

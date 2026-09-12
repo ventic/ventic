@@ -372,6 +372,26 @@ function wordmark(hint: any) {
   assert.ok(!wordmark(light.hint()).includes('#ff5555'), 'and never on a light one, where it falls under 3:1')
 }
 
+/* --- The cascade's order, before any sheet -------------------------------- */
+
+// A layer ranks by where its name is first mentioned, and the dev server once
+// loaded UnoCSS's sheet ahead of layers.css — every utility then lost to every
+// Vuetify component style, silently. Only the inline head style is always first.
+{
+  const config = readFileSync(new URL('../nuxt.config.ts', import.meta.url), 'utf8')
+  assert.match(config, /innerHTML: layers \+ ground/, 'the layer order is the head style\'s first rule')
+  assert.match(
+    config,
+    /const layers = '@layer app, uno-base, uno-theme, vuetify-core, vuetify-components, vuetify-overrides, vuetify-utilities, uno-shortcuts, uno-default, vuetify-final;'/,
+    'utilities rank after Vuetify\'s component styles, and vuetify-final after both',
+  )
+  assert.doesNotMatch(
+    readFileSync(new URL('../app/assets/css/layers.css', import.meta.url), 'utf8'),
+    /@layer [\w-]+(, [\w-]+)*;/,
+    'no second declaration in layers.css to drift from the first',
+  )
+}
+
 /* --- One colour, four files ----------------------------------------------- */
 
 // Three layers can each flash the wrong colour before the app paints: the native
