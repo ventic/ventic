@@ -358,7 +358,7 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
                 · {{ $t('direct link') }}
               </template>
               <template v-else>
-                · {{ $t('{count} seeders', { count: torrent.seeders }) }}
+                · {{ $t('{count} seeders', { count: torrent.seeders ?? '?' }) }}
               </template>
               · {{ torrent.source }}
               <div class="mt-1 truncate">

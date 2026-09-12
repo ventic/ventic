@@ -120,6 +120,73 @@ assert.equal(pickBest([sameTier!, hosted!])!.hash, 'bbb', 'a 1080p torrent beats
 assert.equal(pickBest(links, 100)!.url, debrid!.url, 'the storage budget is not its business')
 assert.equal(pickBest([sameTier!], 100), null, 'which a torrent does not get away with')
 
+// --- Every addon draws its own title -----------------------------------------
+// The protocol fixes the fields, not the text, so each field is read by its look
+// and not its line. Shapes copied from each addon's live output (film swapped
+// for Sintel) — a new addon's shape belongs here, not in a branch.
+const addons = [
+  // The name behind an icon, the resolution in a one-line label.
+  {
+    name: '[TORRENT🧲] Example 1080p',
+    description: '📄 Sintel.2010.1080p.BluRay.x264-GRP.mkv\n📹 avc | 🔊 AAC\n👤 40 💾 2.1 GB 🔎 indexer-a\n🇬🇧',
+    infoHash: 'icons',
+    behaviorHints: { filename: 'Sintel.2010.1080p.BluRay.x264-GRP.mkv', videoSize: 2254857830 },
+  },
+  // The same addon's plain style, for clients that draw no emoji.
+  { name: '[TORRENT] Example 720p', description: 'Sintel.2010.720p.WEB.x264\nSeeders: 12 Size: 900.0 MB Source: indexer-b', infoHash: 'plain' },
+  // Off a debrid hash list, which counts no swarm at all.
+  { name: '[TORRENT🧲] Example 2160p', description: '📄 Sintel.2010.2160p.UHD.BluRay.x265-GRP.mkv\n📹 hevc • HDR • 10bit\n💾 14.2 GB 🔎 hashlist', infoHash: 'uncounted' },
+  // No release name in the text at all, and 🌐 is the languages.
+  {
+    name: 'Example 🧲 P2P ⏳ 4k',
+    description: '🎨 HDR10 📺 WEB-DL 🎞️ HEVC 🎵 DDP\n📦 9.8 GB / 40.1 GB 👤 25\n🌐 English + French\n🔗 indexer-c | 🧑‍💻 someone',
+    infoHash: 'hints',
+    behaviorHints: { filename: 'Sintel.2010.2160p.WEB-DL.DDP5.1.HEVC-GRP.mkv' },
+  },
+  // GiB, "👥 N seeders", and a 🔗 line naming every scraper that found it.
+  {
+    name: '[P2P☁️] Example\n1080p',
+    description: '📄 Sintel.2010.1080p.WEB-DL.x264.mkv\n📺 1080p | web | h264\n💾 1.51 GiB   👥 100 seeders   ⚙️ indexer-d\n🔗 scraper-a,scraper-b',
+    infoHash: 'gib',
+    behaviorHints: { filename: 'Sintel.2010.1080p.WEB-DL.x264.mkv', videoSize: 1625672967 },
+  },
+  // No resolution in the label, and the origin behind 🌐.
+  { name: 'Example', title: 'Sintel 2010 720p BluRay x264\n💾 850 MB 👥 S:33 🌐 indexer-e 🎞 x264', infoHash: 'globe' },
+  // Not releases: an addon's error, and a tip jar.
+  { name: '[❌] Example', description: 'Unable to get metadata.', url: 'https://addon.example' },
+  { name: 'Example', title: '🤝 Support this addon\n☕ Buy me a coffee', externalUrl: 'https://tips.example' },
+]
+const read = addons.flatMap(s => toRelease(s) ?? [])
+assert.deepEqual(
+  read.map(r => [r.hash, r.name, r.quality, r.seeders, r.size, r.source]),
+  [
+    ['icons', 'Sintel.2010.1080p.BluRay.x264-GRP.mkv', '1080p', 40, '2.1 GB', 'indexer-a'],
+    ['plain', 'Sintel.2010.720p.WEB.x264', '720p', 12, '900.0 MB', 'indexer-b'],
+    ['uncounted', 'Sintel.2010.2160p.UHD.BluRay.x265-GRP.mkv', '4k', null, '14.2 GB', 'hashlist'],
+    ['hints', 'Sintel.2010.2160p.WEB-DL.DDP5.1.HEVC-GRP.mkv', '4k', 25, '9.8 GB', 'indexer-c'],
+    ['gib', 'Sintel.2010.1080p.WEB-DL.x264.mkv', '1080p', 100, '1.51 GiB', 'indexer-d'],
+    ['globe', 'Sintel 2010 720p BluRay x264', '720p', 33, '850 MB', 'indexer-e'],
+  ],
+  'every addon read alike, and an error or a tip jar is not a release',
+)
+const byHash = Object.fromEntries(read.map(r => [r.hash, r]))
+assert.equal(byHash.gib!.bytes, 1.51 * 1024 ** 3, 'GiB weighs what GB does here')
+assert.equal(byHash.gib!.file, null, 'a name that is itself a file is not a pack\'s episode')
+assert.equal(
+  toRelease({ name: 'Example 1080p', description: '📺 WEB-DL\n📦 2.1 GB 👤 9\n🔗 indexer-a', infoHash: 'x', behaviorHints: { filename: 'Sintel.2010.1080p.WEB-DL.mkv' } })!.name,
+  'Sintel.2010.1080p.WEB-DL.mkv',
+  'one field behind an icon is not a release name',
+)
+assert.ok(toRelease({ name: 'X\n1080p', title: 'Sintel.2010.1080p.HDTV.ts\n👤 5', infoHash: 't' }), 'a .ts file is a container, not a telesync')
+assert.equal(toRelease({ name: 'X\n1080p', title: 'Seed 2007 1080p BluRay\n💾 2 GB', infoHash: 's' })!.seeders, null, 'a film called Seed has no seeders to read')
+
+// An uncounted swarm is not a dead one — dropping those emptied a whole source's
+// search — but it never outranks a swarm that is counted.
+assert.equal(pickBest([byHash.uncounted!])!.hash, 'uncounted', 'a count nobody gave is not zero')
+assert.equal(pickBest([byHash.uncounted!, byHash.hints!])!.hash, 'hints', 'a swarm it can see beats one it cannot')
+assert.equal(pickBest([{ ...byHash.icons!, seeders: 0 }]), null, 'a zero the source said is still dead')
+assert.equal(pickBest(read)!.hash, 'gib', 'and one pick runs across all of them at once')
+
 // --- A drive that caps one file ----------------------------------------------
 // A TV formats a USB stick as FAT32, which stops at 4 GiB however much of the
 // drive is free. The store hands that down as `maxBytes` (see the downloads

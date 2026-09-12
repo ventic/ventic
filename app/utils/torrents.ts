@@ -167,7 +167,40 @@ const SUBTITLE_EXT = /\.(?:srt|ass|ssa|vtt)$/i
 /** Never worth playing, however many seeders it has. */
 const JUNK = /\b(?:cam|hdcam|ts|hdts|telesync|telecine|scr|screener|r5)\b/i
 
-const UNITS: Record<string, number> = { B: 1, KB: 1024, MB: 1024 ** 2, GB: 1024 ** 3, TB: 1024 ** 4 }
+/**
+ * The first token in a release name that can only be a technical detail, which
+ * is therefore where the title stops (`parseRelease`). Year, season/episode,
+ * resolution, source, codec, audio — in roughly the order they actually turn up.
+ * Two of them are also how `toRelease` tells a release name from a field.
+ *
+ * Deliberately short. Every extra word is a chance to cut a real title in half,
+ * and a name almost always reaches one of the first three before anything else.
+ */
+const DETAIL = /\b(?:(?:19|20)\d{2}|s\d{1,2}(?:[\s.,_-]*e\d{1,3})?|\d{1,2}x\d{2}|\d{3,4}p|4k|uhd|bluray|blu-ray|bdrip|brrip|dvdrip|web-?dl|web-?rip|hdtv|hdrip|remux|amzn|dsnp|atvp|x26[45]|h\.?26[45]|hevc|avc|xvid|divx|aac|ac3|eac3|ddp?\d|truehd|atmos|repack|proper|extended|uncut|imax|complete|season)\b/gi
+
+// What addons draw their display titles with — only shapes seen in a real
+// response (one fixture per addon in check:torrents), and each matched by its
+// look rather than its line, because no two addons agree on the layout.
+
+/** "💾 2.1 GB", "📦 4.2 GB / 10 GB", "💾 4.35 GiB", "Size: 790 MiB". The first one is the file's. */
+const SIZE = /(\d+(?:\.\d+)?)\s*([KMGT])i?B\b/i
+
+/** "👤 40", "👥 36 seeders", "👥 S:40", "Seeders: 40". The word needs its colon, or *Seed* (2007) has 2007 seeders. */
+const SEEDERS = /(?:👤|👥|\bseed(?:er)?s?\s*:)\s*(?:S:\s*)?(\d+)/i
+
+/**
+ * Where a result came from, first name only: "🔗 a,b,c" is every scraper that
+ * found it and "🔎 a| a" a repeat. 🌐 counts only where nothing else says it,
+ * because one addon spends that icon on the languages.
+ */
+const SOURCE = [/(?:⚙|🔎|🔗|\bsource:)\uFE0F?\s*([^\s,|]+)/i, /🌐\uFE0F?\s*([^\s,|]+)/]
+
+/** A resolution, and whatever the label says after it ("4k DV | HDR"). */
+const RESOLUTION = /\b(\d{3,4}p|4k)\b(.*)/i
+
+/** Emoji and flags. `\p{Emoji}` would take in the digits too. */
+const ICON = /[\p{Extended_Pictographic}\p{Regional_Indicator}]/u
+const LEADING_ICONS = /^[\p{Extended_Pictographic}\p{Regional_Indicator}\uFE0F\u200D\s]+/u
 
 /**
  * One result a source returned. Most are torrents, but the same protocol also
@@ -193,13 +226,21 @@ export interface Release {
    * out — the release name above says "S01", not which episode.
    */
   file: string | null
-  seeders: number
+  /**
+   * null when the source didn't say, which is not zero: a result off a debrid
+   * hash list names no swarm, and reading that as dead left a whole source's
+   * search with nothing to play.
+   */
+  seeders: number | null
   /** Human size of the file we'd stream, e.g. "2.1 GB". */
   size: string
   bytes: number
   /** Whatever the source labelled the result's origin with, if anything. */
   source: string
-  /** "1080p", "720p", "4k DV | HDR", … as labelled by the source. */
+  /**
+   * "1080p", "720p", "4k DV | HDR", … as labelled by the source, with one spelling
+   * per tier ("2160p" is "4k") so two sources' copies land under one picker chip.
+   */
   quality: string
   magnet: string
 }
@@ -225,9 +266,12 @@ function magnetFor(hash: string, name: string, sources?: string[]) {
 }
 
 /**
- * One stream from a source -> one release. Everything but the info hash lives
- * in a multi-line display title whose stats line reads
- * `👤 375 💾 928.25 MB ⚙️ origin`, so it gets parsed back out here.
+ * One stream from a source -> one release. The protocol fixes the fields but
+ * not the text: everything past the info hash lives in a display title that
+ * each addon draws its own way — `👤 375 💾 928.25 MB ⚙️ origin` under the name,
+ * `📄 name` over `👤 40 💾 2.1 GB 🔎 origin`, or `📦 … 👤 … 🔗 origin` with the
+ * name only in the hints. So a field is read by what it looks like and never by
+ * the line it is on, which is also what reads an addon nobody here has seen yet.
  */
 export function toRelease(raw: RawStream): Release | null {
   // Either something to fetch or something to open. A stream with neither hands
@@ -237,30 +281,48 @@ export function toRelease(raw: RawStream): Release | null {
     return null
 
   const title = raw.description || raw.title || ''
-  const lines = title.split('\n').map(line => line.trim())
-  const name = lines[0] || (raw.behaviorHints?.filename ?? '')
-  if (!name || JUNK.test(name))
+  const lines = title.split('\n').map(line => line.replace(LEADING_ICONS, '').trim())
+  // A release name comes first, on a line of its own at most behind one icon
+  // ("📄 Sintel…"), and spells out a detail or two. A line of fields has icons
+  // all through it, and some descriptions are nothing else — the name is then
+  // only in the hints.
+  const [first = ''] = lines
+  const named = !ICON.test(first) && (first.match(DETAIL)?.length ?? 0) >= 2
+  const name = named ? first : raw.behaviorHints?.filename || first
+  // Extension off first: a `.ts` file is a container, not a telesync.
+  if (!name || JUNK.test(name.replace(VIDEO_EXT, '')))
     return null
 
-  const [, amount, unit] = title.match(/💾\s*([\d.]+)\s*([KMGT]?B)/) ?? []
+  const size = title.match(SIZE)
   // Debrid addons have already resolved the file, so they tend to give its
   // exact length here instead of drawing the stats line a torrent needs.
-  const bytes = amount ? Number(amount) * (UNITS[unit!] ?? 0) : raw.behaviorHints?.videoSize ?? 0
+  const bytes = size
+    ? Number(size[1]) * 1024 ** ('KMGT'.indexOf(size[2]!.toUpperCase()) + 1)
+    : raw.behaviorHints?.videoSize ?? 0
 
+  // The addon's own label says it best ("<addon>\n4k DV | HDR", "[TORRENT🧲]
+  // <addon> 2160p"); the release name answers for one that doesn't.
+  const label = (raw.name ?? '').match(RESOLUTION)
+  const tier = (label ?? name.match(RESOLUTION))?.[1]!.toLowerCase().replace('2160p', '4k') ?? ''
+  const quality = label ? tier + label[2]!.trimEnd() : tier
+
+  // A link that says neither how big nor how sharp is the addon talking — an
+  // error, "not released yet" — and ranked as a link it can beat a real copy.
+  if (url && !bytes && !quality)
+    return null
+
+  const seeders = title.match(SEEDERS)
   return {
     name,
     hash: raw.infoHash ?? '',
     url,
     fileIdx: raw.fileIdx ?? null,
     file: lines.slice(1).find(line => VIDEO_EXT.test(line)) ?? null,
-    seeders: Number(title.match(/👤\s*(\d+)/)?.[1] ?? 0),
-    size: amount ? `${amount} ${unit}` : bytes ? bytesText(bytes) : '',
+    seeders: seeders ? Number(seeders[1]) : null,
+    size: size ? size[0] : bytes ? bytesText(bytes) : '',
     bytes,
-    // "⚙️" is a gear plus a variation selector — match the gear, skip whatever
-    // decoration follows it, and take the next word.
-    source: title.match(/⚙\S*\s+(\S+)/)?.[1] ?? 'unknown',
-    // The source's own label line: "<source name>\n1080p".
-    quality: ((raw.name ?? '').split('\n')[1] ?? '').trim(),
+    source: SOURCE.map(re => title.match(re)?.[1]).find(Boolean) ?? 'unknown',
+    quality,
     magnet: raw.infoHash ? magnetFor(raw.infoHash, name, raw.sources) : '',
   }
 }
@@ -380,24 +442,26 @@ export function isAwkward(t: Release) {
  *
  * A copy that gives its tier away is ranked as the tier below rather than
  * dropped — too few bits for the label (`STARVED`), or too few peers to deliver
- * them (`THIN`). Demoted and not removed because it is still the best thing here
- * when there is nothing under it, which is the whole of the 4k fallback: ask for
- * 2160p, and a 2160p nobody is seeding loses to a healthy 1080p on its own.
+ * them (`THIN`), or a swarm the source never counted. Demoted and not removed
+ * because it is still the best thing here when there is nothing under it, which
+ * is the whole of the 4k fallback: ask for 2160p, and a 2160p nobody is seeding
+ * loses to a healthy 1080p on its own.
  */
 export function pickBest(list: Release[], maxBytes = MAX_BYTES, compatible = false): Release | null {
   const limit = Math.min(MAX_BYTES, maxBytes)
   const starved = starvedIn(list)
-  const at = (t: Release) => rank(t) + Number(starved(t) || (!t.url && t.seeders < THIN))
+  const at = (t: Release) => rank(t) + Number(starved(t) || (!t.url && (t.seeders ?? 0) < THIN))
   return [...list]
     // Neither test applies to a link: there is no swarm to have seeders, and
-    // nothing is written to the disk the budget is protecting.
-    .filter(t => !!t.url || (t.seeders > 0 && (!t.bytes || t.bytes <= limit)))
+    // nothing is written to the disk the budget is protecting. Only a zero the
+    // source actually said is a dead swarm.
+    .filter(t => !!t.url || ((t.seeders ?? 1) > 0 && (!t.bytes || t.bytes <= limit)))
     .sort((a, b) =>
       at(a) - at(b)
       || (compatible ? Number(isAwkward(a)) - Number(isAwkward(b)) : 0)
       || Number(isBloated(a)) - Number(isBloated(b))
       || Number(!a.url) - Number(!b.url)
-      || b.seeders - a.seeders)[0] ?? null
+      || (b.seeders ?? 0) - (a.seeders ?? 0))[0] ?? null
 }
 
 async function searchOne(base: string, path: string): Promise<Release[]> {
@@ -605,16 +669,6 @@ export function filedAs(
   const show = mine.map(([key]) => parseKey(key)).find(k => k.type === 'tv' && k.season)
   return ep && show ? progressKey('tv', show.id, ep.season, ep.episode) : ''
 }
-
-/**
- * The first token in a release name that can only be a technical detail, which
- * is therefore where the title stops. Year, season/episode, resolution, source,
- * codec, audio — in roughly the order they actually turn up.
- *
- * Deliberately short. Every extra word is a chance to cut a real title in half,
- * and a name almost always reaches one of the first three before anything else.
- */
-const DETAIL = /\b(?:(?:19|20)\d{2}|s\d{1,2}(?:[\s.,_-]*e\d{1,3})?|\d{1,2}x\d{2}|\d{3,4}p|4k|uhd|bluray|blu-ray|bdrip|brrip|dvdrip|web-?dl|web-?rip|hdtv|hdrip|remux|amzn|dsnp|atvp|x26[45]|h\.?26[45]|hevc|avc|xvid|divx|aac|ac3|eac3|ddp?\d|truehd|atmos|repack|proper|extended|uncut|imax|complete|season)\b/gi
 
 /** What a release name says once the scene furniture is taken off it. */
 export interface ReleaseName {

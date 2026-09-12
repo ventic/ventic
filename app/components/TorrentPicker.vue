@@ -102,7 +102,7 @@ const list = computed(() => {
   return torrents.value
     .filter(t => (tier.value === 'all' || tierOf(t) === tier.value)
       && (!q || `${t.name} ${t.source}`.toLowerCase().includes(q)))
-    .sort((a, b) => sort.value === 'size' ? a.bytes - b.bytes : b.seeders - a.seeders)
+    .sort((a, b) => sort.value === 'size' ? a.bytes - b.bytes : (b.seeders ?? 0) - (a.seeders ?? 0))
 })
 
 function playLink(t: Release) {
@@ -249,7 +249,7 @@ async function download(t: Release) {
                   <v-tooltip activator="parent" :text="$t('The source fetched this already — it plays at once and keeps nothing on this device')" />
                 </template>
                 <template v-else>
-                  <v-icon :icon="mdiAccountGroup" size="13" />{{ t.seeders }}
+                  <v-icon :icon="mdiAccountGroup" size="13" />{{ t.seeders ?? '?' }}
                 </template>
               </span>
 
