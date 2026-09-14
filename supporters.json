@@ -5,6 +5,10 @@
   "monthly": [],
   "once": [
     {
+      "name": "Hayley",
+      "amount": 10
+    },
+    {
       "name": "Jim",
       "amount": 23
     }
