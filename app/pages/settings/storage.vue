@@ -322,7 +322,6 @@ async function openFolder() {
         <v-btn
           :prepend-icon="mdiDeleteSweepOutline"
           variant="tonal"
-          color="error"
           :disabled="!downloads.torrents.length"
           @click="confirmPrune = true"
         >
@@ -363,7 +362,6 @@ async function openFolder() {
         <v-btn
           :prepend-icon="mdiDeleteOutline"
           variant="tonal"
-          color="error"
           :disabled="!library.history.length && !library.favouriteList.length && !library.watchlistItems.length"
           @click="confirmClear = true"
         >
