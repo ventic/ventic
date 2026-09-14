@@ -589,17 +589,26 @@ async fn run_torrent_server(
 			}),
 			..Default::default()
 		}),
+		// A port of our own, which librqbit opens only when asked. Without one a
+		// peer behind a home router can never reach us, and a thin release is then
+		// only its few peers with an open port: on the TV, 3 of ~2000 advertised.
+		// UPnP asks the router to forward it, and it is a random port every launch
+		// for the reason the DHT's is. Not on Windows or macOS, where binding one
+		// puts a firewall dialog up at launch.
+		listen: (with_dht && cfg!(any(target_os = "android", target_os = "linux"))).then(|| {
+			librqbit::ListenerOptions { enable_upnp_port_forwarding: true, ..Default::default() }
+		}),
 		..Default::default()
 	};
 
 	let session = match Session::new_with_opts(download_dir.clone(), opts(true)).await {
 		Ok(session) => session,
 		Err(e) => {
-			// A DHT that won't start must not take the rest of the engine with
-			// it. The HTTP API below is what serves playback and the downloads
-			// UI, and trackers alone still find peers for most torrents, so come
-			// up degraded rather than leaving the app with no engine at all.
-			eprintln!("[ventic] torrent session failed to start ({e:#}) — retrying without DHT");
+			// A DHT or a port that won't start must not take the rest of the
+			// engine with it. The HTTP API below is what serves playback and the
+			// downloads UI, and trackers alone still find peers for most torrents,
+			// so come up degraded rather than leaving the app with no engine at all.
+			eprintln!("[ventic] torrent session failed to start ({e:#}) — retrying without DHT or a port");
 			Session::new_with_opts(download_dir, opts(false)).await?
 		}
 	};

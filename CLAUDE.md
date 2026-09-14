@@ -92,6 +92,19 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   `src-tauri/.cargo/config.toml` sets `AWS_LC_SYS_PREBUILT_NASM=1` to take the
   objects the crate ships for that target instead. It is scoped to Windows
   x86_64 by aws-lc-sys itself, so it changes nothing on any other host.
+- **The engine has a peer port on Android and Linux, and nowhere else.**
+  librqbit opens none unless asked, and without one it announces a port
+  nothing listens on (4240) — so a peer behind a home router can never reach
+  us, and a thin release is only its few peers with an open port: on the TV,
+  3 of ~2000 advertised, stalling a film at 0.03 MiB/s. `listen` in
+  `run_torrent_server` opens a random port each launch and asks the router to
+  forward it over UPnP (a `rust UPnP` entry in the router's mapping table is the
+  proof). That reaches nobody behind a second NAT — the test network's router
+  has a private address on its own WAN side, and in 19 minutes no peer ever
+  connected in — so what it buys is only where the router's address is public.
+  Not on Windows or macOS, where binding one puts a firewall dialog up
+  at launch; turning it on there is removing that `cfg!`. A bind that fails
+  takes the degraded no-DHT path, never the engine down.
 - Linux uses the system mpv; Windows has none, so `scripts/build/mpv.ts`
   downloads one into `src-tauri/mpv/` and `tauri.windows.conf.json` bundles it as
   a resource. The build scripts call that before invoking tauri — a missing
