@@ -156,7 +156,8 @@ function meta(t: EngineTorrent) {
   const s = t.stats
   const live = s?.live
   return [
-    `${percentOf(t).toFixed(0)}%`,
+    // A stream's percentage only ever says "a few": it is a buffer, not a download.
+    isStream(t.output_folder) ? $t('Streaming') : `${percentOf(t).toFixed(0)}%`,
     bytesText(s?.total_bytes ?? 0),
     // A finished torrent downloads nothing; "0 B/s" beside it reads as stuck.
     s?.finished ? '' : live?.download_speed.human_readable,

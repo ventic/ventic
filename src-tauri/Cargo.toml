@@ -121,6 +121,14 @@ version = "9.0.0-rc.0"
 default-features = false
 features = [ "rust-tls", "http-api", "http-api-client", "tracing-subscriber-utils" ]
 
+# That same librqbit plus a patch of ours, which is what lets a film stream
+# through a buffer instead of being downloaded whole: a torrent can be told to
+# fetch only around its readers, and to forget what they have left behind. No
+# release of librqbit can do either. The diff is vendor/librqbit.patch, and
+# vendor/librqbit/VENTIC.md says how to carry it to a newer version.
+[patch.crates-io]
+librqbit = { path = "vendor/librqbit" }
+
 [dependencies.tokio]
 version = "1"
 features = [ "rt-multi-thread" ]

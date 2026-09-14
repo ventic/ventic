@@ -1,0 +1,652 @@
+diff -ruN -x VENTIC.md a/Cargo.toml b/Cargo.toml
+--- a/Cargo.toml	2026-09-14 20:09:43.357002989 +0200
++++ b/Cargo.toml	2026-09-14 20:19:05.595011409 +0200
+@@ -128,8 +128,12 @@
+ [dependencies.base64]
+ version = "0.22"
+ 
++# ventic: every librqbit-* crate is pinned exactly (`=`), where crates.io's copy
++# says `^9.0.0-rc.0`. The [patch] holds librqbit itself at rc.0, so a caret here
++# would let `cargo update` move its siblings to 9.0.1 underneath it — which does
++# not compile against this source.
+ [dependencies.bencode]
+-version = "9.0.0-rc.0"
++version = "=9.0.0-rc.0"
+ default-features = false
+ package = "librqbit-bencode"
+ 
+@@ -140,7 +144,7 @@
+ version = "1"
+ 
+ [dependencies.buffers]
+-version = "9.0.0-rc.0"
++version = "=9.0.0-rc.0"
+ package = "librqbit-buffers"
+ 
+ [dependencies.byteorder]
+@@ -150,7 +154,7 @@
+ version = "1"
+ 
+ [dependencies.clone_to_owned]
+-version = "9.0.0-rc.0"
++version = "=9.0.0-rc.0"
+ package = "librqbit-clone-to-owned"
+ 
+ [dependencies.console-subscriber]
+@@ -161,7 +165,7 @@
+ version = "6"
+ 
+ [dependencies.dht]
+-version = "9.0.0-rc.0"
++version = "=9.0.0-rc.0"
+ default-features = false
+ package = "librqbit-dht"
+ 
+@@ -188,7 +192,7 @@
+ version = "0.14"
+ 
+ [dependencies.librqbit-core]
+-version = "9.0.0-rc.0"
++version = "=9.0.0-rc.0"
+ default-features = false
+ 
+ [dependencies.librqbit-dualstack-sockets]
+@@ -196,11 +200,11 @@
+ features = ["axum"]
+ 
+ [dependencies.librqbit-lsd]
+-version = "9.0.0-rc.0"
++version = "=9.0.0-rc.0"
+ default-features = false
+ 
+ [dependencies.librqbit-upnp]
+-version = "9.0.0-rc.0"
++version = "=9.0.0-rc.0"
+ 
+ [dependencies.librqbit-utp]
+ version = "0.7"
+@@ -234,7 +238,7 @@
+ version = "0.12"
+ 
+ [dependencies.peer_binary_protocol]
+-version = "9.0.0-rc.0"
++version = "=9.0.0-rc.0"
+ default-features = false
+ package = "librqbit-peer-protocol"
+ 
+@@ -273,7 +277,7 @@
+ version = "3"
+ 
+ [dependencies.sha1w]
+-version = "9.0.0-rc.0"
++version = "=9.0.0-rc.0"
+ default-features = false
+ package = "librqbit-sha1-wrapper"
+ 
+@@ -337,12 +341,12 @@
+ default-features = false
+ 
+ [dependencies.tracker_comms]
+-version = "9.0.0-rc.0"
++version = "=9.0.0-rc.0"
+ default-features = false
+ package = "librqbit-tracker-comms"
+ 
+ [dependencies.upnp-serve]
+-version = "9.0.0-rc.0"
++version = "=9.0.0-rc.0"
+ optional = true
+ default-features = false
+ package = "librqbit-upnp-serve"
+@@ -382,6 +386,10 @@
+ [build-dependencies.anyhow]
+ version = "1"
+ 
++# ventic: punching a forgotten piece out of its file (storage/filesystem/sparse.rs).
++[target."cfg(unix)".dependencies.libc]
++version = "0.2"
++
+ [target."cfg(windows)".dependencies.windows]
+ version = "0.62"
+ features = [
+diff -ruN -x VENTIC.md a/src/chunk_tracker.rs b/src/chunk_tracker.rs
+--- a/src/chunk_tracker.rs	2026-09-14 20:09:43.359310150 +0200
++++ b/src/chunk_tracker.rs	2026-09-14 20:19:05.594735250 +0200
+@@ -252,6 +252,45 @@
+         self.have.as_slice()[id.get() as usize]
+     }
+ 
++    /// ventic: nothing of this piece is on disk as far as the tracker knows — not had,
++    /// and not a chunk of it written since it was last forgotten.
++    pub(crate) fn is_piece_untouched(&self, id: ValidPieceIndex) -> bool {
++        !self.is_piece_have(id)
++            && self
++                .chunk_status
++                .get(self.lengths.chunk_range(id))
++                .is_some_and(|chunks| chunks.not_any())
++    }
++
++    /// ventic: give up a piece we have, as if it had never been downloaded — a stream
++    /// dropping what its reader has left behind (`TorrentStateLive::forget_outside`).
++    /// Queued again if its file is still selected, so it comes back when it is asked for.
++    pub(crate) fn forget_piece(&mut self, id: ValidPieceIndex, file_infos: &FileInfos) {
++        let idx = id.get_usize();
++        if !self.have.as_slice()[idx] {
++            return;
++        }
++        self.have.as_slice_mut().set(idx, false);
++        if let Some(chunks) = self.chunk_status.get_mut(self.lengths.chunk_range(id)) {
++            chunks.fill(false);
++        }
++        let len = u64::from(self.lengths.piece_length(id));
++        self.hns.have_bytes -= len;
++        if self.selected[idx] {
++            self.hns.needed_bytes += len;
++            self.queue_pieces.set(idx, true);
++        }
++        for (have, fi) in self.per_file_bytes.iter_mut().zip(file_infos) {
++            if fi.piece_range.contains(&id.get()) {
++                *have = have.saturating_sub(self.lengths.size_of_piece_in_file(
++                    id.get(),
++                    fi.offset_in_torrent,
++                    fi.len,
++                ));
++            }
++        }
++    }
++
+     pub fn mark_piece_broken_if_not_have(&mut self, index: ValidPieceIndex) {
+         if self
+             .have
+diff -ruN -x VENTIC.md a/src/http_api_types.rs b/src/http_api_types.rs
+--- a/src/http_api_types.rs	2026-09-14 20:09:43.360134637 +0200
++++ b/src/http_api_types.rs	2026-09-14 20:19:05.594791260 +0200
+@@ -23,6 +23,9 @@
+     // Will force interpreting the content as a URL.
+     pub is_url: Option<bool>,
+     pub list_only: Option<bool>,
++    // ventic: add without starting — a stream is started once its window is set,
++    // not a second before it (see `ManagedTorrent::set_stream_window`).
++    pub paused: Option<bool>,
+ }
+ 
+ impl Serialize for OnlyFiles {
+@@ -100,6 +103,7 @@
+             output_folder: self.output_folder,
+             sub_folder: self.sub_folder,
+             list_only: self.list_only.unwrap_or(false),
++            paused: self.paused.unwrap_or(false),
+             initial_peers: self.initial_peers.map(|i| i.0),
+             peer_opts: Some(PeerConnectionOptions {
+                 connect_timeout: self.peer_connect_timeout.map(Duration::from_secs),
+diff -ruN -x VENTIC.md a/src/piece_tracker.rs b/src/piece_tracker.rs
+--- a/src/piece_tracker.rs	2026-09-14 20:09:43.360500045 +0200
++++ b/src/piece_tracker.rs	2026-09-14 20:19:05.594764600 +0200
+@@ -313,6 +313,11 @@
+     pub fn flush_have_pieces(&mut self, flush_async: bool) -> anyhow::Result<()> {
+         self.chunks.get_have_pieces_mut().flush(flush_async)
+     }
++
++    /// ventic: see `ChunkTracker::forget_piece`.
++    pub fn forget_piece(&mut self, piece: ValidPieceIndex, file_infos: &FileInfos) {
++        self.chunks.forget_piece(piece, file_infos)
++    }
+ }
+ 
+ #[cfg(test)]
+diff -ruN -x VENTIC.md a/src/storage/filesystem/fs.rs b/src/storage/filesystem/fs.rs
+--- a/src/storage/filesystem/fs.rs	2026-09-14 20:09:43.361131843 +0200
++++ b/src/storage/filesystem/fs.rs	2026-09-14 20:19:05.593855083 +0200
+@@ -98,6 +98,13 @@
+         Ok(f.lock_read()?.set_len(len)?)
+     }
+ 
++    // ventic: see `TorrentStorage::discard`.
++    fn discard(&self, file_id: usize, offset: u64, len: u64) -> anyhow::Result<()> {
++        let f = self.opened_files.get(file_id).context("no such file")?;
++        let file = f.lock_read()?;
++        super::sparse::punch_hole(&file, offset, len)
++    }
++
+     fn take(&self) -> anyhow::Result<Box<dyn TorrentStorage>> {
+         Ok(Box::new(Self {
+             opened_files: self
+diff -ruN -x VENTIC.md a/src/storage/filesystem/sparse.rs b/src/storage/filesystem/sparse.rs
+--- a/src/storage/filesystem/sparse.rs	2026-09-14 20:09:43.361202803 +0200
++++ b/src/storage/filesystem/sparse.rs	2026-09-14 20:19:05.593836223 +0200
+@@ -10,3 +10,85 @@
+ 
+     unsafe { DeviceIoControl(handle, FSCTL_SET_SPARSE, None, 0, None, 0, None, None).is_ok() }
+ }
++
++/// ventic: give the whole filesystem blocks inside `offset..offset + len` back to the disk,
++/// leaving the file's length alone. Rounded inward to the block, so no byte outside the
++/// range is ever touched — a piece that is kept can share a block with one that isn't.
++/// A punched range reads back as zeros, which is why the piece is forgotten first.
++pub fn punch_hole(f: &std::fs::File, offset: u64, len: u64) -> anyhow::Result<()> {
++    const BLOCK: u64 = 4096;
++    let start = offset.div_ceil(BLOCK) * BLOCK;
++    let end = (offset + len) / BLOCK * BLOCK;
++    if end <= start {
++        return Ok(());
++    }
++    punch(f, start, end - start)
++}
++
++#[cfg(any(target_os = "linux", target_os = "android"))]
++fn punch(f: &std::fs::File, offset: u64, len: u64) -> anyhow::Result<()> {
++    use std::os::fd::AsRawFd;
++    // The 64 variant because `off_t` is 32 bits on armv7 Android — a TV box — and a film is
++    // past 2 GiB by its second act.
++    let done = unsafe {
++        libc::fallocate64(
++            f.as_raw_fd(),
++            libc::FALLOC_FL_PUNCH_HOLE | libc::FALLOC_FL_KEEP_SIZE,
++            offset as libc::off64_t,
++            len as libc::off64_t,
++        )
++    };
++    if done != 0 {
++        anyhow::bail!(std::io::Error::last_os_error());
++    }
++    Ok(())
++}
++
++#[cfg(target_os = "macos")]
++fn punch(f: &std::fs::File, offset: u64, len: u64) -> anyhow::Result<()> {
++    use std::os::fd::AsRawFd;
++    let hole = libc::fpunchhole_t {
++        fp_flags: 0,
++        reserved: 0,
++        fp_offset: offset as libc::off_t,
++        fp_length: len as libc::off_t,
++    };
++    if unsafe { libc::fcntl(f.as_raw_fd(), libc::F_PUNCHHOLE, &hole) } != 0 {
++        anyhow::bail!(std::io::Error::last_os_error());
++    }
++    Ok(())
++}
++
++#[cfg(windows)]
++fn punch(f: &std::fs::File, offset: u64, len: u64) -> anyhow::Result<()> {
++    use std::os::windows::io::AsRawHandle;
++    use windows::{
++        Win32::Foundation::HANDLE,
++        Win32::System::IO::DeviceIoControl,
++        Win32::System::Ioctl::{FILE_ZERO_DATA_INFORMATION, FSCTL_SET_ZERO_DATA},
++    };
++    // Deallocates only in a sparse file, which this one became on its first write
++    // (`try_mark_sparse`). In any other it writes zeros, which is still correct.
++    let zero = FILE_ZERO_DATA_INFORMATION {
++        FileOffset: offset as i64,
++        BeyondFinalZero: (offset + len) as i64,
++    };
++    unsafe {
++        DeviceIoControl(
++            HANDLE(f.as_raw_handle()),
++            FSCTL_SET_ZERO_DATA,
++            Some(std::ptr::from_ref(&zero).cast()),
++            size_of::<FILE_ZERO_DATA_INFORMATION>() as u32,
++            None,
++            0,
++            None,
++            None,
++        )
++    }?;
++    Ok(())
++}
++
++#[cfg(not(any(target_os = "linux", target_os = "android", target_os = "macos", windows)))]
++fn punch(_f: &std::fs::File, _offset: u64, _len: u64) -> anyhow::Result<()> {
++    Ok(())
++}
+diff -ruN -x VENTIC.md a/src/storage/mod.rs b/src/storage/mod.rs
+--- a/src/storage/mod.rs	2026-09-14 20:09:43.361310392 +0200
++++ b/src/storage/mod.rs	2026-09-14 20:19:05.593970713 +0200
+@@ -168,6 +168,14 @@
+     fn on_piece_completed(&self, _piece_index: ValidPieceIndex) -> anyhow::Result<()> {
+         Ok(())
+     }
++
++    /// ventic: the bytes at `offset..offset + len` of this file are no longer wanted — a
++    /// piece a stream has forgotten (`TorrentStateLive::forget_outside`). Give their space
++    /// back if the backend can. Keeping them is always correct, only bigger, so that is
++    /// what the default does.
++    fn discard(&self, _file_id: usize, _offset: u64, _len: u64) -> anyhow::Result<()> {
++        Ok(())
++    }
+ }
+ 
+ impl<U: TorrentStorage + ?Sized> TorrentStorage for Box<U> {
+@@ -206,4 +214,8 @@
+     fn on_piece_completed(&self, piece_id: ValidPieceIndex) -> anyhow::Result<()> {
+         (**self).on_piece_completed(piece_id)
+     }
++
++    fn discard(&self, file_id: usize, offset: u64, len: u64) -> anyhow::Result<()> {
++        (**self).discard(file_id, offset, len)
++    }
+ }
+diff -ruN -x VENTIC.md a/src/torrent_state/live/mod.rs b/src/torrent_state/live/mod.rs
+--- a/src/torrent_state/live/mod.rs	2026-09-14 20:09:43.361578101 +0200
++++ b/src/torrent_state/live/mod.rs	2026-09-14 20:19:05.594458561 +0200
+@@ -134,6 +134,10 @@
+     fatal_errors_tx: Option<tokio::sync::oneshot::Sender<anyhow::Error>>,
+ 
+     unflushed_bitv_bytes: u64,
++
++    // ventic: what the last `forget_outside` forgot, whose bytes the next one hands back to
++    // the filesystem.
++    forgotten: Vec<ValidPieceIndex>,
+ }
+ 
+ impl TorrentStateLocked {
+@@ -271,6 +275,7 @@
+                 file_priorities,
+                 fatal_errors_tx: Some(fatal_errors_tx),
+                 unflushed_bitv_bytes: 0,
++                forgotten: Vec::new(),
+             }),
+             files: paused.files,
+             stats: AtomicStats {
+@@ -811,6 +816,105 @@
+         Ok(())
+     }
+ 
++    /// ventic: the other half of a stream window (`ManagedTorrent::set_stream_window`).
++    /// Forget every piece of a file being read that lies more than `behind` bytes behind
++    /// every reader and outside every reader's window ahead, so that a film streams
++    /// through a buffer instead of filling the disk.
++    ///
++    /// Forgetting is two steps, a call apart. The have bit goes now: from here on no reader
++    /// or peer is handed the piece, and a reader that wants it back waits for it like any
++    /// other missing piece. The bytes go on the next call, once a read or an upload that
++    /// passed its own have-check just before this has had seconds to finish with them.
++    ///
++    /// `edge` bytes at either end of a file are never forgotten — that is where a container
++    /// keeps its header and index, which a player reads again whenever it reopens the file.
++    /// Returns the bytes forgotten.
++    pub fn forget_outside(&self, behind: u64, edge: u64) -> anyhow::Result<u64> {
++        let ahead = self.streams.window();
++        if ahead == 0 {
++            return Ok(0);
++        }
++        let mut g = self.lock_write("forget_outside");
++        let locked = &mut **g;
++
++        // Last call's pieces — unless one has been fetched again since, or is being.
++        for piece in std::mem::take(&mut locked.forgotten) {
++            let pieces = locked.get_pieces()?;
++            if !pieces.is_inflight(piece) && pieces.chunks().is_piece_untouched(piece) {
++                self.discard_piece(piece);
++            }
++        }
++
++        // Read under the lock, which a reader takes to look at a have bit: none can move
++        // between this and the bits cleared below.
++        let readers = self.streams.positions();
++        if readers.is_empty() {
++            return Ok(0);
++        }
++
++        let lengths = &self.lengths;
++        let pieces = locked.get_pieces_mut()?;
++        let mut forgotten = Vec::new();
++        let mut bytes = 0;
++        for (file_id, fi) in self.metadata.file_infos.iter().enumerate() {
++            if fi.attrs.padding || !readers.iter().any(|(read, _)| *read == file_id) {
++                continue;
++            }
++            let keep_from = fi.offset_in_torrent + edge;
++            let keep_to = (fi.offset_in_torrent + fi.len).saturating_sub(edge);
++            for piece in fi
++                .piece_range
++                .clone()
++                .filter_map(|id| lengths.validate_piece_index(id))
++            {
++                let from = lengths.piece_offset(piece);
++                let len = u64::from(lengths.piece_length(piece));
++                // The file's own ends, and any piece it shares with a neighbour.
++                if from < keep_from || from + len > keep_to {
++                    continue;
++                }
++                let near = readers.iter().any(|(_, at)| {
++                    from + len > at.saturating_sub(behind) && from < at.saturating_add(ahead)
++                });
++                if near || !pieces.chunks().is_piece_have(piece) || pieces.is_inflight(piece) {
++                    continue;
++                }
++                pieces.forget_piece(piece, &self.metadata.file_infos);
++                forgotten.push(piece);
++                bytes += len;
++            }
++        }
++
++        if bytes > 0 {
++            self.stats.have_bytes.fetch_sub(bytes, Ordering::Relaxed);
++            locked.forgotten = forgotten;
++            // Written now, not in 16 MiB: the next launch trusts this file (fastresume),
++            // and a piece it still said we had would be read back as the zeros punched in.
++            locked.unflushed_bitv_bytes += bytes;
++            locked.try_flush_bitv(&self.shared, true);
++        }
++        Ok(bytes)
++    }
++
++    /// ventic: hand a forgotten piece's bytes back to the filesystem (`TorrentStorage::discard`).
++    fn discard_piece(&self, piece: ValidPieceIndex) {
++        let from = self.lengths.piece_offset(piece);
++        let to = from + u64::from(self.lengths.piece_length(piece));
++        for (file_id, fi) in self.metadata.file_infos.iter().enumerate() {
++            let start = from.max(fi.offset_in_torrent);
++            let end = to.min(fi.offset_in_torrent + fi.len);
++            if start >= end || fi.attrs.padding {
++                continue;
++            }
++            if let Err(e) = self
++                .files
++                .discard(file_id, start - fi.offset_in_torrent, end - start)
++            {
++                debug!(?piece, "could not give a forgotten piece's space back: {e:#}");
++            }
++        }
++    }
++
+     // If we have all selected pieces but not necessarily all pieces.
+     pub(crate) fn is_finished(&self) -> bool {
+         self.get_hns().map(|h| h.finished()).unwrap_or_default()
+@@ -1426,6 +1530,14 @@
+                     ..
+                 } = &mut **g;
+                 let pieces = pieces.as_mut().ok_or(Error::ChunkTrackerEmpty)?;
++                // ventic: a stream fetches around its readers and nothing else, so the
++                // natural order through the files is left out altogether.
++                let streaming = FilePriorities::new();
++                let file_priorities = if self.state.streams.window() > 0 {
++                    &streaming
++                } else {
++                    &*file_priorities
++                };
+                 let result = pieces.acquire_piece(AcquireRequest {
+                     peer: self.addr,
+                     peer_avg_time: self.counters.average_piece_download_time(),
+@@ -1500,10 +1612,15 @@
+             .get_chunks()?
+             .is_chunk_ready_to_upload(&chunk_info)
+         {
+-            anyhow::bail!(
+-                "got request for a chunk that is not ready to upload. chunk {:?}",
++            // ventic: a stream forgets pieces it has already announced (`forget_outside`),
++            // and a peer asking for one of them is behind the news, not misbehaving.
++            // Disconnecting it would cost a peer the stream may well be fetching from; left
++            // unanswered, the request times out like any other that is snubbed.
++            debug!(
++                "ignoring a request for a chunk we don't have. chunk {:?}",
+                 &chunk_info
+             );
++            return Ok(());
+         }
+ 
+         self.state
+@@ -1658,14 +1775,22 @@
+ 
+             // Acquire a piece using the strategy: try steal (10x) → reserve → steal (3x).
+             let new_piece_notify = self.state.new_pieces_notify.notified();
++            // ventic: see `TorrentStreams::moved`.
++            let reader_moved = self.state.streams.moved.notified();
+             let next = match self.acquire_next_piece()? {
+                 Some(next) => next,
+                 None => {
+                     debug!("no pieces to request");
++                    let woken = async {
++                        tokio::select! {
++                            () = new_piece_notify => {}
++                            () = reader_moved => {}
++                        }
++                    };
+                     match aframe!(tokio::time::timeout(
+                         // Half of default rw timeout not to race with it.
+                         Duration::from_secs(5),
+-                        new_piece_notify
++                        woken
+                     ))
+                     .await
+                     {
+diff -ruN -x VENTIC.md a/src/torrent_state/streaming.rs b/src/torrent_state/streaming.rs
+--- a/src/torrent_state/streaming.rs	2026-09-14 20:09:43.361919110 +0200
++++ b/src/torrent_state/streaming.rs	2026-09-14 20:19:05.594588111 +0200
+@@ -3,7 +3,7 @@
+     io::SeekFrom,
+     sync::{
+         Arc,
+-        atomic::{AtomicUsize, Ordering},
++        atomic::{AtomicU64, AtomicUsize, Ordering},
+     },
+     task::{Poll, Waker},
+     time::Instant,
+@@ -15,7 +15,7 @@
+ use librqbit_core::lengths::{CurrentPiece, Lengths, ValidPieceIndex};
+ use tokio::{
+     io::{AsyncRead, AsyncSeek},
+-    sync::OwnedSemaphorePermit,
++    sync::{Notify, OwnedSemaphorePermit},
+ };
+ use tracing::{debug, trace};
+ 
+@@ -41,9 +41,13 @@
+         lengths.compute_current_piece(self.position, self.file_abs_offset)
+     }
+ 
+-    fn queue<'a>(&self, lengths: &'a Lengths) -> impl Iterator<Item = ValidPieceIndex> + use<'a> {
++    fn queue<'a>(
++        &self,
++        lengths: &'a Lengths,
++        ahead: u64,
++    ) -> impl Iterator<Item = ValidPieceIndex> + use<'a> {
+         let start = self.file_abs_offset + self.position;
+-        let end = (start + PER_STREAM_BUF_DEFAULT).min(self.file_abs_offset + self.file_len);
++        let end = (start + ahead).min(self.file_abs_offset + self.file_len);
+         let dpl = lengths.default_piece_length();
+         let start_id = (start / dpl as u64).try_into().unwrap();
+         let end_id = end.div_ceil(dpl as u64).try_into().unwrap();
+@@ -55,6 +59,14 @@
+ pub(crate) struct TorrentStreams {
+     next_stream_id: AtomicUsize,
+     streams: DashMap<StreamId, StreamState>,
++    // ventic: bytes to fetch past each reader when the torrent is being streamed rather
++    // than downloaded (`ManagedTorrent::set_stream_window`), 0 when it is a download.
++    // While it is set, nothing outside those windows is fetched at all.
++    window: AtomicU64,
++    // ventic: a reader opened, seeked or reached a new piece. In a stream that is the only
++    // thing that makes a new piece wanted, and a requester with nothing to fetch would
++    // otherwise sleep out its whole 5s timeout — on every seek past the buffer.
++    pub(crate) moved: Notify,
+ }
+ 
+ impl TorrentStreams {
+@@ -62,6 +74,19 @@
+         self.next_stream_id.fetch_add(1, Ordering::Relaxed)
+     }
+ 
++    /// ventic: see `window`.
++    pub(crate) fn window(&self) -> u64 {
++        self.window.load(Ordering::Relaxed)
++    }
++
++    /// ventic: every open reader, as (file, absolute offset in the torrent).
++    pub(crate) fn positions(&self) -> Vec<(usize, u64)> {
++        self.streams
++            .iter()
++            .map(|s| (s.file_id, s.file_abs_offset + s.position))
++            .collect()
++    }
++
+     fn register_waker(&self, stream_id: StreamId, waker: Waker) {
+         if let Some(mut s) = self.streams.get_mut(&stream_id) {
+             let vm = s.value_mut();
+@@ -92,7 +117,15 @@
+             }
+         }
+ 
+-        let mut all: Vec<_> = self.streams.iter().map(|s| s.queue(lengths)).collect();
++        let ahead = match self.window() {
++            0 => PER_STREAM_BUF_DEFAULT,
++            window => window,
++        };
++        let mut all: Vec<_> = self
++            .streams
++            .iter()
++            .map(|s| s.queue(lengths, ahead))
++            .collect();
+ 
+         // Shuffle to decrease determinism and make queueing fairer.
+         use rand::seq::SliceRandom;
+@@ -334,6 +367,17 @@
+             .unwrap_or(false)
+     }
+ 
++    /// ventic: stream this torrent rather than download it — fetch `ahead` bytes past each
++    /// open reader and nothing else, while `TorrentStateLive::forget_outside` drops what
++    /// the readers have left behind. 0 makes it a download again: every selected piece is
++    /// queued as before, the forgotten ones included.
++    pub fn set_stream_window(&self, ahead: u64) -> anyhow::Result<()> {
++        let streams = self.streams()?;
++        streams.window.store(ahead, Ordering::Relaxed);
++        streams.moved.notify_waiters();
++        Ok(())
++    }
++
+     pub async fn stream(self: Arc<Self>, file_id: usize) -> anyhow::Result<FileStream> {
+         let metadata = self
+             .metadata
+@@ -370,6 +414,9 @@
+             },
+         );
+ 
++        // ventic: see `TorrentStreams::moved`.
++        streams.moved.notify_waiters();
++
+         debug!(stream_id = s.stream_id, file_id, "started stream");
+ 
+         Ok(s)
+@@ -386,6 +433,10 @@
+     }
+ 
+     fn set_position(&mut self, new_pos: u64) {
++        // ventic: see `TorrentStreams::moved`.
++        let piece = u64::from(self.metadata.lengths().default_piece_length());
++        let moved = (self.file_torrent_abs_offset + self.position) / piece
++            != (self.file_torrent_abs_offset + new_pos) / piece;
+         self.position = new_pos;
+         self.streams
+             .streams
+@@ -393,6 +444,9 @@
+             .unwrap()
+             .value_mut()
+             .position = new_pos;
++        if moved {
++            self.streams.moved.notify_waiters();
++        }
+     }
+ 
+     pub fn len(&self) -> u64 {

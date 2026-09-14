@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import process from 'node:process'
-import { diskBudget, ENGINE, engineReason, filedAs, findReleases, haveAt, isAwkward, isBloated, limitToFiles, normalizeSource, parseRelease, pickBest, pickSubtitleFiles, pickVideoFile, planEviction, planNetwork, releaseKey, setQuality, setSources, STALLED, startTorrent, streamParts, toRelease, uploadLimit, usedBytes } from '../app/utils/torrents'
+import { bufferWindow, diskBudget, ENGINE, engineReason, filedAs, findReleases, haveAt, heldAround, isAwkward, isBloated, limitToFiles, MIN_LIBRARY, normalizeSource, parseRelease, pickBest, pickSubtitleFiles, pickVideoFile, planEviction, planNetwork, releaseKey, setQuality, setSources, setStreamDir, shouldStream, STALLED, startTorrent, streamParts, toRelease, uploadLimit, usedBytes } from '../app/utils/torrents'
 // Self-check for the torrent parser/ranker: `bun scripts/check-torrents.ts`.
 // The fixture is the response shape a source answers with, filled in with a
 // public-domain film. `--live <source-url> <imdb-id>` also searches for real.
@@ -430,6 +430,64 @@ assert.deepEqual(planEviction(cache, 4 * GB, 2, ages), [3, 1], 'never what is pl
 assert.deepEqual(planEviction(cache, 4 * GB, 2, {}), [1, 3], 'no history: engine order')
 assert.deepEqual(planEviction(cache, Number.POSITIVE_INFINITY, null, ages), [])
 
+// --- Streaming instead of downloading -----------------------------------------
+// A film this device can't keep streams through a buffer instead: `auto` keeps
+// what fits, a drive too small to be a library keeps nothing whole, and
+// `stream` never keeps a film at all.
+
+const INF = Number.POSITIVE_INFINITY
+const roomy = { budget: 100 * GB, drive: 100 * GB, fileLimit: INF }
+assert.ok(!shouldStream(2 * GB, 'auto', roomy), 'a film that fits is downloaded')
+assert.ok(shouldStream(2 * GB, 'stream', roomy), 'unless nothing is to be kept at all')
+assert.ok(shouldStream(120 * GB, 'auto', roomy), 'one that won\'t fit even with everything evicted streams')
+assert.ok(shouldStream(6 * GB, 'auto', { ...roomy, fileLimit: FAT32 }), 'as does one over a FAT32 stick\'s 4 GiB')
+// The TV box: 2 GB spare is a buffer, not a library, even for a film that fits.
+assert.ok(shouldStream(700 * 1024 ** 2, 'auto', { budget: 1.5 * GB, drive: 1.5 * GB, fileLimit: INF }), 'under MIN_LIBRARY nothing is kept whole')
+assert.equal(MIN_LIBRARY, 10 * GB)
+// A cap the user set is about how much to spend, not about the drive being small.
+assert.ok(!shouldStream(2 * GB, 'auto', { ...roomy, budget: 5 * GB }), 'a 5 GiB cap still downloads what fits in it')
+assert.ok(shouldStream(6 * GB, 'auto', { ...roomy, budget: 5 * GB }), 'and streams what doesn\'t')
+// Nothing known is nothing guessed.
+assert.ok(!shouldStream(0, 'auto', roomy), 'an unknown size is taken to fit')
+assert.ok(!shouldStream(60 * GB, 'auto', { budget: INF, drive: INF, fileLimit: INF }), 'an unreadable disk never streams on a guess')
+
+// Play no longer drops a release the disk can't hold — it streams it — but a copy
+// that fits wins a tie, since that one can be watched again offline.
+const pair = [
+  { name: 'Example\n1080p', title: 'Sintel.2010.1080p.BluRay.x264\n👤 400 💾 5.5 GB ⚙️ a', infoHash: 'big' },
+  { name: 'Example\n1080p', title: 'Sintel.2010.1080p.WEB-DL.x264\n👤 90 💾 2.2 GB ⚙️ b', infoHash: 'small' },
+].flatMap(s => toRelease(s) ?? [])
+assert.equal(pickBest(pair)!.hash, 'big', 'seeders decide when both fit')
+assert.equal(pickBest(pair, undefined, false, 4 * GB)!.hash, 'small', 'the copy that fits wins the tie')
+assert.equal(pickBest(pair.slice(0, 1), undefined, false, 4 * GB)!.hash, 'big', 'and one that doesn\'t still plays, streamed')
+assert.equal(
+  pickBest([pair[0]!, { ...pair[1]!, hash: 'sd', quality: '720p' }], undefined, false, 4 * GB)!.hash,
+  'big',
+  'never at the cost of a quality tier',
+)
+
+// The buffer: the settings' minutes at the film's own bitrate, within what the
+// drive can spare — ahead first, since that is what keeps the picture moving.
+const MiB = 1024 ** 2
+// 7200 MiB over two hours is 1 MiB a second.
+const film = { length: 7200 * MiB, duration: 7200, ahead: 300, behind: 120 }
+assert.deepEqual(
+  bufferWindow({ ...film, free: 100 * GB }),
+  { ahead: 300 * MiB, behind: 120 * MiB + 150 * MiB },
+  'minutes at the bitrate, behind plus what the player reads ahead of the picture',
+)
+// The TV box: 2.1 GB free, of which a gigabyte is left alone.
+const tight = bufferWindow({ ...film, ahead: 30 * 60, free: 2.1 * GB })
+assert.ok(tight.ahead + tight.behind <= 1.1 * GB, 'never more than the drive can spare')
+assert.equal(tight.ahead, Math.round(1.1 * GB * 0.75), 'and ahead takes most of it')
+assert.deepEqual(bufferWindow({ ...film, free: 0 }), { ahead: 32 * MiB, behind: 0 }, 'nowhere to put it still leaves something to read into')
+assert.deepEqual(
+  bufferWindow({ ...film, duration: 0, free: 100 * GB }),
+  bufferWindow({ ...film, free: 100 * GB }),
+  'before the player knows, a feature runs two hours',
+)
+assert.equal(bufferWindow({ ...film, free: INF }).ahead, 300 * MiB, 'and an unreadable disk caps nothing')
+
 // --- Only download on Wi-Fi ---------------------------------------------------
 // The rule is asymmetric on purpose: it stops anything running, but only ever
 // starts what it stopped itself.
@@ -495,6 +553,14 @@ assert.ok(!haveAt(map, bits(10, 11, 15, 16, 17, 18, 19), 0.35), 'a gap reads as 
 
 // An empty bitfield says no rather than throwing.
 assert.ok(!haveAt(map, new Uint8Array(0), 0.5))
+
+// What the subtitle sync may read: the unbroken stretch around the picture,
+// less a piece at each end that isn't the file's own.
+assert.deepEqual(heldAround(map, all, 0.5), [0, 1], 'a whole file is all of it')
+assert.deepEqual(heldAround(map, bits(13, 14, 15, 16, 17), 0.5), [0.4, 0.7], 'a stream\'s window, shaved a piece each side')
+assert.equal(heldAround(map, bits(13, 14, 15, 16, 17), 0.1), null, 'a position that isn\'t on disk has no stretch')
+assert.deepEqual(heldAround(map, bits(10, 11, 12, 16, 17), 0.15), [0, 0.2], 'a gap ends it, and the file\'s own start is not shaved')
+assert.equal(heldAround(map, new Uint8Array(0), 0.5), null)
 
 // --- Seeding ------------------------------------------------------------------
 
@@ -684,6 +750,40 @@ requests = []
 const refound = await startTorrent({ imdbId: 'tt0000001', cached })
 assert.equal(refound.hash, 'bbb')
 assert.ok(requests.some(u => u.startsWith('https://a.example')), 'a copy that is gone is searched for again')
+
+// --- Streaming it instead -----------------------------------------------------
+// A film this device can't keep is added to the streams folder, and that folder
+// is the only thing that makes a torrent a stream (see `isStream`).
+setStreamDir('/cache/ventic-streams')
+requests = []
+const asStream = await startTorrent({ imdbId: 'tt0000001', streamIf: () => true })
+assert.ok(asStream.stream, 'played as a stream')
+assert.ok(requests.some(u => u.includes(`output_folder=${encodeURIComponent('/cache/ventic-streams')}`)), 'into the streams folder')
+// Started only once its window is on; until then it would fetch the whole film.
+assert.ok(requests.some(u => u.includes('overwrite') && u.includes('paused=true')), 'and added paused')
+assert.equal(asStream.length, 2_000_000_000, 'with its file\'s own length, for the bitrate')
+
+// Asked twice: on the size the source gave, which decides the folder, and on the
+// file once the engine has it.
+requests = []
+const sizes: number[] = []
+const downloaded = await startTorrent({ imdbId: 'tt0000001', streamIf: bytes => {
+  sizes.push(bytes)
+  return false
+} })
+assert.deepEqual(sizes, [2.1 * 1024 ** 3, 2_000_000_000], 'the source\'s size, then the file\'s')
+assert.ok(!downloaded.stream, 'and a film that fits is a download')
+assert.ok(!requests.some(u => u.includes('paused=true')), 'which starts at once')
+
+// A copy the engine already holds stays what it was: a download half-way done
+// is not turned into a stream, and loses nothing it has.
+engine.held = true
+engine.have = 500_000_000
+requests = []
+const kept = await startTorrent({ imdbId: 'tt0000001', cached, streamIf: () => true })
+assert.ok(!kept.stream, 'a download under way goes on downloading')
+assert.ok(!requests.some(u => u.includes('output_folder')), 'in the folder it already had')
+setStreamDir('')
 
 // --- A file the user already had ----------------------------------------------
 // The whole of "play my own films": no folder scan, no filename parsing and no

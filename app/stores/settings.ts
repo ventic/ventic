@@ -1,6 +1,7 @@
 import type { AudioSettings } from '~/utils/audio'
 import type { KeyOverrides } from '~/utils/keys'
 import type { SubtitleStyle } from '~/utils/subtitles'
+import type { PlayMode } from '~/utils/torrents'
 import {
   mdiAccountCircleOutline,
   mdiFolderOutline,
@@ -215,6 +216,31 @@ export const useSettingsStore = defineStore('settings', () => {
   /** Where torrents are written. '' = the app's own cache folder. */
   const downloadDir = useLocalStorage('ventic.downloadDir', '')
 
+  /**
+   * What Play does with a torrent: `auto` downloads the film whole when this
+   * device can keep it and streams it through a buffer when it can't, `stream`
+   * never keeps one (see `shouldStream`). Auto everywhere, because what it
+   * decides follows the drive — a TV box with 2 GB spare streams everything, a
+   * laptop downloads, and a USB stick plugged into the box turns it into one.
+   */
+  const playMode = useLocalStorage<PlayMode>('ventic.playMode', 'auto')
+
+  /**
+   * Keep a film that was downloaded whole once it has been watched to the end,
+   * seeding it as a kept film does. On is how the app always behaved; off
+   * deletes it as the player closes on it. Nothing streamed is kept either way.
+   */
+  const keepWatched = useLocalStorage('ventic.keepWatched', true)
+
+  /**
+   * Minutes of a streamed film kept on disk ahead of the picture and behind it
+   * (see `bufferWindow`). Ahead rides out a swarm that slows down; behind is a
+   * rewind that doesn't have to be fetched again, which on a TV — where the
+   * player keeps nothing behind in memory — is every rewind.
+   */
+  const bufferAhead = useLocalStorage('ventic.bufferAhead', 5)
+  const bufferBehind = useLocalStorage('ventic.bufferBehind', 2)
+
   // --- Subtitles ---
   // mergeDefaults: a build that adds a property must not read `undefined` out
   // of the copy stored by the build before it.
@@ -265,5 +291,5 @@ export const useSettingsStore = defineStore('settings', () => {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, closeToTray, castReceive, castName, castAsk, castCode, castTarget, downloadDir, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, keys, resetSubs }
+  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, closeToTray, castReceive, castName, castAsk, castCode, castTarget, downloadDir, playMode, keepWatched, bufferAhead, bufferBehind, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, keys, resetSubs }
 })

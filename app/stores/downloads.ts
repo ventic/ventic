@@ -1,4 +1,4 @@
-import type { DiskSpace, EngineFile, EngineTorrent } from '~/utils/torrents'
+import type { DiskSpace, EngineFile, EngineTorrent, Room } from '~/utils/torrents'
 import { mdiAlertCircleOutline, mdiCheckCircleOutline, mdiFormatListBulleted, mdiPauseCircleOutline, mdiTrayArrowDown } from '@mdi/js'
 import { invoke } from '@tauri-apps/api/core'
 
@@ -112,6 +112,17 @@ export const useDownloadsStore = defineStore('downloads', () => {
   const budget = computed(() => diskBudget(disk.value, used.value, cap.value))
 
   /**
+   * Where streams are written, which is also what makes a torrent one
+   * (`isStream`). Asked once; '' until the backend answers, and for good where
+   * there is none, which leaves everything a download.
+   */
+  const streamDir = ref('')
+  invoke<string>('stream_folder').then(dir => {
+    streamDir.value = dir
+    setStreamDir(dir)
+  }).catch(() => {})
+
+  /**
    * Largest single file the storage folder will take, `Infinity` when nothing
    * caps it — a FAT32 stick in a TV stops at 4 GiB (see `storageVolumes`).
    *
@@ -120,6 +131,16 @@ export const useDownloadsStore = defineStore('downloads', () => {
    * on one file that no amount of deleting will raise.
    */
   const fileLimit = ref(Number.POSITIVE_INFINITY)
+
+  /** What `shouldStream` weighs a film against on this device. */
+  const room = computed<Room>(() => ({
+    budget: budget.value,
+    drive: diskBudget(disk.value, used.value),
+    fileLimit: fileLimit.value,
+  }))
+
+  /** The biggest film this device can keep — what Play prefers, and Download insists on. */
+  const fits = computed(() => Math.min(budget.value, fileLimit.value))
 
   /** The torrent being watched: never evicted, and the only one downloading. */
   const focused = ref<number | null>(null)
@@ -165,12 +186,23 @@ export const useDownloadsStore = defineStore('downloads', () => {
    * next play can go straight to that copy. Every Play and Download button in
    * the app comes through here — `startTorrent` on its own has no idea what
    * title it is fetching.
+   *
+   * `keep` is the Download button: the film comes down whole whatever the
+   * storage setting says, so only a copy that fits is ever picked — both
+   * ceilings are on the size of that one file, so the tighter one wins. Play
+   * streams whatever this device can't keep instead (`shouldStream`), so it may
+   * pick a copy too big for the disk, and only prefers one that isn't.
    */
-  async function start(key: string, options: Parameters<typeof startTorrent>[0]) {
-    // Both ceilings are on the same quantity — the size of the file we'd fetch —
-    // so the tighter one wins and `pickBest` needs to know nothing about drives.
-    const maxBytes = Math.min(budget.value, fileLimit.value)
-    const started = await startTorrent({ maxBytes, cached: cachedFor(key), local: localFor(key), ...options })
+  async function start(key: string, options: Parameters<typeof startTorrent>[0], keep = false) {
+    const mode = settings.playMode
+    const started = await startTorrent({
+      ...keep
+        ? { maxBytes: fits.value }
+        : { room: mode === 'auto' ? fits.value : undefined, streamIf: (bytes: number) => shouldStream(bytes, mode, room.value) },
+      cached: cachedFor(key),
+      local: localFor(key),
+      ...options,
+    })
     // A direct link leaves nothing on the disk to come back to, so there is no
     // offline copy to file — and filing an empty hash would shadow a real one.
     if (key && started.hash)
@@ -305,6 +337,11 @@ export const useDownloadsStore = defineStore('downloads', () => {
    * but the downlink is just as busy, so everything else still gets out of the way.
    */
   async function focus(id: number) {
+    // The same torrent again — Try again, or the next episode of a season pack —
+    // is not a change of film. Releasing it would pause it, or delete a stream
+    // that is about to play.
+    if (focused.value === id)
+      return
     await release()
     focused.value = id
 
@@ -328,10 +365,54 @@ export const useDownloadsStore = defineStore('downloads', () => {
   }
 
   /**
+   * The torrent `buffer` set a window on. Its folder says the same (`isStream`)
+   * except for a film streamed from the download folder because no source said
+   * how big it was — this is what still deletes that one on the way out.
+   */
+  let windowed: number | null = null
+
+  /**
+   * Give a streamed film its window: the settings' minutes, at this film's
+   * bitrate, within what the drive can spare (`bufferWindow`). Called as it
+   * starts and again once the player knows how long it runs — until then the
+   * bitrate is a guess.
+   */
+  async function buffer(id: number, length: number, duration = 0) {
+    windowed = id
+    const drive = await invoke<DiskSpace>('disk_space', { path: streamDir.value || null }).catch(() => null)
+    const held = torrents.value.find(t => t.id === id)?.stats?.progress_bytes ?? 0
+    const window = bufferWindow({
+      length,
+      duration,
+      ahead: settings.bufferAhead * 60,
+      behind: settings.bufferBehind * 60,
+      free: drive ? drive.free + held : Number.POSITIVE_INFINITY,
+    })
+    // Refused only by a torrent that is gone, or by no backend at all — and
+    // either way there is no download left to hold back.
+    await invoke('stream_buffer', { id, ...window }).catch(() => {})
+    // A stream is added paused (see `startTorrent`), so this is what starts it:
+    // with the window already on, not a second before it.
+    await torrentAction(id, 'start').catch(() => {})
+  }
+
+  const library = useLibraryStore()
+
+  /** Every title this torrent has been played as, watched to the end. */
+  function watched(hash: string) {
+    const titles = Object.entries(cached.value).filter(([, c]) => c.hash === hash)
+    return !!titles.length && titles.every(([key]) => library.progress[key]?.watched)
+  }
+
+  /**
    * Leaving the player stops the download it started — an unwatched torrent has
    * no reason to keep pulling. A finished one is left seeding: it costs no
    * download bandwidth and the downloads page can't resume it (its pause button
    * is disabled once complete).
+   *
+   * A stream is deleted instead, which is the whole of what makes it one — and so
+   * is a film downloaded whole and now watched, when the user keeps none of those.
+   * A film left half-way is kept either way: it is the next play's head start.
    *
    * A background download you also watched ends up paused too. One
    * click on the downloads page fixes it; if that gets annoying, `focus` takes a
@@ -347,7 +428,14 @@ export const useDownloadsStore = defineStore('downloads', () => {
 
     // Nothing to pause when a link was playing — only the restores below apply.
     const own = torrents.value.find(t => t.id === id)
-    if (own && !own.stats?.finished)
+    // By id for the windowed one: left within seconds of starting, it may not
+    // have reached the list yet — and it is still a stream.
+    const gone = id === windowed || (own && (isStream(own.output_folder) || (!settings.keepWatched && watched(own.info_hash))))
+    if (id === windowed)
+      windowed = null
+    if (gone)
+      await torrentAction(id, 'delete').catch(() => {})
+    else if (own && !own.stats?.finished)
       await torrentAction(id, 'pause').catch(() => {})
     // On mobile data with Wi-Fi only asked for, what playback paused stays
     // paused — starting it here would spend the data the setting exists to save,
@@ -469,9 +557,13 @@ export const useDownloadsStore = defineStore('downloads', () => {
     used,
     budget,
     fileLimit,
+    room,
+    fits,
+    streamDir,
     cap,
     focused,
     focus,
+    buffer,
     release,
     metered,
     cachedFor,

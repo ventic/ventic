@@ -2707,8 +2707,6 @@ dependencies = [
 [[package]]
 name = "librqbit"
 version = "9.0.0-rc.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9451def41c18d1b8e7b68c097bcb0c9a0579cdc9b779803368a65b86cae03d2"
 dependencies = [
  "anyhow",
  "arc-swap",
@@ -2730,6 +2728,7 @@ dependencies = [
  "http",
  "intervaltree",
  "itertools",
+ "libc",
  "librqbit-bencode",
  "librqbit-buffers",
  "librqbit-clone-to-owned",

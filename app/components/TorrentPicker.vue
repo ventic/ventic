@@ -81,15 +81,16 @@ function tierOf(t: Release) {
 
 const tiers = computed(() => ['all', ...new Set(torrents.value.map(tierOf))])
 
-// Same pick the Play button would make, storage budget included — picking by
-// hand can still exceed it, and eviction will make room.
-const best = computed(() => pickBest(torrents.value, downloads.budget))
+// Same pick the Play button would make: anything that plays, with a copy this
+// device can keep winning a tie (see `start` in the downloads store).
+const best = computed(() => pickBest(torrents.value, undefined, false, settings.playMode === 'auto' ? downloads.fits : undefined))
 
 /**
  * Too big for the drive to hold at all — a FAT32 stick stops at 4 GiB. Unlike
- * the budget, no amount of eviction makes room for one of these, so the row is
- * disabled rather than merely marked: the download would run to the 4 GiB mark
- * and die there.
+ * the budget, no amount of eviction makes room for one of these, so it can't be
+ * downloaded: the download would run to the 4 GiB mark and die there. It still
+ * plays — Play streams it through a buffer on the device's own storage, which
+ * has no such limit.
  *
  * A direct link is exempt, as everywhere else: nothing of it touches the disk.
  */
@@ -107,7 +108,11 @@ const list = computed(() => {
 
 function playLink(t: Release) {
   const param = t.url ? `url=${encodeURIComponent(t.url)}` : `magnet=${encodeURIComponent(t.magnet)}`
-  return `${watchLink(props.type, props.id, props.season, props.episode)}&${param}`
+  // The size goes along so a copy too big to keep streams from the first byte:
+  // the engine can't say how big it is until it has been added, and by then it
+  // has landed in the download folder.
+  const size = !t.url && t.bytes ? `&size=${Math.round(t.bytes)}` : ''
+  return `${watchLink(props.type, props.id, props.season, props.episode)}&${param}${size}`
 }
 
 async function download(t: Release) {
@@ -119,6 +124,7 @@ async function download(t: Release) {
     await downloads.start(
       progressKey(props.type, props.id, props.season, props.episode),
       { magnet: t.magnet, season: props.season, episode: props.episode },
+      true,
     )
     added.value = [...added.value, releaseKey(t)]
   }
@@ -208,7 +214,6 @@ async function download(t: Release) {
               v-for="t in list"
               :key="releaseKey(t)"
               class="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl px-2 py-2 hover:bg-surface-container-high/60 focus-within:bg-surface-container-high/60"
-              :class="tooBig(t) ? 'opacity-45' : ''"
             >
               <div class="min-w-0 flex-1 basis-full sm:basis-0">
                 <div class="flex items-center gap-2">
@@ -234,7 +239,7 @@ async function download(t: Release) {
                 <v-tooltip
                   v-if="tooBig(t)"
                   activator="parent"
-                  :text="$t('Over the {limit} single-file limit of the drive downloads go to — reformat it in Settings → Storage to use releases this big', { limit: bytesText(downloads.fileLimit) })"
+                  :text="$t('Over the {limit} single-file limit of the drive downloads go to, so it streams instead of downloading — reformat the drive in Settings → Storage to keep releases this big', { limit: bytesText(downloads.fileLimit) })"
                 />
                 <v-tooltip v-else-if="isBloated(t)" activator="parent" :text="$t('Bigger than this quality needs — may not keep up while streaming')" />
               </span>
@@ -256,18 +261,18 @@ async function download(t: Release) {
               <span class="hidden w-24 shrink-0 truncate text-body-small opacity-50 sm:block">{{ t.source }}</span>
 
               <div class="ml-auto flex shrink-0 items-center sm:ml-0">
-                <!-- Playing is downloading here, so an oversized release is as
-                     dead on Play as it is on Download. -->
+                <!-- An oversized release still plays: it streams, from the
+                     device's own storage, where the drive's limit doesn't reach.
+                     Only Download is out. -->
                 <v-btn
                   icon
                   size="small"
                   variant="text"
                   color="on-surface"
-                  :disabled="tooBig(t)"
-                  :to="tooBig(t) ? undefined : playLink(t)"
+                  :to="playLink(t)"
                 >
                   <v-icon :icon="mdiPlay" size="20" />
-                  <v-tooltip activator="parent" :text="tooBig(t) ? $t('Too big for the download drive') : $t('Play this source')" />
+                  <v-tooltip activator="parent" :text="tooBig(t) ? $t('Play this source — streamed, as it is too big to keep') : $t('Play this source')" />
                 </v-btn>
                 <!-- Nothing to hand the engine for a link, and nothing it could
                      keep — the file lives on the source's server, not in a swarm. -->
@@ -294,11 +299,11 @@ async function download(t: Release) {
         <v-card-actions>
           <!-- One legend at a time, and a drive that cannot hold the release
                outranks a release that is merely fatter than it needs to be.
-               Shown at every width, unlike the amber note: a dimmed row with no
-               explanation reads as the app being broken. -->
+               Shown at every width, unlike the amber note: a Download button
+               greyed out with no reason given reads as the app being broken. -->
           <span v-if="list.some(tooBig)" class="flex items-center gap-1 pl-2 text-body-small text-error">
             <v-icon :icon="mdiAlertCircleOutline" size="14" />
-            {{ $t('Dimmed rows are over the {limit} file limit of the download drive.', { limit: bytesText(downloads.fileLimit) }) }}
+            {{ $t('Sizes in red are over the {limit} file limit of the download drive — those stream instead of downloading.', { limit: bytesText(downloads.fileLimit) }) }}
           </span>
           <!-- The legend is the first thing to go when the row gets tight; the
                amber itself still carries a tooltip. -->

@@ -447,11 +447,17 @@ export function isAwkward(t: Release) {
  * because it is still the best thing here when there is nothing under it, which
  * is the whole of the 4k fallback: ask for 2160p, and a 2160p nobody is seeding
  * loses to a healthy 1080p on its own.
+ *
+ * `room` is how big a film this device can keep. A copy over it still plays — it
+ * streams through a buffer instead (`shouldStream`) — so it is not dropped, only
+ * beaten by an equal one that fits, which can then be watched again offline.
  */
-export function pickBest(list: Release[], maxBytes = MAX_BYTES, compatible = false): Release | null {
+export function pickBest(list: Release[], maxBytes = MAX_BYTES, compatible = false, room = Number.POSITIVE_INFINITY): Release | null {
   const limit = Math.min(MAX_BYTES, maxBytes)
   const starved = starvedIn(list)
   const at = (t: Release) => rank(t) + Number(starved(t) || (!t.url && (t.seeders ?? 0) < THIN))
+  // A link keeps nothing on the disk, so it always fits.
+  const streams = (t: Release) => !t.url && t.bytes > room
   return [...list]
     // Neither test applies to a link: there is no swarm to have seeders, and
     // nothing is written to the disk the budget is protecting. Only a zero the
@@ -461,6 +467,7 @@ export function pickBest(list: Release[], maxBytes = MAX_BYTES, compatible = fal
       at(a) - at(b)
       || (compatible ? Number(isAwkward(a)) - Number(isAwkward(b)) : 0)
       || Number(isBloated(a)) - Number(isBloated(b))
+      || Number(streams(a)) - Number(streams(b))
       || Number(!a.url) - Number(!b.url)
       || (b.seeders ?? 0) - (a.seeders ?? 0))[0] ?? null
 }
@@ -561,10 +568,34 @@ export function setDownloadDir(path: string) {
   downloadDir = path.trim()
 }
 
-export async function addTorrent(magnet: string) {
+/**
+ * Where a film that streams rather than downloads is written — the app's own
+ * cache, whatever the storage setting says (see src-tauri/src/buffer.rs for
+ * why). It is also what makes a torrent a stream: nothing else marks one, so a
+ * crash leaves no list to reconcile. Pushed in by the downloads store, and ''
+ * until the backend has said, which leaves everything a download.
+ */
+let streamDir = ''
+
+export function setStreamDir(path: string) {
+  streamDir = path
+}
+
+/** Is a torrent kept in this folder a stream, deleted the moment it stops playing? */
+export function isStream(folder: string) {
+  return !!streamDir && folder.startsWith(streamDir)
+}
+
+/**
+ * `paused` adds without starting, which is how a stream arrives: it is started
+ * once its window is set (`buffer` in the downloads store), because until then
+ * it downloads the whole film at full speed. A torrent the engine already holds
+ * is left as it was either way.
+ */
+export async function addTorrent(magnet: string, dir = downloadDir, paused = false) {
   // Only new torrents move: the engine remembers an existing one's folder, and
   // its data is already sitting in it.
-  const folder = downloadDir ? `&output_folder=${encodeURIComponent(downloadDir)}` : ''
+  const folder = `${dir ? `&output_folder=${encodeURIComponent(dir)}` : ''}${paused ? '&paused=true' : ''}`
   const res = await fetch(`${ENGINE}/torrents?overwrite=true${folder}`, { method: 'POST', body: magnet })
   if (!res.ok)
     throw new Error($t('Torrent engine said {status}: {reason}', { status: res.status, reason: await res.text() }))
@@ -918,6 +949,34 @@ export function haveAt(map: PieceMap, haves: Uint8Array, fraction: number) {
   return has(piece - 1) && has(piece) && has(piece + 1)
 }
 
+/**
+ * The unbroken stretch of that file on disk around `fraction` of the way in, as
+ * two fractions of the file — or null when the position itself isn't there.
+ *
+ * What the subtitle sync may read. It used to take everything behind the
+ * picture as on disk, which a stream forgets as it goes and a seek forward
+ * never fetched. A piece comes off each end that isn't the file's own, for the
+ * reason `haveAt` checks neighbours: a decoder reads past the exact byte.
+ */
+export function heldAround(map: PieceMap, haves: Uint8Array, fraction: number): [number, number] | null {
+  const at = (byte: number) => Math.min(map.pieces - 1, Math.floor((byte / map.total) * map.pieces))
+  const first = at(map.start)
+  const last = at(map.start + map.length)
+  const has = (i: number) => !!(haves[i >> 3]! & (0x80 >> (i & 7)))
+  const piece = at(map.start + Math.max(0, Math.min(1, fraction)) * map.length)
+  if (!has(piece))
+    return null
+  let lo = piece
+  while (lo > first && has(lo - 1))
+    lo--
+  let hi = piece
+  while (hi < last && has(hi + 1))
+    hi++
+  const size = map.total / map.pieces
+  const part = (byte: number) => Math.max(0, Math.min(1, (byte - map.start) / map.length))
+  return [lo === first ? 0 : part((lo + 1) * size), hi === last ? 1 : part(hi * size)]
+}
+
 /** Everything the engine holds, stats included — one request per poll. */
 export async function listTorrents(): Promise<EngineTorrent[]> {
   const res = await fetch(`${ENGINE}/torrents?with_stats=true`)
@@ -986,6 +1045,10 @@ export interface Started {
   url: string
   /** The release we picked, or null when the caller named one itself. */
   torrent: Release | null
+  /** Streamed through a buffer rather than downloaded whole — see `shouldStream`. */
+  stream: boolean
+  /** Bytes in the file that plays, 0 for a link. What the buffer's bitrate comes from. */
+  length: number
 }
 
 /**
@@ -1008,7 +1071,7 @@ async function heldCopy(hash: string, want: number | null, of?: { season?: numbe
   const index = want ?? pickVideoFile(files, null, of)
   const size = index == null ? 0 : files[index]?.length ?? 0
   const have = index == null ? 0 : held.stats?.file_progress?.[index] ?? 0
-  return { id: held.id, hash: held.info_hash, files, index, ready: !!size && have >= size }
+  return { id: held.id, hash: held.info_hash, files, index, ready: !!size && have >= size, folder: held.output_folder }
 }
 
 /**
@@ -1033,7 +1096,8 @@ async function playHeld(held: NonNullable<Awaited<ReturnType<typeof heldCopy>>>,
   const missing = pickSubtitleFiles(held.files, held.index!).filter(i => !held.files[i]!.included)
   if (missing.length)
     await limitToFiles(held.id, [...held.files.flatMap((f, i) => f.included ? [i] : []), ...missing])
-  return { id: held.id, index: held.index!, hash: held.hash, url: '', torrent }
+  // A short episode can fit inside its own buffer, and is still a stream.
+  return { id: held.id, index: held.index!, hash: held.hash, url: '', torrent, stream: isStream(held.folder), length: held.files[held.index!]?.length ?? 0 }
 }
 
 /** Release names and TMDB titles compared on the letters only. */
@@ -1118,6 +1182,18 @@ export async function startTorrent(options: {
   cached?: { hash: string, file: number } | null
   /** Storage budget for the pick — see `diskBudget`. Ignored with `magnet`. */
   maxBytes?: number
+  /** How big a film this device can keep; a bigger copy loses a tie — see `pickBest`. */
+  room?: number
+  /** What the caller already knows the release weighs (the picker does), for `streamIf`. */
+  bytes?: number
+  /**
+   * Should a film this many bytes long stream through a buffer rather than
+   * download whole — `shouldStream`, bound to this device. Asked only of a
+   * torrent the engine doesn't hold yet: once on the size the source gave,
+   * because that decides the folder it is added to, and again on the file itself
+   * once there is one. Left out, everything downloads — the Download button.
+   */
+  streamIf?: (bytes: number) => boolean
   /**
    * Prefer releases the player can actually decode. Defaults to what this
    * device plays with, so every caller gets it right without knowing about it.
@@ -1132,13 +1208,13 @@ export async function startTorrent(options: {
 
   // Nothing to add, nothing to fetch, nothing to keep — the link is the stream.
   if (options.url)
-    return { id: -1, index: -1, hash: '', url: options.url, torrent: null }
+    return { id: -1, index: -1, hash: '', url: options.url, torrent: null, stream: false, length: 0 }
 
   // A file the user already had is the same deal minus the network: no engine,
   // no disk budget, no swarm, and no TMDB round trip on the way in. mpv opens a
   // path exactly as it opens a URL, so nothing downstream needs to know.
   if (options.local && !magnet)
-    return { id: -1, index: -1, hash: '', url: options.local, torrent: null }
+    return { id: -1, index: -1, hash: '', url: options.local, torrent: null, stream: false, length: 0 }
 
   // A magnet the caller named is a release someone chose by hand, so it beats
   // whatever is already on the disk. Asked before the id lookup below, because
@@ -1179,7 +1255,7 @@ export async function startTorrent(options: {
 
       step($t('Searching your sources…'))
       const found = await findReleases(imdbId, options.season, options.episode)
-      picked = pickBest(found, options.maxBytes, options.compatible ?? !hasNativePlayer())
+      picked = pickBest(found, options.maxBytes, options.compatible ?? !hasNativePlayer(), options.room)
       if (!picked) {
         throw new Error(found.length
           ? $t('All {count} releases found were cams, dead, or too big for this device.', { count: found.length })
@@ -1187,7 +1263,7 @@ export async function startTorrent(options: {
       }
       // The source resolved this one itself — there is no torrent to add.
       if (picked.url)
-        return { id: -1, index: -1, hash: '', url: picked.url, torrent: picked }
+        return { id: -1, index: -1, hash: '', url: picked.url, torrent: picked, stream: false, length: 0 }
       magnet = picked.magnet
       hint = picked.fileIdx
     }
@@ -1202,8 +1278,13 @@ export async function startTorrent(options: {
   if (already?.ready)
     return playHeld(already, picked)
 
+  // A torrent the engine already holds stays what it was — a download goes on
+  // downloading, a stream is still in the streams folder — so only a new one is
+  // asked, and asked before it is added: the answer is the folder it goes to.
+  const early = !already && !!options.streamIf?.(options.bytes ?? picked?.bytes ?? 0)
+
   step($t('Fetching metadata from peers…'))
-  const added = await addTorrent(magnet)
+  const added = await addTorrent(magnet, early ? streamDir : downloadDir, early)
   const files = added.details.files ?? []
   const index = options.fileIndex ?? pickVideoFile(files, hint, options)
   if (index == null)
@@ -1219,7 +1300,13 @@ export async function startTorrent(options: {
   const wanted = [index, ...pickSubtitleFiles(files, index)]
   const only = narrowed ? [...new Set([...included, ...wanted])] : wanted
   await limitToFiles(added.id, only)
-  return { id: added.id, index, hash: added.details.info_hash, url: '', torrent: picked }
+
+  // Asked again now the file is known, for a size no source gave — it is
+  // already in the download folder, so a stream that isn't is only windowed,
+  // and goes when the player does.
+  const length = files[index]?.length ?? 0
+  const stream = already ? isStream(already.folder) : early || !!options.streamIf?.(length)
+  return { id: added.id, index, hash: added.details.info_hash, url: '', torrent: picked, stream, length }
 }
 
 export function magnetForHash(hash: string) {
@@ -1255,6 +1342,81 @@ export function diskBudget(disk: DiskSpace | null, used: number, cap = 0) {
   const reserve = Math.min(Math.max(disk.total * 0.1, RESERVE_MIN), RESERVE_MAX)
   const room = Math.max(0, disk.free + used - reserve)
   return cap > 0 ? Math.min(cap, room) : room
+}
+
+// --- Streaming ----------------------------------------------------------------
+// A film that won't fit, or a device that shouldn't keep films at all, streams:
+// the engine fetches a window around what the player is reading and forgets what
+// has fallen out of it (src-tauri/src/buffer.rs), so the disk only ever holds the
+// buffer. Everything here is the policy; the engine only does as it's told.
+
+/**
+ * Under this much room for films the drive is a buffer, not a library: a film or
+ * two fills it, and every play after that evicts the last. So nothing is kept
+ * whole there at all — the 2 GB of a TV box's own storage is exactly this case.
+ */
+export const MIN_LIBRARY = 10 * 1024 ** 3
+
+/** What Settings → Storage offers. */
+export type PlayMode = 'auto' | 'stream'
+
+/** How much this device can keep: the three numbers `shouldStream` weighs. */
+export interface Room {
+  /** Room for films, the user's cap included — `diskBudget`. */
+  budget: number
+  /** The same without that cap: what the drive itself could hold. */
+  drive: number
+  /** The most one file on that drive may be (FAT32's 4 GiB), `Infinity` for none. */
+  fileLimit: number
+}
+
+/**
+ * Stream a film this many bytes long through a buffer, rather than download it?
+ *
+ * `auto` keeps whatever this device can: a film that fits the budget — once
+ * everything played longer ago is evicted, which is what the budget already
+ * counts — downloads whole, and one that doesn't streams. So does every film on
+ * a drive too small to be a library (`MIN_LIBRARY`), measured without the
+ * user's cap: a cap is about how much to spend, not about the drive being tiny.
+ * `stream` never keeps a film at all.
+ *
+ * An unknown size (0) is taken to fit, and an unreadable disk — an infinite
+ * budget — never streams: the same "don't guess a limit" `diskBudget` holds to.
+ */
+export function shouldStream(bytes: number, mode: PlayMode, room: Room) {
+  return mode === 'stream' || room.drive < MIN_LIBRARY || bytes > Math.min(room.budget, room.fileLimit)
+}
+
+/** Free space a buffer leaves alone, so the device keeps working around it. */
+const BUFFER_RESERVE = 1024 ** 3
+/** The least a stream fetches ahead: librqbit's own default, seconds of even a remux. */
+const MIN_AHEAD = 32 * 1024 ** 2
+/**
+ * How far past the picture the player's own cache reads — mpv's default
+ * `demuxer-max-bytes`, and more than ExoPlayer's 50 seconds. The engine only
+ * sees the reader, so two minutes kept behind what is on screen is two minutes
+ * behind the reader plus this.
+ */
+const READAHEAD = 150 * 1024 ** 2
+/** What a film of no known length is taken to run for, until the player says. */
+const FEATURE = 2 * 3600
+
+/**
+ * The window a streamed film keeps on the disk, in bytes. `ahead` and `behind`
+ * are the settings' seconds, turned into bytes at the film's own average
+ * bitrate — which is the only one there is before it plays, and near enough
+ * after — and held to what the drive can spare. Ahead wins that argument: it is
+ * what keeps the picture moving, where behind only saves a rewind a refetch.
+ *
+ * `free` is the drive's free space plus whatever the stream already holds, which
+ * it may reuse.
+ */
+export function bufferWindow(o: { length: number, duration: number, ahead: number, behind: number, free: number }) {
+  const rate = o.length / (o.duration || FEATURE)
+  const room = Math.max(0, o.free - BUFFER_RESERVE)
+  const ahead = Math.max(MIN_AHEAD, Math.min(o.ahead * rate, room * 0.75))
+  const behind = Math.max(0, Math.min(o.behind * rate + READAHEAD, room - ahead))
+  return { ahead: Math.round(ahead), behind: Math.round(behind) }
 }
 
 /** All eviction needs of a torrent: what it is, and what it costs on disk. */

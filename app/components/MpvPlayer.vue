@@ -815,15 +815,17 @@ function nudgeDelay(delta: number) {
 }
 
 /**
- * The audio behind `span` seconds of playback, clipped to what is on disk. The
- * bytes just played are certainly there; ffmpeg reading ahead of the download
- * pulls pieces away from it, or blocks on ones that never come. `onDisk` is what
- * answers that, and a plain url is always ready.
+ * The audio behind `span` seconds of playback, clipped to what is on disk — the
+ * unbroken stretch the picture is in (`heldSpan`). The bytes just played used
+ * to be taken as certainly there, which a stream forgets as it goes and a seek
+ * forward never fetched; ffmpeg reading outside the stretch pulls pieces away
+ * from the film, or blocks on ones that never come.
  */
 async function playedSpan(span: number) {
-  const from = Math.max(0, Math.min(position.value - span, (duration.value || span) - span))
-  const ahead = from + span
-  const to = ahead > position.value && !await onDisk(ahead) ? position.value : ahead
+  const whole = duration.value || span
+  const [lo, hi] = await heldSpan()
+  const from = Math.max(lo * whole, Math.min(position.value - span, whole - span), 0)
+  const to = Math.max(from, Math.min(from + span, hi * whole))
   return { from, to, length: to - from }
 }
 
@@ -1691,6 +1693,23 @@ async function onDisk(at: number) {
   return !!pieces && !!haves && haveAt(pieces, haves, at / (duration.value || 1))
 }
 
+/**
+ * Where the stretch of the film on disk around the picture starts and ends, as
+ * fractions of it — what the subtitle sync may read (`playedSpan`). A plain url
+ * has every byte one range request away; a cast mirror is another device's
+ * torrent, and only what already played there is sure to be held.
+ */
+async function heldSpan(): Promise<[number, number]> {
+  const now = position.value / (duration.value || 1)
+  const parts = streamParts(props.src)
+  if (!parts)
+    return fromCast.value ? [0, now] : [0, 1]
+  pieces ??= await pieceMap(parts.id, parts.index)
+  haves = await torrentHaves(parts.id)
+  havesAt = Date.now()
+  return (pieces && haves && heldAround(pieces, haves, now)) || [now, now]
+}
+
 /** Decode one bucket into the cache, unless it's there or on its way. */
 async function grab(bucket: number) {
   if (thumbs.has(bucket) || pending.has(bucket))
@@ -2296,7 +2315,7 @@ const remaining = computed(() => duration.value ? `-${fmt((duration.value - cloc
  * One call, because a second `defineExpose` replaces this one rather than
  * adding to it.
  */
-defineExpose({ osd, position: readonly(position) })
+defineExpose({ osd, position: readonly(position), duration: readonly(duration) })
 </script>
 
 <template>

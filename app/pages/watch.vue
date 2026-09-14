@@ -68,6 +68,12 @@ const torrent = ref<Release | null>(null)
 const torrentId = ref<number | null>(null)
 const src = ref('')
 
+/**
+ * Set while the film playing streams rather than downloads: its torrent, and
+ * the bytes in its file, which is what the buffer's bitrate comes from.
+ */
+const streaming = ref<{ id: number, length: number } | null>(null)
+
 // The downloads store already polls every torrent's stats for the whole app, so
 // a second poll of this one would only ask the engine the same question twice.
 const stats = computed(() => downloads.torrents.find(t => t.id === torrentId.value)?.stats ?? null)
@@ -82,6 +88,7 @@ async function start() {
   errorMsg.value = ''
   src.value = ''
   torrent.value = null
+  streaming.value = null
 
   try {
     // ?magnet=… hand-picks the release and skips the lookup — that's how the
@@ -101,6 +108,9 @@ async function start() {
       named: () => title.value,
       magnet: magnet.value,
       url: link.value,
+      // What the picker knew the release to weigh, so a copy too big to keep
+      // streams from the first byte rather than landing in the download folder.
+      bytes: Number(route.query.size) || undefined,
       season: season.value,
       episode: episode.value,
       fileIndex: fileIndex.value,
@@ -117,6 +127,14 @@ async function start() {
     // Pause everything else before the stream starts, so the first buffer gets
     // the whole connection. Nothing to pause for a finished torrent — see `focus`.
     await downloads.focus(started.id)
+
+    // A film this device can't keep plays through a window of its torrent —
+    // sized now from a guess at how long it runs, and again below once the
+    // player knows.
+    if (started.stream) {
+      streaming.value = { id: started.id, length: started.length }
+      await downloads.buffer(started.id, started.length)
+    }
 
     step.value = $t('Buffering…')
     src.value = started.url || streamUrl(started.id, started.index)
@@ -148,6 +166,13 @@ const castTo = ref<CastDevice | null>(null)
 
 /** The live player, for the one thing only it knows: where playback is now. */
 const player = useTemplateRef<InstanceType<typeof MpvPlayer>>('player')
+
+// The buffer is sized at the film's bitrate, which needs its running time — and
+// that is known once the player has opened the file, not before.
+watch(() => player.value?.duration, duration => {
+  if (streaming.value && duration)
+    downloads.buffer(streaming.value.id, streaming.value.length, duration)
+})
 
 /**
  * Everything the other device needs but the URL, which CastButton builds.
@@ -197,6 +222,13 @@ async function stopCasting() {
 
 onBeforeUnmount(() => {
   generation++
+})
+
+// Unmounted, not before: the player's own unmount hook is what writes down where
+// playback got to (`saveProgress`), and Vue runs it after its parent's
+// `onBeforeUnmount`. Released there, "delete it once watched" was decided on the
+// progress from before the last save — so a film left in its credits was kept.
+onUnmounted(() => {
   // Not while casting: another device is streaming this torrent from here, and
   // `release` pauses it. Stopping the cast is what hands it back.
   if (!castTo.value)
@@ -225,13 +257,22 @@ const progressPct = computed(() => {
 
 const speed = computed(() => stats.value?.live?.download_speed.human_readable ?? '—')
 const peers = computed(() => stats.value?.live?.snapshot.peer_stats.live ?? 0)
+
+/**
+ * How much of the film is here. A percentage of a stream only ever says "a
+ * few", so a stream says how big its buffer is instead.
+ */
+const held = computed(() => streaming.value
+  ? $t('{size} buffered', { size: bytesText(stats.value?.progress_bytes ?? 0) })
+  : `${progressPct.value.toFixed(0)}%`)
+
 /**
  * One line for the player's "buffering" notice, where there's no room for a
  * table. Empty while a direct link plays: there is no swarm to report on, and
  * "0 peers" reads as a fault rather than as "not applicable".
  */
 const statusLine = computed(() =>
-  stats.value ? `${speed.value} · ${$t('{count} peers', { count: peers.value })} · ${progressPct.value.toFixed(0)}%` : '')
+  stats.value ? `${speed.value} · ${$t('{count} peers', { count: peers.value })} · ${held.value}` : '')
 
 const backdrop = computed(() => backdropUrl(title.value?.backdrop, 'w1280'))
 
@@ -420,8 +461,8 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
               <span v-tooltip:top="$t('Connected peers')" class="flex items-center gap-1">
                 <v-icon :icon="mdiAccountGroup" size="14" />{{ peers }}
               </span>
-              <span v-tooltip:top="$t('Downloaded')" class="tabular-nums">{{ progressPct.toFixed(0) }}%</span>
-              <span class="hidden opacity-50 xl:inline">
+              <span v-tooltip:top="streaming ? $t('Kept on this device while it plays, and deleted when you stop') : $t('Downloaded')" class="tabular-nums">{{ held }}</span>
+              <span v-if="!streaming" class="hidden opacity-50 xl:inline">
                 {{ bytesText(stats.progress_bytes) }} / {{ bytesText(stats.total_bytes) }}
               </span>
             </div>

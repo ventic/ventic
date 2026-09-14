@@ -100,6 +100,11 @@ pub fn set_engine(api: Api) {
 	let _ = ENGINE.set(api);
 }
 
+/// The same handle, for the stream buffer (see buffer.rs).
+pub fn engine() -> Option<&'static Api> {
+	ENGINE.get()
+}
+
 /// A play command, as it arrives and as the page receives it (minus the code).
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Play {

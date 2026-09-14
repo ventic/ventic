@@ -154,6 +154,31 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   that was asked for, so the rest are read off the file name — safe only there,
   since the pack's siblings already say which show it is. Ambiguous means no
   id at all: writing progress onto the wrong film is worse than writing none.
+- **A film this device can't keep streams through a buffer instead.**
+  `shouldStream` in `utils/torrents.ts` is the whole decision. *Automatic*
+  (Settings → Storage) downloads a film that fits the budget — everything played
+  longer ago evicted to make room, as ever — and streams one that doesn't, and
+  streams everything on a drive under `MIN_LIBRARY`, which is what a TV box's
+  own 2 GB is; *Stream only* keeps nothing. A stream is a torrent the engine is
+  told to fetch a window of and to forget behind (`bufferWindow` turns the
+  settings' minutes into bytes at the film's own bitrate), and **no librqbit
+  release can do either**, so the crate is vendored with a patch:
+  `src-tauri/vendor/librqbit`, its `VENTIC.md`, and `vendor/librqbit.patch`,
+  which is the diff to read. `src-tauri/src/buffer.rs` applies the window every
+  three seconds. Three rules follow. A stream lives in `ventic-streams` in the
+  app's cache whatever the download folder says — giving the watched part back
+  needs sparse files, and a FAT32 stick has none and can't even create a film
+  over 4 GiB — and **that folder is what makes a torrent a stream**
+  (`isStream`). No list: a backup would carry one to a device holding the same
+  film as a download, and `sweep` deletes whatever a crash left in there at the
+  next launch. A torrent the engine already holds stays what it was — only a
+  new add is asked — so Play never turns a half-done download into a stream.
+  And `release()` deletes a stream, so `focus()` of the torrent already focused
+  (the next episode of a pack) must not release it. A stream is added paused and
+  started by `buffer()` once its window is on. Since a stream has forgotten
+  what already played, the subtitle sync reads only the unbroken stretch on disk
+  around the picture (`heldAround`). `cargo test --lib buffer` runs the engine
+  half over loopback; `check:torrents` holds the policy.
 - Logic worth trusting has a `bun run check:*` script beside it
   (`check:dpad`, `check:torrents`, `check:subtitles`, `check:theme`,
   `check:library`, `check:player`, `check:swipe`, `check:boot`,

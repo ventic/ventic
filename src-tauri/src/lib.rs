@@ -32,6 +32,9 @@ mod cast;
 /// only — the other two already have their own answer (see the module).
 mod awake;
 
+/// Streaming a film through a buffer instead of downloading it whole.
+mod buffer;
+
 /// mpv's IPC socket, shared by the two backends that have one.
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 mod player_socket;
@@ -427,6 +430,12 @@ fn disk_space(app: tauri::AppHandle, path: Option<String>) -> Result<DiskSpace, 
 		Some(p) => PathBuf::from(p),
 		None => cache_dir(&app).join("ventic-torrents"),
 	};
+	// The folder can be gone while its drive is not: librqbit removes a
+	// torrent's folder along with its last file, which empties the streams
+	// folder every time a film stops. Measured as "unreadable", that would size
+	// the next stream's buffer as though the disk had no end — so the nearest
+	// folder that still exists is asked instead, which is the same filesystem.
+	let dir = dir.ancestors().find(|p| p.exists()).map(PathBuf::from).unwrap_or(dir);
 	#[cfg(unix)]
 	{
 		use std::os::unix::ffi::OsStrExt;
@@ -496,6 +505,12 @@ impl librqbit::storage::TorrentStorage for LargeFileStorage {
 		self.0.ensure_file_length(file_id, length)
 	}
 
+	/// Handed down, or a stream's watched pieces would never give their space back —
+	/// the trait's default keeps them (see buffer.rs).
+	fn discard(&self, file_id: usize, offset: u64, len: u64) -> anyhow::Result<()> {
+		self.0.discard(file_id, offset, len)
+	}
+
 	fn take(&self) -> anyhow::Result<Box<dyn librqbit::storage::TorrentStorage>> {
 		Ok(Box::new(Self(self.0.take()?)))
 	}
@@ -545,6 +560,7 @@ const TORRENT_API_ADDR: &str = "127.0.0.1:3030";
 async fn run_torrent_server(
 	download_dir: std::path::PathBuf,
 	session_dir: std::path::PathBuf,
+	streams_dir: std::path::PathBuf,
 ) -> anyhow::Result<()> {
 	// Remember torrents across restarts, so a background download resumes where
 	// it left off and the downloads page isn't empty on every launch. The folder
@@ -591,6 +607,9 @@ async fn run_torrent_server(
 	// Casting puts a second, read-only HTTP server in front of this same session
 	// (see cast.rs). Handed over here because this is the only place with one.
 	cast::set_engine(api.clone());
+	// A film streamed last time is a torrent nobody is watching now — see buffer.rs.
+	buffer::sweep(&api, &streams_dir).await;
+	tokio::spawn(buffer::run(api.clone()));
 
 	let addr: std::net::SocketAddr = TORRENT_API_ADDR.parse()?;
 	// On a dev hot-restart the previous process can still hold the port for a
@@ -709,7 +728,9 @@ pub fn run() {
 			cast::cast_share,
 			cast::cast_receive,
 			cast::cast_firewall_hint,
-			awake::keep_awake
+			awake::keep_awake,
+			buffer::stream_buffer,
+			buffer::stream_folder
 		])
 		.setup(|app| {
 			// The installers write the scheme association (registry keys on
@@ -799,11 +820,13 @@ pub fn run() {
 			let cache_dir = cache_dir(app.handle());
 			let download_dir = cache_dir.join("ventic-torrents");
 			let session_dir = cache_dir.join("ventic-session");
+			let streams_dir = buffer::folder(app.handle());
 			std::fs::create_dir_all(&download_dir).ok();
 			std::fs::create_dir_all(&session_dir).ok();
+			std::fs::create_dir_all(&streams_dir).ok();
 
 			tauri::async_runtime::spawn(async move {
-				if let Err(e) = run_torrent_server(download_dir, session_dir).await {
+				if let Err(e) = run_torrent_server(download_dir, session_dir, streams_dir).await {
 					eprintln!("[ventic] torrent server exited with error: {e:#}");
 				}
 			});

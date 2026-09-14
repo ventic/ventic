@@ -41,7 +41,7 @@ async function download() {
       imdbId: props.imdbId,
       season: props.season,
       episode: props.episode,
-    })
+    }, true)
     state.value = 'done'
   }
   catch (e) {

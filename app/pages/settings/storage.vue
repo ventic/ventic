@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { PlayMode } from '~/utils/torrents'
 import { mdiCheckCircle, mdiDeleteOutline, mdiDeleteSweepOutline, mdiFolderOpenOutline, mdiFolderSearchOutline, mdiRestore, mdiUsbFlashDrive } from '@mdi/js'
 
 const settings = useSettingsStore()
@@ -76,6 +77,38 @@ function format() {
   else
     error.value = $t('No storage settings on this device. Format the drive as FAT32 on a computer — every Android box accepts it.')
 }
+
+/**
+ * What Play does with a torrent. The titles are functions for the reason every
+ * options table's are — see SECTIONS in the settings store.
+ */
+const MODES: { value: PlayMode, title: () => string }[] = [
+  { value: 'auto', title: () => $t('Automatic') },
+  { value: 'stream', title: () => $t('Stream only') },
+]
+
+/**
+ * What Automatic comes to on this device, right now. That is the thing worth
+ * saying, because one setting streams everything on a TV box and nothing on a
+ * laptop — and a USB stick plugged into the box turns the one into the other.
+ */
+const verdict = computed(() => {
+  if (settings.playMode === 'stream')
+    return $t('Films always stream: only a few minutes of one are ever on the device, and it is deleted when you stop watching.')
+  const { budget, drive } = downloads.room
+  if (!Number.isFinite(drive))
+    return $t('Films are downloaded whole, and kept.')
+  // Free space, not `drive`: that is what is left once the device's own reserve
+  // is set aside, and on a TV box it reads "room for 0 B" — true, and no use.
+  if (drive < MIN_LIBRARY)
+    return $t('This drive has {free} free, which is too little to keep films on — so films stream instead: only a few minutes of one are on the device at a time, and it is deleted when you stop watching.', { free: bytesText(downloads.disk?.free ?? 0) })
+  return $t('Room for {size} of films here. A film that fits is downloaded whole, making space by deleting what was watched longest ago; one that won\'t fit even then streams instead.', { size: bytesText(budget) })
+})
+
+/** Minutes of buffer on offer — stops, like every stepper here (see utils/steps). */
+const AHEAD = [1, 2, 3, 5, 10, 15, 30]
+const BEHIND = [0, 1, 2, 5, 10]
+const minutes = (value: number) => value > 0 ? $t('{count} min', { count: value }) : $t('None')
 
 const confirmClear = ref(false)
 const confirmPrune = ref(false)
@@ -164,7 +197,7 @@ async function openFolder() {
         type="info"
         variant="tonal"
         density="compact"
-        :text="$t('{drive} is formatted FAT32, which can\'t hold a single file over {limit}. Bigger releases are dimmed in the source list and are never picked automatically — everything smaller works normally.', { drive: target.name, limit: bytesText(target.maxFile) })"
+        :text="$t('{drive} is formatted FAT32, which can\'t hold a single file over {limit}. Bigger releases stream from the device\'s own storage instead of downloading — everything smaller downloads normally.', { drive: target.name, limit: bytesText(target.maxFile) })"
       />
 
       <!-- The fix is one screen away, so the alert carries the way to it rather
@@ -200,7 +233,7 @@ async function openFolder() {
         type="info"
         variant="tonal"
         density="compact"
-        :text="$t('There is barely room for one film here. Plug a USB drive into the box — formatted FAT32, which every Android box accepts — and it appears above to download onto instead.')"
+        :text="$t('There is barely room for one film here, so films stream rather than download. Plug a USB drive into the box — formatted FAT32, which every Android box accepts — and it appears above to keep films on.')"
       />
 
       <div class="flex flex-wrap items-center gap-2">
@@ -230,8 +263,45 @@ async function openFolder() {
     </settings-section>
 
     <settings-section
+      :title="$t('Playing a torrent')"
+      :hint="$t('Whether a film is downloaded whole and kept, or streamed through a small buffer that is deleted when you stop.')"
+    >
+      <settings-segment v-model="settings.playMode" :options="MODES" />
+      <p class="text-body-medium opacity-70">
+        {{ verdict }}
+      </p>
+
+      <template v-if="settings.playMode === 'auto'">
+        <v-switch
+          v-model="settings.keepWatched"
+          color="primary"
+          density="comfortable"
+          hide-details
+          :label="$t('Keep films after watching them')"
+        />
+        <p class="text-body-medium opacity-70">
+          {{ settings.keepWatched
+            ? $t('A film watched to the end stays on the drive, seeding, until its space is needed for another.')
+            : $t('A film is deleted as the player closes on it, once you have watched it to the end. One stopped half-way is kept, to carry on from.') }}
+        </p>
+      </template>
+    </settings-section>
+
+    <settings-section
+      :title="$t('Streaming buffer')"
+      :hint="$t('How much of a streamed film is kept on the device around what is playing. More ahead rides out a swarm that slows down; more behind is a rewind that doesn\'t have to be fetched again. Both are cut down to fit when the device is short of space.')"
+    >
+      <settings-row :label="$t('Ahead')">
+        <settings-stepper v-model="settings.bufferAhead" :values="AHEAD" :format="minutes" />
+      </settings-row>
+      <settings-row :label="$t('Behind')">
+        <settings-stepper v-model="settings.bufferBehind" :values="BEHIND" :format="minutes" />
+      </settings-row>
+    </settings-section>
+
+    <settings-section
       :title="$t('Cache limit')"
-      :hint="$t('Everything watched is kept on disk until the space is needed, then the least recently played titles are deleted. Zero lets that grow into whatever the drive has spare.')"
+      :hint="$t('Films downloaded whole stay on disk until the space is needed, then the least recently played are deleted — and a film that won\'t fit even then streams instead. Zero lets that grow into whatever the drive has spare.')"
     >
       <settings-stepper v-model="capGb" :values="CAPS" :format="cap" />
 
