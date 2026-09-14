@@ -32,6 +32,17 @@ Every change is marked `ventic:` in the source.
   fetch sleeps up to five seconds, and in a stream the next wanted piece only
   appears when a reader moves — so a reader now wakes them when it opens, seeks
   or reaches a new piece. Without it every seek past the buffer stalled.
+- **Taking the piece under a reader off a slow peer** (`acquire_piece` in
+  `piece_tracker.rs`). Peers take whole pieces from anywhere in the window, so
+  the one a reader is blocked on can sit with a peer at a few KB/s, or one that
+  has choked us, while everything after it arrives — and the stock steals only
+  reach it at 10× the stealing peer's piece time. The first few missing pieces
+  ahead of the readers are stolen at 2× instead. Measured on a TV after a seek:
+  the three pieces under the reader landed 50 s late, behind 40 MB of pieces
+  after them, and the player had given up at 36 s. Once per piece
+  (`InflightPiece::rushed`): when the link slowed below what the peers'
+  averages remembered, two fast peers took one 512 KB piece off each other for
+  64 s, every steal starting it over.
 - **Not disconnecting a peer that asks for a forgotten piece**
   (`on_download_request`). It was told we had the piece; it is behind the news,
   not misbehaving, and may be the peer the stream is fetching from.

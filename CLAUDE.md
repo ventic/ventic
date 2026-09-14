@@ -177,8 +177,19 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   (the next episode of a pack) must not release it. A stream is added paused and
   started by `buffer()` once its window is on. Since a stream has forgotten
   what already played, the subtitle sync reads only the unbroken stretch on disk
-  around the picture (`heldAround`). `cargo test --lib buffer` runs the engine
-  half over loopback; `check:torrents` holds the policy.
+  around the picture (`heldAround`). A stream is only as quick as the one piece
+  under its reader, and peers take whole pieces from anywhere in the window — so
+  a slow peer holding that piece stalls the picture with the rest of the window
+  on disk. The engine takes the next few a reader waits on off such a peer early
+  (VENTIC.md), and ExoPlayer, whose defaults read that wait as a dropped
+  connection and ended the film on it, never gives up on a torrent URL
+  (`patient` in `Player.kt`) — mpv never did. A seek is the test for all of it:
+  the start of a film hides a stall behind ExoPlayer's 50 s buffer, and the
+  MediaTek decoder on the test TV never gave a frame back after one until
+  media3's asynchronous queueing was switched off (`ensure()` in `Player.kt`) —
+  a resumed film seeks as it opens, so it simply never started. `cargo test
+  --lib buffer` runs the engine half over loopback; `check:torrents` holds the
+  policy.
 - Logic worth trusting has a `bun run check:*` script beside it
   (`check:dpad`, `check:torrents`, `check:subtitles`, `check:theme`,
   `check:library`, `check:player`, `check:swipe`, `check:boot`,

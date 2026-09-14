@@ -29,6 +29,8 @@ use crate::{
 pub struct InflightPiece {
     pub peer: PeerHandle,
     pub started: Instant,
+    /// ventic: already rushed off a slow peer once — see `acquire_piece`.
+    pub rushed: bool,
 }
 
 /// Result of attempting to acquire a piece.
@@ -126,14 +128,42 @@ impl PieceTracker {
         P: Fn(ValidPieceIndex) -> bool,
         S: Fn(ValidPieceIndex) -> bool,
     {
+        // ventic: the next pieces a reader is waiting for. Every peer takes whole pieces from
+        // anywhere in a stream's window, so a slow or choked one can hold the very piece under
+        // the reader while everything after it arrives — and playback stops on that one piece
+        // however much of the window is on disk. The steals below reach it only after ten
+        // times this peer's piece time, which on a TV was fifty seconds after a seek. These
+        // few go to this peer once their owner has had one twice as long as this peer takes
+        // for a whole piece — and only once each, since a steal starts the piece over: on a
+        // link slower than the peers' averages remember, two fast peers took one piece off
+        // each other for a minute.
+        const URGENT: usize = 4;
+        let urgent: Vec<_> = (&mut req.priority_pieces)
+            .filter(|p| !self.chunks.is_piece_have(*p))
+            .take(URGENT)
+            .collect();
+        let rushable: Vec<_> = urgent
+            .iter()
+            .copied()
+            .filter(|p| !self.inflight.get(p).is_some_and(|i| i.rushed))
+            .collect();
+        if let Some(result) = self.try_steal(&req, 2.0, |p| rushable.contains(&p)) {
+            if let AcquireResult::Stolen { piece, .. } = &result
+                && let Some(inflight) = self.inflight.get_mut(piece)
+            {
+                inflight.rushed = true;
+            }
+            return result;
+        }
+
         // 1. Try steal with 10x threshold (very slow peer)
-        if let Some(result) = self.try_steal(&req, 10.0) {
+        if let Some(result) = self.try_steal(&req, 10.0, |_| true) {
             return result;
         }
 
         // 2. Try reserve from priority_pieces then queued pieces
         // First check priority pieces that aren't already downloaded or in-flight
-        for piece in &mut req.priority_pieces {
+        for piece in urgent.iter().copied().chain(&mut req.priority_pieces) {
             if !self.chunks.is_piece_have(piece)
                 && !self.inflight.contains_key(&piece)
                 && (req.peer_has_piece)(piece)
@@ -156,7 +186,7 @@ impl PieceTracker {
         }
 
         // 3. Try steal with 3x threshold (moderately slow peer)
-        if let Some(result) = self.try_steal(&req, 3.0) {
+        if let Some(result) = self.try_steal(&req, 3.0, |_| true) {
             return result;
         }
 
@@ -171,6 +201,7 @@ impl PieceTracker {
             InflightPiece {
                 peer,
                 started: Instant::now(),
+                rushed: false,
             },
         );
         AcquireResult::Reserved(piece)
@@ -181,6 +212,8 @@ impl PieceTracker {
         &mut self,
         req: &AcquireRequest<I, P, S>,
         threshold: f64,
+        // ventic: which pieces may be taken — every one, or the few a reader waits on.
+        among: impl Fn(ValidPieceIndex) -> bool,
     ) -> Option<AcquireResult>
     where
         I: Iterator<Item = ValidPieceIndex>,
@@ -195,6 +228,7 @@ impl PieceTracker {
         let (piece, old_peer, _) = self
             .inflight
             .iter()
+            .filter(|(p, _)| among(**p))
             .filter(|(_, info)| info.peer != req.peer)
             .filter(|(p, _)| (req.peer_has_piece)(**p))
             .map(|(p, info)| (*p, info.peer, info.started.elapsed()))
@@ -804,6 +838,67 @@ mod tests {
                 assert_eq!(tracker.get_inflight(piece_0).unwrap().peer, peer_a);
             }
             _ => panic!("Expected Stolen, got {:?}", result),
+        }
+    }
+
+    /// ventic: the piece a reader waits on leaves a slow peer at twice a faster peer's piece
+    /// time — under the 3x and 10x the stock steals wait for, and ahead of reserving the
+    /// next piece of the window, which is what that faster peer did before.
+    #[test]
+    fn test_steal_urgent_piece_early() {
+        let chunks = make_test_chunk_tracker(5);
+        let mut tracker = PieceTracker::new(chunks);
+        let file_infos = make_test_file_infos(5);
+        let file_priorities = make_default_file_priorities(&file_infos);
+        let window: Vec<_> = (0..3)
+            .map(|i| tracker.chunks().get_lengths().validate_piece_index(i).unwrap())
+            .collect();
+
+        let slow = peer(1);
+        match tracker.acquire_piece(AcquireRequest {
+            peer: slow,
+            peer_avg_time: None,
+            priority_pieces: window.clone().into_iter(),
+            file_priorities: &file_priorities,
+            file_infos: &file_infos,
+            peer_has_piece: |_| true,
+            can_steal: |_| true,
+        }) {
+            AcquireResult::Reserved(p) => assert_eq!(p, window[0]),
+            other => panic!("Expected the reader's piece reserved, got {other:?}"),
+        }
+
+        std::thread::sleep(Duration::from_millis(25));
+        match tracker.acquire_piece(AcquireRequest {
+            peer: peer(2),
+            peer_avg_time: Some(Duration::from_millis(10)),
+            priority_pieces: window.clone().into_iter(),
+            file_priorities: &file_priorities,
+            file_infos: &file_infos,
+            peer_has_piece: |_| true,
+            can_steal: |_| true,
+        }) {
+            AcquireResult::Stolen { piece, from_peer } => {
+                assert_eq!(piece, window[0]);
+                assert_eq!(from_peer, slow);
+            }
+            other => panic!("Expected the reader's piece stolen, got {other:?}"),
+        }
+
+        // Once only: a faster peer yet, past twice its own piece time but under the 10x the
+        // stock steal waits for, takes the next piece rather than starting this one over.
+        std::thread::sleep(Duration::from_millis(15));
+        match tracker.acquire_piece(AcquireRequest {
+            peer: peer(3),
+            peer_avg_time: Some(Duration::from_millis(5)),
+            priority_pieces: window.clone().into_iter(),
+            file_priorities: &file_priorities,
+            file_infos: &file_infos,
+            peer_has_piece: |_| true,
+            can_steal: |_| true,
+        }) {
+            AcquireResult::Reserved(p) => assert_eq!(p, window[1]),
+            other => panic!("Expected the next piece, not a second rush, got {other:?}"),
         }
     }
 }

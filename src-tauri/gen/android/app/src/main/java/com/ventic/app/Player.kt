@@ -22,6 +22,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.decoder.ffmpeg.FfmpegLibrary
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import org.json.JSONArray
@@ -137,7 +139,7 @@ class VenticPlayer(private val activity: MainActivity) {
     onMain {
       val p = ensure()
       view?.visibility = View.VISIBLE
-      p.setMediaItem(MediaItem.fromUri(url))
+      open(p, url)
       p.prepare()
       p.play()
       main.removeCallbacks(tick)
@@ -226,6 +228,28 @@ class VenticPlayer(private val activity: MainActivity) {
   // The player itself
   // -------------------------------------------------------------------------
 
+  /**
+   * A torrent stream answers a read only once the piece under it has arrived, and
+   * one piece held by a slow peer can take a minute. ExoPlayer's defaults call that
+   * a dead connection — an 8 s read timeout, then three retries that got nothing —
+   * and ended the film on "dropped mid-stream" with the rest of its window already
+   * on disk. mpv just waits, and so does this: the page shows the swarm meanwhile,
+   * and Back is the way out. Only the engine's URLs (ours or a cast mirror's): a
+   * debrid link or a channel that stops answering really has failed.
+   */
+  private val patient by lazy {
+    DefaultMediaSourceFactory(activity).setLoadErrorHandlingPolicy(DefaultLoadErrorHandlingPolicy(Int.MAX_VALUE))
+  }
+
+  private fun open(p: ExoPlayer, url: String) {
+    val item = MediaItem.fromUri(url)
+    if (Regex("/torrents/\\d+/stream/\\d+").containsMatchIn(url)) {
+      p.setMediaSource(patient.createMediaSource(item))
+    } else {
+      p.setMediaItem(item)
+    }
+  }
+
   private fun ensure(): ExoPlayer {
     player?.let { return it }
 
@@ -241,7 +265,14 @@ class VenticPlayer(private val activity: MainActivity) {
             },
           )
           // Cheap TV boxes advertise decoders that then fail to initialise.
-          .setEnableDecoderFallback(true),
+          .setEnableDecoderFallback(true)
+          // media3 feeds decoders asynchronously from API 31, and the MediaTek AVC
+          // decoder on a Philips set never gives a frame back after the flush a
+          // seek does: black, "Buffering" over a full buffer, for good — a resumed
+          // film seeks as it opens, so it never started at all. Measured with the
+          // audio track off too, so it is the video decoder. Synchronous costs
+          // nothing a TV notices.
+          .forceDisableMediaCodecAsynchronousQueueing(),
       )
       .build()
 
@@ -336,7 +367,7 @@ class VenticPlayer(private val activity: MainActivity) {
 
       val p = ensure()
       p.volume = if (muted) 0f else vol / 100f
-      p.setMediaItem(MediaItem.fromUri(opened))
+      open(p, opened)
       p.prepare()
       if (at > 0) p.seekTo(at)
       p.play()
