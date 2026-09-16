@@ -66,7 +66,17 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   build:android-ffmpeg` builds it from the media3 and FFmpeg sources and the
   ~3 MB `.aar` is committed under `app/libs/` — CI only ever checks it out. Four
   files have to agree on a version and a filename and nothing compiles the
-  agreement; `bun run check:player` holds them.
+  agreement; `bun run check:player` holds them. That retry is audio-only — the
+  module has no working video decoder (`ExperimentalFfmpegVideoRenderer` is a
+  stub in every media3 release so far), so a video failure isn't retried.
+- **The same `work failed to complete: 14` on a video track is usually the
+  container, not the decoder.** XviD's muxer writes an MP4 with no decoder header
+  in `esds`, only in-band, and media3 reads the next descriptor as that header
+  unchecked — so MediaCodec is configured with one stray byte and the first frame
+  dies. `Mpeg4Headers.kt` wraps the extractors and puts the real header (from the
+  first keyframe) back; both media source routes in `Player.kt` must read through
+  it, which `check:player` holds. Before blaming a codec, `ffmpeg -c copy` the file
+  and play the copy: if the remux plays, it is the container.
 - **Nothing tells the desktop a film is on, so the app does.** Two hours of
   playback is two hours of no input, which every idle timer reads as an empty
   room — the screen blanks, or the machine suspends, mid-film. mpv would

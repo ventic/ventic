@@ -359,6 +359,15 @@ assert.match(kotlin, /EXTENSION_RENDERER_MODE_ON/, 'the device decoder is still 
 assert.match(kotlin, /EXTENSION_RENDERER_MODE_PREFER/, 'and the retry is what reaches for FFmpeg')
 assert.match(kotlin, /FfmpegLibrary\.isAvailable\(\)/, 'which is skipped unless the library really shipped')
 
+// An XviD MP4 carries its decoder header only in-band, and media3 configures
+// MediaCodec with a stray byte instead — Mpeg4Headers.kt puts the real one back.
+// It only works on a route that reads through it, and a route that doesn't still
+// compiles and still plays every other file: ExoPlayer.Builder falls back to its
+// own factory, and the torrent one to its own extractors.
+assert.equal(kotlin.match(/DefaultMediaSourceFactory\(activity, extractors\)/g)?.length, 2, 'both the plain and the torrent route read files through the XviD header fix')
+assert.match(kotlin, /\.setMediaSourceFactory\(DefaultMediaSourceFactory\(activity, extractors\)\)/, 'and the plain one is the player\'s own')
+assert.match(kotlin, /extractors by lazy \{ Mpeg4Headers\(DefaultExtractorsFactory\(\)\) \}/, 'which wraps the stock extractors')
+
 // --- A link the source resolved itself is somebody else's host ------------------
 // `waitForStream` is the one thing in the player bound by CORS, and it is the
 // gate every stream passes before mpv or ExoPlayer is handed it. The local

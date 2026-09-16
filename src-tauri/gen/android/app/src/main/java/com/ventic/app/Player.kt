@@ -13,6 +13,7 @@ import android.webkit.JavascriptInterface
 import androidx.media3.common.C
 import androidx.media3.common.Format
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.TrackSelectionOverride
@@ -21,9 +22,11 @@ import androidx.media3.common.text.CueGroup
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.decoder.ffmpeg.FfmpegLibrary
 import androidx.media3.exoplayer.DefaultRenderersFactory
+import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy
+import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import org.json.JSONArray
@@ -238,8 +241,11 @@ class VenticPlayer(private val activity: MainActivity) {
    * debrid link or a channel that stops answering really has failed.
    */
   private val patient by lazy {
-    DefaultMediaSourceFactory(activity).setLoadErrorHandlingPolicy(DefaultLoadErrorHandlingPolicy(Int.MAX_VALUE))
+    DefaultMediaSourceFactory(activity, extractors).setLoadErrorHandlingPolicy(DefaultLoadErrorHandlingPolicy(Int.MAX_VALUE))
   }
+
+  /** Both routes in read files through this — see Mpeg4Headers. */
+  private val extractors by lazy { Mpeg4Headers(DefaultExtractorsFactory()) }
 
   private fun open(p: ExoPlayer, url: String) {
     val item = MediaItem.fromUri(url)
@@ -274,6 +280,7 @@ class VenticPlayer(private val activity: MainActivity) {
           // nothing a TV notices.
           .forceDisableMediaCodecAsynchronousQueueing(),
       )
+      .setMediaSourceFactory(DefaultMediaSourceFactory(activity, extractors))
       .build()
 
     p.audioSessionId = session
@@ -353,7 +360,11 @@ class VenticPlayer(private val activity: MainActivity) {
     val decoding = error.errorCode in
       PlaybackException.ERROR_CODE_DECODER_INIT_FAILED..
       PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED
-    if (softwareAudio || !decoding || opened.isEmpty() || !FfmpegLibrary.isAvailable()) {
+    // The module decodes audio only. A video decoder that failed fails again in
+    // the rebuilt player, which only doubled the wait and reported the second
+    // player's error instead of the first.
+    val audio = MimeTypes.isAudio((error as? ExoPlaybackException)?.rendererFormat?.sampleMimeType)
+    if (softwareAudio || !decoding || !audio || opened.isEmpty() || !FfmpegLibrary.isAvailable()) {
       return false
     }
 
