@@ -84,6 +84,16 @@ jobs:
     needs: release
     strategy:
       fail-fast: false
+      # One runner at a time, and it is the *uploads* that need it rather than
+      # the builds. Two jobs writing assets to the same release die together —
+      # within a second of each other, on different runners in different clouds,
+      # with tauri-action's "Error saving asset" and no retry behind it. Three
+      # attempts at v0.7.2 went that way, always the pair that happened to be
+      # uploading at the same moment, while every upload that ran alone went
+      # through. A half-uploaded asset is also left behind in GitHub's `starter`
+      # state, holding the name until something overwrites it. Costs ~25 minutes
+      # of wall clock per release and buys a tag that only has to be pushed once.
+      max-parallel: 1
       matrix:
         include:
           # 22.04 rather than latest: the .deb and .AppImage link against the
