@@ -1250,8 +1250,12 @@ async function waitForStream(url: string, timeoutMs = 60000) {
       const res = await http(url, { headers: { Range: 'bytes=0-0' }, signal: AbortSignal.timeout(10_000) })
       status = res.status
       if (res.ok || res.status === 206) {
-        // Release the connection so librqbit isn't left holding a reader.
-        await res.arrayBuffer()
+        // Dropped, not read. Releasing the connection is still the point — so
+        // librqbit isn't left holding a reader, and so an IPTV panel allowing one
+        // connection has it free for the player — but a live channel ignores
+        // Range and answers 200 with a body that never ends: reading it ran into
+        // the timeout every turn and reported a playing channel as a failure.
+        await res.body?.cancel().catch(() => {})
         return { ok: true, status, reason: '' }
       }
       // The engine puts a sentence in the body of its own errors, and it is the
