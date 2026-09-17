@@ -592,11 +592,17 @@ export function isStream(folder: string) {
  * it downloads the whole film at full speed. A torrent the engine already holds
  * is left as it was either way.
  */
-export async function addTorrent(magnet: string, dir = downloadDir, paused = false) {
+export async function addTorrent(magnet: string, dir = downloadDir, paused = false, only: number | null = null) {
   // Only new torrents move: the engine remembers an existing one's folder, and
   // its data is already sitting in it.
   const folder = `${dir ? `&output_folder=${encodeURIComponent(dir)}` : ''}${paused ? '&paused=true' : ''}`
-  const res = await fetch(`${ENGINE}/torrents?overwrite=true${folder}`, { method: 'POST', body: magnet })
+  // Narrowed on the add, not after it, when the file is already known. Added
+  // whole, a pack has every file created at full length — 86 films, 269 GB,
+  // for the one being watched — and any later hash check reads all of them:
+  // measured at 111 s of "initializing" on that pack, long past `limitToFiles`
+  // giving up, so it was never narrowed and never windowed either.
+  const files = only != null ? `&only_files=${only}` : ''
+  const res = await fetch(`${ENGINE}/torrents?overwrite=true${folder}${files}`, { method: 'POST', body: magnet })
   if (!res.ok)
     throw new Error($t('Torrent engine said {status}: {reason}', { status: res.status, reason: await res.text() }))
   const added = await res.json() as {
@@ -1180,6 +1186,12 @@ export async function startTorrent(options: {
    * searched, and the reason a downloaded film starts instantly and offline.
    */
   cached?: { hash: string, file: number } | null
+  /**
+   * The info hash of a release someone picked by hand for this title. Preferred
+   * when the sources are searched, as long as they still list it alive — see
+   * `picked` in the downloads store.
+   */
+  prefer?: string
   /** Storage budget for the pick — see `diskBudget`. Ignored with `magnet`. */
   maxBytes?: number
   /** How big a film this device can keep; a bigger copy loses a tie — see `pickBest`. */
@@ -1255,7 +1267,11 @@ export async function startTorrent(options: {
 
       step($t('Searching your sources…'))
       const found = await findReleases(imdbId, options.season, options.episode)
-      picked = pickBest(found, options.maxBytes, options.compatible ?? !hasNativePlayer(), options.room)
+      const best = (list: Release[]) => pickBest(list, options.maxBytes, options.compatible ?? !hasNativePlayer(), options.room)
+      // Through `pickBest` too, so a picked release its swarm has since left
+      // loses to the usual pick rather than hanging.
+      const prefer = options.prefer?.toLowerCase()
+      picked = (prefer && best(found.filter(r => r.hash.toLowerCase() === prefer))) || best(found)
       if (!picked) {
         throw new Error(found.length
           ? $t('All {count} releases found were cams, dead, or too big for this device.', { count: found.length })
@@ -1284,7 +1300,11 @@ export async function startTorrent(options: {
   const early = !already && !!options.streamIf?.(options.bytes ?? picked?.bytes ?? 0)
 
   step($t('Fetching metadata from peers…'))
-  const added = await addTorrent(magnet, early ? streamDir : downloadDir, early)
+  const dir = early ? streamDir : downloadDir
+  const known = already ? null : options.fileIndex ?? hint
+  // A source's index that is out of range fails the whole add.
+  const added = await addTorrent(magnet, dir, early, known)
+    .catch(e => known == null ? Promise.reject(e) : addTorrent(magnet, dir, early))
   const files = added.details.files ?? []
   const index = options.fileIndex ?? pickVideoFile(files, hint, options)
   if (index == null)

@@ -750,6 +750,36 @@ requests = []
 const refound = await startTorrent({ imdbId: 'tt0000001', cached })
 assert.equal(refound.hash, 'bbb')
 assert.ok(requests.some(u => u.startsWith('https://a.example')), 'a copy that is gone is searched for again')
+// The source said which file (fileIdx 3), so the add is narrowed to it from the
+// start: added whole, an 86-film pack spent minutes hash-checking 269 GB.
+assert.ok(requests.some(u => u.includes('overwrite') && u.includes('only_files=3')), 'narrowed on the add')
+
+// A stream is deleted when the player closes, so `cached` forgets it — and a
+// hand-picked 720p resumed as whatever the sources recommend. The pick is
+// preferred while the source still lists it alive, and only then.
+const engineFetch = globalThis.fetch
+const dead = { ...streams[0]!, title: 'Sintel 2010 Bluray 2160p AV1 HDR10\n👤 0 💾 8.91 GB ⚙️ indexer-a' }
+let offered = [streams[0], streams[1]]
+let refused = false
+globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+  const url = String(input)
+  requests.push(url)
+  if (url.startsWith('https://a.example'))
+    return Response.json({ streams: offered })
+  // An index out of range fails the whole add; the file is picked after it instead.
+  if (refused && url.includes('only_files'))
+    return Response.json({ human_readable: 'file id 3 is out of range' }, { status: 400 })
+  return engineFetch(input, init)
+}) as typeof fetch
+assert.equal((await startTorrent({ imdbId: 'tt0000001' })).torrent?.hash, 'bbb', 'unpicked, 1080p beats 4k')
+assert.equal((await startTorrent({ imdbId: 'tt0000001', prefer: 'AAA' })).torrent?.hash, 'aaa', 'the release picked by hand')
+offered = [dead, streams[1]]
+assert.equal((await startTorrent({ imdbId: 'tt0000001', prefer: 'aaa' })).torrent?.hash, 'bbb', 'unless its swarm is gone')
+refused = true
+requests = []
+assert.equal((await startTorrent({ imdbId: 'tt0000001' })).index, 1, 'a bad index still plays')
+assert.ok(requests.some(u => u.includes('overwrite') && !u.includes('only_files')), 'added again without it')
+globalThis.fetch = engineFetch
 
 // --- Streaming it instead -----------------------------------------------------
 // A film this device can't keep is added to the streams folder, and that folder

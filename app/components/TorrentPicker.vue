@@ -112,7 +112,10 @@ function playLink(t: Release) {
   // the engine can't say how big it is until it has been added, and by then it
   // has landed in the download folder.
   const size = !t.url && t.bytes ? `&size=${Math.round(t.bytes)}` : ''
-  return `${watchLink(props.type, props.id, props.season, props.episode)}&${param}${size}`
+  // Which file in a pack this result is. Left out, the largest file played: one
+  // film's release was an 86-film collection, and that was a different film.
+  const file = !t.url && t.fileIdx != null ? `&file=${t.fileIdx}` : ''
+  return `${watchLink(props.type, props.id, props.season, props.episode)}&${param}${size}${file}`
 }
 
 async function download(t: Release) {
@@ -123,7 +126,7 @@ async function download(t: Release) {
     // on — picking a release by hand is a decision, not a one-off.
     await downloads.start(
       progressKey(props.type, props.id, props.season, props.episode),
-      { magnet: t.magnet, season: props.season, episode: props.episode },
+      { magnet: t.magnet, fileIndex: t.fileIdx, season: props.season, episode: props.episode },
       true,
     )
     added.value = [...added.value, releaseKey(t)]

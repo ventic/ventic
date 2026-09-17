@@ -73,6 +73,16 @@ export const useDownloadsStore = defineStore('downloads', () => {
   }
 
   /**
+   * The release a title was last picked by hand from, by info hash. `cached`
+   * can't carry that: it is pruned to what the engine holds, and a stream is
+   * deleted the moment the player closes — so Resume on a film streamed from a
+   * hand-picked 720p searched again and played the recommended 1080p instead.
+   *
+   * ponytail: never pruned, one short entry per title picked by hand.
+   */
+  const picked = useLocalStorage<Record<string, string>>('ventic.picked', {})
+
+  /**
    * The same map read backwards: which title a torrent, or one file in it, was
    * downloaded for. This is what lets the downloads page play something as the
    * film it is rather than as a bare magnet — see `filedAs`.
@@ -201,12 +211,17 @@ export const useDownloadsStore = defineStore('downloads', () => {
         : { room: mode === 'auto' ? fits.value : undefined, streamIf: (bytes: number) => shouldStream(bytes, mode, room.value) },
       cached: cachedFor(key),
       local: localFor(key),
+      prefer: (key && picked.value[key]) || undefined,
       ...options,
     })
     // A direct link leaves nothing on the disk to come back to, so there is no
     // offline copy to file — and filing an empty hash would shadow a real one.
-    if (key && started.hash)
+    if (key && started.hash) {
       cached.value[key] = { hash: started.hash, file: started.index }
+      // A magnet is a release someone chose: the picker, or the downloads page.
+      if (options.magnet)
+        picked.value[key] = started.hash
+    }
     return started
   }
 
