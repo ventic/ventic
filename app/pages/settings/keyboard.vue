@@ -31,6 +31,7 @@ useEventListener(window, 'keydown', e => {
     <settings-section
       :title="$t('Shortcuts')"
       :hint="$t('While a film is playing. Choose one, then press the key you want it on — Backspace takes it away, Escape leaves it as it was.')"
+      :keywords="$t('hotkeys, keyboard shortcuts, key bindings, keybinds, keys, controls, remap')"
     >
       <div v-for="action in KEY_ACTIONS" :key="action.value" class="flex items-center justify-between gap-4">
         <span class="text-body-medium">{{ action.title() }}</span>

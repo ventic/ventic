@@ -125,6 +125,7 @@ async function bindTo(name: string | null) {
     <settings-section
       :title="$t('Speed limits')"
       :hint="$t('Applied to peer traffic across every torrent. Zero hands the decision back to the app, which leaves downloads unlimited and works the seeding ceiling out from the fastest upload this connection has managed.')"
+      :keywords="$t('bandwidth, throttle, rate limit, download speed, upload speed, seeding, cap, slow internet')"
     >
       <settings-row :label="$t('Download')">
         <settings-stepper v-model="settings.downLimit" :values="LIMITS" :format="label" />
@@ -142,6 +143,7 @@ async function bindTo(name: string | null) {
       v-if="vpn"
       :title="$t('VPN')"
       :hint="$t('Tie torrents to your VPN\'s connection. If the VPN drops, downloading and seeding stop straight away instead of carrying on from your own address, and start again once it is back.')"
+      :keywords="$t('kill switch, leak, privacy, tunnel, network interface, WireGuard, OpenVPN, bind')"
     >
       <v-select
         :model-value="vpn.bound ?? ''"
@@ -172,12 +174,14 @@ async function bindTo(name: string | null) {
       :hint="onAndroid()
         ? $t('Android can stop every app, this one included, when the VPN drops: in the system settings under VPN, turn on Always-on VPN and Block connections without VPN.')
         : $t('Windows can\'t tie torrents to one connection. Most VPN apps have a kill switch of their own that does the same job — turn that on.')"
+      :keywords="$t('kill switch, leak, privacy, tunnel, network interface, WireGuard, OpenVPN, bind')"
     />
 
     <settings-section
       v-if="canMeter"
       :title="$t('Mobile data')"
       :hint="$t('Downloads keep running when the app is off screen, which is worth knowing about on a connection that charges for bytes.')"
+      :keywords="$t('cellular, metered connection, data saver, data usage, hotspot, 4G, 5G, LTE')"
     >
       <v-switch
         v-model="settings.wifiOnly"
@@ -200,6 +204,7 @@ async function bindTo(name: string | null) {
       v-if="canHide"
       :title="$t('Closing the window')"
       :hint="$t('The torrent engine runs inside the app, so closing the window is what stops a download. There is nothing left running behind it.')"
+      :keywords="$t('system tray, tray icon, minimise, minimize, run in background, quit, exit, close button')"
     >
       <v-switch
         v-model="settings.closeToTray"
@@ -216,6 +221,7 @@ async function bindTo(name: string | null) {
     <settings-section
       :title="$t('Casting')"
       :hint="$t('Play a film from one device on another one on this network. The film streams from the device that already has it, so nothing is downloaded twice and no account or server is involved.')"
+      :keywords="$t('cast, send to TV, play on another device, receiver, pairing, second screen')"
     >
       <v-switch
         v-model="settings.castReceive"
@@ -314,7 +320,7 @@ async function bindTo(name: string | null) {
       </p>
     </settings-section>
 
-    <settings-section :title="$t('Right now')" :hint="$t('Live totals from the torrent engine.')">
+    <settings-section :title="$t('Right now')" :hint="$t('Live totals from the torrent engine.')" :keywords="$t('statistics, stats, current speed, status, engine')">
       <div class="flex flex-wrap gap-6">
         <div>
           <div class="text-headline-small tabular-nums">

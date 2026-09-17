@@ -13,8 +13,10 @@ const route = useRoute()
 
 // The value is the path: the tab bar is really a set of links, and matching a
 // route against `localePath` is what saves a second table mapping the two.
+// `keywords` is for the settings search, which reads it off this file: the
+// theme grid is in no section to carry them (see settings/Section.vue).
 const TABS = [
-  { value: '/settings/appearance', title: () => $t('Theme'), icon: mdiPaletteOutline },
+  { value: '/settings/appearance', title: () => $t('Theme'), icon: mdiPaletteOutline, keywords: () => $t('dark mode, light mode, colour scheme, color scheme, palette, accent, skin, look') },
   { value: '/settings/appearance/background', title: () => $t('Background'), icon: mdiImageOutline },
   { value: '/settings/appearance/display', title: () => $t('Display'), icon: mdiMonitorScreenshot },
 ] as const

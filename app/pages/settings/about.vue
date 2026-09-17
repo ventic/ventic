@@ -23,7 +23,7 @@ function open(url: string) {
 
 <template>
   <div class="flex flex-col gap-8">
-    <settings-section title="Ventic">
+    <settings-section title="Ventic" :keywords="$t('version, about, app info')">
       <div class="flex items-center gap-4">
         <img src="/logo.svg" alt="" class="size-14">
         <div>
@@ -40,7 +40,7 @@ function open(url: string) {
       </div>
     </settings-section>
 
-    <settings-section :title="$t('Updates')">
+    <settings-section :title="$t('Updates')" :keywords="$t('check for updates, upgrade, new version, auto update, latest version')">
       <template v-if="updates.available">
         <p class="text-body-medium">
           {{ $t('Ventic {version} is out', { version: updates.available.version }) }}
@@ -82,7 +82,7 @@ function open(url: string) {
       </p>
     </settings-section>
 
-    <settings-section :title="$t('Film and TV data')">
+    <settings-section :title="$t('Film and TV data')" :keywords="$t('TMDB, The Movie Database, API key, API token, metadata, posters, artwork, missing images')">
       <!-- TMDB's terms: their logo, and a plain statement that they haven't
            endorsed any of this. Both have to stay. -->
       <img src="/tmdb.svg" alt="The Movie Database" class="h-5 w-auto self-start">
@@ -118,7 +118,7 @@ function open(url: string) {
       </tv-field>
     </settings-section>
 
-    <settings-section :title="$t('Built on')">
+    <settings-section :title="$t('Built on')" :keywords="$t('credits, open source, libraries, licences, licenses, acknowledgements, third party')">
       <v-list bg-color="transparent" class="rounded-lg bg-surface-container/40">
         <v-list-item
           v-for="item in credits"
@@ -131,7 +131,7 @@ function open(url: string) {
       </v-list>
     </settings-section>
 
-    <settings-section :title="$t('Legal')">
+    <settings-section :title="$t('Legal')" :keywords="$t('privacy, telemetry, tracking, licence, license, copyright, terms, MIT, GPL')">
       <p class="text-body-medium">
         {{ $t('Ventic hosts no content, indexes no content, and ships with no sources configured. It is a BitTorrent client with a player attached: it fetches only what you point it at, from servers you added yourself.') }}
       </p>

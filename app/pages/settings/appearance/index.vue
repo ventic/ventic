@@ -134,6 +134,7 @@ const spectrum = `linear-gradient(to right, ${Array.from({ length: 13 }, (_, i) 
       v-if="isGenerated(settings.theme)"
       :title="$t('Your colour')"
       :hint="$t('One colour, and Material\'s own generator works out the rest of the palette from it.')"
+      :keywords="$t('accent colour, accent color, custom colour, hue, Material You')"
     >
       <!-- The one slider left in Settings, and only off a television: a remote
            can't drive one, and the eight swatches under it are the same colours. -->
@@ -153,6 +154,7 @@ const spectrum = `linear-gradient(to right, ${Array.from({ length: 13 }, (_, i) 
     <settings-section
       :title="$t('Follow the artwork')"
       :hint="$t('Builds the palette from whatever is on screen instead, so the interface shifts as you move between titles. Your theme comes back the moment you turn it off.')"
+      :keywords="$t('dynamic colour, dynamic color, adaptive colours, match the poster, Material You')"
     >
       <v-switch
         v-model="settings.themeFromArt"

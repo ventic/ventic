@@ -31,7 +31,7 @@ const scale = computed({
 
 <template>
   <div class="flex flex-col gap-6">
-    <settings-section :title="$t('Size')" :hint="$t('How big the interface and the posters on the browse pages are.')">
+    <settings-section :title="$t('Size')" :hint="$t('How big the interface and the posters on the browse pages are.')" :keywords="$t('zoom, scale, bigger, smaller, larger, text size, font size, interface size, thumbnails, cards')">
       <settings-row :label="$t('App scale')">
         <v-select v-model="scale" :items="scales" density="comfortable" hide-details />
       </settings-row>
@@ -46,6 +46,7 @@ const scale = computed({
     <settings-section
       :title="$t('Performance')"
       :hint="$t('Worth turning on wherever the app feels heavy — a television or a set-top box most of all, where the graphics chip is a fraction of a laptop\'s.')"
+      :keywords="$t('lag, laggy, slow, stutter, smooth, animations, effects, transparency, blur, reduce motion, frame rate, fps')"
     >
       <v-switch
         v-model="settings.reduceEffects"

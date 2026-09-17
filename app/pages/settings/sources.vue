@@ -153,6 +153,7 @@ async function toggleStremio(on: boolean | null) {
     <settings-section
       :title="$t('Sources')"
       :hint="$t('Ventic searches nothing by itself. A source is a URL you add here, pointing at a server that answers with things to play. What a source offers, and whether you have the right to play it, is between you and whoever runs it.')"
+      :keywords="$t('addon, add-on, provider, indexer, Stremio, manifest, search results')"
     >
       <!-- Naming the protocol is what makes the empty box answerable: a user who
            knows the word can find an addon in one search. Naming a particular
@@ -218,6 +219,7 @@ async function toggleStremio(on: boolean | null) {
     <settings-section
       :title="$t('Preferred quality')"
       :hint="$t('Which copy to reach for when Ventic picks one for you. It is a preference and not a filter: a tier with nothing worth streaming in it falls through to the next, so asking for 4K on a title that has none still plays the best 1080p.')"
+      :keywords="$t('resolution, 4K, UHD, 2160p, 1080p, Full HD, 720p, HD, bitrate, default quality')"
     >
       <settings-segment v-model="settings.quality" :options="QUALITIES" />
       <p class="text-body-small opacity-70">
@@ -228,6 +230,7 @@ async function toggleStremio(on: boolean | null) {
     <settings-section
       :title="$t('Live TV')"
       :hint="$t('Channels come from an M3U playlist — the file every IPTV subscription and every public channel index hands out — or from the server, username and password an Xtream subscription sends. Add either here and the channels appear under Live TV.')"
+      :keywords="$t('IPTV, M3U, M3U8, Xtream Codes, channels, television, playlist')"
     >
       <v-list v-if="settings.playlists.length" bg-color="transparent" class="rounded-lg bg-surface-container/40">
         <!-- The name, not the URL. An Xtream playlist carries the account's
@@ -347,6 +350,7 @@ async function toggleStremio(on: boolean | null) {
     <settings-section
       :title="$t('Adding by link')"
       :hint="$t('A page can offer a ventic:// link that opens the app with a source ready to add. The app always asks first — a link can never change what Ventic searches on its own.')"
+      :keywords="$t('deep link, URL scheme, protocol handler, install link, one-click install')"
     >
       <v-switch
         v-model="stremioLinks"
@@ -396,6 +400,7 @@ async function toggleStremio(on: boolean | null) {
     <settings-section
       :title="$t('What a source has to speak')"
       :hint="$t('Any server implementing the Stremio addon protocol works — it is an open protocol with several independent implementations, and Ventic runs no code from a source, only reads its answer.')"
+      :keywords="$t('protocol, API, developer, specification')"
     >
       <p class="text-body-small opacity-70">
         <i18n-t keypath="Ventic asks a source for {movie}, or {series}, and expects a {streams} array back. Add several and their results are merged, with duplicates dropped and earlier sources preferred." tag="span">

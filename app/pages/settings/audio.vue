@@ -21,6 +21,7 @@ const boost = (value: number) => value ? `+${value} dB` : $t('Off')
     <settings-section
       :title="$t('Evening out the volume')"
       :hint="$t('Rides the volume for you, so the quiet lines come up and the loud scenes stop making you reach for the remote. This is what every film starts with — the player\'s own Audio panel changes the film you are watching and nothing else.')"
+      :keywords="$t('volume normalisation, normalization, normalize, loudness, dynamic range compression, DRC, night mode, too loud, too quiet')"
     >
       <settings-segment v-model="settings.audio.normalize" :options="LEVELLERS" />
       <p class="text-body-medium opacity-70">
@@ -31,6 +32,7 @@ const boost = (value: number) => value ? `+${value} dB` : $t('Off')
     <settings-section
       :title="$t('Dialogue')"
       :hint="$t('Lifts the speech out of the effects. On a 5.1 or 7.1 release this raises the centre channel, which is the channel the dialogue is on and nothing else is — the music and the effects around it are untouched.')"
+      :keywords="$t('voice, speech, clear voice, centre channel, center channel, can\'t hear, mumbling, dialog enhancement')"
     >
       <settings-row :label="$t('Boost')">
         <settings-stepper v-model="settings.audio.dialogue" :min="0" :max="MAX_DIALOGUE" :step="1" :format="boost" />
@@ -40,7 +42,7 @@ const boost = (value: number) => value ? `+${value} dB` : $t('Off')
       </p>
     </settings-section>
 
-    <settings-section :title="$t('What this works on')">
+    <settings-section :title="$t('What this works on')" :keywords="$t('passthrough, bitstream, AV receiver, soundbar, surround sound, 5.1, 7.1, Atmos')">
       <p class="text-body-medium opacity-70">
         {{ $t('Both settings apply to every release, whatever it was encoded with: Dolby, DTS and everything else is decoded before either of these sees it. Changes reach a film that is already playing straight away.') }}
       </p>

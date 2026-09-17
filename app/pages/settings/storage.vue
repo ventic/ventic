@@ -161,6 +161,7 @@ async function openFolder() {
       :hint="volumes
         ? $t('Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.')
         : $t('Where films and episodes are written. Torrents already downloaded stay where they are.')"
+      :keywords="$t('download location, save location, saved, directory, path, USB drive, SD card, external storage')"
     >
       <tv-field :label="$t('Folder')">
         <v-text-field
@@ -265,6 +266,7 @@ async function openFolder() {
     <settings-section
       :title="$t('Playing a torrent')"
       :hint="$t('Whether a film is downloaded whole and kept, or streamed through a small buffer that is deleted when you stop.')"
+      :keywords="$t('streaming, stream, download first, keep files, delete after watching, seeding, seed')"
     >
       <settings-segment v-model="settings.playMode" :options="MODES" />
       <p class="text-body-medium opacity-70">
@@ -290,6 +292,7 @@ async function openFolder() {
     <settings-section
       :title="$t('Streaming buffer')"
       :hint="$t('How much of a streamed film is kept on the device around what is playing. More ahead rides out a swarm that slows down; more behind is a rewind that doesn\'t have to be fetched again. Both are cut down to fit when the device is short of space.')"
+      :keywords="$t('buffering, preload, rewind, seek, cache ahead')"
     >
       <settings-row :label="$t('Ahead')">
         <settings-stepper v-model="settings.bufferAhead" :values="AHEAD" :format="minutes" />
@@ -302,6 +305,7 @@ async function openFolder() {
     <settings-section
       :title="$t('Cache limit')"
       :hint="$t('Films downloaded whole stay on disk until the space is needed, then the least recently played are deleted — and a film that won\'t fit even then streams instead. Zero lets that grow into whatever the drive has spare.')"
+      :keywords="$t('disk space, storage full, free up space, quota, clean up, maximum size')"
     >
       <settings-stepper v-model="capGb" :values="CAPS" :format="cap" />
 
@@ -350,6 +354,7 @@ async function openFolder() {
     <settings-section
       :title="$t('Watch history')"
       :hint="$t('Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.')"
+      :keywords="$t('clear history, reset progress, continue watching, favourites, favorites, watchlist, watched, privacy')"
     >
       <div class="text-body-small opacity-70">
         {{ $t('{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist', {

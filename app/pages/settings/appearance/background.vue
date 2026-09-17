@@ -53,6 +53,7 @@ async function choose(event: Event) {
     <settings-section
       :title="$t('What sits behind the app')"
       :hint="$t('Artwork from whatever you\'re looking at, a picture of your own, or nothing at all. A theme that comes with its own background sets this when you pick it.')"
+      :keywords="$t('wallpaper, backdrop, background image, photo, custom picture, artwork')"
     >
       <settings-segment v-model="ui.backdropMode" :options="BACKDROP_MODES" inline />
 
@@ -112,7 +113,7 @@ async function choose(event: Event) {
       </template>
     </settings-section>
 
-    <settings-section v-if="ui.backdropMode !== 'off'" :title="$t('Blur and tint')">
+    <settings-section v-if="ui.backdropMode !== 'off'" :title="$t('Blur and tint')" :keywords="$t('dim, darken, darker, opacity, transparency, frosted glass')">
       <settings-row :label="$t('Blur')">
         <settings-stepper v-model="ui.blur" :min="0" :max="80" :step="8" :format="px" />
       </settings-row>

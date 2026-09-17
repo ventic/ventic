@@ -95,6 +95,7 @@ const translated = computed(() =>
     <settings-section
       :title="$t('Language')"
       :hint="$t('What language the app is in, and what language film and show descriptions are fetched in.')"
+      :keywords="$t('locale, translation, translate, interface language, region')"
     >
       <component
         :is="picker"

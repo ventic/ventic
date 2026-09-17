@@ -240,7 +240,7 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   `check:library`, `check:player`, `check:swipe`, `check:boot`,
   `check:perf`, `check:android-downloads`, `check:updates`, `check:supporters`,
   `check:audio`, `check:people`, `check:cast`, `check:iptv`, `check:i18n`,
-  `check:macos`, `check:steps`).
+  `check:macos`, `check:steps`, `check:settings-search`).
   Add to those rather than pulling in a test framework. `bun run check` runs
   every one of them — it reads the names out of package.json rather than holding
   a list, so a check added today is in that sweep today. `bun run check:types` is
@@ -657,6 +657,22 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   there plus the page file. `pages/settings.vue` is the shell that holds the
   heading and `<nuxt-page>`; `pages/settings/index.vue` only redirects to the
   first section, because a section with two URLs is a section with none.
+- **The settings search reads the pages, not a list.** `utils/settings-search.ts`
+  loads `pages/settings/**` as raw source (a lazy `import.meta.glob`, fetched on
+  the first search) and makes every `<settings-section>` a result, found by the
+  `$t` keys inside it — title, hint, `:label`s, button text, prose. So a new
+  section is searchable the day it is written, and in all 72 languages, because
+  those keys already are; English keys stay searchable at a lower weight whatever
+  the app is in. Three things follow. What a section never *says* goes in its
+  `:keywords="$t('…')"` prop (never drawn; the theme grid, in no section, has
+  them on its row of `TABS`). A section a *platform* never draws is named in
+  `PLATFORM_SECTIONS` by its page's `v-if` variable, or it is offered and lands
+  on nothing. And the reader is regexes over the template, so keep a section's
+  title a `$t` call on the tag — `check:settings-search` fails when a page has a
+  section the search can't read, and holds first results in ten languages
+  (folding, unspaced scripts, inflected endings, typos). Matching is ours, not a
+  dependency: a fuzzy library scores one pattern against one string, and a query
+  here is several words spread over a section's title, labels and page name.
 - Vuetify's own labels come through vue-i18n once `@nuxtjs/i18n` is installed
   (vuetify-nuxt-module swaps its locale adapter), so each generated catalog
   *imports* them — `import { sl as $vuetify } from 'vuetify/locale'` — rather

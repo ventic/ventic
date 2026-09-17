@@ -79,6 +79,7 @@ const SAMPLE = computed(() => $t('It was the fall that killed him.\nNot the drop
     <settings-section
       :title="$t('Choosing subtitles')"
       :hint="$t('Turn subtitles on by themselves whenever a film starts, in the language you pick here.')"
+      :keywords="$t('captions, closed captions, CC, SDH, hearing impaired, default subtitle language, OpenSubtitles, turn off subtitles')"
     >
       <v-switch
         v-model="settings.autoSubs"
@@ -125,7 +126,7 @@ const SAMPLE = computed(() => $t('It was the fall that killed him.\nNot the drop
       </div>
     </settings-section>
 
-    <settings-section :title="$t('Text')">
+    <settings-section :title="$t('Text')" :keywords="$t('subtitle font, typeface, font size, subtitle size, bigger subtitles, text colour, text color')">
       <v-select v-model="settings.subs.font" :items="SUBTITLE_FONTS" :label="$t('Font')" />
 
       <settings-row :label="$t('Size')">
@@ -143,6 +144,7 @@ const SAMPLE = computed(() => $t('It was the fall that killed him.\nNot the drop
     <settings-section
       :title="$t('Legibility')"
       :hint="$t('An outline keeps white text on a white shot readable; a background box does it more bluntly.')"
+      :keywords="$t('border, shadow, contrast, readability, background box, subtitle position, move subtitles up, margin')"
     >
       <settings-row :label="$t('Outline')">
         <settings-stepper v-model="settings.subs.outline" :min="0" :max="5" :step="0.5" />

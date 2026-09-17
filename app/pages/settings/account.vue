@@ -128,6 +128,7 @@ function apply() {
     <settings-section
       :title="$t('Sync')"
       :hint="$t('Keep what you have watched in step across every screen you use Ventic on. There is no Ventic account and no server of ours in the middle: the app keeps one small file in storage you already have, and every device reads and writes that same file.')"
+      :keywords="$t('cloud, WebDAV, Nextcloud, ownCloud, across devices, synchronise, synchronize, multiple devices')"
     >
       <p class="text-body-medium max-w-prose opacity-70">
         {{ $t('Anything that speaks WebDAV works — a hosted drive, a Nextcloud or ownCloud, a NAS, or any server of your own that accepts a file. Paste the address of a folder there and Ventic keeps a {file} inside it. Nothing is uploaded until you do.', { file: 'ventic-sync.json' }) }}
@@ -252,6 +253,7 @@ function apply() {
     <settings-section
       :title="$t('Backup')"
       :hint="$t('Your watch history, favourites, watchlist, sources and every preference here, written to a single {file}. Carry it to another device and restore it there, or keep one against the day this one is wiped.', { file: FILE })"
+      :keywords="$t('export, import, restore, transfer, move to another device, new phone, save settings, reinstall')"
     >
       <div class="text-body-small opacity-70">
         {{ $t('{titles} titles watched · {favourites} favourites · {watchlist} on the watchlist', {

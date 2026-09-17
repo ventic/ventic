@@ -46,6 +46,7 @@ function open(url: string) {
     <settings-section
       :title="$t('Ko-fi')"
       :hint="$t('Ventic is free, has no ads, no account and nothing to sell. It costs money to sign, host and keep running — a donation is what covers that, and nothing in the app changes whether you give one or not.')"
+      :keywords="$t('donate, donation, tip, sponsor, support the project, pay, contribute, coffee')"
     >
       <v-card rounded="xl" class="panel flex flex-col gap-4 p-6">
         <template v-if="supporters?.goal">
@@ -117,7 +118,7 @@ function open(url: string) {
       {{ $t('The supporter list couldn\'t be loaded — the Ko-fi page above has the current one.') }}
     </p>
 
-    <settings-section :title="$t('Other ways to help')">
+    <settings-section :title="$t('Other ways to help')" :keywords="$t('contribute, bug report, translate, GitHub, feedback, issue')">
       <p class="text-body-medium">
         {{ $t('Money is the least of it. Reporting a bug with what you did before it happened, translating the app into a language you actually speak, or telling somebody it exists are all worth more than a coffee.') }}
       </p>

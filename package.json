@@ -35,6 +35,7 @@
     "check:supporters": "bun scripts/check-supporters.ts",
     "check:steps": "bun scripts/check-steps.ts",
     "check:sync": "bun scripts/check-sync.ts",
+    "check:settings-search": "bun scripts/check-settings-search.ts",
     "check:subtitles": "bun scripts/check-subtitles.ts",
     "check:swipe": "bun scripts/check-swipe.ts",
     "check:theme": "bun scripts/check-theme.ts",
