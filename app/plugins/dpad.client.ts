@@ -331,13 +331,18 @@ export default defineNuxtPlugin(() => {
   /**
    * Is a caret in play? A readonly field has no caret to keep — Vuetify builds
    * its selects out of an `<input readonly>`, and treating that as typing is
-   * what left a remote unable to move sideways off a dropdown at all.
+   * what left a remote unable to move sideways off a dropdown at all. Nor does
+   * a checkbox, which is what every `v-checkbox` and `v-switch` focuses: read
+   * as a field, the Add button beside the Xtream form's "Show password" could
+   * not be reached from it.
    */
   function typing() {
     const el = document.activeElement
     return el instanceof HTMLElement
       && (el.isContentEditable
-        || ((el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && !(el as HTMLInputElement).readOnly))
+        || ((el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')
+          && !(el as HTMLInputElement).readOnly
+          && !['checkbox', 'radio'].includes((el as HTMLInputElement).type)))
   }
 
   function markDpad() {

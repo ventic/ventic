@@ -317,9 +317,16 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   (the bar is left alone: a live HLS really does have a seekable window, which
   is a DVR and not a bug). The list is an **M3U playlist**, because that is what
   both halves of the world speak — a public channel index publishes one, every
-  IPTV subscription hands one out, and an Xtream panel's
-  `get.php?…&type=m3u_plus` *is* an M3U, so pasting that needs no second client
-  and no credentials form. The one thing it cost is a dependency: a playlist
+  IPTV subscription hands one out. An **Xtream login** (server, username,
+  password — how most subscriptions actually arrive) is stored as its
+  `player_api.php?username=…&password=…` URL in the *same* list, and
+  `fetchChannels` takes the JSON route for it (`isXtream`): nothing past that
+  can tell the two apart. It reads the API rather than the panel's own
+  `get.php` M3U because that file carries every film and episode too — on a
+  large subscription 31 MB and ~160k "channels" against 6 MB and 20k, 5x slower
+  to load — and because a wrong password or an expired account is an HTTP 200
+  that only `user_info` can tell from an empty list. A pasted `get.php` still
+  loads as an M3U. The one thing it cost is a dependency: a playlist
   host is somebody's panel and sends no `Access-Control-Allow-Origin`, so that
   fetch goes through `tauri-plugin-http`, where CORS does not apply. The streams
   never do — mpv and ExoPlayer open the channel URL themselves, which is why
@@ -329,8 +336,9 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   an Xtream URL carries the account's password — and the Sources line holds
   here too: no default playlist, no bundled index, no link to one anywhere in
   the repo. Deliberately absent, each a project rather than a function: EPG
-  (XMLTV) and a guide, catch-up and DVR, and the Xtream JSON API with its VOD
-  library. `bun run check:iptv` holds the parser and those two invisible seams.
+  (XMLTV) and a guide, catch-up and DVR, and Xtream's VOD and series
+  libraries. `bun run check:iptv` holds both parsers and those two invisible
+  seams.
 - **Casting is the `url` path pointed sideways.** "Play this on the TV" sends a
   *URL*, never a torrent, so the receiving device plays it exactly as it plays a
   debrid link or a live channel — `?url=` in `watch.vue`, not a line of the

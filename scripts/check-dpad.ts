@@ -136,6 +136,10 @@ const manifest = readFileSync(
 )
 const plugin = readFileSync(new URL('../app/plugins/dpad.client.ts', import.meta.url), 'utf8')
 
+// A checkbox or a switch has focus and no caret. Counted as typing, left/right
+// off one did nothing, and a button beside it was out of a remote's reach.
+assert.match(plugin, /\['checkbox', 'radio'\]\.includes\(/, 'typing() must not treat a checkbox as a field with a caret')
+
 // The name Kotlin evaluates is a string on one side and an assignment on the
 // other, so nothing but this notices when one of them is renamed. A miss is
 // silent and total: `window.__tvBack` comes back undefined, which reads as "the

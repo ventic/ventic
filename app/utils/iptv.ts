@@ -8,16 +8,18 @@
  *
  * The list comes from an **M3U playlist**, which is what both halves of the
  * world speak: the free public indexes publish one, and every paid IPTV
- * subscription hands out one. An Xtream Codes panel is included in that — its
- * `get.php?…&type=m3u_plus` URL *is* an M3U, so pasting that needs no second
- * client and no credentials form.
+ * subscription hands out one — or from an **Xtream login**, which is how most
+ * subscriptions actually arrive (a server, a username, a password). That login
+ * is stored as its `player_api.php` URL in the same list, so everything past
+ * `fetchChannels` cannot tell the two apart. See `xtreamChannels` for why it
+ * is read over JSON rather than through the panel's own M3U.
  *
  * The same line as Sources: the app ships with no playlists, suggests none, and
  * bundles no directory of them. A playlist is a URL the user pastes.
  *
  * Left out on purpose, and each of them is a project rather than a function:
- * EPG (XMLTV) and a programme guide, catch-up and DVR, and the Xtream JSON API
- * with its VOD library. None is needed to watch a channel.
+ * EPG (XMLTV) and a programme guide, catch-up and DVR, and Xtream's VOD and
+ * series libraries. None is needed to watch a channel.
  */
 import { fetch as tauriFetch } from '@tauri-apps/plugin-http'
 
@@ -46,6 +48,14 @@ export interface Channel {
 function get(url: string) {
   const f = '__TAURI_INTERNALS__' in globalThis ? tauriFetch : globalThis.fetch
   return f(url, { signal: AbortSignal.timeout(30_000) })
+}
+
+/** `get`, and a failure worded by the playlist it came from — never its URL. */
+async function read(url: string, playlist = url) {
+  const res = await get(url)
+  if (!res.ok)
+    throw new Error($t('{playlist} answered HTTP {status}', { playlist: playlistName(playlist), status: res.status }))
+  return res
 }
 
 /** `tvg-id="x" group-title="A B"` — quoted values, so a space inside one is safe. */
@@ -142,6 +152,8 @@ export function parseM3u(text: string, from = '0'): Channel[] {
 export function playlistName(url: string) {
   try {
     const u = new URL(url)
+    if (isXtream(url))
+      return u.host
     return u.host + (u.pathname === '/' ? '' : u.pathname)
   }
   catch {
@@ -180,18 +192,140 @@ export function filterChannels(channels: Channel[], query: string, group: string
     && (!q || c.name.toLowerCase().includes(q)))
 }
 
+// --- Xtream ----------------------------------------------------------------------
+
+/** `<server>/player_api.php?username=…&password=…` — how a login is stored. */
+export function isXtream(url: string) {
+  try {
+    const u = new URL(url)
+    return u.pathname.endsWith('/player_api.php') && u.searchParams.has('username') && u.searchParams.has('password')
+  }
+  catch {
+    return false
+  }
+}
+
+/**
+ * The three fields a provider sends, as the one string `settings.playlists`
+ * holds. The server is taken however it was typed — `host:port`, with or
+ * without a scheme, with or without a trailing slash or a stray `/get.php` —
+ * because it is copied out of an email. `null` for anything that isn't http(s).
+ */
+export function xtreamUrl(server: string, username: string, password: string) {
+  const typed = server.trim()
+  let u: URL
+  try {
+    u = new URL(/^[a-z][\w+.-]*:\/\//i.test(typed) ? typed : `http://${typed}`)
+  }
+  catch {
+    return null
+  }
+  if (!/^https?:$/.test(u.protocol) || !username.trim() || !password)
+    return null
+  // Anything after the host is the panel's own page (`/c/`, `/get.php`), never
+  // a prefix the API lives under.
+  const api = new URL('/player_api.php', u.origin)
+  api.searchParams.set('username', username.trim())
+  api.searchParams.set('password', password)
+  return api.href
+}
+
+interface XtreamStream {
+  name?: string
+  stream_id?: number | string
+  stream_icon?: string
+  category_id?: number | string | null
+}
+
+/**
+ * A panel's live streams -> channels. Pure, so the check can hold it.
+ *
+ * Streams go out as `.ts` unless the account says it may not have them: that
+ * is what every Xtream player defaults to, and a continuous transport stream is
+ * one connection for as long as the channel plays, where HLS is a playlist
+ * re-read every few seconds against a panel that counts connections.
+ */
+export function parseXtream(
+  url: string,
+  categories: unknown,
+  streams: unknown,
+  formats: unknown,
+  from = '0',
+): Channel[] {
+  const api = new URL(url)
+  const user = encodeURIComponent(api.searchParams.get('username')!)
+  const pass = encodeURIComponent(api.searchParams.get('password')!)
+  const allowed = Array.isArray(formats) ? formats : []
+  const ext = !allowed.length || allowed.includes('ts') ? 'ts' : 'm3u8'
+
+  const group = new Map<string, string>()
+  for (const c of Array.isArray(categories) ? categories : [])
+    group.set(String(c?.category_id), String(c?.category_name ?? ''))
+
+  const out: Channel[] = []
+  for (const s of (Array.isArray(streams) ? streams : []) as XtreamStream[]) {
+    const name = String(s?.name ?? '').trim()
+    // Panels pad their lists with rows of box characters exactly as M3Us do,
+    // and a stream with no id is nothing anyone can open.
+    if (s?.stream_id == null || s.stream_id === '' || !READABLE.test(name))
+      continue
+    out.push({
+      id: `${from}:${out.length}`,
+      name,
+      logo: s.stream_icon ?? '',
+      group: group.get(String(s.category_id)) ?? '',
+      // The host that was typed, not `server_info.url`: a panel behind a load
+      // balancer redirects the stream request itself, and one that reports a
+      // LAN address or a stale domain there would otherwise break every channel.
+      url: `${api.origin}/live/${user}/${pass}/${s.stream_id}.${ext}`,
+    })
+  }
+  return out
+}
+
+async function json(url: string, action?: string) {
+  const u = new URL(url)
+  if (action)
+    u.searchParams.set('action', action)
+  // A panel answers a bad request with an HTML page as often as with JSON.
+  return (await read(u.href, url)).json().catch(() => null)
+}
+
+/**
+ * One Xtream login -> its live channels.
+ *
+ * Over `player_api.php` rather than the panel's own `get.php` M3U, for three
+ * reasons. Most panels put every film and episode in that M3U as well, so a
+ * large subscription is a file tens of megabytes long whose "channels" are
+ * mostly movies. Providers throttle or switch off `get.php` because generating
+ * it is what loads their server, and leave the API alone because every Xtream
+ * app is built on it. And a wrong password is an HTTP 200 either way — only
+ * the API says so in a form that can be told apart from an empty list.
+ */
+export async function xtreamChannels(url: string, from = '0') {
+  const [account, categories, streams] = await Promise.all([
+    json(url),
+    json(url, 'get_live_categories'),
+    json(url, 'get_live_streams'),
+  ])
+  const info = account?.user_info
+  if (!info || Number(info.auth) !== 1)
+    throw new Error($t('{playlist} did not accept that username and password', { playlist: playlistName(url) }))
+  // `Active` is the only status that plays; `Expired`, `Banned` and `Disabled`
+  // all authenticate and hand back an empty list.
+  if (info.status && info.status !== 'Active')
+    throw new Error($t('{playlist} says this account is {status}', { playlist: playlistName(url), status: String(info.status).toLowerCase() }))
+  return parseXtream(url, categories, streams, info.allowed_output_formats, from)
+}
+
 /**
  * Every configured playlist, merged and in the order they were added. One being
  * down costs its channels and not the page — the same deal `findReleases` gives
  * a source that doesn't answer.
  */
 export async function fetchChannels(urls: string[]): Promise<Channel[]> {
-  const results = await Promise.allSettled(urls.map(async (url, i) => {
-    const res = await get(url)
-    if (!res.ok)
-      throw new Error($t('{playlist} answered HTTP {status}', { playlist: playlistName(url), status: res.status }))
-    return parseM3u(await res.text(), String(i))
-  }))
+  const results = await Promise.allSettled(urls.map(async (url, i) =>
+    isXtream(url) ? xtreamChannels(url, String(i)) : parseM3u(await (await read(url)).text(), String(i))))
 
   const channels = results.flatMap(r => r.status === 'fulfilled' ? r.value : [])
   // Some channels is a working page. None, with something rejected, reads as an

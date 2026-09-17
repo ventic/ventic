@@ -53,15 +53,42 @@ function remove(value: string) {
 const playlist = ref('')
 const playlistError = ref('')
 
+/**
+ * Most subscriptions arrive as a server, a username and a password rather than
+ * a link, so that is a form of its own — which stores the same kind of string
+ * the link box does (see `xtreamUrl`).
+ */
+const PLAYLIST_KINDS = [
+  { value: 'm3u', title: () => $t('Playlist link') },
+  { value: 'xtream', title: () => $t('Xtream login') },
+] as const
+const kind = ref<'m3u' | 'xtream'>('m3u')
+const xtream = reactive({ server: '', username: '', password: '' })
+const showXtreamPassword = ref(false)
+
+watch(kind, () => playlistError.value = '')
+
 function addPlaylist() {
-  const value = playlist.value.trim()
-  if (!value)
-    return
-  // Only a URL, and only http(s): the fetch goes through Rust, and a `file://`
-  // or `javascript:` here would be asking it to open something else entirely.
-  if (!/^https?:\/\//i.test(value)) {
-    playlistError.value = $t('A playlist is an http:// or https:// link to an M3U file.')
-    return
+  let value: string | null
+  if (kind.value === 'xtream') {
+    if (!xtream.server.trim())
+      return
+    value = xtreamUrl(xtream.server, xtream.username, xtream.password)
+    if (!value) {
+      playlistError.value = $t('An Xtream login needs the server address, a username and a password.')
+      return
+    }
+  }
+  else {
+    value = playlist.value.trim()
+    if (!value)
+      return
+    // Only a URL, and only http(s): the fetch goes through Rust, and a `file://`
+    // or `javascript:` here would be asking it to open something else entirely.
+    if (!/^https?:\/\//i.test(value)) {
+      playlistError.value = $t('A playlist is an http:// or https:// link to an M3U file.')
+      return
+    }
   }
   if (settings.playlists.includes(value)) {
     playlistError.value = $t('That playlist is already in the list.')
@@ -69,6 +96,7 @@ function addPlaylist() {
   }
   settings.playlists = [...settings.playlists, value]
   playlist.value = ''
+  Object.assign(xtream, { server: '', username: '', password: '' })
   playlistError.value = ''
 }
 
@@ -199,13 +227,18 @@ async function toggleStremio(on: boolean | null) {
 
     <settings-section
       :title="$t('Live TV')"
-      :hint="$t('Channels come from an M3U playlist — the file every IPTV subscription and every public channel index hands out. Paste its link here and the channels appear under Live TV. An Xtream server counts: its get.php address is an M3U, so paste that.')"
+      :hint="$t('Channels come from an M3U playlist — the file every IPTV subscription and every public channel index hands out — or from the server, username and password an Xtream subscription sends. Add either here and the channels appear under Live TV.')"
     >
       <v-list v-if="settings.playlists.length" bg-color="transparent" class="rounded-lg bg-surface-container/40">
         <!-- The name, not the URL. An Xtream playlist carries the account's
              password in its query string, and this list gets read across a
              room. -->
-        <v-list-item v-for="value in settings.playlists" :key="value" :title="playlistName(value)">
+        <v-list-item
+          v-for="value in settings.playlists"
+          :key="value"
+          :title="playlistName(value)"
+          :subtitle="isXtream(value) ? $t('Xtream login') : undefined"
+        >
           <template #append>
             <v-btn icon size="small" variant="text" color="on-surface" @click="removePlaylist(value)">
               <v-icon :icon="mdiDeleteOutline" size="20" />
@@ -222,7 +255,71 @@ async function toggleStremio(on: boolean | null) {
         </p>
       </div>
 
-      <div class="flex items-start gap-2">
+      <settings-segment v-model="kind" :options="PLAYLIST_KINDS" inline />
+
+      <template v-if="kind === 'xtream'">
+        <div class="flex flex-wrap gap-3">
+          <tv-field :label="$t('Server')" class="min-w-56 flex-[2]">
+            <v-text-field
+              v-model="xtream.server"
+              :label="$t('Server')"
+              placeholder="http://…:8080"
+              persistent-placeholder
+              variant="solo-filled"
+              density="comfortable"
+              rounded="lg"
+              flat
+              hide-details
+              autocapitalize="off"
+              autocorrect="off"
+              spellcheck="false"
+              @update:model-value="playlistError = ''"
+            />
+          </tv-field>
+          <tv-field :label="$t('Username')" class="min-w-44 flex-1">
+            <v-text-field
+              v-model="xtream.username"
+              :label="$t('Username')"
+              variant="solo-filled"
+              density="comfortable"
+              rounded="lg"
+              flat
+              hide-details
+              autocapitalize="off"
+              autocorrect="off"
+              spellcheck="false"
+              @update:model-value="playlistError = ''"
+            />
+          </tv-field>
+          <tv-field :label="$t('Password')" class="min-w-44 flex-1">
+            <v-text-field
+              v-model="xtream.password"
+              :label="$t('Password')"
+              :type="showXtreamPassword ? 'text' : 'password'"
+              variant="solo-filled"
+              density="comfortable"
+              rounded="lg"
+              flat
+              hide-details
+              @keydown.enter="addPlaylist"
+              @update:model-value="playlistError = ''"
+            />
+          </tv-field>
+        </div>
+        <p v-if="playlistError" class="text-body-small text-error">
+          {{ playlistError }}
+        </p>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <!-- A checkbox rather than an eye inside the field, as on the sync
+               login: one less thing for a d-pad crossing the row to fall into. -->
+          <v-checkbox v-model="showXtreamPassword" density="compact" hide-details :label="$t('Show password')" />
+          <v-btn :prepend-icon="mdiPlus" variant="tonal" size="large" @click="addPlaylist">
+            {{ $t('Add') }}
+          </v-btn>
+        </div>
+      </template>
+
+      <div v-else class="flex items-start gap-2">
         <tv-field :label="$t('Playlist URL')" class="flex-1">
           <v-text-field
             v-model="playlist"

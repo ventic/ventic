@@ -9,7 +9,7 @@
 import assert from 'node:assert'
 import { readFileSync } from 'node:fs'
 import process from 'node:process'
-import { channelGroups, channelKey, fetchChannels, filterChannels, parseM3u, playlistName } from '../app/utils/iptv'
+import { channelGroups, channelKey, fetchChannels, filterChannels, isXtream, parseM3u, parseXtream, playlistName, xtreamChannels, xtreamUrl } from '../app/utils/iptv'
 import './i18n-stub'
 
 const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
@@ -86,6 +86,75 @@ assert.match(
   /SECRET = new Set\(\[[^\]]*\$\{PREFIX\}playlists/,
   'ventic.playlists holds a password and must be in backup.ts\'s SECRET set',
 )
+
+// --- An Xtream login ------------------------------------------------------------
+
+// Three fields copied out of a provider's email, typed any of the ways they get
+// typed, all land on the same stored string — or the duplicate check misses.
+const api = 'http://panel.invalid:8080/player_api.php?username=bob&password=hunter2'
+for (const server of ['panel.invalid:8080', 'http://panel.invalid:8080/', ' http://panel.invalid:8080/get.php?username=x ', 'http://panel.invalid:8080/c/'])
+  assert.equal(xtreamUrl(server, ' bob ', 'hunter2'), api, `server typed as "${server}"`)
+assert.equal(xtreamUrl('https://panel.invalid', 'bob', 'p'), 'https://panel.invalid/player_api.php?username=bob&password=p')
+assert.equal(xtreamUrl('panel.invalid', 'bob', ''), null, 'no password is no login')
+assert.equal(xtreamUrl('ftp://panel.invalid', 'bob', 'p'), null, 'the fetch goes through Rust — http(s) only')
+assert.ok(isXtream(api))
+assert.ok(!isXtream('http://panel.invalid:8080/get.php?username=bob&password=hunter2&type=m3u_plus'), 'a pasted get.php stays an M3U')
+assert.ok(!isXtream('not a url'))
+// On screen it is the server, and nothing of the account.
+assert.equal(playlistName(api), 'panel.invalid:8080')
+
+const categories = [{ category_id: '1', category_name: 'UK' }, { category_id: 2, category_name: 'Sports' }]
+const streams = [
+  { name: 'BBC One', stream_id: 11, stream_icon: 'http://example.invalid/bbc.png', category_id: '1' },
+  { name: '═══════════', stream_id: 12, category_id: '2' },
+  { name: 'Sky Sports', stream_id: '13', category_id: 2 },
+  { name: 'No id', category_id: '1' },
+  { name: 'Orphan', stream_id: 14, category_id: '99' },
+]
+const xlive = parseXtream(api, categories, streams, ['m3u8', 'ts'])
+assert.deepEqual(xlive.map(c => c.name), ['BBC One', 'Sky Sports', 'Orphan'], 'decoration and id-less rows are dropped')
+assert.deepEqual(xlive.map(c => c.group), ['UK', 'Sports', ''], 'a category id is a number in one panel and a string in the next')
+assert.equal(xlive[0]!.url, 'http://panel.invalid:8080/live/bob/hunter2/11.ts')
+assert.equal(xlive[0]!.logo, 'http://example.invalid/bbc.png')
+assert.equal(xlive[1]!.logo, '')
+assert.equal(new Set(xlive.map(c => c.id)).size, 3)
+// An account that may not have .ts gets HLS; one that says nothing gets .ts.
+assert.match(parseXtream(api, [], streams, ['m3u8'])[0]!.url, /\.m3u8$/)
+assert.match(parseXtream(api, [], streams, undefined)[0]!.url, /\.ts$/)
+// A credential with a slash in it would otherwise be two path segments.
+assert.equal(parseXtream(xtreamUrl('panel.invalid', 'a/b', 'p w')!, [], streams, [])[0]!.url, 'http://panel.invalid/live/a%2Fb/p%20w/11.ts')
+// A panel's error page instead of JSON is no channels, not a throw.
+assert.deepEqual(parseXtream(api, null, { error: 'flood' }, null), [])
+
+// A wrong password and an expired account are both HTTP 200. Only user_info
+// tells them from an empty list, and each has to reach the page as a sentence.
+async function panel(account: unknown, run: () => Promise<unknown>) {
+  const realFetch = globalThis.fetch
+  globalThis.fetch = (async (input: string) => {
+    const action = new URL(input).searchParams.get('action')
+    const body = action === 'get_live_streams' ? streams : action === 'get_live_categories' ? categories : account
+    return new Response(JSON.stringify(body))
+  }) as typeof fetch
+  try {
+    return await run()
+  }
+  finally {
+    globalThis.fetch = realFetch
+  }
+}
+await panel({ user_info: { auth: 0 } }, () => assert.rejects(xtreamChannels(api), (e: Error) => {
+  assert.match(e.message, /did not accept/)
+  assert.ok(!e.message.includes('hunter2'), 'the error names the server, never the password')
+  return true
+}))
+await panel({ user_info: { auth: 1, status: 'Expired' } }, () =>
+  assert.rejects(xtreamChannels(api), /says this account is expired/))
+await panel({ user_info: { auth: 1, status: 'Active', allowed_output_formats: ['ts'] } }, async () => {
+  // Through fetchChannels, beside nothing else: the login and an M3U share one list.
+  const got = await fetchChannels([api])
+  assert.equal(got.length, 3)
+  assert.equal(got[0]!.group, 'UK')
+})
 
 // --- Favourites are filed by name, never by URL --------------------------------
 

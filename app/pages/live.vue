@@ -131,7 +131,7 @@ const failure = computed(() => error.value ? String(error.value.message ?? error
             {{ $t('No channels yet') }}
           </div>
           <p class="text-body-medium opacity-70">
-            {{ $t('Live TV plays from an M3U playlist — the link an IPTV subscription or a public channel index gives you. Add one and its channels show up here.') }}
+            {{ $t('Live TV plays from an M3U playlist or an Xtream login — what an IPTV subscription or a public channel index gives you. Add one and its channels show up here.') }}
           </p>
           <v-btn variant="tonal" :prepend-icon="mdiPlaylistPlus" :to="localePath('/settings/sources')">
             {{ $t('Add a playlist') }}
