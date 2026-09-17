@@ -9,8 +9,8 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use librqbit::{
-	api::Api, dht::DhtPersistenceConfig, http_api::HttpApi, DhtSessionConfig, Session,
-	SessionOptions, SessionPersistenceConfig
+	api::Api, dht::DhtPersistenceConfig, http_api::HttpApi, limits::LimitsConfig, DhtSessionConfig,
+	Session, SessionOptions, SessionPersistenceConfig
 };
 use librqbit_dualstack_sockets::TcpListener;
 
@@ -34,6 +34,9 @@ mod awake;
 
 /// Streaming a film through a buffer instead of downloading it whole.
 mod buffer;
+
+/// Binding the engine to a VPN's interface, so torrents stop when it drops.
+mod vpn;
 
 /// mpv's IPC socket, shared by the two backends that have one.
 #[cfg(any(target_os = "linux", target_os = "macos"))]
@@ -556,7 +559,9 @@ impl librqbit::storage::StorageFactory for LargeFileStorageFactory {
 const TORRENT_API_ADDR: &str = "127.0.0.1:3030";
 
 /// Boot a librqbit session and expose its HTTP API (which includes the
-/// range-capable streaming endpoint). Runs forever on the tokio runtime.
+/// range-capable streaming endpoint). Runs forever on the tokio runtime — and
+/// starts the session over, API and all, whenever what it is bound to changes
+/// (see vpn.rs).
 async fn run_torrent_server(
 	download_dir: std::path::PathBuf,
 	session_dir: std::path::PathBuf,
@@ -565,7 +570,7 @@ async fn run_torrent_server(
 	// Remember torrents across restarts, so a background download resumes where
 	// it left off and the downloads page isn't empty on every launch. The folder
 	// is ours: the defaults are shared with any real rqbit install on the machine.
-	let opts = |with_dht: bool| SessionOptions {
+	let opts = |with_dht: bool, binding: &vpn::Binding, ratelimits: LimitsConfig| SessionOptions {
 		persistence: Some(SessionPersistenceConfig::Json { folder: Some(session_dir.clone()) }),
 		fastresume: true,
 		// Films are routinely bigger than 2 GiB and a TV box is 32-bit. Boxed
@@ -598,53 +603,81 @@ async fn run_torrent_server(
 		listen: (with_dht && cfg!(any(target_os = "android", target_os = "linux"))).then(|| {
 			librqbit::ListenerOptions { enable_upnp_port_forwarding: true, ..Default::default() }
 		}),
+		bind_device_name: binding.device_name(),
+		ratelimits,
 		..Default::default()
 	};
 
-	let session = match Session::new_with_opts(download_dir.clone(), opts(true)).await {
-		Ok(session) => session,
-		Err(e) => {
-			// A DHT or a port that won't start must not take the rest of the
-			// engine with it. The HTTP API below is what serves playback and the
-			// downloads UI, and trackers alone still find peers for most torrents,
-			// so come up degraded rather than leaving the app with no engine at all.
-			eprintln!("[ventic] torrent session failed to start ({e:#}) — retrying without DHT or a port");
-			Session::new_with_opts(download_dir, opts(false)).await?
-		}
-	};
-	let api = Api::new(session, None, None);
-	// Casting puts a second, read-only HTTP server in front of this same session
-	// (see cast.rs). Handed over here because this is the only place with one.
-	cast::set_engine(api.clone());
-	// A film streamed last time is a torrent nobody is watching now — see buffer.rs.
-	buffer::sweep(&api, &streams_dir).await;
-	tokio::spawn(buffer::run(api.clone()));
+	// The page sends speed limits only when they change, and they live in the
+	// session — so a session started over is handed the last one's.
+	let mut ratelimits = LimitsConfig::default();
+	let mut again = false;
+	loop {
+		let mut binding = vpn::current();
 
-	let addr: std::net::SocketAddr = TORRENT_API_ADDR.parse()?;
-	// On a dev hot-restart the previous process can still hold the port for a
-	// moment. Binding once and giving up leaves the app running with no engine
-	// ("Engine offline" and nothing plays), so retry briefly before failing.
-	let mut listener = None;
-	for attempt in 0..20 {
-		match TcpListener::bind_tcp(addr, Default::default()) {
-			Ok(l) => {
-				listener = Some(l);
-				break;
-			}
+		// No DHT or port while the tunnel is down: bound to loopback nothing would
+		// answer them, and a DHT that hears nothing times out the nodes it saves.
+		let session = match Session::new_with_opts(download_dir.clone(), opts(binding.online(), &binding, ratelimits)).await {
+			Ok(session) => session,
 			Err(e) => {
-				if attempt == 19 {
-					return Err(e.into());
+				// A DHT or a port that won't start must not take the rest of the
+				// engine with it. The HTTP API below is what serves playback and the
+				// downloads UI, and trackers alone still find peers for most torrents,
+				// so come up degraded rather than leaving the app with no engine at all.
+				// The binding is asked again, so a tunnel that went while this one
+				// started comes back as loopback, not as an interface that isn't there.
+				eprintln!("[ventic] torrent session failed to start ({e:#}) — retrying without DHT or a port");
+				binding = vpn::current();
+				Session::new_with_opts(download_dir.clone(), opts(false, &binding, ratelimits)).await?
+			}
+		};
+		let api = Api::new(session.clone(), None, None);
+		// A film streamed last time is a torrent nobody is watching now — see
+		// buffer.rs. Not after a restart, where it is the film on screen.
+		if !again {
+			buffer::sweep(&api, &streams_dir).await;
+		}
+		// Casting puts a second, read-only HTTP server in front of this same session
+		// (see cast.rs). Handed over here because this is the only place with one.
+		cast::set_engine(api.clone()).await;
+
+		let addr: std::net::SocketAddr = TORRENT_API_ADDR.parse()?;
+		// On a dev hot-restart the previous process can still hold the port for a
+		// moment. Binding once and giving up leaves the app running with no engine
+		// ("Engine offline" and nothing plays), so retry briefly before failing.
+		let mut listener = None;
+		for attempt in 0..20 {
+			match TcpListener::bind_tcp(addr, Default::default()) {
+				Ok(l) => {
+					listener = Some(l);
+					break;
 				}
-				eprintln!("[ventic] port {TORRENT_API_ADDR} busy, retrying… ({e})");
-				tokio::time::sleep(Duration::from_millis(500)).await;
+				Err(e) => {
+					if attempt == 19 {
+						return Err(e.into());
+					}
+					eprintln!("[ventic] port {TORRENT_API_ADDR} busy, retrying… ({e})");
+					tokio::time::sleep(Duration::from_millis(500)).await;
+				}
 			}
 		}
-	}
-	let listener = listener.expect("loop either binds or returns early");
+		let listener = listener.expect("loop either binds or returns early");
 
-	HttpApi::new(api, None)
-		.make_http_api_and_run(listener, None)
-		.await
+		let server = HttpApi::new(api.clone(), None).make_http_api_and_run(listener, None);
+		tokio::select! {
+			result = server => return result,
+			// Never ends. Here so that a restart takes it down with the session it reads.
+			_ = buffer::run(api, again) => {}
+			_ = vpn::changed(&binding) => {}
+		}
+
+		// The server is dropped by here, and 3030 with it: a film playing through it
+		// loses its connection for the second or two a restart takes.
+		eprintln!("[ventic] network interface changed — restarting the torrent engine");
+		ratelimits = session.ratelimits.get_config();
+		session.stop().await;
+		again = true;
+	}
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -739,7 +772,9 @@ pub fn run() {
 			cast::cast_firewall_hint,
 			awake::keep_awake,
 			buffer::stream_buffer,
-			buffer::stream_folder
+			buffer::stream_folder,
+			vpn::engine_interfaces,
+			vpn::set_engine_interface
 		])
 		.setup(|app| {
 			// The installers write the scheme association (registry keys on
@@ -833,6 +868,9 @@ pub fn run() {
 			std::fs::create_dir_all(&download_dir).ok();
 			std::fs::create_dir_all(&session_dir).ok();
 			std::fs::create_dir_all(&streams_dir).ok();
+			// Before the engine, or it starts unbound and announces from the real
+			// address until the setting is read.
+			vpn::load(app.handle());
 
 			tauri::async_runtime::spawn(async move {
 				if let Err(e) = run_torrent_server(download_dir, session_dir, streams_dir).await {

@@ -115,6 +115,28 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   Not on Windows or macOS, where binding one puts a firewall dialog up
   at launch; turning it on there is removing that `cfg!`. A bind that fails
   takes the degraded no-DHT path, never the engine down.
+- **The VPN kill switch is a bind, not a detector.** *Settings → Network → VPN*
+  ties the engine to one interface (librqbit's `bind_device_name`:
+  `SO_BINDTODEVICE`, `IP_BOUND_IF`), so when the tunnel drops there is simply
+  no route out — nothing polls for a leak, because anything that notices one
+  does so after the tracker has logged it. `src-tauri/src/vpn.rs` is the two
+  things a bind doesn't do. An interface that isn't there binds to **loopback**,
+  never to nothing (`Binding::device_name` — `None` means every interface), so
+  the engine still starts and still serves what's on disk. And a reconnecting
+  VPN usually recreates its device under a new index, which the DHT's and uTP's
+  sockets stay bound to for good, so `run_torrent_server` is a **loop** that
+  starts the whole session over, 3030 included, when the index or the setting
+  moves. Everything that held the old session has to hear about the new one:
+  `cast::set_engine` puts a running mirror back up, `buffer::run(api, again)`
+  puts stream windows back (the session restores torrents under the same ids,
+  but as downloads) and must not `sweep`, and the speed limits are carried
+  across because the page only sends them on a change. The setting is a file in
+  the app data folder, not a `ventic.` key: the engine starts before any page,
+  and a name like `wg0` means nothing on another machine. Linux and macOS only —
+  `librqbit-dualstack-sockets` answers `BindDeviceNotSupported` on Windows, and
+  Android's own *Block connections without VPN* is better than ours, so both
+  get a line pointing at their own answer. `cargo test --lib vpn` binds a real
+  leecher away from a loopback seeder and fails if it gets a byte.
 - Linux uses the system mpv; Windows has none, so `scripts/build/mpv.ts`
   downloads one into `src-tauri/mpv/` and `tauri.windows.conf.json` bundles it as
   a resource. The build scripts call that before invoking tauri — a missing

@@ -28,9 +28,10 @@ const EDGE: u64 = 8 * 1024 * 1024;
 /// film, so nothing a rewind would reach.
 const EVERY: Duration = Duration::from_secs(3);
 
-/// Every windowed torrent, as (id, bytes kept behind each reader). A handful at
-/// most — the film playing here, or one being cast from here.
-static WINDOWS: Mutex<Vec<(usize, u64)>> = Mutex::new(Vec::new());
+/// Every windowed torrent, as (id, bytes fetched ahead of each reader, bytes kept
+/// behind it). A handful at most — the film playing here, or one being cast from
+/// here.
+static WINDOWS: Mutex<Vec<(usize, u64, u64)>> = Mutex::new(Vec::new());
 
 /// Where streams are written: the app's own cache, beside the engine's default
 /// folder, and never wherever downloads go. Punching the watched part back out of
@@ -54,19 +55,31 @@ pub fn stream_buffer(id: usize, ahead: Option<u64>, behind: u64) -> Result<(), S
 	let torrent = api.mgr_handle(id.into()).map_err(|e| e.to_string())?;
 	torrent.set_stream_window(ahead.unwrap_or(0)).map_err(|e| format!("{e:#}"))?;
 	let mut windows = WINDOWS.lock().map_err(|e| e.to_string())?;
-	windows.retain(|(other, _)| *other != id);
-	if ahead.is_some() {
-		windows.push((id, behind));
+	windows.retain(|(other, _, _)| *other != id);
+	if let Some(ahead) = ahead {
+		windows.push((id, ahead, behind));
 	}
 	Ok(())
 }
 
 /// Apply every window, every few seconds, for as long as the engine runs.
-pub async fn run(api: Api) {
+///
+/// `again` is an engine that has started over (see vpn.rs). Its session brought
+/// the same torrents back under the same ids, but as downloads — the window lives
+/// in memory — and a stream left like that fetches the whole film into the cache.
+/// So each window goes back on first, once its torrent is up far enough to take it.
+pub async fn run(api: Api, again: bool) {
+	let windows = if again { WINDOWS.lock().map(|w| w.clone()).unwrap_or_default() } else { Vec::new() };
+	for (id, ahead, _) in windows {
+		let Ok(torrent) = api.mgr_handle(id.into()) else { continue };
+		if let Err(e) = torrent.wait_until_initialized().await.and_then(|_| torrent.set_stream_window(ahead)) {
+			eprintln!("[ventic] stream {id} lost its window in the restart: {e:#}");
+		}
+	}
 	loop {
 		tokio::time::sleep(EVERY).await;
 		let windows = WINDOWS.lock().map(|w| w.clone()).unwrap_or_default();
-		for (id, behind) in windows {
+		for (id, _, behind) in windows {
 			match api.mgr_handle(id.into()) {
 				// Paused or still starting: nothing is reading it, so nothing has moved.
 				Ok(torrent) => {
@@ -79,7 +92,7 @@ pub async fn run(api: Api) {
 				// Deleted — the player's way out, or the user's.
 				Err(_) => {
 					if let Ok(mut windows) = WINDOWS.lock() {
-						windows.retain(|(other, _)| *other != id);
+						windows.retain(|(other, _, _)| *other != id);
 					}
 				}
 			}

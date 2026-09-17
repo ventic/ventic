@@ -28,7 +28,7 @@
 
 use std::net::{IpAddr, SocketAddr, UdpSocket};
 use std::path::PathBuf;
-use std::sync::{Mutex, OnceLock};
+use std::sync::Mutex;
 
 use axum::extract::{Request, State};
 use axum::http::StatusCode;
@@ -51,8 +51,9 @@ pub const MIRROR_PORT: u16 = 3231;
 pub const RECEIVER_PORT: u16 = 3232;
 
 /// The engine's API handle, so a second HTTP server can be put in front of the
-/// same session. Set once, when the engine comes up — see `lib.rs`.
-static ENGINE: OnceLock<Api> = OnceLock::new();
+/// same session. Set when the engine comes up, and again whenever it starts over
+/// — see `run_torrent_server`.
+static ENGINE: Mutex<Option<Api>> = Mutex::new(None);
 
 /// A running server's two ends: the switch that stops it, and the word back
 /// that it has.
@@ -96,13 +97,26 @@ async fn stop_server(slot: &Mutex<Option<Shutdown>>) {
 
 /// Hands the engine's API to the two commands below. Called from the torrent
 /// server's own startup, which is the only thing that has one.
-pub fn set_engine(api: Api) {
-	let _ = ENGINE.set(api);
+///
+/// A second call is the engine starting over on a VPN that came back (see
+/// vpn.rs), and a mirror still up is serving a session that has stopped — so it
+/// is put back up in front of this one, for the same film. The other device sees
+/// a stall, not an ended cast.
+pub async fn set_engine(api: Api) {
+	let replaced = ENGINE.lock().ok().and_then(|mut engine| engine.replace(api));
+	if replaced.is_none() || !cast_sharing() {
+		return;
+	}
+	let file = SHARED_FILE.lock().ok().and_then(|file| file.clone());
+	stop_server(&MIRROR).await;
+	if let Err(e) = cast_share(true, file.map(|path| path.to_string_lossy().into_owned())).await {
+		eprintln!("[ventic] cast mirror did not come back after the engine restarted: {e}");
+	}
 }
 
 /// The same handle, for the stream buffer (see buffer.rs).
-pub fn engine() -> Option<&'static Api> {
-	ENGINE.get()
+pub fn engine() -> Option<Api> {
+	ENGINE.lock().ok().and_then(|engine| engine.clone())
 }
 
 /// A play command, as it arrives and as the page receives it (minus the code).
@@ -221,7 +235,7 @@ pub async fn cast_share(enable: bool, file: Option<String>) -> Result<Option<Str
 		return Ok(Some(format!("http://{ip}:{MIRROR_PORT}")));
 	}
 
-	let api = ENGINE.get().ok_or("the torrent engine hasn't started yet")?.clone();
+	let api = engine().ok_or("the torrent engine hasn't started yet")?;
 	let addr = SocketAddr::from(([0, 0, 0, 0], MIRROR_PORT));
 	// Bound here rather than inside the task so a port already taken is an error
 	// the user sees, not a line in a log nobody reads.

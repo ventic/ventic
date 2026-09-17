@@ -72,6 +72,52 @@ const LIMITS = [0, 0.5, 1, 2, 5, 10, 20, 50]
 function label(value: number) {
   return value > 0 ? $t('{rate} MiB/s', { rate: value }) : $t('Automatic')
 }
+
+/**
+ * The VPN kill switch (src-tauri/src/vpn.rs). Polled while the page is open,
+ * because a tunnel connecting or dropping is exactly what somebody here is
+ * waiting to see.
+ */
+const vpn = ref<EngineInterfaces | null>(null)
+const vpnLoaded = ref(false)
+const vpnError = ref('')
+
+const { pause: stopReadingVpn } = useIntervalFn(readVpn, 3000)
+
+async function readVpn() {
+  vpn.value = await engineInterfaces()
+  vpnLoaded.value = true
+  // Nothing to bind here, and that won't change while the page is open.
+  if (!vpn.value)
+    stopReadingVpn()
+}
+onMounted(readVpn)
+
+/** Whether the interface torrents are tied to is there right now. */
+const tunnelUp = computed(() => !!vpn.value?.available.some(i => i.name === vpn.value?.bound))
+
+/** '' is any connection: a select has no way to pick `null`. */
+const interfaces = computed(() => {
+  const up = (vpn.value?.available ?? []).map(i => ({
+    value: i.name,
+    title: i.addresses.length ? `${i.name} · ${i.addresses.join(', ')}` : i.name,
+  }))
+  // Still on the list while it's down, or the select would show nothing picked.
+  const bound = vpn.value?.bound
+  const gone = bound && !tunnelUp.value ? [{ value: bound, title: $t('{name} (not connected)', { name: bound }) }] : []
+  return [{ value: '', title: $t('Any connection') }, ...gone, ...up]
+})
+
+async function bindTo(name: string | null) {
+  vpnError.value = ''
+  try {
+    await bindEngine(name || null)
+  }
+  catch (e) {
+    vpnError.value = String(e)
+  }
+  await readVpn()
+}
 </script>
 
 <template>
@@ -91,6 +137,42 @@ function label(value: number) {
         {{ $t('A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.') }}
       </p>
     </settings-section>
+
+    <settings-section
+      v-if="vpn"
+      :title="$t('VPN')"
+      :hint="$t('Tie torrents to your VPN\'s connection. If the VPN drops, downloading and seeding stop straight away instead of carrying on from your own address, and start again once it is back.')"
+    >
+      <v-select
+        :model-value="vpn.bound ?? ''"
+        :items="interfaces"
+        :label="$t('Torrents use')"
+        variant="solo-filled"
+        hide-details
+        @update:model-value="bindTo"
+      />
+      <p v-if="vpn.bound && tunnelUp" class="text-body-medium">
+        {{ $t('Torrents only use {name}. If it goes away, they stop until it is back.', { name: vpn.bound }) }}
+      </p>
+      <p v-else-if="vpn.bound" class="text-body-medium text-warning">
+        {{ $t('{name} is not connected, so torrents are stopped. They start again on their own when it is back.', { name: vpn.bound }) }}
+      </p>
+      <p class="text-body-small opacity-70">
+        {{ $t('Pick the one your VPN creates — usually named tun, wg or utun, with the address your VPN gave you. Only torrent traffic is tied to it: searching sources, film details and subtitles use the normal connection.') }}
+      </p>
+      <p v-if="vpnError" class="text-body-small text-error">
+        {{ vpnError }}
+      </p>
+    </settings-section>
+
+    <!-- Where the engine can't be bound, the platform's own answer. -->
+    <settings-section
+      v-else-if="vpnLoaded && (onAndroid() || isDesktop())"
+      :title="$t('VPN')"
+      :hint="onAndroid()
+        ? $t('Android can stop every app, this one included, when the VPN drops: in the system settings under VPN, turn on Always-on VPN and Block connections without VPN.')
+        : $t('Windows can\'t tie torrents to one connection. Most VPN apps have a kill switch of their own that does the same job — turn that on.')"
+    />
 
     <settings-section
       v-if="canMeter"

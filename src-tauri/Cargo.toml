@@ -45,6 +45,9 @@ axum = "0.8"
 # in src/cast.rs): range requests, which is what a player seeks by, done by
 # something that has already met every odd Range header there is.
 tower-http = { version = "0.6", features = ["fs"] }
+# Also librqbit's, through its UPnP. Lists what the engine can be bound to, with
+# the addresses that tell a VPN's tunnel from the rest (see `src/vpn.rs`).
+network-interface = "2"
 
 # Embedding mpv means creating an X11 child window and shaping it (see
 # src/player.rs). x11-dl's build script needs libX11 present, so it can only be

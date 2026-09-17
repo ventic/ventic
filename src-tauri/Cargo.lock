@@ -6695,6 +6695,7 @@ dependencies = [
  "libmpv2-sys",
  "librqbit",
  "librqbit-dualstack-sockets",
+ "network-interface",
  "objc2",
  "objc2-app-kit",
  "objc2-foundation",
