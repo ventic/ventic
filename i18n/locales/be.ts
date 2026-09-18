@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Дарожка {id}",
   "Trailer": "Трэйлер",
   "Trending": "У трэндзе",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Паспрабаваць зноў",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Уключаць субцітры самастойна пры запуску фільма, на мове, якую вы тут выбераце.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Выключае эфекты, якія найдаражэй малююцца: фонавае афармленне, матавае шкло за бакавой панэллю і меню, а таксама плаўныя з’яўленні і зрухі пры з’яўленні элементаў ці атрыманні фокусу. Усё застаецца на сваіх месцах — проста перастае рухацца і ляжыць на суцэльным колеры, які да таго ж лягчэй чытаць з другога канца пакоя. Індыкатары загрузкі працягваюць круціцца.",

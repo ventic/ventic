@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Trako {id}",
   "Trailer": "Antaŭfilmo",
   "Trending": "Furoraj",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Reprovi",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Ŝalti subtekstojn per si mem kiam filmo komenciĝas, en la lingvo kiun vi elektas ĉi tie.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Malŝaltas la efektojn, kiuj plej multe kostas por desegni: la fonan bildarton, la frostitan vitron malantaŭ la flanka breto kaj la menuoj, kaj la forvelkojn kaj glitojn, kiuj ludas kiam aferoj aperas aŭ ricevas fokuson. Ĉio restas, kie ĝi estis — ĝi ĉesas moviĝi kaj anstataŭe sidas sur plena koloro, kiu ankaŭ pli facile legeblas de la alia flanko de ĉambro. La ŝarĝturniloj plu turniĝas.",

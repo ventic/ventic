@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Stopa {id}",
   "Trailer": "Trailer",
   "Trending": "V trende",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Skúsiť znova",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Zapínať titulky samy od seba pri spustení filmu, v jazyku, ktorý si tu vyberieš.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Vypne efekty, ktoré sú na vykreslenie najdrahšie: obrázok na pozadí, matné sklo za bočným panelom a ponukami a prelínania a posuny, ktoré sa prehrajú, keď sa niečo objaví alebo dostane zameranie. Všetko zostane tam, kde bolo — len sa to prestane hýbať a namiesto toho stojí na plnej farbe, ktorá sa navyše ľahšie číta z druhého konca miestnosti. Načítavacie kolieska sa točia ďalej.",

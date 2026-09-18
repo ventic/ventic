@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Track {id}",
   "Trailer": "Trailer",
   "Trending": "Trending",
+  "Try a different release": "Try a different release",
   "Try again": "Try again",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Turn subtitles on by themselves whenever a film starts, in the language you pick here.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.",

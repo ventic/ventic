@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Raita {id}",
   "Trailer": "Traileri",
   "Trending": "Nousussa",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Yritä uudelleen",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Ota tekstitykset käyttöön itsestään aina kun elokuva alkaa, tässä valitsemallasi kielellä.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Kytkee pois tehosteet, joiden piirtäminen maksaa eniten: taustakuvituksen, sivupalkin ja valikoiden takana olevan huurrelasin sekä häivytykset ja liu'ut, jotka toistuvat kun asiat ilmestyvät tai saavat kohdistuksen. Kaikki pysyy siellä, missä oli — se vain lakkaa liikkumasta ja lepää sen sijaan tasaisella värillä, jota on myös helpompi lukea huoneen toiselta puolelta. Latauskiekot pyörivät edelleen.",

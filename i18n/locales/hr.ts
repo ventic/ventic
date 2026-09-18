@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Zapis {id}",
   "Trailer": "Trailer",
   "Trending": "U trendu",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Pokušaj ponovno",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Uključi titlove sam od sebe kad film krene, na jeziku koji ovdje odabereš.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Isključuje efekte koje je najskuplje iscrtati: pozadinsku grafiku, mutno staklo iza bočne trake i izbornika te prijelaze i klizanja koja se prikazuju kad se nešto pojavi ili dobije fokus. Sve ostaje gdje je bilo — samo se prestaje kretati i umjesto toga stoji na punoj boji, koja se usto lakše čita s drugog kraja sobe. Kotačići učitavanja se i dalje vrte.",

@@ -559,6 +559,7 @@ export default {
   "Track {id}": "المسار {id}",
   "Trailer": "الإعلان الترويجي",
   "Trending": "الأكثر تداولًا",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "أعد المحاولة",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "تشغيل الترجمات من تلقاء نفسها عند بدء أي فيلم، باللغة التي تختارها هنا.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "يطفئ التأثيرات الأغلى في الرسم: صورة الخلفية، والزجاج المموّه خلف الشريط الجانبي والقوائم، والتلاشيات والانزلاقات التي تُعرض حين تظهر العناصر أو تنال التركيز. يبقى كل شيء في مكانه — يتوقف عن الحركة ويستقر على لون مصمت بدلًا من ذلك، وهو أيضًا أسهل قراءةً من الطرف الآخر للغرفة. أما مؤشرات التحميل الدوّارة فتظل تدور.",

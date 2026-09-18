@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Traca {id}",
   "Trailer": "Trèilear",
   "Trending": "A' fàs fèillmhor",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Feuch a-rithist",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Cuir fo-thiotalan air leotha fhèin nuair a thòisicheas film, anns a' chànan a thaghas tu an seo.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Cuiridh e dheth na buaidhean as daoire ri tarraing: ealain a' chùlaibh, a' ghlainne reòta air cùl a' bhàr-taoibh agus nan clàran-taice, agus na crìonaidhean is sleamhnaidhean a chluicheas nuair a nochdas rudan no a gheibh iad fòcas. Fanaidh a h-uile càil far an robh e — sguiridh e a ghluasad agus suidhidh e air dath soladach na àite, rud a tha nas fhasa a leughadh bho taobh eile an t-seòmair cuideachd. Cumaidh na cuairtearan luchdaidh a' dol mun cuairt.",

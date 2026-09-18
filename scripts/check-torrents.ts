@@ -775,6 +775,68 @@ assert.equal((await startTorrent({ imdbId: 'tt0000001' })).torrent?.hash, 'bbb',
 assert.equal((await startTorrent({ imdbId: 'tt0000001', prefer: 'AAA' })).torrent?.hash, 'aaa', 'the release picked by hand')
 offered = [dead, streams[1]]
 assert.equal((await startTorrent({ imdbId: 'tt0000001', prefer: 'aaa' })).torrent?.hash, 'bbb', 'unless its swarm is gone')
+// --- Giving up on a release ---------------------------------------------------
+// "Try a different release" in the player. A dead swarm is only ever found out
+// by waiting on it, so the one thing this has to guarantee is that it does not
+// hand the same release straight back — and every shortcut into `startTorrent`
+// is a way back to it.
+offered = [streams[0], streams[1]]
+engine.held = true
+engine.have = 2_000_000_000
+
+assert.equal(
+  (await startTorrent({ imdbId: 'tt0000001' })).torrent?.hash,
+  'bbb',
+  'the pick this title would otherwise get',
+)
+assert.equal(
+  (await startTorrent({ imdbId: 'tt0000001', exclude: ['bbb'] })).torrent?.hash,
+  'aaa',
+  'given up on, the next best release plays instead',
+)
+assert.equal(
+  (await startTorrent({ imdbId: 'tt0000001', exclude: ['BBB'] })).torrent?.hash,
+  'aaa',
+  'and the case it is remembered in does not decide it',
+)
+assert.equal(
+  (await startTorrent({ imdbId: 'tt0000001', prefer: 'bbb', exclude: ['bbb'] })).torrent?.hash,
+  'aaa',
+  'a hand-pick would otherwise prefer it straight back',
+)
+
+// The bytes already on the disk are the shortest way back of all: a release that
+// stalled still delivered the piece or two `cached` now names.
+requests = []
+const abandoned = await startTorrent({ imdbId: 'tt0000001', cached, exclude: ['bbb'] })
+assert.equal(abandoned.torrent?.hash, 'aaa', 'nor is it resumed off the disk')
+assert.ok(requests.some(u => u.startsWith('https://a.example')), 'the sources are searched instead')
+
+// And the engine still holds it under its own name, which is the other way in.
+assert.equal(
+  (await startTorrent({ imdbId: 'tt0000001', named: () => ({ title: 'pack' }) })).torrent,
+  null,
+  'adopted by name when it has not been given up on',
+)
+assert.equal(
+  (await startTorrent({ imdbId: 'tt0000001', named: () => ({ title: 'pack' }), exclude: ['bbb'] })).torrent?.hash,
+  'aaa',
+  'nor adopted back out of the engine by name',
+)
+
+// Nothing left to fall back to has to say so — and count what the sources really
+// returned, not what survived the exclusions.
+await assert.rejects(
+  () => startTorrent({ imdbId: 'tt0000001', exclude: ['aaa', 'bbb'] }),
+  /All 2 releases found/,
+  'the last release given up on is not the same as no results',
+)
+
+// Back to where this section found it: the engine holding nothing, which is
+// what the stream tests below are written against.
+engine.held = false
+engine.have = 500_000_000
+
 refused = true
 requests = []
 assert.equal((await startTorrent({ imdbId: 'tt0000001' })).index, 1, 'a bad index still plays')

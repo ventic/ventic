@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Baan {id}",
   "Trailer": "Lokprent",
   "Trending": "Tans gewild",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Probeer weer",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Skakel onderskrifte vanself aan wanneer 'n fliek begin, in die taal wat jy hier kies.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Skakel die effekte af wat die duurste is om te teken: die agtergrondkuns, die matglas agter die sybalk en kieslyste, en die vervagings en glye wat speel soos dinge verskyn of fokus kry. Alles bly waar dit was — dit hou op beweeg en staan eerder op 'n soliede kleur, wat ook makliker is om van oorkant 'n kamer te lees. Laaispinners hou aan draai.",

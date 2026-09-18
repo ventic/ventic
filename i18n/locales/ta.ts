@@ -559,6 +559,7 @@ export default {
   "Track {id}": "தடம் {id}",
   "Trailer": "டிரெய்லர்",
   "Trending": "இப்போது பிரபலம்",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "மீண்டும் முயற்சி",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "திரைப்படம் தொடங்கும் போதே வசனங்கள் தானாகவே இயங்கட்டும், நீங்கள் இங்கே தேர்ந்தெடுக்கும் மொழியில்.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "வரைவதற்கு அதிகச் செலவாகும் விளைவுகளை அணைக்கிறது: பின்னணிப் படக்கலை, பக்கப்பட்டி மற்றும் பட்டிகளுக்குப் பின்னால் உள்ள பனிக் கண்ணாடி, மேலும் பொருள்கள் தோன்றும்போதோ கவனம் பெறும்போதோ இயங்கும் மங்கல்களும் நழுவல்களும். எல்லாம் இருந்த இடத்திலேயே இருக்கும் — அது நகர்வதை நிறுத்தி, பதிலாக ஒரு திட நிறத்தின் மேல் அமர்கிறது, அதை அறையின் மறுமுனையிலிருந்து படிப்பதும் எளிது. ஏற்றல் சுழல்கள் தொடர்ந்து சுழலும்.",

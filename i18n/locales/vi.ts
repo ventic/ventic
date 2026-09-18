@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Bản {id}",
   "Trailer": "Trailer",
   "Trending": "Đang thịnh hành",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Thử lại",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Tự bật phụ đề mỗi khi phim bắt đầu, bằng ngôn ngữ bạn chọn ở đây.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Tắt những hiệu ứng tốn tài nguyên vẽ nhất: ảnh nền, lớp kính mờ phía sau thanh bên và các menu, cùng các hiệu ứng mờ dần và trượt khi có thứ gì xuất hiện hoặc nhận tiêu điểm. Mọi thứ vẫn ở nguyên chỗ — chỉ là thôi chuyển động và thay vào đó nằm trên nền màu đặc, vốn cũng dễ đọc hơn từ đầu kia căn phòng. Vòng xoay tải vẫn tiếp tục quay.",

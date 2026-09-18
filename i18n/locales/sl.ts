@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Sled {id}",
   "Trailer": "Napovednik",
   "Trending": "V trendu",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Poskusi znova",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Ob začetku vsakega filma samodejno vklopi podnapise v jeziku, ki ga izbereš tukaj.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Izklopi učinke, ki so za risanje najdražji: grafiko ozadja, motno steklo za stransko vrstico in meniji ter prelive in drsenja, ki se predvajajo, ko se stvari pojavijo ali dobijo fokus. Vse ostane, kjer je bilo — le neha se premikati in namesto tega stoji na enobarvni podlagi, ki jo je tudi z drugega konca sobe lažje brati. Nalagalni krogci se še naprej vrtijo.",

@@ -559,6 +559,7 @@ export default {
   "Track {id}": "ਟਰੈਕ {id}",
   "Trailer": "ਟ੍ਰੇਲਰ",
   "Trending": "ਚਰਚਾ ਵਿੱਚ",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "ਫ਼ਿਲਮ ਸ਼ੁਰੂ ਹੁੰਦੇ ਹੀ ਉਪਸਿਰਲੇਖ ਆਪਣੇ ਆਪ ਚਾਲੂ ਹੋਣ, ਉਸ ਭਾਸ਼ਾ ਵਿੱਚ ਜੋ ਤੁਸੀਂ ਇੱਥੇ ਚੁਣਦੇ ਹੋ।",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "ਬਣਾਉਣ ਵਿੱਚ ਸਭ ਤੋਂ ਮਹਿੰਗੇ ਪ੍ਰਭਾਵ ਬੰਦ ਕਰ ਦਿੰਦਾ ਹੈ: ਪਿਛੋਕੜ ਤਸਵੀਰ, ਸਾਈਡਬਾਰ ਅਤੇ ਮੀਨੂ ਪਿੱਛੇ ਧੁੰਦਲਾ ਸ਼ੀਸ਼ਾ, ਅਤੇ ਚੀਜ਼ਾਂ ਦੇ ਪ੍ਰਗਟ ਹੋਣ ਜਾਂ ਫੋਕਸ ਮਿਲਣ 'ਤੇ ਹੋਣ ਵਾਲੇ ਫ਼ੇਡ ਅਤੇ ਸਲਾਈਡ। ਸਭ ਕੁਝ ਆਪਣੀ ਥਾਂ ਰਹਿੰਦਾ ਹੈ — ਬੱਸ ਹਿੱਲਣਾ ਬੰਦ ਹੋ ਜਾਂਦਾ ਹੈ ਅਤੇ ਇਸ ਦੀ ਥਾਂ ਇੱਕ ਠੋਸ ਰੰਗ 'ਤੇ ਟਿਕਿਆ ਰਹਿੰਦਾ ਹੈ, ਜਿਸ ਨੂੰ ਕਮਰੇ ਦੇ ਦੂਜੇ ਸਿਰੇ ਤੋਂ ਪੜ੍ਹਨਾ ਵੀ ਸੌਖਾ ਹੈ। ਲੋਡਿੰਗ ਚੱਕਰ ਘੁੰਮਦੇ ਰਹਿੰਦੇ ਹਨ।",

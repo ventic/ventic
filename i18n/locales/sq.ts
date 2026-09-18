@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Pista {id}",
   "Trailer": "Trailer",
   "Trending": "Në trend",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Provo sërish",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Ndizi titrat vetvetiu sa herë që nis një film, në gjuhën që zgjedh këtu.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Fik efektet që kushtojnë më shumë për t'u vizatuar: grafikën e sfondit, xhamin e mjegulluar pas shiritit anësor dhe menuve, si dhe kalimet dhe rrëshqitjet që luhen kur diçka shfaqet ose merr fokusin. Gjithçka mbetet aty ku ishte — thjesht ndalon së lëvizuri dhe qëndron mbi një ngjyrë të plotë, e cila lexohet edhe më lehtë nga ana tjetër e dhomës. Rrotat e ngarkimit vazhdojnë të rrotullohen.",

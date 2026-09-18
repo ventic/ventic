@@ -559,6 +559,7 @@ export default {
   "Track {id}": "트랙 {id}",
   "Trailer": "예고편",
   "Trending": "인기 급상승",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "다시 시도",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "영화가 시작될 때마다 여기서 고른 언어로 자막을 저절로 켭니다.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "그리는 비용이 가장 큰 효과를 끕니다: 배경 아트, 사이드바와 메뉴 뒤의 서리 유리, 그리고 요소가 나타나거나 포커스를 받을 때의 페이드와 슬라이드입니다. 모든 것은 제자리에 남습니다 — 움직임이 멈추고 대신 단색 위에 놓이는데, 이는 방 반대편에서도 더 읽기 쉽습니다. 로딩 표시는 계속 돕니다.",

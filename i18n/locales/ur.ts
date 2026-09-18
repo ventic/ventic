@@ -559,6 +559,7 @@ export default {
   "Track {id}": "ٹریک {id}",
   "Trailer": "ٹریلر",
   "Trending": "زیرِ رجحان",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "دوبارہ کوشش کریں",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "فلم شروع ہوتے ہی سب ٹائٹلز خود بخود آن ہو جائیں، اُس زبان میں جو آپ یہاں منتخب کریں۔",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "ان اثرات کو بند کر دیتا ہے جن کا بنانا سب سے مہنگا ہے: پس منظر کا آرٹ ورک، سائیڈ بار اور مینوز کے پیچھے دھندلا شیشہ، اور وہ فیڈ اور سلائیڈ جو چیزوں کے ظاہر ہونے یا فوکس ملنے پر چلتے ہیں۔ سب کچھ اپنی جگہ رہتا ہے — بس ہلنا بند کر دیتا ہے اور اس کے بجائے ایک ٹھوس رنگ پر ٹکا رہتا ہے، جسے کمرے کے دوسرے سرے سے پڑھنا بھی آسان ہے۔ لوڈنگ کے گھومتے نشان بدستور گھومتے رہتے ہیں۔",

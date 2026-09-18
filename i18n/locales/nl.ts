@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Spoor {id}",
   "Trailer": "Trailer",
   "Trending": "In trek",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Opnieuw proberen",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Ondertitels vanzelf inschakelen zodra een film begint, in de taal die je hier kiest.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Zet de effecten uit die het duurst zijn om te tekenen: de achtergrondartwork, het matglas achter de zijbalk en de menu's, en de vervagingen en verschuivingen die spelen als dingen verschijnen of focus krijgen. Alles blijft waar het was — het stopt met bewegen en staat in plaats daarvan op een effen kleur, die ook makkelijker te lezen is vanaf de andere kant van de kamer. Laadcirkels blijven draaien.",

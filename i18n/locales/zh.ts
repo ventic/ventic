@@ -559,6 +559,7 @@ export default {
   "Track {id}": "轨道 {id}",
   "Trailer": "预告片",
   "Trending": "趋势",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "重试",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "每次影片开始时，用你在这里选定的语言自动打开字幕。",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "关闭绘制开销最大的效果：背景图、侧边栏和菜单背后的毛玻璃，以及元素出现或获得焦点时的淡入与滑动。所有内容都停留在原处——只是不再移动，改为铺在纯色上，从房间另一头看也更易读。加载转圈仍会继续。",

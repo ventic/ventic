@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Roudenn {id}",
   "Trailer": "Trailer",
   "Trending": "War ar red",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Klask en-dro",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Lakaat an istitloù da vont en-dro o-unan pa grog ur film, er yezh a zibabit amañ.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Lazhañ a ra an efedoù a goust ar muiañ da dresañ: an arzverk drekleur, ar werenn skornet a-drek ar varrenn gostez hag al lañserioù, hag an arliviñ hag al lammoù pa zeu traoù war wel pe pa dapont ar fokus. Pep tra a chom el lec'h ma oa — paouez a ra da fiñval hag e chom war ul liv unvan, hag a zo aesoc'h ivez da lenn eus penn all ur sal. Ar rodelloù kargañ a genderc'h da dreiñ.",

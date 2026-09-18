@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Yoʻlak {id}",
   "Trailer": "Treyler",
   "Trending": "Trendda",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Qayta urinish",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Film boshlanganda subtitrlar oʻz-oʻzidan yoqilsin — shu yerda tanlangan tilda.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Chizish eng qimmatga tushadigan effektlarni oʻchiradi: fon grafikasi, yon panel va menyular ortidagi muzli oyna hamda narsalar paydo boʻlganda yoki fokus olganda ishlaydigan soʻnish va sirpanishlar. Hamma narsa oʻz joyida qoladi — u shunchaki harakatlanishni toʻxtatadi va oʻrniga yaxlit rang ustida turadi, uni xonaning narigi chetidan oʻqish ham osonroq. Yuklanish aylanalari aylanishda davom etadi.",

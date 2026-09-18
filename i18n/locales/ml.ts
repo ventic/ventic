@@ -559,6 +559,7 @@ export default {
   "Track {id}": "ട്രാക്ക് {id}",
   "Trailer": "ട്രെയിലർ",
   "Trending": "ട്രെൻഡിംഗ്",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "വീണ്ടും ശ്രമിക്കുക",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "സിനിമ തുടങ്ങുമ്പോൾ തന്നെ സബ്ടൈറ്റിലുകൾ സ്വയം ഓണാകട്ടെ, നിങ്ങൾ ഇവിടെ തിരഞ്ഞെടുക്കുന്ന ഭാഷയിൽ.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "വരയ്ക്കാൻ ഏറ്റവും ചെലവേറിയ ഇഫക്ടുകൾ ഓഫാക്കുന്നു: പശ്ചാത്തല ചിത്രം, സൈഡ്‌ബാറിനും മെനുകൾക്കും പിന്നിലെ മഞ്ഞുപോലുള്ള ഗ്ലാസ്, കാര്യങ്ങൾ പ്രത്യക്ഷപ്പെടുമ്പോഴോ ഫോക്കസ് കിട്ടുമ്പോഴോ ഉള്ള ഫേഡുകളും സ്ലൈഡുകളും. എല്ലാം ഉണ്ടായിരുന്നിടത്ത് തന്നെ നിൽക്കും — ചലനം നിന്ന്, പകരം ഒരു കട്ടിനിറത്തിന് മുകളിൽ ഇരിക്കും, അത് മുറിയുടെ അങ്ങേയറ്റത്തുനിന്ന് വായിക്കാനും എളുപ്പമാണ്. ലോഡിംഗ് ചക്രങ്ങൾ കറങ്ങുന്നത് തുടരും.",

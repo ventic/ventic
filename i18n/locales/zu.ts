@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Ithrekhi {id}",
   "Trailer": "Isibonisi sefilimu",
   "Trending": "Okusematheni",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Zama futhi",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Vula imibhalo engezansi ngokwayo njalo lapho ifilimu iqala, ngolimi olukhetha lapha.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Icisha imiphumela edla kakhulu ekudwebeni: izithombe zesizinda, ingilazi efiphele ngemuva kwebha eseceleni namamenyu, kanye nokuhwamalala nokushelela okwenzeka lapho izinto zivela noma zithola ukugxila. Konke kuhlala lapho bekukhona — kumane kuyeke ukunyakaza bese kuhlala phezu kombala oqinile esikhundleni salokho, okulula nokuwufunda usekhoneni elingaphesheya kwegumbi. Izijikelezi zokulayisha ziyaqhubeka nokujikeleza.",

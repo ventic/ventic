@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Κομμάτι {id}",
   "Trailer": "Τρέιλερ",
   "Trending": "Δημοφιλή τώρα",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Δοκιμή ξανά",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Να ενεργοποιούνται οι υπότιτλοι από μόνοι τους μόλις ξεκινά μια ταινία, στη γλώσσα που επιλέγετε εδώ.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Απενεργοποιεί τα εφέ που κοστίζουν περισσότερο στη σχεδίαση: το εικαστικό φόντου, το θαμπό γυαλί πίσω από την πλαϊνή μπάρα και τα μενού, και τα σβησίματα και τις ολισθήσεις που παίζουν καθώς εμφανίζονται στοιχεία ή παίρνουν εστίαση. Όλα μένουν εκεί που ήταν — απλώς σταματούν να κινούνται και κάθονται σε συμπαγές χρώμα, που διαβάζεται και πιο εύκολα από την άλλη άκρη του δωματίου. Οι δείκτες φόρτωσης συνεχίζουν να γυρίζουν.",

@@ -83,6 +83,17 @@ export const useDownloadsStore = defineStore('downloads', () => {
   const picked = useLocalStorage<Record<string, string>>('ventic.picked', {})
 
   /**
+   * Forget the hand-picked release for a title. Its whole job is to be preferred
+   * the next time this title is played, which is the wrong thing to do with one
+   * the user has just given up on — see `exclude` in `startTorrent`, which only
+   * covers the play it was given up in.
+   */
+  function unpick(key: string) {
+    if (key)
+      delete picked.value[key]
+  }
+
+  /**
    * The same map read backwards: which title a torrent, or one file in it, was
    * downloaded for. This is what lets the downloads page play something as the
    * film it is rather than as a bare magnet — see `filedAs`.
@@ -582,6 +593,7 @@ export const useDownloadsStore = defineStore('downloads', () => {
     release,
     metered,
     cachedFor,
+    unpick,
     titleFor,
     localFor,
     setLocal,

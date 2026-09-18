@@ -559,6 +559,7 @@ export default {
   "Track {id}": "ట్రాక్ {id}",
   "Trailer": "ట్రైలర్",
   "Trending": "ట్రెండింగ్",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "మళ్లీ ప్రయత్నించు",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "సినిమా మొదలైన ప్రతిసారీ మీరు ఇక్కడ ఎంచుకున్న భాషలో ఉపశీర్షికలు వాటంతట అవే ఆన్ అవుతాయి.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "గీయడానికి ఎక్కువ ఖర్చయ్యే ఎఫెక్ట్‌లను ఆఫ్ చేస్తుంది: నేపథ్య చిత్రకళ, సైడ్‌బార్, మెనూల వెనుక ఉన్న మంచు గాజు, వస్తువులు కనిపించినప్పుడు లేదా ఫోకస్ పొందినప్పుడు జరిగే ఫేడ్‌లు, స్లైడ్‌లు. అంతా ఉన్నచోటే ఉంటుంది — అది కదలడం ఆపి, బదులుగా ఒక ఘన రంగుపై నిలుస్తుంది, దాన్ని గదికి అవతలి వైపు నుండి చదవడమూ సులభం. లోడింగ్ స్పిన్నర్‌లు తిరుగుతూనే ఉంటాయి.",

@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Spor {id}",
   "Trailer": "Trailer",
   "Trending": "Populært nu",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Prøv igen",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Slå undertekster til af sig selv, når en film starter, på det sprog du vælger her.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Slår de effekter fra, der koster mest at tegne: baggrundsgrafikken, det matterede glas bag sidebjælken og menuerne og de overtoninger og glidninger, der afspilles, når ting dukker op eller får fokus. Alt bliver, hvor det var — det holder op med at bevæge sig og står på en ensfarvet flade i stedet, som også er lettere at læse fra den anden ende af stuen. Indlæsningscirkler bliver ved med at dreje.",

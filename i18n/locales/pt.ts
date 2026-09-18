@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Faixa {id}",
   "Trailer": "Trailer",
   "Trending": "Em alta",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Tentar de novo",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Ligar as legendas sozinhas sempre que um filme começar, no idioma que você escolher aqui.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Desliga os efeitos mais caros de desenhar: a arte de fundo, o vidro fosco atrás da barra lateral e dos menus e as transições e deslizes que rodam quando algo aparece ou recebe o foco. Tudo fica onde estava — apenas para de se mexer e passa a ficar sobre uma cor sólida, que também é mais fácil de ler do outro lado da sala. Os indicadores de carregamento continuam girando.",

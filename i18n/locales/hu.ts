@@ -559,6 +559,7 @@ export default {
   "Track {id}": "{id}. sáv",
   "Trailer": "Előzetes",
   "Trending": "Felkapott",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Újra",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "A felirat magától bekapcsol, amikor egy film elindul, az itt kiválasztott nyelven.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Kikapcsolja a legdrágábban kirajzolható effekteket: a háttérképet, a matt üveget az oldalsáv és a menük mögött, valamint az áttűnéseket és csúszásokat, amelyek megjelenéskor vagy fókuszkor futnak. Minden ott marad, ahol volt — csak megáll a mozgás, és helyette egyszínű háttéren nyugszik, ami a szoba másik végéből is könnyebben olvasható. A töltésjelzők tovább forognak.",

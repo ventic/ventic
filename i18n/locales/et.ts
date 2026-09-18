@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Rada {id}",
   "Trailer": "Treiler",
   "Trending": "Tõusuteel",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Proovi uuesti",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Lülita subtiitrid iseenesest sisse, kui film algab, keeles, mille siin valid.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Lülitab välja efektid, mille joonistamine on kõige kallim: taustapildi, mattklaasi külgriba ja menüüde taga ning hajumised ja libisemised, mis mängivad, kui midagi ilmub või fookuse saab. Kõik jääb sinna, kus oli — see lakkab liikumast ja seisab hoopis ühtlasel värvil, mida on ka toa teisest otsast lihtsam lugeda. Laadimisrattad keerlevad edasi.",

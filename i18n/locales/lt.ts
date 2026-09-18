@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Takelis {id}",
   "Trailer": "Anonsas",
   "Trending": "Populiarėja",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Bandyti dar kartą",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Įjungti subtitrus savaime, kai prasideda filmas, čia pasirinkta kalba.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Išjungia efektus, kuriuos brangiausia piešti: fono vaizdą, matinį stiklą už šoninės juostos ir meniu bei perėjimus ir slinkimus, kurie rodomi atsiradus elementams ar jiems gavus židinį. Viskas lieka ten, kur buvo — tiesiog nustoja judėti ir vietoj to stovi ant vientisos spalvos, kurią ir nuo kito kambario galo lengviau įskaityti. Įkėlimo sukučiai toliau sukasi.",

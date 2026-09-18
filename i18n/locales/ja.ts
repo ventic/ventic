@@ -559,6 +559,7 @@ export default {
   "Track {id}": "トラック {id}",
   "Trailer": "予告編",
   "Trending": "急上昇",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "再試行",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "映画が始まるたびに、ここで選んだ言語で字幕をひとりでにオンにします。",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "描画コストが最も高い効果をオフにします: 背景アート、サイドバーやメニュー背後のすりガラス、要素が現れたりフォーカスされたときのフェードやスライドです。位置はそのままで、動きが止まり、代わりに単色の上に表示されます。部屋の反対側からでも読みやすくなります。読み込み中のスピナーは回り続けます。",

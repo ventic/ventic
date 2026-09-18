@@ -559,6 +559,7 @@ export default {
   "Track {id}": "{id} жолу",
   "Trailer": "Трейлер",
   "Trending": "Тренддеги",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Кайра аракет кылуу",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Кино башталган сайын субтитрлер өзүнөн-өзү күйсүн, бул жерде тандаган тилиңизде.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Тартуусу эң кымбат эффекттерди өчүрөт: фон сүрөтүн, каптал панель менен менюлардын артындагы күңүрт айнекти, ошондой эле элементтер пайда болгондо же фокус алганда ойногон өтүүлөр менен жылууларды. Баары ордунда калат — жөн гана кыймылдоо токтоп, анын ордуна бир түстүү фондо турат, аны бөлмөнүн аркы четинен окуу да жеңилирээк. Жүктөө айланмалары айланууну улантат.",

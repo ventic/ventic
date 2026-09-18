@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Trac {id}",
   "Trailer": "Trelar",
   "Trending": "Ar gynnydd",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Ceisio eto",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Troi isdeitlau ymlaen ohonynt eu hunain pryd bynnag y bydd ffilm yn dechrau, yn yr iaith rydych chi'n ei dewis yma.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Yn diffodd yr effeithiau sy'n costio fwyaf i'w tynnu: celf y cefndir, y gwydr barugog y tu ôl i'r bar ochr a'r dewislenni, a'r pylu a'r llithro sy'n chwarae wrth i bethau ymddangos neu gael ffocws. Mae popeth yn aros lle'r oedd — mae'n peidio â symud ac yn eistedd ar liw solet yn lle hynny, sydd hefyd yn haws ei ddarllen o ochr arall yr ystafell. Mae'r troellwyr llwytho'n dal i droi.",

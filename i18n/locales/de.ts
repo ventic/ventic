@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Spur {id}",
   "Trailer": "Trailer",
   "Trending": "Im Trend",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Erneut versuchen",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Untertitel von selbst einschalten, sobald ein Film startet — in der Sprache, die du hier wählst.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Schaltet die Effekte ab, die am teuersten zu zeichnen sind: das Hintergrundbild, das Milchglas hinter Seitenleiste und Menüs sowie die Ein- und Ausblendungen, wenn etwas erscheint oder den Fokus bekommt. Alles bleibt, wo es war – es hört nur auf, sich zu bewegen, und steht stattdessen auf einer vollen Farbe, die sich auch vom anderen Ende des Raums leichter lesen lässt. Ladekreisel drehen sich weiter.",

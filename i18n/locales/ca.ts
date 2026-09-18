@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Pista {id}",
   "Trailer": "Tràiler",
   "Trending": "Tendència",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Torna-ho a provar",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Activa els subtítols tot sols quan comenci una pel·lícula, en l'idioma que triïs aquí.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Desactiva els efectes que costen més de dibuixar: la il·lustració de fons, el vidre esmerilat darrere de la barra lateral i els menús, i els esvaïments i desplaçaments que es reprodueixen quan les coses apareixen o reben el focus. Tot es queda on era: deixa de moure's i reposa sobre un color sòlid, que a més es llegeix millor des de l'altra punta de la sala. Els indicadors de càrrega continuen girant.",

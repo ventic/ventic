@@ -559,6 +559,7 @@ export default {
   "Track {id}": "قطعهٔ {id}",
   "Trailer": "تریلر",
   "Trending": "پرطرفدار",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "تلاش دوباره",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "زیرنویس با شروع هر فیلم خودبه‌خود روشن شود، به زبانی که اینجا انتخاب می‌کنید.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "جلوه‌هایی را خاموش می‌کند که ترسیمشان بیشترین هزینه را دارد: تصویر پس‌زمینه، شیشهٔ مات پشت نوار کناری و منوها، و محوشدن‌ها و لغزش‌هایی که هنگام ظاهر شدن یا گرفتن تمرکز پخش می‌شوند. همه چیز سر جایش می‌ماند — فقط از حرکت بازمی‌ایستد و به جایش روی رنگی یکدست می‌نشیند که از آن سوی اتاق هم راحت‌تر خوانده می‌شود. چرخنده‌های بارگذاری همچنان می‌چرخند.",

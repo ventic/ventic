@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Ուղի {id}",
   "Trailer": "Թրեյլեր",
   "Trending": "Թրենդում",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Կրկին փորձել",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Ենթագրերն ինքնաբերաբար միացնել ֆիլմի մեկնարկին՝ այստեղ ընտրված լեզվով։",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Անջատում է այն էֆեկտները, որոնց նկարումն ամենաթանկն է՝ ֆոնի պատկերը, մշուշված ապակին կողագոտու և ցանկերի հետևում, ինչպես նաև այն մարումներն ու սահումները, որոնք ցուցադրվում են, երբ ինչ-որ բան հայտնվում է կամ ֆոկուս է ստանում։ Ամեն ինչ մնում է իր տեղում — պարզապես դադարում է շարժվել և փոխարենը հանգչում է միագույն ֆոնի վրա, որն ավելի հեշտ է կարդալ նաև սենյակի մյուս ծայրից։ Բեռնման պտտվող նշանները շարունակում են պտտվել։",

@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Track {id}",
   "Trailer": "Trailer",
   "Trending": "Ma popular på'go",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Chagi ta'lo",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Na'gaige i subtitulu siha maisa yanggen matutuhon i mubi, gi lengguåhi ni un ayek guini.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Ha puno' i effect siha ni mås dångkulo i gastu-ña: i background art, i frosted glass gi tatten i sidebar yan menu, yan i fade yan slide anai manmåtto pat manman-focus i kosas. Todu ha sågåyi i lugåt-ña — ha påra i kalamten ya ha såga gi solid na kulot, ni mås fåsit lokkue' ma taitai desde i otro bånda i kuåtto. I loading spinner ha sigi ha' bumira.",

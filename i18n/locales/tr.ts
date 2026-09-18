@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Parça {id}",
   "Trailer": "Fragman",
   "Trending": "Öne çıkanlar",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Yeniden dene",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Bir film başladığında altyazılar kendiliğinden açılsın — burada seçtiğin dilde.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Çizimi en pahalı olan efektleri kapatır: arka plan görseli, kenar çubuğunun ve menülerin arkasındaki buzlu cam ve nesneler belirirken ya da odaklanırken oynayan solma ve kayma efektleri. Her şey olduğu yerde kalır — yalnızca hareket etmeyi bırakır ve bunun yerine düz bir rengin üzerinde durur; bu da odanın öbür ucundan okumayı kolaylaştırır. Yükleniyor çarkları dönmeye devam eder.",

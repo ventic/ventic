@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Trek {id}",
   "Trailer": "Trailer",
   "Trending": "Sedang tren",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Coba lagi",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Nyalakan subtitel dengan sendirinya setiap kali film dimulai, dalam bahasa yang kamu pilih di sini.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Mematikan efek yang paling mahal digambar: gambar latar, kaca buram di balik bilah sisi dan menu, serta pudar dan geser yang berjalan saat sesuatu muncul atau mendapat fokus. Semuanya tetap di tempatnya — ia berhenti bergerak dan berada di atas warna solid, yang juga lebih mudah dibaca dari seberang ruangan. Pemuat berputar tetap berputar.",

@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Rian {id}",
   "Trailer": "Réamhbhlaiseadh",
   "Trending": "Ag treochtáil",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Bain triail eile as",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Cuir fotheidil ar siúl leo féin nuair a thosaíonn scannán, sa teanga a roghnaíonn tú anseo.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Múchann sé na héifeachtaí is costasaí le tarraingt: ealaín an chúlra, an ghloine shioctha taobh thiar den bharra taoibh agus na roghchláir, agus na céimnithe agus na sleamhnáin a sheinntear agus rudaí ag teacht chun cinn nó ag fáil fócais. Fanann gach rud san áit a raibh sé — stopann sé de bheith ag bogadh agus suíonn sé ar dhath soladach ina ionad, rud atá níos éasca a léamh ó thaobh eile an tseomra freisin. Leanann na rothlóirí lódála ag casadh.",

@@ -29,6 +29,7 @@ import {
   mdiSubtitles,
   mdiSubtitlesOutline,
   mdiSurroundSound,
+  mdiSwapHorizontal,
   mdiVolumeHigh,
   mdiVolumeLow,
   mdiVolumeMedium,
@@ -60,6 +61,18 @@ const props = defineProps<{
   src: string
   /** Live torrent status, shown while playback is stalled for data. */
   status?: string
+  /**
+   * Nothing has arrived from the swarm for a while — see `quiet` in watch.vue.
+   * On its own that is not a fault (a finished film and a full stream buffer are
+   * both silent); paired with a player that is starved, it is a dead release.
+   */
+  quiet?: boolean
+  /**
+   * …and there is something else to play. False for a bare magnet or a link,
+   * where nothing was searched and there is no second release to fall back to,
+   * so the notice explains and offers nothing.
+   */
+  pickable?: boolean
   /** Hold the OS window in fullscreen for as long as this player is mounted. */
   fullscreen?: boolean
   /**
@@ -93,7 +106,7 @@ const props = defineProps<{
 }>()
 
 /** Leave the player. The page owns where that goes back to — see `leave`. */
-const emit = defineEmits<{ exit: [] }>()
+const emit = defineEmits<{ exit: [], another: [] }>()
 
 /**
  * Which backend is behind these controls. Where mpv can be embedded it is;
@@ -1929,6 +1942,15 @@ const stalled = ref(false)
 watchDebounced(() => buffering.value && started.value, v => (stalled.value = v), { debounce: 500 })
 
 /**
+ * Starved, and nothing is on its way: the spinner is never going to end, so say
+ * so rather than turning for ever. It takes both halves — the page can only see
+ * that the swarm is quiet, which a finished film and a full buffer window are
+ * too, and this side can only see that playback is waiting, which it also does
+ * on a slow swarm that is still feeding it.
+ */
+const stuck = computed(() => !!props.quiet && stalled.value && !paused.value)
+
+/**
  * Seconds the end-of-playback screen waits before rolling into the next
  * episode. Short enough not to be a pause, long enough to catch and stop.
  */
@@ -1975,6 +1997,9 @@ const centre = computed(() => {
     return 'ended'
   if (busy.value)
     return 'loading'
+  // Before `stalled`, which is the same spinner saying "any moment now".
+  if (stuck.value)
+    return 'stuck'
   return stalled.value && !paused.value ? 'stalled' : ''
 })
 
@@ -2469,6 +2494,22 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
         <button :class="BTN" :disabled="busy" @click="startPlayer">
           <v-icon :icon="mdiReload" size="18" /> {{ $t('Retry') }}
         </button>
+      </template>
+
+      <!-- A dead swarm, which is not a failure the player can retry its way out
+           of: the same release would be added back to the same silence. The one
+           useful button is the one that plays something else. -->
+      <template v-else-if="centre === 'stuck'">
+        <v-icon :icon="mdiAlertCircleOutline" size="30" color="warning" />
+        <div class="text-body-medium">
+          {{ $t('Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.') }}
+        </div>
+        <button v-if="pickable" :class="BTN" @click="emit('another')">
+          <v-icon :icon="mdiSwapHorizontal" size="18" /> {{ $t('Try a different release') }}
+        </button>
+        <div v-if="status" class="text-label-small tabular-nums opacity-70">
+          {{ status }}
+        </div>
       </template>
 
       <template v-else-if="centre === 'ended'">

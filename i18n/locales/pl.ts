@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Ścieżka {id}",
   "Trailer": "Zwiastun",
   "Trending": "Na czasie",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Spróbuj ponownie",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Włączaj napisy same z siebie, gdy zaczyna się film — w języku wybranym tutaj.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Wyłącza efekty, których rysowanie kosztuje najwięcej: grafikę tła, mleczne szkło za panelem bocznym i menu oraz przenikania i przesunięcia odtwarzane, gdy coś się pojawia albo dostaje fokus. Wszystko zostaje tam, gdzie było — po prostu przestaje się ruszać i zamiast tego stoi na jednolitym kolorze, który łatwiej też odczytać z drugiego końca pokoju. Kółka ładowania kręcą się dalej.",

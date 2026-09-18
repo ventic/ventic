@@ -78,6 +78,9 @@ const streaming = ref<{ id: number, length: number } | null>(null)
 // a second poll of this one would only ask the engine the same question twice.
 const stats = computed(() => downloads.torrents.find(t => t.id === torrentId.value)?.stats ?? null)
 
+/** Releases given up on in this sitting — see `exclude` in `startTorrent`. */
+const abandoned = ref<string[]>([])
+
 // Bumped on every start and on the way out, so a lookup that lands after you
 // left the page — or jumped to another episode — doesn't reach back in and give
 // the connection to something nobody is watching. (The trick useMediaFeed uses.)
@@ -114,6 +117,7 @@ async function start() {
       season: season.value,
       episode: episode.value,
       fileIndex: fileIndex.value,
+      exclude: abandoned.value,
       onStep: value => (step.value = value),
     })
 
@@ -267,12 +271,77 @@ const held = computed(() => streaming.value
   : `${progressPct.value.toFixed(0)}%`)
 
 /**
+ * How long nothing may arrive before the spinner stops being a wait and starts
+ * being a dead release.
+ *
+ * The test is bytes *arriving* and not pieces completing. A collection is often
+ * cut into 32 MiB pieces, and on a swarm that is working perfectly well one of
+ * those takes a minute to land — `progress_bytes` sits still for all of it, so
+ * reading that would call a healthy film dead. `download_speed` moves with every
+ * block, so zero for this long means the swarm is handing over nothing at all.
+ */
+const DEAD_MS = 45_000
+
+/**
+ * Half of "this release is dead": nothing has arrived for a while. The other
+ * half is the player's — whether it is actually starved — because silence on its
+ * own is perfectly normal. A finished film has nothing left to fetch, and a
+ * stream whose buffer window is full has nothing to fetch *yet*; both sit at
+ * 0 MiB/s while playing perfectly. Only a player that is stalled *and* a swarm
+ * that is quiet means the release is the problem (see `stuck` in MpvPlayer).
+ *
+ * Only while the torrent is live and unfinished: a paused one (told to wait for
+ * Wi-Fi, or released on the way out) is silent because the app stopped it, and
+ * blaming its seeders for that would be a lie.
+ */
+const quiet = ref(false)
+let arrivedAt = Date.now()
+watch(stats, s => {
+  if (s?.state !== 'live' || s.finished || s.live?.download_speed.mbps)
+    arrivedAt = Date.now()
+  quiet.value = s?.state === 'live' && !s.finished && Date.now() - arrivedAt > DEAD_MS
+})
+
+/**
  * One line for the player's "buffering" notice, where there's no room for a
  * table. Empty while a direct link plays: there is no swarm to report on, and
  * "0 peers" reads as a fault rather than as "not applicable".
  */
 const statusLine = computed(() =>
   stats.value ? `${speed.value} · ${$t('{count} peers', { count: peers.value })} · ${held.value}` : '')
+
+/**
+ * Is there anything else to play? A bare magnet and a link were both named by
+ * the user rather than searched for, so there is no second release behind them
+ * and nothing for the button to fall back to.
+ *
+ * Deliberately *not* `downloaded`, which reads as "this title has a copy" and is
+ * true of every film the moment it starts playing — `downloads.start` files the
+ * torrent under the title's key before the first byte. It would have taken the
+ * button away in exactly the case it exists for. A film genuinely on the disk
+ * needs no button anyway: it never stalls, so `quiet` never pairs with one.
+ */
+const pickable = computed(() => !!id.value && !magnet.value && !link.value)
+
+/**
+ * Give up on the release that stopped arriving and play the next best one.
+ *
+ * Deleted rather than paused, and deliberately: its bytes are worth nothing,
+ * and `cached` is pruned to what the engine still holds — so deleting is also
+ * what stops the next Play resuming the copy just abandoned. The hand-pick goes
+ * with it for the same reason, and `abandoned` covers the rest of this sitting,
+ * where all three could otherwise lead straight back to the same silence.
+ */
+async function tryAnother() {
+  const dud = torrentId.value
+  const hash = downloads.torrents.find(t => t.id === dud)?.info_hash
+  if (hash)
+    abandoned.value.push(hash)
+  if (dud !== null)
+    await downloads.act(dud, 'delete').catch(() => {})
+  downloads.unpick(key.value)
+  await start()
+}
 
 const backdrop = computed(() => backdropUrl(title.value?.backdrop, 'w1280'))
 
@@ -420,6 +489,8 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
         :key="src"
         :src="src"
         :status="statusLine"
+        :quiet="quiet"
+        :pickable="pickable"
         :media="title"
         :next="next"
         :imdb-id="media?.imdbId"
@@ -431,6 +502,7 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
         :start-at="startAt"
         fullscreen
         @exit="leave"
+        @another="tryAnother"
       >
         <template #start>
           <v-btn icon variant="text" density="comfortable" @click="leave">

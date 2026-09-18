@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Piste {id}",
   "Trailer": "Bande-annonce",
   "Trending": "Tendances",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Réessayer",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Activer les sous-titres d'eux-mêmes au début de chaque film, dans la langue choisie ici.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Désactive les effets les plus coûteux à dessiner : l'illustration de fond, le verre dépoli derrière la barre latérale et les menus, ainsi que les fondus et glissements qui se jouent quand un élément apparaît ou prend le focus. Tout reste où c'était — cela cesse de bouger et repose sur une couleur unie, qui se lit aussi plus facilement depuis l'autre bout de la pièce. Les indicateurs de chargement continuent de tourner.",

@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Trek {id}",
   "Trailer": "Treler",
   "Trending": "Sedang menjadi trend",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Cuba lagi",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Hidupkan sari kata dengan sendirinya setiap kali filem bermula, dalam bahasa yang anda pilih di sini.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Mematikan kesan yang paling mahal untuk dilukis: grafik latar, kaca beku di belakang bar sisi dan menu, serta pudar dan luncur yang dimainkan apabila sesuatu muncul atau mendapat fokus. Semuanya kekal di tempatnya — ia berhenti bergerak dan sebaliknya duduk di atas warna padu, yang juga lebih mudah dibaca dari hujung bilik yang lain. Pemutar pemuatan terus berpusing.",

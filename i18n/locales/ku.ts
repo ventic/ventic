@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Rêça {id}",
   "Trailer": "Fragman",
   "Trending": "Di rojevê de",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Dîsa biceribîne",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Dema fîlmek dest pê dike bila jêrnivîs bixwe vebin, bi zimanê ku tu li vir hildibijêrî.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Wan bandoran digire ku xêzkirina wan herî biha ye: wêneyê paşxaneyê, cama qeşagirtî ya li pişt darika alî û menûyan, û derketin û şemitandinên ku dema tişt xuya dibin an fokusê digirin dilîzin. Her tişt li cihê xwe dimîne — tenê ji tevgerê disekine û li şûna wê li ser rengekî yekreng radiweste, ku ji aliyê din ê odeyê jî hêsantir tê xwendin. Çerxên barkirinê hîn jî dizivirin.",

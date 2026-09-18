@@ -1192,6 +1192,18 @@ export async function startTorrent(options: {
    * `picked` in the downloads store.
    */
   prefer?: string
+  /**
+   * Releases already tried and given up on, by info hash — "try a different
+   * release" in the player, which is the only way a dead swarm is ever found
+   * out: it advertises hundreds of peers, connects to none, and looks exactly
+   * like a slow one until you have waited on it.
+   *
+   * It has to beat every shortcut and not just the search, because each of them
+   * is a way back to the same torrent: `cached` still holds the piece or two
+   * that did arrive, `prefer` is the hand-pick that chose it, and `heldByName`
+   * would adopt it back out of the engine by its name.
+   */
+  exclude?: string[]
   /** Storage budget for the pick — see `diskBudget`. Ignored with `magnet`. */
   maxBytes?: number
   /** How big a film this device can keep; a bigger copy loses a tie — see `pickBest`. */
@@ -1214,6 +1226,7 @@ export async function startTorrent(options: {
   onStep?: (step: string) => void
 }): Promise<Started> {
   const step = options.onStep ?? (() => {})
+  const skip = new Set((options.exclude ?? []).map(hash => hash.toLowerCase()))
   let magnet = options.magnet ?? ''
   let picked: Release | null = null
   let hint: number | null = null
@@ -1232,7 +1245,7 @@ export async function startTorrent(options: {
   // whatever is already on the disk. Asked before the id lookup below, because
   // skipping that round trip is the point: a film on the disk plays with TMDB
   // unreachable.
-  if (!magnet && options.cached) {
+  if (!magnet && options.cached && !skip.has(options.cached.hash.toLowerCase())) {
     const { hash, file } = options.cached
     const held = await heldCopy(hash, file)
     // Every byte is here: nothing to search, nobody to ask, nothing to wait for.
@@ -1258,7 +1271,7 @@ export async function startTorrent(options: {
       ? await heldByName(named.title, named.year, options.season, options.episode)
       : null
 
-    if (adopted) {
+    if (adopted && !skip.has(adopted.toLowerCase())) {
       magnet = magnetForHash(adopted)
     }
     else {
@@ -1267,7 +1280,14 @@ export async function startTorrent(options: {
 
       step($t('Searching your sources…'))
       const found = await findReleases(imdbId, options.season, options.episode)
-      const best = (list: Release[]) => pickBest(list, options.maxBytes, options.compatible ?? !hasNativePlayer(), options.room)
+      // Given-up releases are dropped here rather than out of `found`, so the
+      // count in the failure below stays what the sources actually returned.
+      const best = (list: Release[]) => pickBest(
+        list.filter(r => !skip.has(r.hash.toLowerCase())),
+        options.maxBytes,
+        options.compatible ?? !hasNativePlayer(),
+        options.room,
+      )
       // Through `pickBest` too, so a picked release its swarm has since left
       // loses to the usual pick rather than hanging.
       const prefer = options.prefer?.toLowerCase()

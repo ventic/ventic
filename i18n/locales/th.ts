@@ -559,6 +559,7 @@ export default {
   "Track {id}": "แทร็ก {id}",
   "Trailer": "ตัวอย่างภาพยนตร์",
   "Trending": "มาแรง",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "ลองใหม่",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "เปิดคำบรรยายเองทุกครั้งที่ภาพยนตร์เริ่มเล่น ในภาษาที่คุณเลือกไว้ที่นี่",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "ปิดเอฟเฟกต์ที่กินทรัพยากรในการวาดมากที่สุด: ภาพพื้นหลัง กระจกฝ้าหลังแถบด้านข้างและเมนู และการค่อย ๆ จางกับการเลื่อนที่เล่นเมื่อมีสิ่งใดปรากฏขึ้นหรือได้รับโฟกัส ทุกอย่างยังอยู่ที่เดิม — เพียงแค่หยุดเคลื่อนไหวและวางอยู่บนสีทึบแทน ซึ่งอ่านได้ง่ายกว่าจากอีกฟากของห้องด้วย วงกลมหมุนตอนโหลดยังหมุนอยู่เหมือนเดิม",

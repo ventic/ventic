@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Celiņš {id}",
   "Trailer": "Reklāmklips",
   "Trending": "Populāri tagad",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Mēģināt vēlreiz",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Ieslēgt subtitrus pašus no sevis, kad sākas filma, šeit izvēlētajā valodā.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Izslēdz efektus, kurus zīmēt ir visdārgāk: fona attēlu, matēto stiklu aiz sānjoslas un izvēlnēm, kā arī izgaišanas un slīdēšanas, kas notiek, elementiem parādoties vai saņemot fokusu. Viss paliek tur, kur bija — tas vienkārši pārstāj kustēties un tā vietā stāv uz vienlaidu krāsas, ko arī no otra istabas gala ir vieglāk izlasīt. Ielādes riņķi turpina griezties.",

@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Waddada {id}",
   "Trailer": "Horudhaca filimka",
   "Trending": "Caan noqonaya",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Isku day mar kale",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Qoraalka hoose iskiis ha u shido mar kasta oo filim bilaabmo, luqadda aad halkan ka dooratay.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Waxay damisaa saamaynta ugu qaalisan ee la sawiro: sawirka asalka, muraayadda barafaysan ee ka dambeysa barta dhinaca iyo liisaska, iyo isbeddellada iyo simbiriirixadyada ciyaara marka waxyaabo soo muuqdaan ama diirad helaan. Wax kastaa waxay ku hadhaan meeshoodii — kaliya way joojiyaan dhaqaaqa oo halkii waxay saaran yihiin midab adag, kaas oo sidoo kale ka fudud in laga akhriyo dhinaca kale ee qolka. Wareegyada soo shubidda way sii wareegayaan.",

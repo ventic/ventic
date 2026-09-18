@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Spår {id}",
   "Trailer": "Trailer",
   "Trending": "Trendar",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Försök igen",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Slå på undertexter av sig själva när en film börjar, på språket du väljer här.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Slår av de effekter som kostar mest att rita: bakgrundsbilden, det frostade glaset bakom sidopanelen och menyerna, och toningarna och glidningarna som spelas när saker dyker upp eller får fokus. Allt ligger kvar där det var — det slutar röra sig och vilar i stället på en enfärgad yta, som också är lättare att läsa från andra sidan rummet. Laddningssnurrorna fortsätter snurra.",

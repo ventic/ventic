@@ -559,6 +559,7 @@ export default {
   "Track {id}": "Пътечка {id}",
   "Trailer": "Трейлър",
   "Trending": "Актуални",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Опитай отново",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Субтитрите да се включват сами при започване на филм, на езика, който изберете тук.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Изключва ефектите, които са най-скъпи за рисуване: фоновото изображение, матовото стъкло зад страничната лента и менютата, както и избледняванията и плъзганията при поява или фокус. Всичко си остава на място — просто спира да се движи и стои върху плътен цвят, който освен това се чете по-лесно от другия край на стаята. Индикаторите за зареждане продължават да се въртят.",

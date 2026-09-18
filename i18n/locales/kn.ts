@@ -559,6 +559,7 @@ export default {
   "Track {id}": "ಟ್ರ್ಯಾಕ್ {id}",
   "Trailer": "ಟ್ರೇಲರ್",
   "Trending": "ಟ್ರೆಂಡಿಂಗ್",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "ಚಲನಚಿತ್ರ ಶುರುವಾದಾಗಲೆಲ್ಲ ನೀವು ಇಲ್ಲಿ ಆರಿಸಿದ ಭಾಷೆಯಲ್ಲಿ ಉಪಶೀರ್ಷಿಕೆಗಳು ತಾನಾಗಿಯೇ ಚಾಲೂ ಆಗಲಿ.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "ಚಿತ್ರಿಸಲು ಅತಿ ದುಬಾರಿಯಾದ ಪರಿಣಾಮಗಳನ್ನು ಆಫ್ ಮಾಡುತ್ತದೆ: ಹಿನ್ನೆಲೆ ಚಿತ್ರ, ಪಕ್ಕಪಟ್ಟಿ ಮತ್ತು ಮೆನುಗಳ ಹಿಂದಿನ ಮಂಜು ಗಾಜು, ಮತ್ತು ವಸ್ತುಗಳು ಕಾಣಿಸಿಕೊಂಡಾಗ ಅಥವಾ ಫೋಕಸ್ ಪಡೆದಾಗ ಆಗುವ ಮಸುಕಾಗುವಿಕೆ ಮತ್ತು ಜಾರುವಿಕೆ. ಎಲ್ಲವೂ ಇದ್ದಲ್ಲೇ ಇರುತ್ತದೆ — ಬರೀ ಚಲನೆ ನಿಂತು, ಬದಲಿಗೆ ಗಟ್ಟಿ ಬಣ್ಣದ ಮೇಲೆ ಕೂರುತ್ತದೆ, ಅದನ್ನು ಕೋಣೆಯ ಆಚೆ ತುದಿಯಿಂದ ಓದುವುದೂ ಸುಲಭ. ಲೋಡಿಂಗ್ ಚಕ್ರಗಳು ತಿರುಗುತ್ತಲೇ ಇರುತ್ತವೆ.",

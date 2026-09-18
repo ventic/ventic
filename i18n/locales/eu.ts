@@ -559,6 +559,7 @@ export default {
   "Track {id}": "{id} pista",
   "Trailer": "Trailerra",
   "Trending": "Joeran",
+  "Try a different release": "TODO_TRANSLATION: Try a different release",
   "Try again": "Saiatu berriro",
   "Turn subtitles on by themselves whenever a film starts, in the language you pick here.": "Piztu azpitituluak beren kabuz filma hasten den bakoitzean, hemen aukeratzen duzun hizkuntzan.",
   "Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.": "Marrazteko garestienak diren efektuak itzaltzen ditu: atzeko irudia, alboko barraren eta menuen atzeko beira izoztua, eta gauzak agertzean edo fokua hartzean gertatzen diren iraungitze eta irristatzeak. Dena zegoen lekuan geratzen da: mugitzeari uzten dio eta kolore solido baten gainean geratzen da, gelaren beste muturretik irakurtzeko ere errazagoa dena. Kargatze-biribilkariek biraka jarraitzen dute.",
