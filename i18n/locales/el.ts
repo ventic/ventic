@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Κανένα κανάλι ακόμη",
   "No episodes listed.": "Δεν αναφέρονται επεισόδια.",
   "No overview.": "Χωρίς σύνοψη.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Καμία λίστα αναπαραγωγής ακόμη. Η ζωντανή τηλεόραση μένει άδεια μέχρι να προσθέσετε μία — η εφαρμογή δεν έρχεται με κανένα κανάλι ούτε προτείνει κάποιο.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Χωρίς ήχο — αυτή η συσκευή δεν μπορεί να αποκωδικοποιήσει τον ήχο αυτής της έκδοσης (Dolby ή DTS). Μια έκδοση με ήχο AAC θα παίξει.",
   "No source answered — {reason}": "Καμία πηγή δεν απάντησε — {reason}",

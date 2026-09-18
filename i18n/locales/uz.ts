@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Hozircha kanallar yoʻq",
   "No episodes listed.": "Qismlar roʻyxati yoʻq.",
   "No overview.": "Qisqacha mazmun yoʻq.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Hozircha ijro roʻyxatlari yoʻq. Siz bittasini qoʻshmaguningizcha Jonli TV boʻsh qoladi — ilova hech qanday kanal bilan kelmaydi va hech birini tavsiya ham qilmaydi.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Ovoz yoʻq — bu qurilma shu relizning ovozini (Dolby yoki DTS) dekodlay olmaydi. AAC ovozli reliz ijro etiladi.",
   "No source answered — {reason}": "Hech bir manba javob bermadi — {reason}",

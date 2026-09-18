@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Азырынча каналдар жок",
   "No episodes listed.": "Бөлүмдөр тизмеленген эмес.",
   "No overview.": "Кыскача мазмун жок.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Азырынча ойнотуу тизмелери жок. Сиз бирөөнү кошмоюнча Түз эфир бош калат — колдонмо эч бир канал менен келбейт жана эч кимисин сунуштабайт.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Үн жок — бул түзмөк бул чыгарылымдын үнүн (Dolby же DTS) чечмелей албайт. AAC үнү бар чыгарылым ойнойт.",
   "No source answered — {reason}": "Эч бир булак жооп берген жок — {reason}",

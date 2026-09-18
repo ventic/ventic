@@ -12,6 +12,7 @@ import {
   mdiPowerPlugOutline,
   mdiReload,
   mdiStop,
+  mdiSwapHorizontal,
 } from '@mdi/js'
 
 // The player owns the whole window: no app bar, no drawer, no page scroll.
@@ -118,6 +119,13 @@ async function start() {
       episode: episode.value,
       fileIndex: fileIndex.value,
       exclude: abandoned.value,
+      // Known before it is playing, so a release that fails on the way up is
+      // still something `tryAnother` can give up on — and so the screen can name
+      // what it is waiting for while it waits.
+      onPicked: release => {
+        if (mine === generation)
+          torrent.value = release
+      },
       onStep: value => (step.value = value),
     })
 
@@ -332,15 +340,30 @@ const pickable = computed(() => !!id.value && !magnet.value && !link.value)
  * with it for the same reason, and `abandoned` covers the rest of this sitting,
  * where all three could otherwise lead straight back to the same silence.
  */
+let switching = false
 async function tryAnother() {
+  // The button is on screen until `start` empties `src`, and that is a delete
+  // round trip away — long enough for a second press to land, which on a remote
+  // is one held OK. Two presses would give up on two releases for one complaint.
+  if (switching)
+    return
+  switching = true
   const dud = torrentId.value
-  const hash = downloads.torrents.find(t => t.id === dud)?.info_hash
+  // The engine's spelling where there is a torrent, the source's where the play
+  // never got that far — a release that failed before it was added has no id
+  // here, and is exactly the one being given up on.
+  const hash = downloads.torrents.find(t => t.id === dud)?.info_hash || torrent.value?.hash
   if (hash)
     abandoned.value.push(hash)
   if (dud !== null)
     await downloads.act(dud, 'delete').catch(() => {})
   downloads.unpick(key.value)
-  await start()
+  try {
+    await start()
+  }
+  finally {
+    switching = false
+  }
 }
 
 const backdrop = computed(() => backdropUrl(title.value?.backdrop, 'w1280'))
@@ -447,6 +470,17 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
               </v-btn>
               <v-btn v-else variant="tonal" :prepend-icon="mdiReload" @click="start">
                 {{ $t('Try again') }}
+              </v-btn>
+              <!-- This screen is where a release that never got as far as the
+                   player lands: no details from the swarm, no video in the
+                   torrent. Trying the same one again is rarely the fix. -->
+              <v-btn
+                v-if="pickable && torrent"
+                variant="tonal"
+                :prepend-icon="mdiSwapHorizontal"
+                @click="tryAnother"
+              >
+                {{ $t('Try a different release') }}
               </v-btn>
               <v-btn variant="text" :prepend-icon="mdiArrowLeft" @click="leave">
                 {{ $t('Back') }}

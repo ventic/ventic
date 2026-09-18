@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Belum ada saluran",
   "No episodes listed.": "Tidak ada episode yang terdaftar.",
   "No overview.": "Tidak ada sinopsis.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Belum ada daftar putar. TV langsung akan tetap kosong sampai Anda menambahkan satu — aplikasi ini tidak menyertakan saluran apa pun dan tidak menyarankan satu pun.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Tidak ada suara — perangkat ini tidak bisa mendekode audio rilis ini (Dolby atau DTS). Rilis dengan audio AAC akan bisa diputar.",
   "No source answered — {reason}": "Tidak ada sumber yang merespons — {reason}",

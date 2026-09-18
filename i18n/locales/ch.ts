@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Taya' trabia channel",
   "No episodes listed.": "Taya' episodio gi lista.",
   "No overview.": "Taya' sinopsis.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Taya' trabia playlist. U sigi ha' bumasiu i Live TV asta ke un na'hålom unu — i app ti måtto yan ni håfa na channel ya ti ha rekomienda ni unu.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Taya' sonido — este na device ti siña ha decode i audio este na release (Dolby pat DTS). Un release yan AAC na audio siña ha play.",
   "No source answered — {reason}": "Taya' source manoppe — {reason}",

@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Encara cap de cadena",
   "No episodes listed.": "Cap d'episòdi es pas listat.",
   "No overview.": "Cap de resumit.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Encara cap de lista de lectura. La television en dirècte demòra voida fins que n'ajustetz una — l'aplicacion ven amb cap de cadena e ne prepausa cap.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Cap de son — aqueste aparelh pòt pas descodificar l'àudio d'aquesta publicacion (Dolby o DTS). Una publicacion amb àudio AAC se legirà.",
   "No source answered — {reason}": "Cap de font a pas respondut — {reason}",

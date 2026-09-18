@@ -287,6 +287,7 @@ export default {
   "No channels yet": "暂无频道",
   "No episodes listed.": "没有列出任何剧集。",
   "No overview.": "暂无简介。",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "暂无播放列表。在你添加之前，直播电视会一直是空的 — 应用不附带任何频道，也不会推荐任何频道。",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "没有声音——本设备无法解码该资源的音频（Dolby 或 DTS）。使用 AAC 音频的资源可以正常播放。",
   "No source answered — {reason}": "没有来源响应 — {reason}",

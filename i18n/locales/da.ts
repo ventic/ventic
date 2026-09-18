@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Ingen kanaler endnu",
   "No episodes listed.": "Ingen afsnit på listen.",
   "No overview.": "Ingen beskrivelse.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Ingen playlister endnu. Live-TV forbliver tomt, indtil du tilføjer en — appen kommer uden kanaler og foreslår ingen.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Ingen lyd — denne enhed kan ikke afkode lyden i denne udgivelse (Dolby eller DTS). En udgivelse med AAC-lyd vil kunne afspilles.",
   "No source answered — {reason}": "Ingen kilde svarede — {reason}",

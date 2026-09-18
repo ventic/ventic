@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Nog geen kanale nie",
   "No episodes listed.": "Geen episodes gelys nie.",
   "No overview.": "Geen oorsig nie.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Nog geen speellyste nie. Live TV bly leeg totdat jy een byvoeg — die toepassing kom met geen kanale nie en stel ook geen voor nie.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Geen klank nie — hierdie toestel kan nie hierdie vrystelling se klank dekodeer nie (Dolby of DTS). 'n Vrystelling met AAC-klank sal speel.",
   "No source answered — {reason}": "Geen bron het geantwoord nie — {reason}",

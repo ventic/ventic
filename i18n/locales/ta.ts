@@ -287,6 +287,7 @@ export default {
   "No channels yet": "இன்னும் சேனல்கள் இல்லை",
   "No episodes listed.": "அத்தியாயங்கள் எதுவும் பட்டியலிடப்படவில்லை.",
   "No overview.": "சுருக்கம் இல்லை.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "இன்னும் இயக்கும் பட்டியல்கள் இல்லை. நீங்கள் ஒன்றைச் சேர்க்கும் வரை நேரலை தொலைக்காட்சி காலியாகவே இருக்கும் — செயலி எந்தச் சேனலுடனும் வரவில்லை, எதையும் பரிந்துரைக்கவும் இல்லை.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "ஒலி இல்லை — இந்தச் சாதனத்தால் இந்த வெளியீட்டின் ஒலியை (Dolby அல்லது DTS) குறிவிலக்க முடியாது. AAC ஒலி கொண்ட வெளியீடு இயங்கும்.",
   "No source answered — {reason}": "எந்த மூலமும் பதிலளிக்கவில்லை — {reason}",

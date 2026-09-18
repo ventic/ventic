@@ -287,6 +287,7 @@ export default {
   "No channels yet": "ಇನ್ನೂ ಚಾನೆಲ್‌ಗಳಿಲ್ಲ",
   "No episodes listed.": "ಯಾವುದೇ ಸಂಚಿಕೆ ಪಟ್ಟಿಯಲ್ಲಿಲ್ಲ.",
   "No overview.": "ಕಥಾಸಾರ ಇಲ್ಲ.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "ಇನ್ನೂ ಪ್ಲೇಪಟ್ಟಿಗಳಿಲ್ಲ. ನೀವು ಒಂದನ್ನು ಸೇರಿಸುವವರೆಗೆ ನೇರ ಟಿವಿ ಖಾಲಿಯೇ ಇರುತ್ತದೆ — ಅಪ್ಲಿಕೇಶನ್ ಯಾವ ಚಾನೆಲ್ ಜೊತೆಗೂ ಬರುವುದಿಲ್ಲ, ಯಾವುದನ್ನೂ ಸೂಚಿಸುವುದೂ ಇಲ್ಲ.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "ಶಬ್ದವಿಲ್ಲ — ಈ ಸಾಧನ ಈ ಬಿಡುಗಡೆಯ ಆಡಿಯೊವನ್ನು (Dolby ಅಥವಾ DTS) ಡಿಕೋಡ್ ಮಾಡಲಾರದು. AAC ಆಡಿಯೊ ಇರುವ ಬಿಡುಗಡೆ ಪ್ಲೇ ಆಗುತ್ತದೆ.",
   "No source answered — {reason}": "ಯಾವುದೇ ಮೂಲ ಪ್ರತಿಕ್ರಿಯಿಸಲಿಲ್ಲ — {reason}",

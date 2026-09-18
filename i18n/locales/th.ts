@@ -287,6 +287,7 @@ export default {
   "No channels yet": "ยังไม่มีช่อง",
   "No episodes listed.": "ไม่มีรายการตอน",
   "No overview.": "ไม่มีเรื่องย่อ",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "ยังไม่มีเพลย์ลิสต์ ทีวีสดจะว่างเปล่าจนกว่าคุณจะเพิ่มสักอัน — แอปไม่ได้มาพร้อมช่องใดเลยและไม่แนะนำช่องใดด้วย",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "ไม่มีเสียง — อุปกรณ์นี้ถอดรหัสเสียงของรีลีสนี้ไม่ได้ (Dolby หรือ DTS) รีลีสที่ใช้เสียง AAC จะเล่นได้",
   "No source answered — {reason}": "ไม่มีแหล่งใดตอบกลับ — {reason}",

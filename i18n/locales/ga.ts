@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Gan cainéil go fóill",
   "No episodes listed.": "Níl aon eachtra liostaithe.",
   "No overview.": "Gan achoimre.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Gan seinmliostaí go fóill. Fanfaidh Teilifís Bheo folamh go dtí go gcuirfidh tú ceann leis — ní thagann an aip le cainéal ar bith agus ní mholann sí ceann ar bith.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Gan fuaim — ní féidir leis an ngléas seo fuaim na heisiúna seo a dhíchódú (Dolby nó DTS). Seinnfidh eisiúint le fuaim AAC.",
   "No source answered — {reason}": "Níor fhreagair aon fhoinse — {reason}",

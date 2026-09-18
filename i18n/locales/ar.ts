@@ -287,6 +287,7 @@ export default {
   "No channels yet": "لا قنوات بعد",
   "No episodes listed.": "لا حلقات مدرجة.",
   "No overview.": "لا ملخّص.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "لا قوائم تشغيل بعد. يبقى التلفزيون المباشر فارغًا حتى تضيف واحدة — لا يأتي التطبيق بأي قناة ولا يقترح أيًّا منها.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "لا صوت — هذا الجهاز لا يستطيع فك ترميز صوت هذا الإصدار (Dolby أو DTS). إصدار بصوت AAC سيعمل.",
   "No source answered — {reason}": "لم يستجب أي مصدر — {reason}",

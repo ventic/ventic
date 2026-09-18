@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Zatiaľ žiadne kanály",
   "No episodes listed.": "Nie sú uvedené žiadne epizódy.",
   "No overview.": "Bez popisu.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Zatiaľ žiadne playlisty. Vysielanie naživo ostane prázdne, kým nejaký nepridáš — aplikácia neprináša žiadne kanály a ani žiadne nenavrhuje.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Žiadny zvuk — toto zariadenie nevie dekódovať zvuk tohto vydania (Dolby alebo DTS). Vydanie so zvukom AAC sa prehrá.",
   "No source answered — {reason}": "Neodpovedal žiadny zdroj — {reason}",

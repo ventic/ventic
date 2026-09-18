@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Դեռ ալիքներ չկան",
   "No episodes listed.": "Դրվագներ նշված չեն։",
   "No overview.": "Բովանդակություն չկա։",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Դեռ նվագացանկեր չկան։ Ուղիղ հեռուստատեսությունը դատարկ կմնա, մինչև մեկը ավելացնեք — հավելվածը ոչ մի ալիք չի բերում և ոչ մեկը չի առաջարկում։",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Ձայն չկա — այս սարքը չի կարող ապակոդավորել այս թողարկման ձայնը (Dolby կամ DTS)։ AAC ձայնով թողարկումը կնվագարկվի։",
   "No source answered — {reason}": "Ոչ մի աղբյուր չպատասխանեց — {reason}",

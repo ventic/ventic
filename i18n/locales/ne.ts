@@ -287,6 +287,7 @@ export default {
   "No channels yet": "अझै च्यानल छैन",
   "No episodes listed.": "कुनै भाग सूचीबद्ध छैन।",
   "No overview.": "कथासार छैन।",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "अझै प्लेलिस्ट छैन। तपाईंले एउटा नथपेसम्म प्रत्यक्ष टिभी खाली नै रहन्छ — एप कुनै च्यानलसँग आउँदैन र कुनै सुझाव पनि दिँदैन।",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "आवाज छैन — यो यन्त्रले यो रिलिजको अडियो (Dolby वा DTS) डिकोड गर्न सक्दैन। AAC अडियो भएको रिलिज चल्नेछ।",
   "No source answered — {reason}": "कुनै पनि स्रोतले जवाफ दिएन — {reason}",

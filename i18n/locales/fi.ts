@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Ei vielä kanavia",
   "No episodes listed.": "Jaksoja ei ole listattu.",
   "No overview.": "Ei kuvausta.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Ei vielä soittolistoja. Suora TV pysyy tyhjänä, kunnes lisäät yhden — sovellus ei tule minkään kanavan kanssa eikä ehdota niitä.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Ei ääntä — tämä laite ei osaa purkaa tämän julkaisun ääntä (Dolby tai DTS). AAC-äänellä varustettu julkaisu toistuu.",
   "No source answered — {reason}": "Yksikään lähde ei vastannut — {reason}",

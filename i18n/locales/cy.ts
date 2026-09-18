@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Dim sianeli eto",
   "No episodes listed.": "Dim penodau wedi'u rhestru.",
   "No overview.": "Dim crynodeb.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Dim rhestrau chwarae eto. Bydd Teledu Byw yn aros yn wag nes i chi ychwanegu un — nid yw'r ap yn dod ag unrhyw sianeli ac nid yw'n awgrymu'r un.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Dim sain — ni all y ddyfais hon ddadgodio sain y rhyddhad hwn (Dolby neu DTS). Bydd rhyddhad â sain AAC yn chwarae.",
   "No source answered — {reason}": "Ni atebodd yr un ffynhonnell — {reason}",

@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Azikho iziteshi okwamanje",
   "No episodes listed.": "Azikho iziqephu ezifakiwe ohlwini.",
   "No overview.": "Asikho isifinyezo.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Azikho izinhlu zokudlala okwamanje. I-TV Ebukhoma izohlala ingenalutho uze wengeze olulodwa — uhlelo aluzi nasiteshi futhi alusiphakamisi.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Awukho umsindo — le divayisi ayikwazi ukuhumusha umsindo waleli reliza (i-Dolby noma i-DTS). Ireliza elinomsindo we-AAC lizodlala.",
   "No source answered — {reason}": "Awukho umthombo ophendulile — {reason}",

@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Kanaleid veel pole",
   "No episodes listed.": "Ühtegi osa pole loetletud.",
   "No overview.": "Kirjeldus puudub.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Esitusloendeid veel pole. Otse-TV jääb tühjaks, kuni lisad enda oma — rakendus ei tule ühegi kanaliga kaasa ega paku neid.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Heli puudub — see seade ei suuda selle väljalaske heli dekodeerida (Dolby või DTS). AAC-heliga väljalase mängib.",
   "No source answered — {reason}": "Ükski allikas ei vastanud — {reason}",

@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Kanālu vēl nav",
   "No episodes listed.": "Nav norādīta neviena epizode.",
   "No overview.": "Nav kopsavilkuma.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Atskaņošanas sarakstu vēl nav. Tiešraides TV paliks tukša, līdz pievienosiet savu — lietotne nenāk ne ar vienu kanālu un nevienu neiesaka.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Nav skaņas — šī ierīce nespēj dekodēt šī izdevuma audio (Dolby vai DTS). Izdevums ar AAC audio atskaņosies.",
   "No source answered — {reason}": "Neviens avots neatbildēja — {reason}",

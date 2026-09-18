@@ -287,6 +287,7 @@ export default {
   "No channels yet": "ჯერ არხები არ არის",
   "No episodes listed.": "ეპიზოდები არ არის ჩამოთვლილი.",
   "No overview.": "შინაარსი არ არის.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "ჯერ დასაკრავი სიები არ არის. სანამ ერთს არ დაამატებთ, პირდაპირი ტელევიზია ცარიელი დარჩება — აპლიკაცია არცერთ არხს არ მოაქვს და არცერთს არ გთავაზობთ.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "ხმა არ არის — ამ მოწყობილობას ამ გამოშვების ხმის (Dolby ან DTS) გაშიფვრა არ შეუძლია. AAC ხმის მქონე გამოშვება დაიკვრება.",
   "No source answered — {reason}": "არცერთმა წყარომ არ უპასუხა — {reason}",

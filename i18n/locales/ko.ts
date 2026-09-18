@@ -287,6 +287,7 @@ export default {
   "No channels yet": "아직 채널이 없습니다",
   "No episodes listed.": "나열된 에피소드가 없습니다.",
   "No overview.": "줄거리가 없습니다.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "아직 재생목록이 없습니다. 하나 추가하기 전까지 라이브 TV는 비어 있습니다 — 앱에는 채널이 전혀 들어 있지 않고 추천하지도 않습니다.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "소리 없음 — 이 기기는 이 릴리스의 오디오(Dolby 또는 DTS)를 디코딩할 수 없습니다. AAC 오디오 릴리스는 재생됩니다.",
   "No source answered — {reason}": "어떤 소스도 응답하지 않았습니다 — {reason}",

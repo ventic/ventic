@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Ende asnjë kanal",
   "No episodes listed.": "Nuk ka episode të listuara.",
   "No overview.": "Pa përmbledhje.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Ende asnjë listë luajtjeje. Televizioni drejtpërdrejt mbetet bosh derisa të shtosh një — aplikacioni s'vjen me asnjë kanal dhe s'sugjeron asnjë.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Pa zë — kjo pajisje nuk mund ta dekodojë audion e këtij versioni (Dolby ose DTS). Një version me audio AAC do të luhet.",
   "No source answered — {reason}": "Asnjë burim nuk u përgjigj — {reason}",

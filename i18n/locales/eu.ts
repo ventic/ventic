@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Oraindik katerik ez",
   "No episodes listed.": "Ez dago atalik zerrendatuta.",
   "No overview.": "Laburpenik ez.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Oraindik erreprodukzio-zerrendarik ez. Zuzeneko telebista hutsik egongo da bat gehitu arte — aplikazioa ez dator katerik batekin eta ez du bat ere iradokitzen.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Soinurik ez: gailu honek ezin du argitalpen honen audioa deskodetu (Dolby edo DTS). AAC audioa duen argitalpen bat erreproduzituko da.",
   "No source answered — {reason}": "Iturburu batek ere ez du erantzun — {reason}",

@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Lodenn ebet c'hoazh",
   "No episodes listed.": "Rann ebet er roll.",
   "No overview.": "Diverradenn ebet.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Roll lenn ebet c'hoazh. Skinwel war-eeun a chomo goullo betek ma ouzhpennot unan — n'eo ket an arload gant lodenn ebet ha ne ginnig hini ebet.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Son ebet — ne c'hell ket an trevnad-mañ divoneañ aodio an embannadur-mañ (Dolby pe DTS). Un embannadur gant aodio AAC a yelo en-dro.",
   "No source answered — {reason}": "N'en deus respontet mammenn ebet — {reason}",

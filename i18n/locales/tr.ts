@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Henüz kanal yok",
   "No episodes listed.": "Listelenen bölüm yok.",
   "No overview.": "Özet yok.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Henüz oynatma listesi yok. Siz bir tane eklemedikçe Canlı TV boş kalır — uygulama hiçbir kanalla gelmez ve hiçbirini önermez.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Ses yok — bu cihaz bu sürümün sesini (Dolby veya DTS) çözemiyor. AAC sesli bir sürüm oynar.",
   "No source answered — {reason}": "Hiçbir kaynak yanıt vermedi — {reason}",

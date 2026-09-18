@@ -287,6 +287,7 @@ export default {
   "No channels yet": "チャンネルはまだありません",
   "No episodes listed.": "エピソードの一覧がありません。",
   "No overview.": "あらすじはありません。",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "プレイリストはまだありません。追加するまでライブ TV は空のままです。アプリはチャンネルを一切同梱せず、提案もしません。",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "音が出ません — この端末はこのリリースの音声 (Dolby または DTS) をデコードできません。AAC 音声のリリースなら再生できます。",
   "No source answered — {reason}": "どのソースも応答しませんでした — {reason}",

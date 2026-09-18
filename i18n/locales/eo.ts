@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Ankoraŭ neniu kanalo",
   "No episodes listed.": "Neniu epizodo listigita.",
   "No overview.": "Neniu resumo.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Ankoraŭ neniu ludlisto. Rekta televido restos malplena ĝis vi aldonos unu — la aplikaĵo venas kun neniu kanalo kaj sugestas neniun.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Neniu sono — ĉi tiu aparato ne povas dekodi la sonon de ĉi tiu eldono (Dolby aŭ DTS). Eldono kun AAC-sono ludiĝos.",
   "No source answered — {reason}": "Neniu fonto respondis — {reason}",

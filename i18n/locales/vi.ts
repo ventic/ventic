@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Chưa có kênh nào",
   "No episodes listed.": "Không có tập nào được liệt kê.",
   "No overview.": "Không có tóm tắt.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Chưa có danh sách phát nào. TV trực tiếp sẽ trống cho tới khi bạn thêm một cái — ứng dụng không kèm theo kênh nào và cũng không gợi ý kênh nào.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Không có tiếng — thiết bị này không giải mã được âm thanh của bản phát hành này (Dolby hoặc DTS). Bản phát hành có âm thanh AAC sẽ phát được.",
   "No source answered — {reason}": "Không nguồn nào phản hồi — {reason}",

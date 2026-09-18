@@ -64,7 +64,12 @@ export function normalizeSource(input: string): string {
     .replace(/\/manifest\.json(?:[?#].*)?$/i, '')
     .replace(/\/+$/, '')
 
-  return /^https?:\/\/[^\s/]+/i.test(url) ? url : ''
+  // No whitespace anywhere, not just a host that starts plausibly: "not a url
+  // at all" passed a test that only looked as far as the first word, and was
+  // added to the list as `https://not a url at all`. Every search then failed
+  // with a message about a source rather than about what was typed, which is the
+  // hardest kind of complaint to answer. A real URL escapes its spaces.
+  return /^https?:\/\/[^\s/]+(?:\/\S*)?$/i.test(url) ? url : ''
 }
 
 /** Public trackers, so a magnet without any of its own still finds peers fast. */
@@ -182,11 +187,24 @@ const DETAIL = /\b(?:(?:19|20)\d{2}|s\d{1,2}(?:[\s.,_-]*e\d{1,3})?|\d{1,2}x\d{2}
 // response (one fixture per addon in check:torrents), and each matched by its
 // look rather than its line, because no two addons agree on the layout.
 
-/** "💾 2.1 GB", "📦 4.2 GB / 10 GB", "💾 4.35 GiB", "Size: 790 MiB". The first one is the file's. */
-const SIZE = /(\d+(?:\.\d+)?)\s*([KMGT])i?B\b/i
+/**
+ * "💾 2.1 GB", "📦 4.2 GB / 10 GB", "💾 4.35 GiB", "Size: 790 MiB". The first one
+ * is the file's. A comma is a decimal point to most of Europe and some panels
+ * write "2,5 GB" — read as "5 GB" that is a film twice its real weight, which is
+ * the disk budget, `isBloated` and `shouldStream` all answering the wrong
+ * question. Two digits at most, so a thousands-grouped "1,234 GB" is not read as
+ * 1.234 GB.
+ */
+const SIZE = /(\d+(?:[.,]\d{1,2})?)\s*([KMGT])i?B\b/i
 
-/** "👤 40", "👥 36 seeders", "👥 S:40", "Seeders: 40". The word needs its colon, or *Seed* (2007) has 2007 seeders. */
-const SEEDERS = /(?:👤|👥|\bseed(?:er)?s?\s*:)\s*(?:S:\s*)?(\d+)/i
+/**
+ * "👤 40", "👥 36 seeders", "👥 S:40", "Seeders: 40". The word needs its colon, or
+ * Seed* (2007) has 2007 seeders. Thousands grouping is taken because a source
+ * that writes "👤 1,234" was otherwise read as **one** seeder — putting the
+ * best-seeded release in the swarm under `THIN` and demoting it a whole tier,
+ * which is the exact opposite of what it deserved.
+ */
+const SEEDERS = /(?:👤|👥|\bseed(?:er)?s?\s*:)\s*(?:S:\s*)?(\d+(?:[,.\u202F\u00A0]\d{3})*)/i
 
 /**
  * Where a result came from, first name only: "🔗 a,b,c" is every scraper that
@@ -196,8 +214,13 @@ const SEEDERS = /(?:👤|👥|\bseed(?:er)?s?\s*:)\s*(?:S:\s*)?(\d+)/i
  */
 const SOURCE = [/🔗\uFE0F?\s*([^\s,|]+)/, /(?:⚙|🔎|\bsource:)\uFE0F?\s*([^\s,|]+)/i, /🌐\uFE0F?\s*([^\s,|]+)/]
 
-/** A resolution, and whatever the label says after it ("4k DV | HDR"). */
-const RESOLUTION = /\b(\d{3,4}p|4k)\b(.*)/i
+/**
+ * A resolution, and whatever the label says after it ("4k DV | HDR"). `uhd`
+ * because a scene 4k is routinely labelled only that ("Film.2021.UHD.BluRay.
+ * REMUX") and a release with no tier at all ranks below every 480p — the sharpest
+ * copy in the list, last.
+ */
+const RESOLUTION = /\b(\d{3,4}p|4k|uhd)\b(.*)/i
 
 /** Emoji and flags. `\p{Emoji}` would take in the digits too. */
 const ICON = /[\p{Extended_Pictographic}\p{Regional_Indicator}]/u
@@ -298,13 +321,13 @@ export function toRelease(raw: RawStream): Release | null {
   // Debrid addons have already resolved the file, so they tend to give its
   // exact length here instead of drawing the stats line a torrent needs.
   const bytes = size
-    ? Number(size[1]) * 1024 ** ('KMGT'.indexOf(size[2]!.toUpperCase()) + 1)
+    ? Number(size[1]!.replace(',', '.')) * 1024 ** ('KMGT'.indexOf(size[2]!.toUpperCase()) + 1)
     : raw.behaviorHints?.videoSize ?? 0
 
   // The addon's own label says it best ("<addon>\n4k DV | HDR", "[TORRENT🧲]
   // <addon> 2160p"); the release name answers for one that doesn't.
   const label = (raw.name ?? '').match(RESOLUTION)
-  const tier = (label ?? name.match(RESOLUTION))?.[1]!.toLowerCase().replace('2160p', '4k') ?? ''
+  const tier = (label ?? name.match(RESOLUTION))?.[1]!.toLowerCase().replace('2160p', '4k').replace('uhd', '4k') ?? ''
   const quality = label ? tier + label[2]!.trimEnd() : tier
 
   // A link that says neither how big nor how sharp is the addon talking — an
@@ -319,7 +342,7 @@ export function toRelease(raw: RawStream): Release | null {
     url,
     fileIdx: raw.fileIdx ?? null,
     file: lines.slice(1).find(line => VIDEO_EXT.test(line)) ?? null,
-    seeders: seeders ? Number(seeders[1]) : null,
+    seeders: seeders ? Number(seeders[1]!.replace(/[,.\u202F\u00A0]/g, '')) : null,
     size: size ? size[0] : bytes ? bytesText(bytes) : '',
     bytes,
     source: SOURCE.map(re => title.match(re)?.[1]).find(Boolean) ?? 'unknown',
@@ -592,6 +615,17 @@ export function isStream(folder: string) {
  * it downloads the whole film at full speed. A torrent the engine already holds
  * is left as it was either way.
  */
+/**
+ * How long the engine may spend asking the swarm for a magnet's details.
+ *
+ * It holds the request open until some peer answers, so a release whose swarm
+ * has gone never answers at all — measured against a hash nobody seeds: still
+ * waiting after two minutes, with a spinner on screen and nothing to press but
+ * Back. Long enough for a thin swarm behind a NAT, finite so that a dead one
+ * becomes a sentence the viewer can act on.
+ */
+const METADATA_MS = 90_000
+
 export async function addTorrent(magnet: string, dir = downloadDir, paused = false, only: number | null = null) {
   // Only new torrents move: the engine remembers an existing one's folder, and
   // its data is already sitting in it.
@@ -602,7 +636,17 @@ export async function addTorrent(magnet: string, dir = downloadDir, paused = fal
   // measured at 111 s of "initializing" on that pack, long past `limitToFiles`
   // giving up, so it was never narrowed and never windowed either.
   const files = only != null ? `&only_files=${only}` : ''
-  const res = await fetch(`${ENGINE}/torrents?overwrite=true${folder}${files}`, { method: 'POST', body: magnet })
+  const res = await fetch(`${ENGINE}/torrents?overwrite=true${folder}${files}`, {
+    method: 'POST',
+    body: magnet,
+    signal: AbortSignal.timeout(METADATA_MS),
+  }).catch((e: unknown) => {
+    // Only the leash above is worth rewording; anything else is the engine being
+    // unreachable, which says so for itself.
+    if ((e as Error)?.name === 'TimeoutError')
+      throw new Error($t('No peer answered with this release\'s details, so there is nothing to play yet. Try a different one.'))
+    throw e
+  })
   if (!res.ok)
     throw new Error($t('Torrent engine said {status}: {reason}', { status: res.status, reason: await res.text() }))
   const added = await res.json() as {
@@ -651,6 +695,24 @@ export function pickVideoFile(
   if (hint != null && videos.some(f => f.index === hint))
     return hint
 
+  // No `S01E02` anywhere and nobody named a file: the bare number is all a
+  // fansub pack ever writes ("[Group] Show - 02 [1080p].mkv", "Show - Episode
+  // 2"), and every episode in one weighs about the same, so falling through to
+  // the biggest file plays an arbitrary episode of the right show. That is the
+  // Anime section's ordinary case, not an exotic one.
+  //
+  // Only when exactly one file carries the number, which is what makes it safe:
+  // a resolution, a year, a codec and a channel count are all numbers too, and
+  // any of them appearing in a second file means this cannot tell which is
+  // which — so it says nothing rather than guessing. `\b` around it is why
+  // "1080p" and "x265" are not episode 8 or episode 5.
+  if (want?.episode && videos.length > 1) {
+    const bare = new RegExp(`\\b0*${want.episode}\\b`)
+    const named = videos.filter(f => bare.test(f.name.split('/').pop() ?? f.name))
+    if (named.length === 1)
+      return named[0]!.index
+  }
+
   // A torrent already in the engine remembers what it was narrowed to, which is
   // the file someone picked last time — better than guessing again.
   const included = videos.filter(f => f.included)
@@ -692,7 +754,13 @@ export function filedAs(
   index: number | null = null,
   file?: EngineFile,
 ) {
-  const mine = Object.entries(cached).filter(([, c]) => c.hash === hash)
+  // Case-insensitively, as `heldCopy` matches: this map is written with the hash
+  // as one endpoint spells it and read with the hash as another one does, and
+  // librqbit and the addons do not agree on the case. A miss here is silent —
+  // the film plays as a bare magnet and its progress, History and Continue
+  // watching entry are simply never written.
+  const want = hash.toLowerCase()
+  const mine = Object.entries(cached).filter(([, c]) => c.hash.toLowerCase() === want)
 
   // Nothing says which file the whole-torrent Play button will land on, so one
   // entry is an answer and two are a coin toss.
@@ -762,6 +830,13 @@ export function parseRelease(name: string): ReleaseName {
     .replace(/[[(][^\])]*[\])]/g, ' ')
     .replace(/\s{2,}/g, ' ')
     .replace(/[\s\-–—:[(]+$/, '')
+    // A fansub pack writes the episode as a bare number behind a dash, which no
+    // catalogue has ever heard of as part of a title — "Show Name - 02" matched
+    // nothing, so an anime played from a magnet found no subtitles at all. After
+    // the bracket above, which is what the cut leaves dangling. The dash is what
+    // makes it safe: a year, a resolution and a sequel number are never written
+    // that way.
+    .replace(/\s[-–—]\s*\d{1,3}$/, '')
     .trim()
 
   // The year is the first plausible one *after* the title, so the 2049 in
@@ -847,17 +922,28 @@ export const STALLED = 'stalled'
  */
 export async function engineReason(url: string) {
   const parts = streamParts(url)
-  const stats = parts ? (await torrentDetails(parts.id))?.stats : null
+  if (!parts)
+    return ''
+  // From the *list*, which is the only endpoint that carries stats: the detail
+  // one answers files and no stats at all, so asking it meant every sentence
+  // below was unreachable — a paused torrent, a disk error and a dead swarm all
+  // came out as the same "not ready yet, it may still be fetching metadata",
+  // which is the guess this function exists to replace.
+  const stats = (await listTorrents().catch(() => [])).find(t => t.id === parts.id)?.stats
   if (!stats)
     return ''
   if (stats.error)
     return stats.error
   if (stats.state !== 'live')
     return stats.state
-  // Live, healthy, connected — and not one byte after the whole leash. Nothing
-  // here is broken and nothing here can be fixed: the release has no seeders
-  // that will talk to us, and the only useful thing to say is "pick another".
-  return stats.progress_bytes ? '' : STALLED
+  // Live, connected, and nothing arriving after the whole leash. Nothing here is
+  // broken and nothing here can be fixed: the release has no seeders that will
+  // talk to us, and the only useful thing to say is "pick another".
+  //
+  // What is *arriving*, not what has arrived: a pack holds bytes of the film
+  // somebody watched last week, and reading those as health let a stream that
+  // would never open report itself perfectly well.
+  return !stats.finished && !stats.live?.download_speed.mbps ? STALLED : ''
 }
 
 /**
@@ -1091,6 +1177,21 @@ function magnetHash(magnet: string) {
 }
 
 /**
+ * Which files the engine should be fetching for this play: the video, the
+ * subtitles that belong to it, and — for a torrent already narrowed to
+ * something — whatever it was already told to fetch. A pack you are part-way
+ * through keeps downloading what it was told to and *gains* this file, rather
+ * than being reset to it.
+ */
+function wantedFiles(files: EngineFile[], index: number) {
+  const included = files.flatMap((f, i) => f.included ? [i] : [])
+  // Nothing narrowed means the whole torrent is wanted, and listing every index
+  // back would be the same thing said the long way.
+  const wanted = [index, ...pickSubtitleFiles(files, index)]
+  return included.length < files.length ? [...new Set([...included, ...wanted])] : wanted
+}
+
+/**
  * Play a copy the engine already holds, without adding anything: every byte of
  * the wanted file is on the disk, so there is nothing to fetch and nobody to
  * ask. This is the whole of what "offline" means here.
@@ -1204,6 +1305,14 @@ export async function startTorrent(options: {
    * would adopt it back out of the engine by its name.
    */
   exclude?: string[]
+  /**
+   * The release this play settled on, the moment it is chosen rather than when
+   * it works. Everything after the pick can still fail — a swarm that never
+   * sends the film's details, a torrent with no video in it — and without this
+   * the caller never learns which release that was, so "try a different one"
+   * has nothing to give up on and picks the same one again.
+   */
+  onPicked?: (release: Release) => void
   /** Storage budget for the pick — see `diskBudget`. Ignored with `magnet`. */
   maxBytes?: number
   /** How big a film this device can keep; a bigger copy loses a tie — see `pickBest`. */
@@ -1297,6 +1406,7 @@ export async function startTorrent(options: {
           ? $t('All {count} releases found were cams, dead, or too big for this device.', { count: found.length })
           : $t('Your sources have nothing for this title.'))
       }
+      options.onPicked?.(picked)
       // The source resolved this one itself — there is no torrent to add.
       if (picked.url)
         return { id: -1, index: -1, hash: '', url: picked.url, torrent: picked, stream: false, length: 0 }
@@ -1314,6 +1424,39 @@ export async function startTorrent(options: {
   if (already?.ready)
     return playHeld(already, picked)
 
+  // Held, and not finished. Handing the magnet back to the engine was how this
+  // used to carry on, and it is a trap: librqbit resolves a magnet's metadata
+  // from the swarm even for a hash it is already holding the metadata of, so a
+  // release whose seeders have gone takes the add with it — and Play sat on
+  // "Fetching metadata from peers…" for ever, with no leash and nothing to press.
+  // That is the same dead swarm the player names once a film is up, one step
+  // earlier and far worse, because nothing is on screen to explain it.
+  //
+  // The add was only ever wanted for three things and the torrent can be told
+  // all three directly: it already knows its files, its folder is not allowed to
+  // change anyway, and starting it is a command of its own. Only a torrent whose
+  // metadata has not arrived yet still has to go the long way round, because
+  // there is genuinely nothing here to play from.
+  if (already?.files.length) {
+    const index = options.fileIndex ?? pickVideoFile(already.files, hint, options)
+    if (index == null)
+      throw new Error($t('That torrent holds no video file.'))
+    await limitToFiles(already.id, wantedFiles(already.files, index))
+    // It may have been paused: by `release` on the way out of the last film, by
+    // "only on Wi-Fi", or by a pack left alone while something else played. The
+    // add used to be what started it again.
+    await torrentAction(already.id, 'start').catch(() => {})
+    return {
+      id: already.id,
+      index,
+      hash: already.hash,
+      url: '',
+      torrent: picked,
+      stream: isStream(already.folder),
+      length: already.files[index]?.length ?? 0,
+    }
+  }
+
   // A torrent the engine already holds stays what it was — a download goes on
   // downloading, a stream is still in the streams folder — so only a new one is
   // asked, and asked before it is added: the answer is the folder it goes to.
@@ -1330,16 +1473,9 @@ export async function startTorrent(options: {
   if (index == null)
     throw new Error($t('That torrent holds no video file.'))
 
-  // Adding a magnet the engine already holds hands back its current selection,
-  // so a pack you're part-way through keeps downloading what it was told to and
-  // gains this file — rather than being reset to it.
-  const included = files.flatMap((f, i) => f.included ? [i] : [])
-  const narrowed = included.length < files.length
   // The subtitles this release ships come down with the video: a few hundred KB
   // each, and the engine only serves a file it was told to download.
-  const wanted = [index, ...pickSubtitleFiles(files, index)]
-  const only = narrowed ? [...new Set([...included, ...wanted])] : wanted
-  await limitToFiles(added.id, only)
+  await limitToFiles(added.id, wantedFiles(files, index))
 
   // Asked again now the file is known, for a size no source gave — it is
   // already in the download folder, so a stream that isn't is only windowed,

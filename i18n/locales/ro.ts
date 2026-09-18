@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Încă niciun canal",
   "No episodes listed.": "Niciun episod listat.",
   "No overview.": "Fără rezumat.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Încă nicio listă de redare. TV în direct rămâne gol până când adaugi una — aplicația nu vine cu niciun canal și nu sugerează niciunul.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Fără sunet — acest dispozitiv nu poate decoda sunetul acestei versiuni (Dolby sau DTS). O versiune cu sunet AAC se va reda.",
   "No source answered — {reason}": "Nicio sursă nu a răspuns — {reason}",

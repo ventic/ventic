@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Gun seanailean fhathast",
   "No episodes listed.": "Chan eil eapasod air a liostadh.",
   "No overview.": "Gun gheàrr-chunntas.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Gun liostaichean-cluich fhathast. Fanaidh Telebhisean Beò falamh gus an cuir thu fear ris — cha tig an aplacaid le seanail sam bith 's cha mhol i gin.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Gun fhuaim — chan urrainn dhan uidheam seo fuaim an sgaoilidh seo a dhì-chòdachadh (Dolby no DTS). Cluichidh sgaoileadh le fuaim AAC.",
   "No source answered — {reason}": "Cha do fhreagair tùs sam bith — {reason}",

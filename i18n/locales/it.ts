@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Ancora nessun canale",
   "No episodes listed.": "Nessun episodio elencato.",
   "No overview.": "Nessuna trama.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Ancora nessuna playlist. La TV in diretta resta vuota finché non ne aggiungi una — l'app non include alcun canale e non ne suggerisce nessuno.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Nessun suono: questo dispositivo non sa decodificare l'audio di questa release (Dolby o DTS). Una release con audio AAC si riprodurrà.",
   "No source answered — {reason}": "Nessuna fonte ha risposto — {reason}",

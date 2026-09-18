@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Bado hakuna vituo",
   "No episodes listed.": "Hakuna vipindi vilivyoorodheshwa.",
   "No overview.": "Hakuna muhtasari.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Bado hakuna orodha za kucheza. TV ya moja kwa moja itabaki tupu hadi uongeze moja — programu haiji na kituo chochote wala haipendekezi chochote.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Hakuna sauti — kifaa hiki hakiwezi kusimbua sauti ya toleo hili (Dolby au DTS). Toleo lenye sauti ya AAC litacheza.",
   "No source answered — {reason}": "Hakuna chanzo kilichojibu — {reason}",

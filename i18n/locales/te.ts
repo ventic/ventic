@@ -287,6 +287,7 @@ export default {
   "No channels yet": "ఇంకా ఛానెళ్లు లేవు",
   "No episodes listed.": "ఎపిసోడ్‌లేవీ జాబితా చేయబడలేదు.",
   "No overview.": "సారాంశం లేదు.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "ఇంకా ప్లేజాబితాలు లేవు. మీరు ఒకటి జోడించే వరకు ప్రత్యక్ష టీవీ ఖాళీగానే ఉంటుంది — యాప్ ఏ ఛానెల్‌తోనూ రాదు, ఏదీ సూచించదు కూడా.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "శబ్దం లేదు — ఈ విడుదల ఆడియోను (Dolby లేదా DTS) ఈ పరికరం డీకోడ్ చేయలేదు. AAC ఆడియో ఉన్న విడుదల ప్లే అవుతుంది.",
   "No source answered — {reason}": "ఏ మూలమూ స్పందించలేదు — {reason}",

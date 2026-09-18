@@ -287,6 +287,7 @@ export default {
   "No channels yet": "अजून वाहिन्या नाहीत",
   "No episodes listed.": "कोणतेही भाग यादीत नाहीत.",
   "No overview.": "कथासार नाही.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "अजून प्लेलिस्ट नाहीत. तुम्ही एक जोडेपर्यंत थेट टीव्ही रिकामाच राहील — ॲप कोणत्याही वाहिनीसह येत नाही आणि कोणतीही सुचवतही नाही.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "आवाज नाही — हे उपकरण या प्रकाशनाचा ऑडिओ (Dolby किंवा DTS) डीकोड करू शकत नाही. AAC ऑडिओ असलेले प्रकाशन चालेल.",
   "No source answered — {reason}": "कोणत्याही स्रोताने उत्तर दिले नाही — {reason}",

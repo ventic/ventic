@@ -287,6 +287,7 @@ export default {
   "No channels yet": "هنوز کانالی نیست",
   "No episodes listed.": "هیچ قسمتی فهرست نشده است.",
   "No overview.": "بدون خلاصه.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "هنوز فهرست پخشی نیست. تا وقتی یکی نیفزایید، تلویزیون زنده خالی می‌ماند — برنامه با هیچ کانالی نمی‌آید و هیچ‌کدام را هم پیشنهاد نمی‌دهد.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "بدون صدا — این دستگاه نمی‌تواند صدای این نسخه را رمزگشایی کند (Dolby یا DTS). نسخه‌ای با صدای AAC پخش خواهد شد.",
   "No source answered — {reason}": "هیچ منبعی پاسخ نداد — {reason}",

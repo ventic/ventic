@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Kanalų kol kas nėra",
   "No episodes listed.": "Serijų nenurodyta.",
   "No overview.": "Santraukos nėra.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Grojaraščių kol kas nėra. Tiesioginė TV liks tuščia, kol nepridėsite savo — programa neatkeliauja su jokiais kanalais ir jokių nesiūlo.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Nėra garso — šis įrenginys negali iškoduoti šios laidos garso (Dolby arba DTS). Laida su AAC garsu grosis.",
   "No source answered — {reason}": "Nė vienas šaltinis neatsakė — {reason}",

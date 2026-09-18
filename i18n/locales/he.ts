@@ -287,6 +287,7 @@ export default {
   "No channels yet": "עדיין אין ערוצים",
   "No episodes listed.": "לא רשומים פרקים.",
   "No overview.": "אין תקציר.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "עדיין אין רשימות השמעה. הטלוויזיה בשידור חי תישאר ריקה עד שתוסיף אחת — האפליקציה אינה מגיעה עם ערוצים ואינה מציעה אף אחד.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "אין קול — המכשיר הזה לא יכול לפענח את השמע של המהדורה הזו (Dolby או DTS). מהדורה עם שמע AAC כן תתנגן.",
   "No source answered — {reason}": "אף מקור לא הגיב — {reason}",

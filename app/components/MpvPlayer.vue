@@ -2491,9 +2491,17 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
           {{ $t('Playback failed') }}
         </div>
         <pre class="max-h-32.5 max-w-full overflow-auto whitespace-pre-wrap text-left text-label-small font-mono opacity-70">{{ errorMsg }}</pre>
-        <button :class="BTN" :disabled="busy" @click="startPlayer">
-          <v-icon :icon="mdiReload" size="18" /> {{ $t('Retry') }}
-        </button>
+        <div class="flex flex-wrap justify-center gap-2">
+          <button :class="BTN" :disabled="busy" @click="startPlayer">
+            <v-icon :icon="mdiReload" size="18" /> {{ $t('Retry') }}
+          </button>
+          <!-- Retrying the same release is the wrong move for most of what
+               lands here — a dead swarm, a torrent with no video in it, a
+               release that never sent its details. Offer the other fix too. -->
+          <button v-if="pickable" :class="BTN" :disabled="busy" @click="emit('another')">
+            <v-icon :icon="mdiSwapHorizontal" size="18" /> {{ $t('Try a different release') }}
+          </button>
+        </div>
       </template>
 
       <!-- A dead swarm, which is not a failure the player can retry its way out

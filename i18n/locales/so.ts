@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Weli kanaallo ma jiraan",
   "No episodes listed.": "Qeybo lama liisgareyn.",
   "No overview.": "Kooban ma jiro.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Weli liisas ciyaarista ma jiraan. TV-ga Tooska ah wuu madhnaan doonaa ilaa aad mid ku darto — barnaamijku kanaal ma wado, midna ma soo jeediyo.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Cod ma jiro — qalabkani ma furi karo codka sii deyntan (Dolby ama DTS). Sii deyn leh cod AAC way shaqayn doontaa.",
   "No source answered — {reason}": "Il midna kama jawaabin — {reason}",

@@ -52,6 +52,18 @@ assert.equal(uhd!.size, '8.91 GB')
 assert.equal(uhd!.source, 'indexer-a')
 assert.equal(uhd!.quality, '4k HDR')
 assert.equal(hd!.bytes, 2.1 * 1024 ** 3)
+
+// How the numbers are written, which no two panels agree on. Each of these was
+// read wrongly once: "1,234" as a single seeder (so the best-seeded release in
+// the list was demoted under `THIN`), "2,5 GB" as five gigabytes, and a scene 4k
+// labelled only UHD as no tier at all — last behind every 480p.
+const written = (title: string) => toRelease({ infoHash: 'zzz', name: 'Example', title })!
+assert.equal(written('Film.2021.1080p.WEB\n👤 1,234 💾 2.1 GB').seeders, 1234, 'thousands-grouped seeders')
+assert.equal(written('Film.2021.1080p.WEB\n👤 1.234 💾 2.1 GB').seeders, 1234, 'grouped with full stops')
+assert.equal(written('Film.2021.1080p.WEB\n👤 40 💾 2,5 GB').bytes, 2.5 * 1024 ** 3, 'a comma is a decimal point')
+assert.equal(written('Film.2021.1080p.WEB\n👤 40 💾 2.5GB').bytes, 2.5 * 1024 ** 3, 'no space before the unit')
+assert.equal(written('Film.2021.UHD.BluRay.REMUX\n👤 4 💾 60 GB').quality, '4k', 'UHD is a 4k')
+assert.equal(written('Film.2021.2160p.WEB\n👤 4 💾 20 GB').quality, '4k', 'and so is 2160p')
 assert.equal(hd!.fileIdx, 3)
 assert.ok(hd!.magnet.startsWith('magnet:?xt=urn:btih:bbb&dn=Sintel.2010.1080p.BluRay.x264&tr='))
 assert.ok(hd!.magnet.includes(encodeURIComponent('udp://private.example:6969/announce')), 'keeps the release\'s own tracker')
@@ -289,6 +301,28 @@ assert.equal(pickVideoFile(pack, 0, { season: 1, episode: 2 }), 1, 'the name bea
 assert.equal(pickVideoFile(pack, null, { season: 1, episode: 1 }), 0, 'E01 is not E10')
 assert.equal(pickVideoFile(pack, null, { season: 2, episode: 2 }), 0, 'no match falls back to largest')
 assert.equal(pickVideoFile([{ name: 'Show 1x02 HDTV.avi', length: 5, included: true }], null, { season: 1, episode: 2 }), 0)
+
+// A fansub pack writes the number and nothing else, and its episodes all weigh
+// the same — so falling through to "the biggest" played an arbitrary episode of
+// the right show. Taken only when exactly one file carries the number, because
+// resolutions, years and codecs are numbers too.
+const fansub = [
+  { name: '[Group] Show - 01 [1080p][x265].mkv', length: 1_000_000_000, included: true },
+  { name: '[Group] Show - 02 [1080p][x265].mkv', length: 1_000_000_001, included: true },
+]
+assert.equal(pickVideoFile(fansub, null, { season: 1, episode: 1 }), 0, 'absolute numbering, episode 1')
+assert.equal(pickVideoFile(fansub, null, { season: 1, episode: 2 }), 1, 'absolute numbering, episode 2')
+assert.equal(pickVideoFile([
+  { name: 'Show - Episode 1.mkv', length: 5, included: true },
+  { name: 'Show - Episode 2.mkv', length: 5, included: true },
+], null, { season: 1, episode: 2 }), 1, 'spelled out')
+// Ambiguous says nothing: both files carry a bare 2, so neither is the episode.
+assert.equal(pickVideoFile([
+  { name: 'Show - 05 [2.0ch].mkv', length: 9, included: true },
+  { name: 'Show - 06 [2.0ch].mkv', length: 8, included: true },
+], null, { season: 1, episode: 2 }), 0, 'a number two files share is not an episode number')
+// And a hint still beats it — the source resolved the file itself.
+assert.equal(pickVideoFile(fansub, 0, { season: 1, episode: 2 }), 0, 'the source\'s own index wins')
 // Once the engine has been narrowed to one file, that's the one to play back.
 assert.equal(pickVideoFile(pack.map((f, i) => ({ ...f, included: i === 2 })), null), 2)
 
@@ -303,6 +337,10 @@ const filed = {
 assert.equal(filedAs(filed, 'aaa'), 'movie:4808', 'one entry for the hash is the answer')
 assert.equal(filedAs(filed, 'aaa', 0), 'movie:4808')
 assert.equal(filedAs(filed, 'nope'), '', 'a pasted magnet is nobody\'s title')
+// Written with the hash as one endpoint spells it, read with the hash as another
+// one does — the same disagreement `heldCopy` already allows for. Getting it
+// wrong is silent: the film plays, and nothing about it is ever recorded.
+assert.equal(filedAs({ 'movie:4808': { hash: 'AAA', file: 0 } }, 'aaa'), 'movie:4808', 'the case of a hash decides nothing')
 assert.equal(filedAs(filed, 'pack', 1), 'tv:1396:1:2', 'the file it was filed under')
 // The rest of a pack was never filed — the siblings give the show, the name the
 // episode. Neither half is trusted on its own.
@@ -379,6 +417,14 @@ assert.deepEqual(rel('Blade.Runner.2049.2017.2160p.UHD.BluRay.x265'), {
   episode: 0,
 })
 assert.equal(rel('Blade Runner 2049 1080p BluRay').title, 'Blade Runner 2049', 'even with no year to find')
+// A fansub pack's episode number is not part of the show's name. This feeds the
+// subtitle lookup, and "Show Name - 02" matched no catalogue entry at all — so
+// an anime played from a magnet found no subtitles. A number with no dash in
+// front of it is left alone, or every sequel loses its number.
+assert.equal(rel('[Group] Show Name - 02 [1080p][HEVC].mkv').title, 'Show Name', 'the episode is not the title')
+assert.equal(rel('[Group] Another Show - 113 [720p].mkv').title, 'Another Show', 'however far into the run it is')
+assert.equal(rel('Blade Runner 2049 2017 2160p').title, 'Blade Runner 2049', 'a number with no dash stays')
+assert.equal(rel('Ocean s Eleven 2001 1080p').title, 'Ocean s Eleven', 'and so does a spelled-out one')
 // And a detail with nothing in front of it is the title, or these match anything.
 assert.deepEqual(rel('1917.2019.1080p.BluRay.x264-SPARKS'), {
   title: '1917',
@@ -604,6 +650,13 @@ assert.equal(normalizeSource('http://192.168.1.9:11470'), 'http://192.168.1.9:11
 // post, and what a TV keyboard makes expensive to type in full.
 assert.equal(normalizeSource('a.example'), 'https://a.example')
 assert.equal(normalizeSource('a.example/opt=x/manifest.json'), 'https://a.example/opt=x')
+// Not everything pasted in is a URL, and a sentence used to be accepted as one:
+// the old test looked only as far as the first word, so `https://not a url at
+// all` went into the list and every search after it failed talking about
+// sources rather than about what was typed.
+assert.equal(normalizeSource('not a url at all'), '', 'a sentence is not a source')
+assert.equal(normalizeSource('https://a.example extra words'), '', 'nor a URL with something after it')
+assert.equal(normalizeSource('https://'), '', 'nor a scheme on its own')
 // Not URLs.
 assert.equal(normalizeSource(''), '')
 assert.equal(normalizeSource('   '), '')
@@ -680,8 +733,12 @@ const PACK = [
   { name: 'Sintel.2010.1080p.mkv', length: 2_000_000_000, included: true },
 ]
 
-/** How much of file 1 the engine holds, and whether it holds the torrent. */
-const engine = { have: 2_000_000_000, held: true }
+/**
+ * How much of file 1 the engine holds, whether it holds the torrent, and
+ * whether its metadata has arrived (a magnet is added long before its files are
+ * known).
+ */
+const engine = { have: 2_000_000_000, held: true, meta: true, folder: '/x' }
 let requests: string[] = []
 
 globalThis.fetch = (async (input: string | URL | Request) => {
@@ -690,11 +747,11 @@ globalThis.fetch = (async (input: string | URL | Request) => {
   // Deliberately upper-case where the caller remembers it lower-case: librqbit
   // and the addons do not agree on which, and a case-sensitive compare here
   // would silently re-download everything.
-  const listed = { id: 7, info_hash: 'BBB', name: 'pack', output_folder: '/x', stats: { file_progress: [10, engine.have] } }
+  const listed = { id: 7, info_hash: 'BBB', name: 'pack', output_folder: engine.folder, stats: { file_progress: [10, engine.have] } }
   if (url.startsWith(`${ENGINE}/torrents?with_stats`))
     return Response.json({ torrents: engine.held ? [listed] : [] })
   if (url === `${ENGINE}/torrents/7`)
-    return Response.json({ ...listed, files: PACK })
+    return Response.json({ ...listed, files: engine.meta ? PACK : [] })
   if (url.startsWith(`${ENGINE}/torrents?overwrite`))
     return Response.json({ id: 7, details: { name: 'pack', info_hash: 'bbb', files: PACK } })
   if (url.startsWith(ENGINE))
@@ -734,14 +791,30 @@ assert.equal((await startTorrent({ magnet: 'magnet:?xt=urn:btih:BBB' })).index, 
 assert.ok(!requests.some(u => u.includes('overwrite')), 'and the case of the hash is not what decides it')
 
 // Half-downloaded: the same release still beats searching for another one, and
-// the engine picks up where it left off.
+// the engine picks up where it left off — told to, never re-added. Handing the
+// magnet back made librqbit resolve metadata it was already holding, which on a
+// release whose seeders have gone never returns: Play hung on "Fetching metadata
+// from peers…" with no leash. A torrent that is already here is told what to
+// fetch and started instead.
 engine.have = 500_000_000
 requests = []
 const resumed = await startTorrent({ imdbId: 'tt0000001', cached })
 assert.equal(resumed.id, 7)
 assert.equal(resumed.index, 1)
 assert.ok(!requests.some(u => u.startsWith('https://a.example')), 'the release is already decided')
-assert.ok(requests.some(u => u.includes('overwrite=true')), 'handed back to the engine to finish')
+assert.ok(!requests.some(u => u.includes('overwrite=true')), 'a torrent the engine holds is never re-added')
+assert.ok(requests.some(u => u.includes('update_only_files')), 'told which file to fetch')
+assert.ok(requests.some(u => u.includes('/start')), 'and started, in case it was paused')
+
+// A magnet added seconds ago has no files yet, and there is nothing here to play
+// from or to narrow. That one still has to go round by the engine and wait for
+// the swarm, which is the only case the add is genuinely for.
+engine.meta = false
+requests = []
+const waiting = await startTorrent({ imdbId: 'tt0000001', cached })
+assert.equal(waiting.id, 7)
+assert.ok(requests.some(u => u.includes('overwrite=true')), 'metadata still has to be fetched')
+engine.meta = true
 
 // Evicted since: the bytes are gone, so the sources are worth asking again —
 // re-adding a hash nobody seeds any more would just hang.
@@ -875,6 +948,17 @@ requests = []
 const kept = await startTorrent({ imdbId: 'tt0000001', cached, streamIf: () => true })
 assert.ok(!kept.stream, 'a download under way goes on downloading')
 assert.ok(!requests.some(u => u.includes('output_folder')), 'in the folder it already had')
+
+// And the other way about: a stream picked up again is still a stream. The
+// folder is the only thing that says so, and getting it wrong is not cosmetic —
+// `watch.vue` would put no buffer window on it and the whole film would come
+// down into a cache that exists to hold minutes of one.
+engine.folder = '/cache/ventic-streams/pack'
+requests = []
+const resumedStream = await startTorrent({ imdbId: 'tt0000001', cached, streamIf: () => false })
+assert.ok(resumedStream.stream, 'a stream resumed is still a stream')
+assert.ok(!requests.some(u => u.includes('output_folder')), 'and is not moved')
+engine.folder = '/x'
 setStreamDir('')
 
 // --- A file the user already had ----------------------------------------------
@@ -1002,15 +1086,39 @@ assert.deepEqual(narrowedTo, [1, 4], 'and the second attempt narrows to the same
 // The stream endpoint answers 500 with "invalid state" for three unrelated
 // failures. Guessing at which one it was is how every report of this arrived
 // with nothing in it — the torrent itself is what has to be asked.
-const stats = { state: 'live', error: null as string | null, progress_bytes: 1 }
-globalThis.fetch = (async () => Response.json({ id: 7, stats })) as typeof fetch
+const stats = {
+  state: 'live',
+  error: null as string | null,
+  progress_bytes: 1,
+  finished: false,
+  live: { download_speed: { mbps: 1 } },
+}
+// Answered the way librqbit really answers, which is the whole point of this
+// block: stats come from the *list* and the detail route carries none at all.
+// A stub that handed the same object to both hid the fact that every sentence
+// below was unreachable in the app for as long as this test was green.
+globalThis.fetch = (async (input: string | URL | Request) => {
+  const url = String(input)
+  if (url.startsWith(`${ENGINE}/torrents?with_stats`))
+    return Response.json({ torrents: [{ id: 7, info_hash: 'bbb', name: 'x', output_folder: '/x', total_pieces: 1, stats }] })
+  return Response.json({ id: 7, info_hash: 'bbb', name: 'x', output_folder: '/x', total_pieces: 1, files: [] })
+}) as typeof fetch
 
 const streamed = `${ENGINE}/torrents/7/stream/1`
 assert.equal(await engineReason(streamed), '', 'a torrent that is fine says nothing')
 // Live, connected, and not one byte: nothing is broken and nothing can be
 // fixed here — the release has no seeders, and that is what has to be said.
+// What is *arriving*, not what has arrived: a pack holds bytes of the film
+// somebody watched last week, so "it has some progress" said a stream that would
+// never open was perfectly healthy.
+stats.live.download_speed.mbps = 0
+assert.equal(await engineReason(streamed), STALLED, 'a live torrent with nothing arriving is a dead swarm')
 stats.progress_bytes = 0
-assert.equal(await engineReason(streamed), STALLED, 'a live torrent with no bytes is a dead swarm')
+assert.equal(await engineReason(streamed), STALLED, 'and one that never started at all')
+stats.finished = true
+assert.equal(await engineReason(streamed), '', 'a finished film fetches nothing and is not a dead swarm')
+stats.finished = false
+stats.live.download_speed.mbps = 1
 stats.progress_bytes = 1
 stats.state = 'initializing'
 assert.equal(await engineReason(streamed), 'initializing')

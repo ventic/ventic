@@ -287,6 +287,7 @@ export default {
   "No channels yet": "Még nincsenek csatornák",
   "No episodes listed.": "Nincsenek felsorolt epizódok.",
   "No overview.": "Nincs leírás.",
+  "No peer answered with this release's details, so there is nothing to play yet. Try a different one.": "TODO_TRANSLATION: No peer answered with this release's details, so there is nothing to play yet. Try a different one.",
   "No playlists yet. Live TV stays empty until you add one — the app comes with no channels and suggests none.": "Még nincsenek lejátszási listák. Az Élő TV üres marad, amíg nem adsz hozzá egyet — az alkalmazás egyetlen csatornát sem hoz magával, és nem is javasol.",
   "No sound — this device can't decode this release's audio (Dolby or DTS). A release with AAC audio will play.": "Nincs hang — ez az eszköz nem tudja dekódolni ennek a kiadásnak a hangját (Dolby vagy DTS). Egy AAC hanggal készült kiadás le fog játszódni.",
   "No source answered — {reason}": "Egyetlen forrás sem válaszolt — {reason}",
