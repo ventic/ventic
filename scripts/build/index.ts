@@ -6,6 +6,8 @@
  *   bun run build android      → an APK for phones / Android TV boxes
  *   bun run build play         → the .aab Google Play takes, same code
  *   bun run build android-dev  → run on an attached device, hot-reloading
+ *   bun run build android-dev --tv | --phone
+ *                              → the same, on the one attached device of that kind
  *
  * Everything here is a preflight check plus a `tauri` invocation. The checks
  * exist because the failures they catch otherwise surface hundreds of lines
@@ -485,7 +487,7 @@ function portFree(port: number) {
   })
 }
 
-async function devAndroid(extra: string[]) {
+async function devAndroid(extra: string[], kind?: 'tv' | 'phone') {
   const env = androidEnv()
 
   if (!await portFree(3000)) {
@@ -510,16 +512,22 @@ async function devAndroid(extra: string[]) {
       + '          it is then found here automatically, no `adb connect` needed.',
     )
   }
-  console.log(`\n→ ${attached.length} device(s) attached; starting the dev build\n`)
+  const serials = attached.map(l => l.trim().split(/\s+/)[0]!)
+  const chosen = kind ? serials.filter(s => isTv(s) === (kind === 'tv')) : serials
+  if (!chosen.length) {
+    die(
+      `adb sees no ${kind === 'tv' ? 'Android TV' : 'phone or tablet'}, only:\n${
+        serials.map(s => `    ${deviceName(s)} (${s})`).join('\n')}`,
+    )
+  }
+  console.log(`\n→ ${chosen.map(deviceName).join(', ')}; starting the dev build\n`)
 
   // A device on the other side of adb cannot reach the dev server on the
   // laptop's localhost. `adb reverse` makes :3000 on the phone come out of this
   // machine — both the frontend the webview loads and the HMR socket
   // nuxt.config aims back here, which rides the same port.
-  for (const line of attached) {
-    const serial = line.trim().split(/\s+/)[0]!
+  for (const serial of chosen)
     spawnSync('adb', ['-s', serial, 'reverse', 'tcp:3000', 'tcp:3000'], { stdio: 'inherit' })
-  }
 
   // Left to itself the CLI points the device at the laptop's LAN address, which
   // ignores the reverse above and instead needs the device on the same network
@@ -529,7 +537,57 @@ async function devAndroid(extra: string[]) {
   // against http://tauri.localhost, naming neither the address nor the port it
   // actually failed to reach. Loopback over adb has none of those moving parts
   // and works over USB with the wifi off.
-  run(['tauri', 'android', 'dev', '--host', '127.0.0.1', ...extra], env)
+  //
+  // Not `run`: that exits on a non-zero status, and Ctrl-C — the way every one
+  // of these ends — is one, so the cleanup below would never run. The handler
+  // is not there to stop anything either, since the signal reaches the whole
+  // process group; it is what keeps *this* script alive past the signal that
+  // kills the child, long enough to put the device back as it found it.
+  process.on('SIGINT', () => {})
+  const dev = spawnSync('bun', [
+    'run',
+    'tauri',
+    'android',
+    'dev',
+    '--host',
+    '127.0.0.1',
+    // The CLI matches [DEVICE] against the name, which is `ro.product.model`.
+    ...(kind ? [deviceName(chosen[0]!)] : []),
+    ...extra,
+  ], { stdio: 'inherit', env: { ...process.env, ...env } })
+
+  // A dev build is a debug APK pointing at a laptop's :3000: useless the moment
+  // this exits, and in the way of a release one, which Android refuses to
+  // install over a differently-signed package of the same id. So it comes off a
+  // phone again. The TV keeps it — that is the test device, and an uninstall
+  // takes its library, settings and downloads with it.
+  for (const serial of chosen) {
+    spawnSync('adb', ['-s', serial, 'reverse', '--remove', 'tcp:3000'], { stdio: 'ignore' })
+    if (kind === 'phone') {
+      console.log(`\n→ removing the dev build from ${deviceName(serial)}\n`)
+      spawnSync('adb', ['-s', serial, 'uninstall', appId()], { stdio: 'inherit' })
+    }
+  }
+  process.exit(dev.status ?? 0)
+}
+
+/** The package id the dev build installs under, rather than a second copy of it. */
+function appId(): string {
+  return JSON.parse(readFileSync('src-tauri/tauri.conf.json', 'utf8')).identifier
+}
+
+function prop(serial: string, name: string) {
+  return (spawnSync('adb', ['-s', serial, 'shell', 'getprop', name], { encoding: 'utf8' }).stdout ?? '').trim()
+}
+
+/** Android TV sets `tv` in ro.build.characteristics; a phone or tablet does not. */
+function isTv(serial: string) {
+  return prop(serial, 'ro.build.characteristics').split(',').includes('tv')
+}
+
+/** What the tauri CLI knows the device as, and what it matches [DEVICE] against. */
+function deviceName(serial: string) {
+  return prop(serial, 'ro.product.model') || serial
 }
 
 function adbDevices() {
@@ -574,7 +632,10 @@ function run(args: string[], env: Record<string, string> = {}) {
     process.exit(r.status ?? 1)
 }
 
-const [target = 'desktop', ...extra] = process.argv.slice(2)
+const [target = 'desktop', ...argv] = process.argv.slice(2)
+// Which attached device `android-dev` goes to, when there is more than one.
+const kind = argv.includes('--tv') ? 'tv' : argv.includes('--phone') ? 'phone' : undefined
+const extra = argv.filter(a => a !== '--tv' && a !== '--phone')
 
 if ((target === 'macos' || target === 'mac') && process.platform !== 'darwin') {
   die(
@@ -593,6 +654,6 @@ else if (target === 'android')
 else if (target === 'play')
   buildAndroid(extra, true)
 else if (target === 'android-dev')
-  await devAndroid(extra)
+  await devAndroid(extra, kind)
 else
   die(`Unknown target "${target}". Use: desktop | windows | android | play | android-dev`)

@@ -518,6 +518,8 @@ the way back from that without waiting for a release. It is left out of backup f
 bun install
 bun run tauri:dev            # the app
 bun run tauri:dev:android    # …on an attached phone or TV box
+bun run dev:tauri:tv         # …on the attached TV box in particular
+bun run dev:tauri:phone      # …on the attached phone, uninstalled again afterwards
 bun run dev                  # front end only, in a browser
 bun run lint                 # before finishing
 ```
@@ -624,10 +626,20 @@ dependencies are still optimised, so streaming keeps up.
 **Developing against a phone**
 
 ```bash
-bun run tauri:dev:android
+bun run tauri:dev:android    # whatever is attached; it asks if that is more than one
+bun run dev:tauri:tv         # the attached Android TV
+bun run dev:tauri:phone      # the attached phone or tablet
 ```
 
-Same hot-reloading frontend as the desktop `tauri:dev`, running on the device. Getting the phone
+Same hot-reloading frontend as the desktop `tauri:dev`, running on the device. The last two pick
+between a phone and a TV plugged in at the same time — `ro.build.characteristics` says which is
+which — so neither has to be unplugged and no serial is written down anywhere.
+
+`dev:tauri:phone` also **uninstalls the app again when you stop it**. A dev build is a debug APK
+pointing at a laptop's `:3000`: useless as soon as the session ends, and in the way of a release
+one, since Android refuses to install over a differently-signed package of the same id. The TV
+keeps its copy — that is the test device, and an uninstall takes its library and downloads with
+it. Getting the phone
 ready, once: *Settings → About phone → tap "Build number" seven times*, then *Developer options →
 USB debugging on*. Plug it in, run `adb devices`, and accept the **"Allow USB debugging?"**
 dialog — until you do it lists as `unauthorized` and nothing will install. An empty list instead
