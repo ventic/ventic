@@ -8,7 +8,6 @@ import { invoke } from '@tauri-apps/api/core'
  * someone else runs, and adding one is the user's decision to make.
  */
 const settings = useSettingsStore()
-const ui = useUiStore()
 
 const url = ref('')
 const error = ref('')
@@ -102,17 +101,6 @@ function addPlaylist() {
 
 function removePlaylist(value: string) {
   settings.playlists = settings.playlists.filter(p => p !== value)
-}
-
-// --- Deep links ---------------------------------------------------------------
-
-/** A `ventic://` link staged by plugins/deeplink.client.ts, awaiting a yes. */
-const pending = computed(() => ui.pendingSource)
-
-function confirmPending() {
-  if (pending.value && !settings.sources.includes(pending.value))
-    append(pending.value)
-  ui.pendingSource = ''
 }
 
 // `stremio://` is the scheme addon pages already publish, so handling it makes
@@ -369,33 +357,6 @@ async function toggleStremio(on: boolean | null) {
         </i18n-t>
       </p>
     </settings-section>
-
-    <!-- A link arrived. Show what it is, in full, before anything is added. -->
-    <v-dialog :model-value="!!pending" max-width="560" persistent>
-      <v-card rounded="xl">
-        <v-card-title class="text-title-medium">
-          {{ $t('Add this source?') }}
-        </v-card-title>
-        <v-card-text class="flex flex-col gap-3">
-          <p class="text-body-medium">
-            {{ $t('A link asked Ventic to start searching:') }}
-          </p>
-          <code class="break-all rounded-lg bg-surface-container-high px-3 py-2 text-body-small">{{ pending }}</code>
-          <p class="text-body-small opacity-70">
-            {{ $t('Ventic will send it the title you\'re looking for and play what it hands back. Only add servers you trust — this one is not run by, or checked by, this app.') }}
-          </p>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="ui.pendingSource = ''">
-            {{ $t('Cancel') }}
-          </v-btn>
-          <v-btn variant="tonal" color="primary" @click="confirmPending">
-            {{ $t('Add source') }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
 
     <settings-section
       :title="$t('What a source has to speak')"

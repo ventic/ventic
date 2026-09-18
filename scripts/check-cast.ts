@@ -8,7 +8,7 @@
 import assert from 'node:assert'
 import { readFileSync } from 'node:fs'
 import process from 'node:process'
-import { CAST_PORT, castRoute, castUrl, MIRROR_PORT, mirrored, mirrorParts, newCode, subnet } from '../app/utils/cast'
+import { CAST_PORT, castRoute, castUrl, MIRROR_PORT, mirrored, mirrorParts, newCode, setupUrl, setupValue, subnet } from '../app/utils/cast'
 import { ENGINE } from '../app/utils/torrents'
 import './i18n-stub'
 
@@ -166,9 +166,102 @@ assert.ok(
 // own leaves `castAsk` on and `castCode` empty, and Rust reads an empty code as
 // "ask for none" — so the listener has to stay down instead.
 assert.ok(
-  /const on = settings\.castReceive && \(!settings\.castAsk \|\| !!code\)/.test(listener),
+  /const on = pairing !== null \|\| \(settings\.castReceive && \(!settings\.castAsk \|\| !!code\)\)/.test(listener),
   'an empty code while a code is being asked for must switch the listener off, not open it',
 )
+
+// --- The phone as a keyboard --------------------------------------------------
+// The same port, one more route: the television serves a form, the phone types
+// into it, and nothing it sends is kept without this screen saying yes. Both
+// halves are held here — what an address turns into, and the rule that nothing
+// applies one on its own.
+
+// A source arrives in whatever shape the addon page published it in, and is
+// reduced to the base the search appends to — the same normalisation the box on
+// the settings page does, because it is the same function.
+assert.equal(setupValue({ kind: 'source', url: ' stremio://addon.example/manifest.json ' }), 'https://addon.example')
+assert.equal(setupValue({ kind: 'source', url: 'addon.example' }), 'https://addon.example')
+
+// An Xtream login is three fields on the phone and one address here, with the
+// password in it — which is why the dialog shows it masked and `ventic.playlists`
+// is SECRET.
+assert.equal(
+  setupValue({ kind: 'xtream', url: 'tv.example:8080', user: 'me', pass: 'secret' }),
+  'http://tv.example:8080/player_api.php?username=me&password=secret',
+)
+assert.equal(setupValue({ kind: 'xtream', url: 'tv.example:8080', user: 'me', pass: '' }), '', 'an Xtream login needs all three')
+
+// A playlist and a WebDAV folder are both fetched through Rust, so nothing but
+// http(s) may reach it — `file://` there is asking it to open this disk.
+assert.equal(setupValue({ kind: 'playlist', url: ' http://host.example/list.m3u ' }), 'http://host.example/list.m3u')
+assert.equal(setupValue({ kind: 'sync', url: 'https://cloud.example/remote.php/dav/x' }), 'https://cloud.example/remote.php/dav/x')
+for (const kind of ['playlist', 'sync'] as const) {
+  for (const bad of ['', 'file:///etc/passwd', 'javascript:alert(1)', 'not a url', 'https://host with spaces/x'])
+    assert.equal(setupValue({ kind, url: bad }), '', `${kind}: ${bad} is not something to fetch`)
+}
+
+// The code rides in the QR, so nobody reads four digits off a television — and
+// the address alone still reaches the form, for a phone that typed it.
+assert.equal(setupUrl('192.168.1.5', '0421'), `http://192.168.1.5:${CAST_PORT}/?c=0421`)
+assert.equal(setupUrl('192.168.1.5', ''), `http://192.168.1.5:${CAST_PORT}/`)
+
+// The form is one file with its own CSS and script in it: the phone has this
+// device and nothing else to fetch from, so a bundle, a font or a CDN is a page
+// that never loads.
+const form = read('src-tauri/src/cast_setup.html')
+assert.ok(/include_str!\("cast_setup\.html"\)/.test(rust), 'the receiver serves the form itself')
+assert.ok(/\.route\("\/", get\(setup_page\)\)/.test(rust), 'and serves it at the root, so a typed address lands on it')
+assert.ok(!/<(?:script|link|img)[^>]+(?:src|href)=["']?http/i.test(form), 'the form may not fetch anything off this device')
+assert.ok(/fetch\('\/ventic\/setup'/.test(form) && /\.route\("\/ventic\/setup", post\(setup\)\)/.test(rust), 'the form posts where the receiver listens')
+assert.ok(
+  ['source', 'playlist', 'xtream', 'sync'].every(kind => form.includes(`value="${kind}"`) && rust.includes(`"${kind}"`)),
+  'both ends have to agree on the four kinds, and nothing checks that but this',
+)
+
+// The network is not a permission, here least of all: this is the route that
+// changes what the app searches.
+assert.ok(
+  /!state\.code\.is_empty\(\) && form\.code != state\.code/.test(rust),
+  'what a phone typed is checked against the pairing code',
+)
+assert.ok(/form\.code = String::new\(\)/.test(rust), 'and the code is blanked before the page sees it')
+assert.ok(
+  rust.indexOf('form.code != state.code') < rust.indexOf('cast://setup'),
+  'the check comes before the page hears anything',
+)
+
+// Nothing is added on its own. The dialog is the only thing that writes any of
+// these three, and the listener does no more than stage what arrived — the same
+// rule a `ventic://` link is held to (plugins/deeplink.client.ts).
+const dialog = read('app/components/SetupDialog.vue')
+assert.ok(/ui\.pending = event\.payload/.test(listener), 'a submitted form is staged, not applied')
+// The dialog lives on a settings page, so showing it means leaving whatever is
+// on — and what is on may be a film somebody is watching.
+assert.ok(
+  /ui\.pending = event\.payload[\s\S]{0,400}currentRoute\.value\.path !== localePath\('\/watch'\)[\s\S]{0,120}navigateTo/.test(listener),
+  'an address typed on a phone may not end a film',
+)
+// A remote's BACK is an Escape, and a persistent dialog ignores it — which on a
+// television is an app that has stopped answering.
+assert.ok(!/<v-dialog[^>]*\spersistent/.test(dialog), 'the dialog has to be one a remote can back out of')
+assert.ok(
+  !/settings\.(?:sources|playlists) =|sync\.config/.test(listener),
+  'the listener may not keep anything itself — the dialog is what asks',
+)
+assert.ok(
+  /if \(!setup \|\| !value\.value\)[\t\v\f\r \xA0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n\s*return/.test(dialog),
+  'and the dialog keeps nothing it could not make sense of',
+)
+for (const write of ['settings.sources = [...settings.sources, value.value]', 'settings.playlists = [...settings.playlists, value.value]', 'Object.assign(sync.config'])
+  assert.ok(dialog.includes(write), `the dialog is where a pending ${write.split(/[.[]/)[1]} lands`)
+
+// The port is open for as long as the code is on screen and no longer: a
+// television nobody has set up yet has casting switched off, and this must not
+// quietly switch it on for good.
+const phone = read('app/pages/settings/phone.vue')
+assert.ok(/ui\.pairing = settings\.castReceive \? \(settings\.castAsk \? settings\.castCode : ''\) : newCode\(\)/.test(phone), 'a device already receiving keeps the code it already answers to')
+assert.ok(/onUnmounted\(\(\) => ui\.pairing = null\)/.test(phone), 'leaving the screen closes the port')
+assert.ok(!/settings\.castReceive = true/.test(phone), 'and showing a code may not turn casting on behind the user')
 
 // A film the receiving device cannot fetch is refused while the sender is still
 // on screen to be told. Without this the only complaint appears on a television

@@ -20,7 +20,10 @@
  */
 import { invoke } from '@tauri-apps/api/core'
 import { fetch as tauriFetch } from '@tauri-apps/plugin-http'
-import { ENGINE } from './torrents'
+// Named imports rather than the app's auto-imports: `bun run check:cast` loads
+// this file with no Nuxt around it (see scripts/check-cast.ts).
+import { xtreamUrl } from './iptv'
+import { ENGINE, normalizeSource } from './torrents'
 
 /** Where a device listens for play commands — `RECEIVER_PORT` in cast.rs. */
 export const CAST_PORT = 3232
@@ -99,6 +102,58 @@ export function subnet(ip: string): string[] {
 /** A fresh pairing code. Four digits: it is read off a television. */
 export function newCode() {
   return String(Math.floor(Math.random() * 10_000)).padStart(4, '0')
+}
+
+/**
+ * What the phone's form sends, as `Setup` in cast.rs deserialises it — and what
+ * lands on `ui.pending` while the screen it arrived on asks about it.
+ *
+ * A `ventic://` link stages one of these too (see plugins/deeplink.client.ts):
+ * both are somebody else's address arriving from outside, and neither is kept
+ * without a yes.
+ */
+export interface CastSetup {
+  kind: SetupKind
+  url: string
+  /** Only the two kinds that have a login carry these. */
+  user?: string
+  pass?: string
+}
+
+/** The four things worth typing on a phone, each landing somewhere different. */
+export type SetupKind = 'source' | 'playlist' | 'xtream' | 'sync'
+
+/**
+ * What a submitted form actually turns into, or '' when it is nothing this app
+ * can use.
+ *
+ * One function rather than a branch in the dialog, because it answers two
+ * questions at once: whether to offer the Add button at all, and what to *show*
+ * — an addon URL is trimmed, an Xtream login becomes the API address, and both
+ * are worth reading before they are agreed to.
+ */
+export function setupValue(setup: CastSetup): string {
+  const url = setup.url.trim()
+  switch (setup.kind) {
+    case 'source':
+      return normalizeSource(url)
+    case 'xtream':
+      return xtreamUrl(url, setup.user ?? '', setup.pass ?? '') ?? ''
+    // A playlist and a WebDAV folder are both fetched through Rust, so `file://`
+    // or `javascript:` here would be asking it to open something else entirely
+    // (see the playlist box in settings/sources.vue).
+    default:
+      return /^https?:\/\/[^\s/]+(?:\/\S*)?$/i.test(url) ? url : ''
+  }
+}
+
+/**
+ * Where the phone is pointed. The code rides in the query so nobody reads four
+ * digits off a television and types them in — the box on the form is for
+ * somebody who typed the address instead of scanning it.
+ */
+export function setupUrl(address: string, code: string): string {
+  return `http://${address}:${CAST_PORT}/${code ? `?c=${encodeURIComponent(code)}` : ''}`
 }
 
 /**

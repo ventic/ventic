@@ -4,6 +4,7 @@ import type { SubtitleStyle } from '~/utils/subtitles'
 import type { PlayMode } from '~/utils/torrents'
 import {
   mdiAccountCircleOutline,
+  mdiCellphone,
   mdiFolderOutline,
   mdiHeartOutline,
   mdiInformationOutline,
@@ -18,7 +19,7 @@ import {
 import { StorageSerializers } from '@vueuse/core'
 import { DEFAULT_SOURCE } from '~/theme/presets'
 
-export type SectionKey = 'appearance' | 'language' | 'sources' | 'subtitles' | 'audio' | 'keyboard' | 'network' | 'storage' | 'account' | 'support' | 'about'
+export type SectionKey = 'appearance' | 'language' | 'sources' | 'phone' | 'subtitles' | 'audio' | 'keyboard' | 'network' | 'storage' | 'account' | 'support' | 'about'
 
 /**
  * The sidebar of the settings layout, in the order it lists them. A `value` is
@@ -34,6 +35,9 @@ export const SECTIONS: { value: SectionKey, title: () => string, icon: string }[
   { value: 'appearance', title: () => $t('Appearance'), icon: mdiPaletteOutline },
   { value: 'language', title: () => $t('Language'), icon: mdiTranslate },
   { value: 'sources', title: () => $t('Sources'), icon: mdiPowerPlugOutline },
+  // Next to Sources because that is what it is mostly used for: the address a
+  // source is added by is the one thing a remote cannot type.
+  { value: 'phone', title: () => $t('Use your phone'), icon: mdiCellphone },
   { value: 'subtitles', title: () => $t('Subtitles'), icon: mdiSubtitlesOutline },
   { value: 'audio', title: () => $t('Audio'), icon: mdiTuneVariant },
   // A keyboard is a desktop thing: on Android the remote's keys are the d-pad

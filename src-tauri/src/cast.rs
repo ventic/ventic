@@ -14,7 +14,11 @@
 //!     play command to, guarded by the pairing code the receiving screen shows.
 //!     Without it, anyone on the Wi-Fi could put anything on your television —
 //!     which is why the code is on by default, and why a household that would
-//!     rather not read one off a television has to switch it off itself.
+//!     rather not read one off a television has to switch it off itself. It
+//!     also serves the form a **phone** types into (`setup_page`), which is the
+//!     same idea pointed at the other job a remote is bad at: adding a source,
+//!     a playlist or a sync folder. Nothing it sends is kept without the
+//!     television asking first.
 //!   * the **mirror** (`cast_share`) — a second librqbit HTTP API, **read only**
 //!     and bound to the LAN, so the other device can pull the film over http
 //!     range exactly as this one's own player does. The engine's real API stays
@@ -32,7 +36,7 @@ use std::sync::Mutex;
 
 use axum::extract::{Request, State};
 use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
+use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use librqbit::api::Api;
@@ -151,6 +155,28 @@ pub struct Play {
 pub struct Stop {
 	#[serde(default)]
 	code: String,
+}
+
+/// The form a phone fills in and posts back — see `setup_page`. `kind` says
+/// what the address is for, because the four things worth typing over there all
+/// land somewhere different over here and none of them can be told apart by
+/// looking at the URL.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct Setup {
+	/// Matched against this device's own, then blanked — as on `Play`.
+	#[serde(default)]
+	code: String,
+	/// `source`, `playlist`, `xtream` or `sync`. Anything else is refused here
+	/// rather than sent to a page that would have to refuse it anyway.
+	kind: String,
+	/// The address itself: an addon, an M3U link, an Xtream server, a WebDAV
+	/// folder.
+	url: String,
+	/// Only the two kinds that have a login send these.
+	#[serde(default)]
+	user: String,
+	#[serde(default)]
+	pass: String,
 }
 
 /// What a device answers a probe with. `app` is what tells a Ventic apart from
@@ -319,9 +345,11 @@ pub async fn cast_receive(app: AppHandle, enable: bool, name: String, code: Stri
 	let (done_tx, done_rx) = oneshot::channel();
 	tauri::async_runtime::spawn(async move {
 		let router = Router::new()
+			.route("/", get(setup_page))
 			.route("/ventic", get(identity))
 			.route("/ventic/play", post(play))
 			.route("/ventic/stop", post(stop))
+			.route("/ventic/setup", post(setup))
 			.with_state(state);
 
 		tokio::select! {
@@ -419,6 +447,46 @@ async fn stop(State(state): State<Receiving>, Json(command): Json<Stop>) -> Stat
 		Ok(()) => StatusCode::OK,
 		Err(e) => {
 			eprintln!("[ventic] cast stop could not reach the page: {e:#}");
+			StatusCode::INTERNAL_SERVER_ERROR
+		}
+	}
+}
+
+/// The form a phone types into, served to whatever opens this port in a
+/// browser.
+///
+/// One file with its own CSS and script inside it, and not a line of the app:
+/// the phone that scans the code has this device and nothing else to fetch
+/// from, which rules out a bundle, a font and every CDN. It is served to
+/// anyone who asks, like the identity above — what it can *do* is the code's
+/// to guard, and the television asks before it adds anything either way.
+///
+/// ponytail: English only. The page is four labels and a button, and reaching
+/// the app's catalogs from here would mean handing 72 languages to a server
+/// that starts before any page has loaded.
+async fn setup_page() -> Html<&'static str> {
+	Html(include_str!("cast_setup.html"))
+}
+
+/// Something typed on a phone. Checked, then handed to the page, which asks
+/// before it keeps any of it — a device on the Wi-Fi may no more change what
+/// this app searches than a web page may (see plugins/deeplink.client.ts).
+async fn setup(State(state): State<Receiving>, Json(mut form): Json<Setup>) -> StatusCode {
+	if !state.code.is_empty() && form.code != state.code {
+		return StatusCode::FORBIDDEN;
+	}
+	form.code = String::new();
+
+	// The phone is told it was refused, so the person holding it can fix what
+	// they typed rather than looking at a television that never reacted.
+	if form.url.trim().is_empty() || !matches!(form.kind.as_str(), "source" | "playlist" | "xtream" | "sync") {
+		return StatusCode::BAD_REQUEST;
+	}
+
+	match state.app.emit("cast://setup", form) {
+		Ok(()) => StatusCode::OK,
+		Err(e) => {
+			eprintln!("[ventic] what the phone typed could not reach the page: {e:#}");
 			StatusCode::INTERNAL_SERVER_ERROR
 		}
 	}

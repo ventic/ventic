@@ -11,6 +11,12 @@ const { mobile } = useDisplay()
     <app-background />
     <settings-drawer v-if="!mobile" />
 
+    <!-- An address that arrived from outside — a `ventic://` link, or what a
+         phone typed into the form the TV serves — waiting for a yes. Here
+         because both of those land on a settings page, and a copy per page
+         would be four of them. -->
+    <setup-dialog />
+
     <v-main data-dpad-start class="safe-inset relative z-1 h-dvh">
       <slot />
     </v-main>

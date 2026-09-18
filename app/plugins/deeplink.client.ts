@@ -22,7 +22,7 @@ export default defineNuxtPlugin(() => {
     if (!source || settings.sources.includes(source))
       return
 
-    ui.pendingSource = source
+    ui.pending = { kind: 'source', url: source }
     navigateTo(localePath('/settings/sources'))
   }
 

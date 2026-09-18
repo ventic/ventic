@@ -11,7 +11,7 @@
  * vetted; what it *says* is still somebody else's text, so it goes into the
  * route as query values and nowhere near a template.
  */
-import type { CastPlay } from '~/utils/cast'
+import type { CastPlay, CastSetup } from '~/utils/cast'
 import { isTauri } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 
@@ -22,6 +22,7 @@ export default defineNuxtPlugin(() => {
     return
 
   const settings = useSettingsStore()
+  const ui = useUiStore()
 
   /**
    * What the listener was last told. The first switch-on fills in a name and a
@@ -37,7 +38,14 @@ export default defineNuxtPlugin(() => {
    * change, so renaming this device doesn't need a restart to be seen.
    */
   async function apply() {
-    if (settings.castReceive && !settings.castName)
+    // The phone form is open (see pages/settings/phone.vue). The receiver is
+    // what serves it, so it answers for as long as that screen is up — whether
+    // or not this device takes casts at all, since the whole point is the
+    // television nobody has set up yet. `null` is not a code, it is not being
+    // shown; '' is a screen that asks for none.
+    const pairing = ui.pairing
+
+    if ((settings.castReceive || pairing !== null) && !settings.castName)
       settings.castName = isTv() ? $t('Ventic TV') : $t('Ventic')
 
     // A backup carries `castReceive` but never `castCode` — that one is SECRET —
@@ -56,8 +64,8 @@ export default defineNuxtPlugin(() => {
     // an empty box while a code *is* being asked for is neither answer, so the
     // listener stays down rather than standing open to the network for as long
     // as it takes somebody to type a new one.
-    const code = settings.castAsk ? settings.castCode : ''
-    const on = settings.castReceive && (!settings.castAsk || !!code)
+    const code = pairing ?? (settings.castAsk ? settings.castCode : '')
+    const on = pairing !== null || (settings.castReceive && (!settings.castAsk || !!code))
 
     const wanted = [on, settings.castName, code].join('|')
     if (wanted === applied)
@@ -73,11 +81,14 @@ export default defineNuxtPlugin(() => {
       console.error('[ventic] casting to this device could not be turned on', e)
       applied = ''
       settings.castReceive = false
+      // The phone form has nothing to serve it either, and the screen showing a
+      // code says so rather than a QR nothing answers.
+      ui.pairing = null
     }
   }
 
   watch(
-    () => [settings.castReceive, settings.castName, settings.castAsk, settings.castCode].join('|'),
+    () => [settings.castReceive, settings.castName, settings.castAsk, settings.castCode, String(ui.pairing)].join('|'),
     () => apply(),
     { immediate: true },
   )
@@ -93,6 +104,21 @@ export default defineNuxtPlugin(() => {
       await navigateTo(localePath('/'))
     await navigateTo({ path: player, query: castRoute(event.payload) })
   }).catch(() => {}) // no Tauri under `bun run dev`, and nothing to listen to
+
+  // Somebody typed an address on their phone (see `setup` in cast.rs). It is
+  // staged exactly as a `ventic://` link is and kept only if this screen says
+  // yes — a device on the Wi-Fi may no more change what this app searches than
+  // a web page may. The dialog belongs to the settings layout, so the page that
+  // is showing the code is also the page that asks.
+  listen<CastSetup>('cast://setup', async event => {
+    ui.pending = event.payload
+    // Never over a film. The dialog belongs to the settings layout and the
+    // player has none, so showing it means leaving playback — and a film ended
+    // by somebody else's phone is a worse answer than a question that waits for
+    // the next time settings are opened.
+    if (useRouter().currentRoute.value.path !== localePath('/watch'))
+      await navigateTo(localePath('/settings/phone'))
+  }).catch(() => {})
 
   // The sending device pressed Stop. It stops serving the film a moment later,
   // so a screen left on the player would sit there until the buffer ran dry and

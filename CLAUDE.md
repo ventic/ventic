@@ -421,6 +421,25 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   in and never paused started the television from the top. `ventic.castCode` and `ventic.castTarget` are in `backup.ts`'s
   `SECRET` set. LAN only and opt-in; there is no relay, no NAT traversal and no
   account, for the same reason the library has none.
+- **A phone is the keyboard a remote isn't, and the cast receiver serves it.**
+  Onboarding is "type a URL", which is the one thing a d-pad is worst at. So
+  *Settings → Use your phone* shows a QR code and the receiver (`cast_receive`,
+  3232) answers `GET /` with `src-tauri/src/cast_setup.html` — one static file
+  carrying its own CSS and script, because the phone that scans that code has
+  this device and nothing else to fetch from: no bundle, no font, no CDN, and no
+  catalog either, which is why that page alone is English. What it posts back to
+  `/ventic/setup` is checked against the pairing code in Rust, staged on
+  `ui.pending`, and kept only if `SetupDialog` is answered — the same rule a
+  `ventic://` link is held to, and the reason a source, an M3U playlist, an
+  Xtream login and a WebDAV folder all travel as one `CastSetup` with a `kind`
+  rather than as four routes. Two seams follow. The port is open only while that
+  screen is up: `ui.pairing` is the one thing that starts the receiver without
+  `castReceive`, and a device already receiving keeps the code it already
+  answers to, because minting a second one would refuse a cast arriving at that
+  moment. And the dialog is mounted by the *settings layout*, not by a page, so
+  both things that stage an address land on the one place that asks.
+  `bun run check:cast` holds the four kinds across the form and Rust, the code
+  check, and that nothing but that dialog writes what arrived.
 - **The library is local, and the sync has no server of ours in it.** There is
   no account and no third-party service: `stores/library.ts` writes five
   localStorage maps, `app/utils/backup.ts` turns every `ventic.` key into one

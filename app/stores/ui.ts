@@ -1,4 +1,5 @@
 import type { BackdropMode } from '~/theme/presets'
+import type { CastSetup } from '~/utils/cast'
 import type { Media } from '~/utils/tmdb'
 import { mdiBookmarkOutline, mdiFormatListBulleted, mdiHeartOutline, mdiHistory, mdiViewGrid } from '@mdi/js'
 
@@ -65,11 +66,22 @@ export const useUiStore = defineStore('ui', () => {
   const menuFor = ref<Media | null>(null)
 
   /**
-   * A source URL that arrived on a `ventic://` link and is waiting to be
-   * confirmed. Deliberately not persisted and never added on its own: a link
-   * from a web page may not silently change what the app searches.
+   * An address that arrived from outside — a source on a `ventic://` link, or
+   * whatever a phone typed into the form the TV serves (see utils/cast) — and
+   * is waiting to be confirmed. Deliberately not persisted and never kept on
+   * its own: neither a web page nor a device on the Wi-Fi may silently change
+   * what this app searches, plays or syncs with. `SetupDialog` is what asks.
    */
-  const pendingSource = ref('')
+  const pending = ref<CastSetup | null>(null)
+
+  /**
+   * The pairing code while the phone form is open, or null when it isn't — the
+   * one thing that switches the receiver on without the setting being on, and
+   * only for as long as that screen is up (see plugins/cast.client.ts). Empty
+   * is a third answer and a deliberate one: a device already receiving with no
+   * code set carries on asking for none.
+   */
+  const pairing = ref<string | null>(null)
 
   const blur = useLocalStorage('ventic.blur', 44)
   const tint = useLocalStorage('ventic.tint', 0.92)
@@ -216,5 +228,5 @@ export const useUiStore = defineStore('ui', () => {
   // Sweeping the cursor across a grid would otherwise queue a crossfade per card.
   const preview = useDebounceFn(hover, 120)
 
-  return { layout, cardWidth, castWidth, gridColumns, rowCard, posterSize, profileSize, rail, drawer, menuFor, pendingSource, blur, tint, backdropMode, backdropImage, backdropFollowsHover, artOverCustom, shownArt, selected, art, backdrop, isGrid, isDetailed, select, ambient, release, hover, preview }
+  return { layout, cardWidth, castWidth, gridColumns, rowCard, posterSize, profileSize, rail, drawer, menuFor, pending, pairing, blur, tint, backdropMode, backdropImage, backdropFollowsHover, artOverCustom, shownArt, selected, art, backdrop, isGrid, isDetailed, select, ambient, release, hover, preview }
 })

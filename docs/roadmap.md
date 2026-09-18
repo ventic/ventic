@@ -52,7 +52,7 @@ One at a time, in this order. Each item names where it starts and what proves it
 - **Done when:** `check:torrents` covers "queues next, skips when stream-only / over budget /
   last episode".
 
-### 2. [ ] Phone as the keyboard for the TV
+### 2. [x] Phone as the keyboard for the TV
 
 - **Why:** onboarding is "type a URL", the worst thing to do with a remote. Nuvio TV serves a
   LAN page behind a QR code for exactly this.
@@ -64,6 +64,11 @@ One at a time, in this order. Each item names where it starts and what proves it
 - **Platforms:** Android TV first; desktop gets it free.
 - **Done when:** `check:cast` covers the route refusing a wrong code and never adding without
   the dialog.
+- **Done:** two routes on the receiver (`GET /` serves `cast_setup.html`, `POST /ventic/setup`
+  takes the form), `pages/settings/phone.vue` shows the QR and holds the port open through
+  `ui.pairing`, and `components/SetupDialog.vue` — mounted by the settings layout — is the one
+  thing that keeps any of it. `ui.pendingSource` became `ui.pending`, a `CastSetup` with a
+  `kind`, so the `ventic://` link and the phone ask the same question.
 
 ### 3. [ ] Local profiles
 

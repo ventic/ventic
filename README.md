@@ -179,6 +179,7 @@ poster size, app scale and a global CSS box.</sub>
 | **Detail** | Backdrop, synopsis, cast, trailer, seasons and episodes with per-episode state |
 | **Downloads** | The engine's UI — add, pick files, pause, seed, limit, evict |
 | **Settings** | Appearance, Sources, Subtitles, Audio, Network, Storage, Account, Support, About |
+| **Phone as keyboard** | Scan the code on the TV and type on your phone instead of with the remote — a source, a playlist, an Xtream login or the folder to sync with. The form is served by the TV itself, needs the code it is showing, and nothing is kept until the TV asks you |
 
 <p align="right"><a href="#readme-top">&#9650; back to top</a></p>
 
