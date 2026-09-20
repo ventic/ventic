@@ -1018,87 +1018,17 @@ function toggleFullscreen() {
 }
 
 // ---------------------------------------------------------------------------
-// Geometry + cutouts
+// The frame loop. Two jobs have to happen per frame and this is the only place
+// either can: advance the clock so the seek bar moves at 60fps rather than
+// stepping once per poll, and put mpv's window where the box is. The second
+// half is `useNativeSurface` — none of it is about playback, and the two shims
+// have no surface to chase.
 // ---------------------------------------------------------------------------
-interface Rect { x: number, y: number, width: number, height: number }
-
-/**
- * CSS px → physical px, measured rather than worked out.
- *
- * Only mpv needs this, and app scale on every target mpv runs on is the
- * webview's own page zoom (`app.vue`) — which the engines fold into
- * `devicePixelRatio` or leave beside it, and disagree about. Getting it wrong
- * parks mpv's window in the wrong place, so nothing here reasons about it: ask
- * the platform how many real pixels wide this webview is and divide by how many
- * the page thinks it is.
- *
- * Re-measured whenever the CSS viewport changes width, which is what a resize
- * and a change of zoom both do — no listener, and no round trip per frame. The
- * value it starts at is right for the ordinary case of no zoom at all, so the
- * frame or two before the first answer lands is not a jump.
- */
-let pxRatio = window.devicePixelRatio || 1
-let measuredAt = 0
-
-function measurePx() {
-  const css = window.innerWidth
-  if (css === measuredAt || !css)
-    return
-  measuredAt = css
-  useTauriWebviewWindowGetCurrentWebviewWindow().size().then(size => (pxRatio = size.width / css)).catch(() => {
-    // No answer to be had — `devicePixelRatio` is what it keeps, which is
-    // right for the only case that reaches here with mpv running: no zoom.
-  })
-}
-
-/**
- * The webview viewport, in the same physical pixels the box is measured in.
- *
- * Sent alongside every geometry push for the backend that places its surface by
- * ratio rather than by scale factor (macOS — see `player_render_mac.rs`). The
- * X11 and Win32 backends are already in the units they need and ignore it.
- */
-function viewport(dpr: number) {
-  return {
-    viewW: Math.max(1, Math.round(window.innerWidth * dpr)),
-    viewH: Math.max(1, Math.round(window.innerHeight * dpr)),
-  }
-}
-
-/**
- * What has to show through mpv's window. `[data-cut]` is this file's own bars;
- * the second half is every Vuetify overlay — a tooltip, and the cast dialog the
- * bar opens. Those teleport to the app root, so a search scoped to the player
- * would never find them and mpv would paint over them: an open dialog that dims
- * the screen and then shows nothing, which is what it did.
- */
-const CUT = '[data-cut], .v-overlay--active > .v-overlay__content'
-
-/** Every overlay's rectangle, clipped to the video box and in physical pixels. */
-function cutouts(box: DOMRect, dpr: number): Rect[] {
-  const out: Rect[] = []
-  // A closed tooltip is `display: none` and measures 0x0, which the clip drops.
-  for (const el of document.querySelectorAll<HTMLElement>(CUT)) {
-    const r = el.getBoundingClientRect()
-    const left = Math.max(r.left, box.left)
-    const top = Math.max(r.top, box.top)
-    const right = Math.min(r.right, box.right)
-    const bottom = Math.min(r.bottom, box.bottom)
-    if (right - left < 1 || bottom - top < 1)
-      continue // fully outside the video (mid-slide, or off-screen)
-    out.push({
-      x: Math.round((left - box.left) * dpr),
-      y: Math.round((top - box.top) * dpr),
-      width: Math.round((right - left) * dpr),
-      height: Math.round((bottom - top) * dpr),
-    })
-  }
-  return out
-}
+const surface = useNativeSurface(boxEl, overlay)
+const { waitForBox } = surface
 
 let rafId = 0
 let lastFrame = 0
-let lastKey = ''
 
 /**
  * One loop for both jobs that have to happen per frame: push geometry when it
@@ -1130,56 +1060,8 @@ function frame(now: number) {
 
   // Neither shim has a surface to chase: the bars stack in CSS and the picture
   // is laid out by the page like anything else.
-  if (!native)
-    return
-
-  const el = boxEl.value
-  if (!el)
-    return
-  const r = el.getBoundingClientRect()
-  measurePx()
-  const dpr = pxRatio
-  // Hide the native surface when the box is off-screen or not laid out —
-  // otherwise it keeps painting over whatever the page scrolls under it.
-  const visible = r.width >= 16 && r.height >= 16
-    && r.bottom > 0 && r.top < window.innerHeight
-    && r.right > 0 && r.left < window.innerWidth
-
-  const geom = {
-    ...viewport(dpr),
-    x: Math.round(r.left * dpr),
-    y: Math.round(r.top * dpr),
-    width: Math.max(1, Math.round(r.width * dpr)),
-    height: Math.max(1, Math.round(r.height * dpr)),
-    visible,
-    // Only a surface in front of the page needs holes cutting in it.
-    cutouts: visible && overlay ? cutouts(r, dpr) : [],
-  }
-  const key = JSON.stringify(geom)
-  if (key === lastKey)
-    return
-  lastKey = key
-  invoke('player_set_geometry', geom).catch(() => {})
-}
-
-/**
- * mpv fails to create its video output on a 1x1 window and exits silently, so
- * never start until the box has a real size.
- */
-function waitForBox(timeoutMs = 4000): Promise<DOMRect | null> {
-  return new Promise(resolve => {
-    const deadline = performance.now() + timeoutMs
-    const check = () => {
-      const r = boxEl.value?.getBoundingClientRect()
-      if (r && r.width >= 16 && r.height >= 16)
-        resolve(r)
-      else if (performance.now() > deadline)
-        resolve(null)
-      else
-        requestAnimationFrame(check)
-    }
-    check()
-  })
+  if (native)
+    surface.push()
 }
 
 // `poll` is a hoisted function declaration, so wiring the interval up here (of
@@ -1383,18 +1265,9 @@ async function startPlayer() {
     }
 
     if (native) {
-      // Re-measure: the window may have been resized while the probe ran.
-      const b = boxEl.value!.getBoundingClientRect()
-      measurePx()
-      const dpr = pxRatio
-      await invoke('player_start', {
-        url: props.src,
-        ...viewport(dpr),
-        x: Math.round(b.left * dpr),
-        y: Math.round(b.top * dpr),
-        width: Math.max(1, Math.round(b.width * dpr)),
-        height: Math.max(1, Math.round(b.height * dpr)),
-      })
+      // Measured now, not when the box was waited for: the window may have been
+      // resized while the probe ran.
+      await invoke('player_start', { url: props.src, ...surface.measure()!.wire })
     }
     else {
       engine ??= exoEngine() ?? videoEngine(videoEl.value!)
@@ -1418,7 +1291,7 @@ async function startPlayer() {
     subSpeed.value = 1
     syncNote.value = ''
     guess.value = null
-    lastKey = '' // force a geometry + shape push on the next frame
+    surface.reset() // the next frame pushes geometry and shape for the new window
 
     // Clicks and the wheel land on the video window in front of the page, never
     // on the webview. On X11 that window is mpv's own, so it can answer them
@@ -1449,7 +1322,7 @@ async function stopPlayer() {
   // difference between "watching this" and "watched this far" to a sync.
   saveProgress()
   started.value = false
-  lastKey = ''
+  surface.reset()
   if (native)
     await invoke('player_stop').catch(() => {})
   else
@@ -1641,197 +1514,18 @@ const volumeIcon = computed(() => {
 })
 
 // ---------------------------------------------------------------------------
-// Seek previews
+// Seek previews — the frame under the cursor, and what the engine actually
+// holds. Both are `useSeekPreview`: it is ffmpeg and a piece bitfield, not
+// playback, and `heldSpan` is what the subtitle sync below reads.
 // ---------------------------------------------------------------------------
-// The frame under the cursor on the seek bar — but only ever for a position the
-// engine already holds. Decoding one it doesn't would have librqbit go and fetch
-// that piece, and a hover the user never commits to would be taking bandwidth
-// off the film currently playing. `haveAt` is what says no; a debrid release has
-// no swarm to take anything from, so those aren't gated at all.
-//
-// ffmpeg does the decoding, which is the same line `syncable` draws: the <video>
-// and ExoPlayer builds have no way to run it.
-/**
- * Long enough to coalesce a sweep across the bar, short enough to disappear into
- * the ~75ms the decode itself costs. Nearly all of that is fixed — spawning
- * ffmpeg, opening the file, seeking — so waiting longer buys no less work.
- */
-const HOVER_MS = 80
-/** Frames are decoded per 5s bucket — finer than the eye wants at a film's scale. */
-const BUCKET = 5
-/**
- * How far off a stand-in frame may be. Generous on purpose: it goes up dimmed,
- * the time under it is exact, and the real frame replaces it a moment later. A
- * roughly right picture beats an empty box for that moment.
- */
-const NEAR_S = 60
-/** Where the walk starts before halving its way down to `BUCKET`. */
-const COARSE = BUCKET * 128
-
-const thumb = ref<string | null>(null)
-/** The frame up is a neighbour's, not this position's. Shown faded. */
-const approx = ref(false)
-/** Blob URL per bucket, `''` for a position ffmpeg had no frame at. */
-const thumbs = new Map<number, string>()
-/** Buckets ffmpeg is busy with, so a sweep can't queue the same one twice. */
-const pending = new Set<number>()
-let pieces: PieceMap | null = null
-let haves: Uint8Array | null = null
-let havesAt = 0
-let wanted = -1
-/**
- * Bumped to disown every decode in flight — the frame ffmpeg is working on is of
- * a film nobody is looking at any more, or isn't playing at all. Not the cache's
- * identity: hiding the bar calls the work off without throwing the frames away.
- */
-let era = 0
-
-function cancelThumbs() {
-  era++
-}
-
-function dropThumbs() {
-  cancelThumbs()
-  thumbs.forEach(url => url && URL.revokeObjectURL(url))
-  thumbs.clear()
-  pending.clear()
-  thumb.value = null
-  pieces = null
-  haves = null
-}
-
-async function onDisk(at: number) {
-  const parts = streamParts(props.src)
-  // A plain URL has every byte one range request away. A cast mirror is
-  // another device's torrent with nothing here to ask what it holds, and a
-  // guess of "yes" would have every hover fetch pieces over there.
-  if (!parts)
-    return !fromCast.value
-  pieces ??= await pieceMap(parts.id, parts.index)
-  // Refetched as the download grows. A stale bitfield only ever hides a frame
-  // we could have shown, never invents one we haven't got.
-  if (!haves || Date.now() - havesAt > 5000) {
-    haves = await torrentHaves(parts.id)
-    havesAt = Date.now()
-  }
-  return !!pieces && !!haves && haveAt(pieces, haves, at / (duration.value || 1))
-}
-
-/**
- * Where the stretch of the film on disk around the picture starts and ends, as
- * fractions of it — what the subtitle sync may read (`playedSpan`). A plain url
- * has every byte one range request away; a cast mirror is another device's
- * torrent, and only what already played there is sure to be held.
- */
-async function heldSpan(): Promise<[number, number]> {
-  const now = position.value / (duration.value || 1)
-  const parts = streamParts(props.src)
-  if (!parts)
-    return fromCast.value ? [0, now] : [0, 1]
-  pieces ??= await pieceMap(parts.id, parts.index)
-  haves = await torrentHaves(parts.id)
-  havesAt = Date.now()
-  return (pieces && haves && heldAround(pieces, haves, now)) || [now, now]
-}
-
-/** Decode one bucket into the cache, unless it's there or on its way. */
-async function grab(bucket: number) {
-  if (thumbs.has(bucket) || pending.has(bucket))
-    return
-  const mine = era
-  pending.add(bucket)
-  try {
-    // Left uncached when the bytes aren't down yet — unlike a miss, that is an
-    // answer which changes as the download runs.
-    if (!await onDisk(bucket))
-      return
-    const bytes = await invoke<ArrayBuffer>('thumbnail', { url: props.src, at: bucket }).catch(() => null)
-    // Next episode may have started while ffmpeg worked, and this frame is of
-    // the last one — under a bucket number the new film will read as its own.
-    if (mine !== era)
-      return
-    // Misses are remembered too: a position ffmpeg can't decode never will.
-    thumbs.set(bucket, bytes?.byteLength ? URL.createObjectURL(new Blob([bytes], { type: 'image/jpeg' })) : '')
-  }
-  finally {
-    pending.delete(bucket)
-  }
-}
-
-/**
- * Put up the best frame we have for `bucket`: its own, or a neighbour's faded
- * out. Over a film the walk has been across, that makes the bubble land filled
- * in and sharpen a moment later, rather than opening empty every time.
- */
-function show(bucket: number) {
-  const exact = thumbs.get(bucket)
-  approx.value = !exact
-  thumb.value = exact || nearestFrame(thumbs, bucket, NEAR_S)
-}
-
-/**
- * Only where the cursor comes to rest gets decoded, not every pixel it swept.
- * `stop` on every move is what makes that true.
- */
-const { start: startHover, stop: stopHover } = useTimeoutFn(async (bucket: number) => {
-  await grab(bucket)
-  // The cursor may have moved on while ffmpeg worked.
-  if (wanted === bucket)
-    show(bucket)
-  // A cursor that stopped is about to nudge. Both neighbours cost one ffmpeg
-  // each against a wait the user would otherwise sit through twice.
-  for (const near of [bucket - BUCKET, bucket + BUCKET]) {
-    if (near >= 0 && near < duration.value)
-      void grab(near)
-  }
-}, HOVER_MS, { immediate: false })
-
-function onHover(at: number | null) {
-  stopHover()
-  if (at === null || !native || !duration.value) {
-    thumb.value = null
-    return
-  }
-
-  const bucket = Math.floor(at / BUCKET) * BUCKET
-  wanted = bucket
-  show(bucket)
-  // Cached, or cached as a position ffmpeg gets nothing from — either way there
-  // is nothing left to decode.
-  if (thumbs.has(bucket))
-    return
-
-  startHover(bucket)
-}
-
-/**
- * With the bar up, fill the cache in `walkOrder`'s order so a scrub lands on a
- * frame already in hand rather than waiting on ffmpeg for one.
- *
- * The bar is the whole trigger: it means someone is at the controls, and it
- * hides 2.8s into untouched playback — so a film watched straight through never
- * warms a single frame. One at a time, and every bucket goes through `grab`, so
- * the walk thins out by itself over a part-downloaded film.
- */
-let warming = false
-
-async function warm() {
-  if (warming || !native || !started.value)
-    return
-  const mine = era
-  warming = true
-  try {
-    for (const at of walkOrder(duration.value, BUCKET, COARSE)) {
-      // The bar hiding is a whole film's worth of work called off.
-      if (mine !== era)
-        return
-      await grab(at)
-    }
-  }
-  finally {
-    warming = false
-  }
-}
+const { thumb, approx, onHover, warm, cancelThumbs, dropThumbs, heldSpan } = useSeekPreview({
+  native,
+  src: () => props.src,
+  position,
+  duration,
+  started,
+  fromCast,
+})
 
 // ---------------------------------------------------------------------------
 // Auto-hiding chrome
@@ -2298,12 +1992,16 @@ watch(() => behind && started.value, on => {
   document.documentElement.classList.toggle('ventic-video', on)
 })
 
+// Capture phase, so the keys a focused control would otherwise swallow whole
+// reach the player first. `useEventListener` rather than a pair in the mount
+// hooks: it goes with the scope, like the timers above.
+useEventListener(window, 'keydown', onKey, true)
+
 onMounted(() => {
-  window.addEventListener('keydown', onKey, true)
   // Ahead of the first geometry push rather than alongside it, so the window
   // mpv opens is already the right size at any scale but 100%.
   if (native)
-    measurePx()
+    surface.readScale()
   rafId = requestAnimationFrame(frame)
   listenToNativeMouse()
   if (props.fullscreen)
@@ -2314,12 +2012,11 @@ onMounted(() => {
 onBeforeUnmount(() => {
   cancelAnimationFrame(rafId)
   document.documentElement.classList.remove('ventic-video')
-  window.removeEventListener('keydown', onKey, true)
   mounted = false
   nativeMouse.forEach(off => off())
   stopPoll()
   saveProgress()
-  dropThumbs()
+  // The frame cache gives its blobs back on its own (`onScopeDispose`).
   if (windowFullscreen.value)
     setWindowFullscreen(false)
   // The watcher above dies with the component, so the last thing it asked for
