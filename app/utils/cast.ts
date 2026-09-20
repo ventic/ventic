@@ -23,7 +23,7 @@ import { fetch as tauriFetch } from '@tauri-apps/plugin-http'
 // Named imports rather than the app's auto-imports: `bun run check:cast` loads
 // this file with no Nuxt around it (see scripts/check-cast.ts).
 import { xtreamUrl } from './iptv'
-import { ENGINE, normalizeSource } from './torrents'
+import { ENGINE, httpUrl, normalizeSource } from './torrents'
 
 /** Where a device listens for play commands — `RECEIVER_PORT` in cast.rs. */
 export const CAST_PORT = 3232
@@ -139,11 +139,11 @@ export function setupValue(setup: CastSetup): string {
       return normalizeSource(url)
     case 'xtream':
       return xtreamUrl(url, setup.user ?? '', setup.pass ?? '') ?? ''
-    // A playlist and a WebDAV folder are both fetched through Rust, so `file://`
-    // or `javascript:` here would be asking it to open something else entirely
-    // (see the playlist box in settings/sources.vue).
+    // The same test the playlist box in settings/sources.vue applies to what is
+    // typed there — one function, so the two cannot come to disagree about what
+    // an address is.
     default:
-      return /^https?:\/\/[^\s/]+(?:\/\S*)?$/i.test(url) ? url : ''
+      return httpUrl(url)
   }
 }
 

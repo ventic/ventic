@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import process from 'node:process'
-import { bufferWindow, diskBudget, ENGINE, engineReason, filedAs, findReleases, haveAt, heldAround, isAwkward, isBloated, limitToFiles, MIN_LIBRARY, normalizeSource, parseRelease, pickBest, pickSubtitleFiles, pickVideoFile, planEviction, planNetwork, releaseKey, setQuality, setSources, setStreamDir, shouldStream, STALLED, startTorrent, streamParts, toRelease, uploadLimit, usedBytes } from '../app/utils/torrents'
+import { bufferWindow, diskBudget, ENGINE, engineReason, filedAs, findReleases, haveAt, heldAround, httpUrl, isAwkward, isBloated, limitToFiles, MIN_LIBRARY, normalizeSource, parseRelease, pickBest, pickSubtitleFiles, pickVideoFile, planEviction, planNetwork, releaseKey, setQuality, setSources, setStreamDir, shouldStream, STALLED, startTorrent, streamParts, toRelease, uploadLimit, usedBytes } from '../app/utils/torrents'
 // Self-check for the torrent parser/ranker: `bun scripts/check-torrents.ts`.
 // The fixture is the response shape a source answers with, filled in with a
 // public-domain film. `--live <source-url> <imdb-id>` also searches for real.
@@ -663,6 +663,20 @@ assert.equal(normalizeSource('   '), '')
 // A scheme that was given and isn't one we speak is an answer, not an omission.
 assert.equal(normalizeSource('ftp://a.example'), '')
 assert.equal(normalizeSource('https://'), '')
+
+// The same test, reached on its own by the two other places that take an address
+// off somebody else: the playlist box in settings/sources.vue and `setupValue`,
+// which is what a phone posts to the TV. Those used to carry a regex each — two
+// copies of this one and a looser third, so a playlist URL with a space in it
+// was accepted when typed on the set and refused when sent from a phone.
+assert.equal(httpUrl('  https://a.example/list.m3u  '), 'https://a.example/list.m3u', 'trimmed, and kept')
+assert.equal(httpUrl('http://192.168.0.9:8080/get.php?username=u&password=p'), 'http://192.168.0.9:8080/get.php?username=u&password=p', 'a query string is part of it')
+assert.equal(httpUrl('https://a.example/a b.m3u'), '', 'a space is not escaped, so this is not an address')
+assert.equal(httpUrl('file:///etc/passwd'), '', 'the fetch goes through Rust — only http(s) may reach it')
+assert.equal(httpUrl('javascript:alert(1)'), '', 'nor a scheme that is not a fetch at all')
+assert.equal(httpUrl(''), '')
+// `normalizeSource` ends in it, so the two can never come apart.
+assert.equal(normalizeSource('https://a.example'), httpUrl('https://a.example'), 'one rule, not two')
 
 // Understanding a scheme is not enough to receive one. tauri-plugin-deep-link
 // drops any URL whose scheme is missing from this list — on both the cold-start

@@ -109,6 +109,9 @@ async function start() {
   src.value = ''
   torrent.value = null
   streaming.value = null
+  // With the rest of them: `tryAnother` deletes the torrent this still names, and
+  // leaving it set points `stats` at an id the engine no longer has.
+  torrentId.value = null
 
   try {
     // ?magnet=… hand-picks the release and skips the lookup — that's how the

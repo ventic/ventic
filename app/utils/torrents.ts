@@ -64,11 +64,26 @@ export function normalizeSource(input: string): string {
     .replace(/\/manifest\.json(?:[?#].*)?$/i, '')
     .replace(/\/+$/, '')
 
-  // No whitespace anywhere, not just a host that starts plausibly: "not a url
-  // at all" passed a test that only looked as far as the first word, and was
-  // added to the list as `https://not a url at all`. Every search then failed
-  // with a message about a source rather than about what was typed, which is the
-  // hardest kind of complaint to answer. A real URL escapes its spaces.
+  return httpUrl(url)
+}
+
+/**
+ * `value` if it is an http(s) address, '' if it is not — the one test the three
+ * places that take an address off somebody else all have to agree on.
+ *
+ * Whitespace anywhere disqualifies it, not just a host that starts plausibly:
+ * "not a url at all" passed a test that only looked as far as the first word,
+ * and was added to the source list as `https://not a url at all`. Every search
+ * then failed with a message about a source rather than about what was typed,
+ * which is the hardest kind of complaint to answer. A real URL escapes its
+ * spaces.
+ *
+ * http(s) and nothing else, because a playlist and a WebDAV folder are both
+ * fetched through Rust: `file://` or `javascript:` here would be asking it to
+ * open something else entirely.
+ */
+export function httpUrl(value: string): string {
+  const url = value.trim()
   return /^https?:\/\/[^\s/]+(?:\/\S*)?$/i.test(url) ? url : ''
 }
 

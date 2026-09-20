@@ -298,7 +298,9 @@ async function readPointer(): Promise<Pointer | null> {
 
 /** The `<video>` path's OSD, since there is no mpv to draw one. */
 const osdText = ref('')
-let osdTimer: ReturnType<typeof setTimeout> | null = null
+/** How long the message on screen stays up — read by `startOsd` as it starts. */
+const osdMs = ref(1200)
+const { start: startOsd } = useTimeoutFn(() => (osdText.value = ''), osdMs, { immediate: false })
 
 /**
  * Text over the video without a cutout: let mpv itself render it. The trailing 0
@@ -312,9 +314,8 @@ function osd(text: string, ms = 1200) {
     return ipc(['show-text', text, ms, 0])
 
   osdText.value = text
-  if (osdTimer)
-    clearTimeout(osdTimer)
-  osdTimer = setTimeout(() => (osdText.value = ''), ms)
+  osdMs.value = ms
+  startOsd()
 }
 
 // ---------------------------------------------------------------------------
@@ -1678,7 +1679,6 @@ let pieces: PieceMap | null = null
 let haves: Uint8Array | null = null
 let havesAt = 0
 let wanted = -1
-let hoverTimer: ReturnType<typeof setTimeout> | undefined
 /**
  * Bumped to disown every decode in flight — the frame ffmpeg is working on is of
  * a film nobody is looking at any more, or isn't playing at all. Not the cache's
@@ -1769,8 +1769,25 @@ function show(bucket: number) {
   thumb.value = exact || nearestFrame(thumbs, bucket, NEAR_S)
 }
 
+/**
+ * Only where the cursor comes to rest gets decoded, not every pixel it swept.
+ * `stop` on every move is what makes that true.
+ */
+const { start: startHover, stop: stopHover } = useTimeoutFn(async (bucket: number) => {
+  await grab(bucket)
+  // The cursor may have moved on while ffmpeg worked.
+  if (wanted === bucket)
+    show(bucket)
+  // A cursor that stopped is about to nudge. Both neighbours cost one ffmpeg
+  // each against a wait the user would otherwise sit through twice.
+  for (const near of [bucket - BUCKET, bucket + BUCKET]) {
+    if (near >= 0 && near < duration.value)
+      void grab(near)
+  }
+}, HOVER_MS, { immediate: false })
+
 function onHover(at: number | null) {
-  clearTimeout(hoverTimer)
+  stopHover()
   if (at === null || !native || !duration.value) {
     thumb.value = null
     return
@@ -1784,19 +1801,7 @@ function onHover(at: number | null) {
   if (thumbs.has(bucket))
     return
 
-  // Only where the cursor comes to rest gets decoded, not every pixel it swept.
-  hoverTimer = setTimeout(async () => {
-    await grab(bucket)
-    // The cursor may have moved on while ffmpeg worked.
-    if (wanted === bucket)
-      show(bucket)
-    // A cursor that stopped is about to nudge. Both neighbours cost one ffmpeg
-    // each against a wait the user would otherwise sit through twice.
-    for (const near of [bucket - BUCKET, bucket + BUCKET]) {
-      if (near >= 0 && near < duration.value)
-        void grab(near)
-    }
-  }, HOVER_MS)
+  startHover(bucket)
 }
 
 /**
@@ -1850,7 +1855,14 @@ const hovering = ref(false)
 const hoverable = useMediaQuery('(hover: hover)')
 /** A control in the chrome holds keyboard focus — someone is driving with a remote. */
 const focused = ref(false)
-let hideTimer: ReturnType<typeof setTimeout> | null = null
+/**
+ * `useTimeoutFn` rather than a bare `setTimeout`, because this one is armed for
+ * seconds at a time and the component can go in the middle of them: leaving a
+ * film mid-playback left a timer to fire `hideChrome` on a player that had
+ * already stopped. It goes with the scope now, which is the only way this stays
+ * true as `hideChrome` grows.
+ */
+const { start: startHide, stop: stopHide } = useTimeoutFn(() => hideChrome(), IDLE_MS, { immediate: false })
 
 /**
  * A mouse click focuses the button it lands on too, and nothing ever takes that
@@ -1926,14 +1938,12 @@ function hideChrome() {
 function noteActivity() {
   ui.value = true
   showPointer(true)
-  if (hideTimer)
-    clearTimeout(hideTimer)
-  hideTimer = null
+  stopHide()
   // Keep them up while paused, stopped, hovered, or reading a menu — hiding only
   // makes sense mid-playback. Focus does *not* keep them up: on a TV every press
   // leaves something focused, which pinned the bars over the film for good.
   if (started.value && !paused.value && !menu.value && !(hovering.value && hoverable.value))
-    hideTimer = setTimeout(hideChrome, IDLE_MS)
+    startHide()
 }
 
 // Not `focused`: the blur `hideChrome` does would fire this straight back.
@@ -1955,7 +1965,21 @@ watchDebounced(() => buffering.value && started.value, v => (stalled.value = v),
  * too, and this side can only see that playback is waiting, which it also does
  * on a slow swarm that is still feeding it.
  */
-const stuck = computed(() => !!props.quiet && stalled.value && !paused.value)
+const starving = computed(() => !!props.quiet && stalled.value && !paused.value)
+
+/**
+ * …and it has stayed that way for longer than the page takes to notice
+ * otherwise. `quiet` is 45 s of no bytes, which a film **paused** over a full
+ * stream window also is — so pressing play on one raised this for the two
+ * seconds the stats poll takes to report the swarm feeding again, and a film
+ * that was filling perfectly well announced itself dead.
+ *
+ * Only the rise waits. The fall is immediate, or the notice would outlive the
+ * problem it names by the same three seconds.
+ */
+const stuck = ref(false)
+watchDebounced(starving, v => (stuck.value = v), { debounce: 3000 })
+watch(starving, on => on || (stuck.value = false))
 
 /**
  * Seconds the end-of-playback screen waits before rolling into the next
@@ -1964,15 +1988,24 @@ const stuck = computed(() => !!props.quiet && stalled.value && !paused.value)
 const AUTO_NEXT = 10
 
 const countdown = ref(0)
-let nextTimer: ReturnType<typeof setInterval> | null = null
 // Resolved here rather than calling `navigateTo` from the timer: that one wants
-// a Nuxt instance, and a setInterval callback has none.
+// a Nuxt instance, and a timer callback has none.
 const router = useRouter()
 
+const { pause: pauseCountdown, resume: resumeCountdown } = useIntervalFn(() => {
+  if (--countdown.value > 0)
+    return
+  stopCountdown()
+  // `replace`, like the button below: rolling into the next episode is carrying
+  // on with the same thing, and a push would leave Back pointing at the episode
+  // you just sat through instead of out of the player.
+  const to = props.next?.to
+  if (to)
+    router.replace(to)
+}, 1000, { immediate: false })
+
 function stopCountdown() {
-  if (nextTimer)
-    clearInterval(nextTimer)
-  nextTimer = null
+  pauseCountdown()
   countdown.value = 0
 }
 
@@ -1984,18 +2017,8 @@ watch([ended, () => props.next?.to], ([done, to]) => {
   if (!done || !to)
     return
   countdown.value = AUTO_NEXT
-  nextTimer = setInterval(() => {
-    if (--countdown.value <= 0) {
-      stopCountdown()
-      // `replace`, like the button below: rolling into the next episode is
-      // carrying on with the same thing, and a push would leave Back pointing
-      // at the episode you just sat through instead of out of the player.
-      router.replace(to)
-    }
-  }, 1000)
+  resumeCountdown()
 })
-
-onBeforeUnmount(stopCountdown)
 
 const centre = computed(() => {
   if (errorMsg.value)
@@ -2165,22 +2188,18 @@ const DOUBLE_TAP_MS = 300
 /** Which side to flash an arrow on, so a seek is visibly a seek. */
 const seekFlash = ref<'back' | 'forward' | ''>('')
 let lastTap = 0
-let flashTimer: ReturnType<typeof setTimeout> | null = null
+const { start: startFlash } = useTimeoutFn(() => (seekFlash.value = ''), 500, { immediate: false })
 
 function flashSeek(side: 'back' | 'forward') {
   seekFlash.value = side
-  if (flashTimer)
-    clearTimeout(flashTimer)
-  flashTimer = setTimeout(() => (seekFlash.value = ''), 500)
+  startFlash()
 }
 
 /** Show the bars, or put them away — what a bare tap does. */
 function toggleChrome() {
   if (ui.value) {
     hideChrome()
-    if (hideTimer)
-      clearTimeout(hideTimer)
-    hideTimer = null
+    stopHide()
   }
   else {
     noteActivity()
@@ -2300,12 +2319,7 @@ onBeforeUnmount(() => {
   nativeMouse.forEach(off => off())
   stopPoll()
   saveProgress()
-  clearTimeout(hoverTimer)
   dropThumbs()
-  if (osdTimer)
-    clearTimeout(osdTimer)
-  if (flashTimer)
-    clearTimeout(flashTimer)
   if (windowFullscreen.value)
     setWindowFullscreen(false)
   // The watcher above dies with the component, so the last thing it asked for
