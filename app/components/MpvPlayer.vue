@@ -4,7 +4,6 @@ import type { PlayerEngine } from '~/utils/htmlvideo'
 import type { KeyAction } from '~/utils/keys'
 import type { Subtitle, SubtitleFile, SubtitleLanguage } from '~/utils/subtitles'
 import type { Media } from '~/utils/tmdb'
-import type { PieceMap } from '~/utils/torrents'
 import {
   mdiAlertCircleOutline,
   mdiAutoFix,
@@ -251,6 +250,37 @@ const scrubbing = ref(false)
 /** While the volume slider is being dragged, the poll must not fight it back. */
 const volumeHeld = ref(false)
 const errorMsg = ref('')
+
+// Where the stream comes from — a fact about `props.src` and nothing else, and
+// read by everything below from the spinner's wording to what a hover may decode.
+/** The stream is the local engine's, rather than a link a source resolved itself. */
+const fromEngine = computed(() => props.src.startsWith(ENGINE))
+
+/**
+ * The film is being served by the device that cast it here — `mirrored` reads
+ * the mirror's own port off the URL (see utils/cast).
+ *
+ * Worth telling apart because everything this screen can say about a failure is
+ * a sentence pointing somebody at a machine, and for a cast it is neither of the
+ * other two: not this device's engine, and not the source's link. Saying either
+ * sends them looking at the wrong one.
+ */
+const fromCast = computed(() => mirrored(props.src))
+
+// ---------------------------------------------------------------------------
+// Seek previews — the frame under the cursor, and what the engine actually
+// holds. Both are `useSeekPreview`: it is ffmpeg and a piece bitfield, not
+// playback. Built here rather than beside the seek bar because `heldSpan` is
+// what the subtitle sync reads, and that is further up the file.
+// ---------------------------------------------------------------------------
+const { thumb, approx, onHover, warm, cancelThumbs, dropThumbs, heldSpan } = useSeekPreview({
+  native,
+  src: () => props.src,
+  position,
+  duration,
+  started,
+  fromCast,
+})
 
 // ---------------------------------------------------------------------------
 // mpv IPC
@@ -1068,20 +1098,6 @@ function frame(now: number) {
 // necessity, since start/stopPlayer below drive it) is safe.
 const { pause: stopPoll, resume: startPoll } = useIntervalFn(poll, 200, { immediate: false })
 
-/** The stream is the local engine's, rather than a link a source resolved itself. */
-const fromEngine = computed(() => props.src.startsWith(ENGINE))
-
-/**
- * The film is being served by the device that cast it here — `mirrored` reads
- * the mirror's own port off the URL (see utils/cast).
- *
- * Worth telling apart because everything this screen can say about a failure is
- * a sentence pointing somebody at a machine, and for a cast it is neither of the
- * other two: not this device's engine, and not the source's link. Saying either
- * sends them looking at the wrong one.
- */
-const fromCast = computed(() => mirrored(props.src))
-
 /**
  * What the spinner says while a film is opening. Three different waits look
  * identical here and fail for three unrelated reasons — see `waitForStream`.
@@ -1511,20 +1527,6 @@ const volumeIcon = computed(() => {
   if (volume.value < 34)
     return mdiVolumeLow
   return volume.value < 67 ? mdiVolumeMedium : mdiVolumeHigh
-})
-
-// ---------------------------------------------------------------------------
-// Seek previews — the frame under the cursor, and what the engine actually
-// holds. Both are `useSeekPreview`: it is ffmpeg and a piece bitfield, not
-// playback, and `heldSpan` is what the subtitle sync below reads.
-// ---------------------------------------------------------------------------
-const { thumb, approx, onHover, warm, cancelThumbs, dropThumbs, heldSpan } = useSeekPreview({
-  native,
-  src: () => props.src,
-  position,
-  duration,
-  started,
-  fromCast,
 })
 
 // ---------------------------------------------------------------------------
