@@ -1536,7 +1536,14 @@ async function poll() {
 
   if (typeof p.pause === 'boolean')
     paused.value = p.pause
-  buffering.value = p['paused-for-cache'] === true
+  // mpv only raises `paused-for-cache` once playback has begun and the cache
+  // then ran dry. While it is *opening* the file — headers, first bytes — it
+  // says nothing at all, and the result was a black rectangle at 0:00 with no
+  // notice on it and no way for `stuck` to ever fire. No clock yet is exactly
+  // that state, and it is what the <video> shim already answers with
+  // `readyState < 3`. Paused is nobody's stall, but `centre` and `stuck` check
+  // that themselves.
+  buffering.value = p['paused-for-cache'] === true || p['time-pos'] == null
   if (typeof p.duration === 'number')
     duration.value = p.duration
   if (typeof p.volume === 'number' && !volumeHeld.value)
