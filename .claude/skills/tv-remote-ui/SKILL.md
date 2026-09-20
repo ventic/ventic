@@ -39,14 +39,31 @@ pages get remote support for free as long as they follow the rules below.
   escaped straight to the toolbar — leaving the title, poster and overview
   unreachable for the rest of the visit, there being nothing to move *to* that
   would bring them back.
-- **Scrolling is instant, never smooth.** A rect read while a scroll animation
-  is in flight is a lie, so a press arriving during one measured the page from
-  where it was going to be: past the first press each one aimed further than a
-  row, and the page slid on for a second after the last of them. Measured on the
-  set at ~500ms and several hundred pixels of lag per press; one press is now
-  exactly one row. `nudge` likewise keeps focus unless the element it was on
-  really did scroll out of view — dropping it otherwise costs a press and
-  reveals nothing.
+- **The scroll is animated, and both halves of that are ours.** `heading` holds
+  where each scroller is going and `step()` eases it there on a frame loop,
+  because the platform's animation cannot be retargeted: `scrollTo` with a
+  smooth behaviour *cancels* whatever is running and eases in from a standstill,
+  so a press landing mid-scroll stopped the page dead and started again —
+  measured on the set at eight presses 120ms apart, the page crawled at 5px a
+  frame for three seconds and then covered 2000px in half of one, once the
+  presses stopped. Easing toward a moving target has no standstill in it, and
+  costs nothing extra: the same per-frame durations as the platform's, at 60fps.
+  The loop stops when it arrives, and lets go the moment a wheel or a finger
+  moves the scroller instead.
+- **Every decision about that scroll is taken against the page at rest.** A rect
+  read mid-animation describes a page on its way somewhere, and `scrollIntoView`
+  is no better — its `nearest` is measured from where the scroll has got to, so
+  it asks for the whole remaining distance *plus* a row and each press of a
+  burst aims further than the last. `show()` works the destination out itself
+  from the resting geometry; `move()` measures candidates the same way, because
+  mid-flight every row below the fold clips onto the same edge and only document
+  order tells them apart, which walked the grid *backwards*; and `focusFirst()`
+  likewise, or it lands on a row already on its way off the screen. A heading is
+  clamped to where the scroller can stop, and re-clamped every frame — an
+  unreachable one is answered with for ever, and every later press is then
+  judged against a page that does not exist. `nudge` steps on from where the
+  scroller is heading, and keeps focus unless the element it was on really did
+  scroll out of view.
 - The handler sits on `document` in the **bubble** phase and bails on
   `e.defaultPrevented`, so any component that already handles arrows keeps them:
   Vuetify sliders, lists, selects, and the player's seek keys.

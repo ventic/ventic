@@ -184,14 +184,53 @@ const manifest = readFileSync(
 )
 const plugin = readFileSync(new URL('../app/plugins/dpad.client.ts', import.meta.url), 'utf8')
 
-// Instant, not smooth. A rect read while a scroll animation is in flight is a
-// lie: a second press during one measured the page from where it was going to
-// be, so every press past the first aimed further than a row and the page slid
-// on for a second after the last of them — measured on the TV as a press
-// landing 500ms and several hundred pixels late.
+// The scroll is animated, and both halves of that are the plugin's own.
+//
+// The destination is worked out from the page **at rest**: `scrollIntoView`
+// computes `nearest` from wherever the animation has got to — the whole
+// remaining distance *plus* a row — so every press of a burst aimed further
+// than the last and the page slid on for a second after the final one.
+assert.ok(
+  !/\.scrollIntoView\(/.test(plugin),
+  'the destination is worked out here, not asked of a page mid-animation',
+)
+
+// And the movement is a frame loop easing toward that target, because the
+// platform's cannot be retargeted: a `scrollTo` with a smooth behaviour cancels
+// whatever is running and eases in from a standstill, so a press landing
+// mid-scroll stopped the page dead and started again. Measured on the set,
+// eight presses 120ms apart: 5px a frame for three seconds, then 2000px in half
+// of one once the presses stopped. Moving a target the loop is already chasing
+// costs nothing and keeps the speed that was already there.
 assert.ok(
   !/behavior: 'smooth'/.test(plugin),
-  'the d-pad scrolls instantly, or the next press measures a page mid-flight',
+  'the platform\'s smooth scroll is not used — it restarts rather than retargets',
+)
+assert.ok(
+  /requestAnimationFrame\(step\)/.test(plugin) && /heading\.set\(/.test(plugin),
+  'the d-pad eases toward a target of its own instead',
+)
+
+// Which somebody who cannot bear the movement must be able to turn off. CSS
+// would have honoured this for a `scroll-behavior`; an animation of our own has
+// to say so itself.
+assert.ok(
+  /prefers-reduced-motion/.test(plugin),
+  'and reduced motion gets none of it',
+)
+
+// And the destination noted has to be one the scroller can actually stop at.
+// The DOM clamps the scroll; an unclamped note of where it was heading never
+// matches where it lands, so every press afterwards is measured against a page
+// that does not exist. Measured on the set: one nudge to the foot of a title
+// page and "down" off the last row of More like this jumped into the sidebar.
+assert.ok(
+  /Math\.min\(to\.top, el\.scrollHeight - el\.clientHeight\)/.test(plugin),
+  'a heading is clamped to where the scroller can stop',
+)
+assert.ok(
+  /const goal = within\(el, to\)/.test(plugin),
+  'and re-clamped each frame, since a grid that mounts a page moves that end',
 )
 
 // A press that would leave a region still holding content that way has to

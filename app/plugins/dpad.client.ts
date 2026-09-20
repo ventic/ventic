@@ -42,6 +42,84 @@ export default defineNuxtPlugin(() => {
   const html = document.documentElement
   let dpad = false
 
+  /**
+   * Where each scroller is heading, and the frame loop taking it there.
+   *
+   * Everything below is decided against these rather than against what
+   * `scrollTop` says at this instant: mid-animation the DOM describes a page on
+   * its way somewhere, and a press that believed it asked to go a screen too far.
+   *
+   * The animation is ours because the platform's cannot be retargeted. A
+   * `scrollTo` with a smooth behaviour *cancels* whatever is running and eases
+   * in from a standstill, so a press landing mid-scroll stopped the page dead
+   * and started again — measured on the set, eight presses 120ms apart: the
+   * page crawled at 5px a frame for three seconds and then covered 2000px in
+   * half of one, once the presses stopped. Easing toward a moving target has no
+   * standstill in it: a press only moves the target, and the speed already
+   * there carries into it.
+   *
+   * `WeakMap`s because an entry is worth exactly as long as its element.
+   */
+  const heading = new WeakMap<Element, { top: number, left: number }>()
+  /** What the loop last put there, so a wheel or a finger is noticed. */
+  const written = new WeakMap<Element, { top: number, left: number }>()
+  const moving = new Set<Element>()
+  let frame = 0
+  let drawn = 0
+
+  /**
+   * How quickly the gap to the target closes, as a time constant in ms — about
+   * 95% of the way there in a fifth of a second. Exponential rather than a
+   * fixed duration so that retargeting is free: there is no curve to restart,
+   * only a target to move.
+   */
+  const EASE = 70
+
+  /** Where this scroller can actually stop. */
+  function within(el: Element, to: { top: number, left: number }) {
+    return {
+      top: Math.max(0, Math.min(to.top, el.scrollHeight - el.clientHeight)),
+      left: Math.max(0, Math.min(to.left, el.scrollWidth - el.clientWidth)),
+    }
+  }
+
+  function step(now: number) {
+    // Capped, so a dropped second's worth of frames eases rather than teleports.
+    const gone = Math.min(now - drawn, 64)
+    drawn = now
+    frame = 0
+    const k = 1 - Math.exp(-gone / EASE)
+
+    for (const el of [...moving]) {
+      const to = heading.get(el)
+      const put = written.get(el)
+      // Somebody else moved it — a wheel, a finger, a component's own scroll.
+      // Theirs now.
+      if (!to || !put || Math.abs(el.scrollTop - put.top) > 1 || Math.abs(el.scrollLeft - put.left) > 1) {
+        moving.delete(el)
+        heading.delete(el)
+        continue
+      }
+      // Re-clamped every frame, not just when aimed: a grid that has just
+      // mounted another page, or dropped one, moves the end it can stop at.
+      const goal = within(el, to)
+      const at = { top: put.top + (goal.top - put.top) * k, left: put.left + (goal.left - put.left) * k }
+      const done = Math.abs(goal.top - at.top) < 0.5 && Math.abs(goal.left - at.left) < 0.5
+      el.scrollTop = done ? goal.top : at.top
+      el.scrollLeft = done ? goal.left : at.left
+      // Read back rather than assumed: the scroller rounds and clamps, and an
+      // assumption that does not match is indistinguishable from a finger.
+      written.set(el, { top: el.scrollTop, left: el.scrollLeft })
+      if (done) {
+        moving.delete(el)
+        heading.delete(el)
+      }
+    }
+
+    if (moving.size)
+      frame = requestAnimationFrame(step)
+  }
+
   /** A dialog owns the screen: without this the d-pad walks out of it into the page behind. */
   function scope(): ParentNode {
     const open = document.querySelectorAll<HTMLElement>(`${MODAL} .v-overlay__content`)
@@ -99,16 +177,27 @@ export default defineNuxtPlugin(() => {
     })
   }
 
+  /** Every box `el` is clipped to, and how far short of rest its ancestors are. */
+  interface Clips { boxes: Box[], dx: number, dy: number }
+
+  function shift(box: Box, dx: number, dy: number): Box {
+    return { left: box.left + dx, top: box.top + dy, right: box.right + dx, bottom: box.bottom + dy }
+  }
+
   /**
    * Every scroller `el` sits inside, plus the window, as boxes — what `clipped`
-   * needs to say where the element can actually be seen. Memoised on the parent
-   * chain, because a grid's few hundred candidates share a handful of them and
-   * `getComputedStyle` is the expensive part.
+   * needs to say where the element can actually be seen — and the offset that
+   * turns a rect of `el`'s into the one it will have once every scroll of ours
+   * has landed. A scroller still `dy` short of its destination is drawing its
+   * children `dy` away from where they belong.
+   *
+   * Memoised on the parent chain, because a grid's few hundred candidates share
+   * a handful of them and `getComputedStyle` is the expensive part.
    */
-  function clips(el: Element, memo: Map<Element, Box[]>): Box[] {
+  function clips(el: Element, memo: Map<Element, Clips>): Clips {
     const parent = el.parentElement
     if (!parent)
-      return [{ left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight }]
+      return { boxes: [{ left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight }], dx: 0, dy: 0 }
     const known = memo.get(parent)
     if (known)
       return known
@@ -116,27 +205,130 @@ export default defineNuxtPlugin(() => {
     const style = getComputedStyle(parent)
     // `hidden` and `clip` cut a box off just as surely as a scroller does, and
     // a card row is both — `overflow-x: auto` makes the other axis compute to
-    // `auto` too, which is exactly the clipping the row really does.
-    const own = /auto|scroll|hidden|clip/.test(style.overflowX + style.overflowY)
-      ? [parent.getBoundingClientRect(), ...above]
-      : above
+    // `auto` too, which is exactly the clipping the row really does. The box is
+    // where it will be, so it moves with whatever is scrolling *above* it but
+    // not with its own scrolling, which only moves what it holds.
+    const boxes = /auto|scroll|hidden|clip/.test(style.overflowX + style.overflowY)
+      ? [shift(parent.getBoundingClientRect(), above.dx, above.dy), ...above.boxes]
+      : above.boxes
+    const at = resting(parent)
+    const own = {
+      boxes,
+      dx: above.dx + parent.scrollLeft - at.left,
+      dy: above.dy + parent.scrollTop - at.top,
+    }
     memo.set(parent, own)
     return own
   }
 
-  function show(el: HTMLElement) {
-    el.focus({ preventScroll: true })
-    // `nearest` keeps the row or grid it lives in from jumping any further than
-    // it has to. Instant, not smooth: a rect read while a scroll animation is in
-    // flight is a lie, so a second press during one measured the page from where
-    // it was going to be rather than from where it was — every press past the
-    // first aimed further than a row and the page slid on for a second after the
-    // last of them. One press, one step, and the next press measures the truth.
-    el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' })
+  /** Where `el` will have come to rest, while a scroll of ours is still running. */
+  function resting(el: Element) {
+    return heading.get(el) ?? { top: el.scrollTop, left: el.scrollLeft }
   }
 
-  function onScreen(el: HTMLElement) {
-    const r = el.getBoundingClientRect()
+  /**
+   * Aim there, and keep the loop running. Clamped to where the scroller can
+   * actually stop: a destination it can never reach is one `resting` answers
+   * with for ever, and every later press is then measured against a page that
+   * does not exist — one nudge to the foot of a title page left everything
+   * judged against a page 517px further down, and "down" off the last row of
+   * More like this jumped into the sidebar.
+   */
+  function glide(el: Element, to: { top: number, left: number }) {
+    const at = within(el, to)
+    heading.set(el, at)
+    // Somebody who cannot bear the movement gets none of it; `scroll-behavior`
+    // would have honoured this for us, and an animation of our own has to say
+    // so itself.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      el.scrollTop = at.top
+      el.scrollLeft = at.left
+      heading.delete(el)
+      return at
+    }
+    if (!moving.has(el)) {
+      written.set(el, { top: el.scrollTop, left: el.scrollLeft })
+      moving.add(el)
+    }
+    if (!frame) {
+      drawn = performance.now()
+      frame = requestAnimationFrame(step)
+    }
+    return at
+  }
+
+  /**
+   * `el`'s rect as it will be once every scroll of ours has landed, with the
+   * boxes it is clipped to. `move` wants both; `focusFirst` only the rect.
+   */
+  function settled(el: HTMLElement, memo: Map<Element, Clips>) {
+    const c = clips(el, memo)
+    return { box: shift(el.getBoundingClientRect(), c.dx, c.dy), boxes: c.boxes }
+  }
+
+  /** One edge of the scroll-padding. `auto`, and a percentage, read as none. */
+  function padding(style: CSSStyleDeclaration, side: 'Top' | 'Bottom' | 'Left' | 'Right') {
+    return Number.parseFloat(style[`scrollPadding${side}` as 'scrollPaddingTop']) || 0
+  }
+
+  /**
+   * How far a span has to move to sit between `near` and `far` — `nearest`:
+   * nothing if it already does, and never further than lining its leading edge
+   * up, which is what stops something taller than the viewport jumping past.
+   */
+  function nearest(from: number, to: number, near: number, far: number) {
+    if (from < near)
+      return from - near
+    if (to > far)
+      return Math.min(to - far, from - near)
+    return 0
+  }
+
+  function show(el: HTMLElement, memo: Map<Element, Clips>) {
+    el.focus({ preventScroll: true })
+
+    // The destination is worked out here rather than asked of
+    // `scrollIntoView`, which computes `nearest` from wherever the page has got
+    // to and cannot be made to ask about the page at rest — so mid-animation it
+    // asked for the whole remaining distance *plus* a row, and each press of a
+    // burst aimed further than the last.
+    //
+    // Jumping the scrollers to where they were heading and back first did fix
+    // the destination, and was worse: **writing `scrollTop` cancels a running
+    // smooth scroll**, so every press restarted the animation from a standstill
+    // instead of letting Chromium retarget the one already running. Measured on
+    // the set, eight presses 120ms apart — the page crawled at 5px a frame for
+    // three seconds and then flew 2000px in half of one. A bare `scrollTo`
+    // retargets and keeps the speed it already had.
+    let box = settled(el, memo).box
+    for (let p = el.parentElement; p; p = p.parentElement) {
+      const style = getComputedStyle(p)
+      const down = /auto|scroll/.test(style.overflowY) && p.scrollHeight > p.clientHeight
+      const across = /auto|scroll/.test(style.overflowX) && p.scrollWidth > p.clientWidth
+      if (!down && !across)
+        continue
+
+      // Its client box at rest: the border is outside what scrolls, and the
+      // rect is not.
+      const own = clips(p, memo)
+      const r = shift(p.getBoundingClientRect(), own.dx, own.dy)
+      const left = r.left + p.clientLeft
+      const top = r.top + p.clientTop
+      const dy = down ? nearest(box.top, box.bottom, top + padding(style, 'Top'), top + p.clientHeight - padding(style, 'Bottom')) : 0
+      const dx = across ? nearest(box.left, box.right, left + padding(style, 'Left'), left + p.clientWidth - padding(style, 'Right')) : 0
+      if (!dx && !dy)
+        continue
+
+      // `glide` clamps to where the scroller can stop, so what the box really
+      // moves by is what came back — and it is the moved box the next scroller
+      // out has to be asked about.
+      const at = resting(p)
+      const to = glide(p, { top: at.top + dy, left: at.left + dx })
+      box = shift(box, at.left - to.left, at.top - to.top)
+    }
+  }
+
+  function onScreen(r: Box) {
     return r.top < window.innerHeight && r.bottom > 0 && r.left < window.innerWidth && r.right > 0
   }
 
@@ -154,12 +346,16 @@ export default defineNuxtPlugin(() => {
     // document order, so the innermost one wins and a page with none falls back
     // to the layout's.
     const start = root === document ? [...document.querySelectorAll('[data-dpad-start]')].pop() : null
+    // Where the page is *going*, not where it is: this runs a press after a
+    // `nudge` let focus go, with that scroll still animating, and the live page
+    // offers a row on its way off the screen. Landing on one and moving from it
+    // walked the grid backwards.
+    const memo = new Map<Element, Clips>()
     const from = (parent: ParentNode) => {
-      const list = focusables(parent).filter(onScreen)
-      return list.find(el => {
-        const r = el.getBoundingClientRect()
-        return r.top >= 0 && r.bottom <= window.innerHeight
-      }) ?? list[0]
+      const list = focusables(parent)
+        .map(el => [el, settled(el, memo).box] as const)
+        .filter(([, box]) => onScreen(box))
+      return (list.find(([, box]) => box.top >= 0 && box.bottom <= window.innerHeight) ?? list[0])?.[0]
     }
 
     const el = (start && from(start)) || from(root)
@@ -190,8 +386,16 @@ export default defineNuxtPlugin(() => {
     // Descendants stay in play (a card's own Play button is a real target);
     // ancestors don't, since their box encloses ours in every direction.
     const list = all.filter(el => el !== from && !el.contains(from))
-    const memo = new Map<Element, Box[]>()
-    const seen = (el: HTMLElement) => clipped(el.getBoundingClientRect(), clips(el, memo))
+    // Measured as the page will be once it has settled, never as it is
+    // mid-animation: while a scroll runs, every row below the fold is clipped
+    // onto the same edge and only document order tells them apart — so a
+    // second press in a burst could pick a row *above* the one it came from
+    // and walk the grid backwards.
+    const memo = new Map<Element, Clips>()
+    const seen = (el: HTMLElement) => {
+      const { box, boxes } = settled(el, memo)
+      return clipped(box, boxes)
+    }
     const at = pickDirection(seen(from), list.map(seen), dir)
     if (at < 0)
       return false
@@ -205,7 +409,7 @@ export default defineNuxtPlugin(() => {
     if (region && !region.contains(list[at]!))
       return false
 
-    show(list[at]!)
+    show(list[at]!, memo)
     return true
   }
 
@@ -223,7 +427,8 @@ export default defineNuxtPlugin(() => {
       if (!/auto|scroll/.test(horizontal ? style.overflowX : style.overflowY))
         continue
 
-      const at = horizontal ? el.scrollLeft : el.scrollTop
+      const to = resting(el)
+      const at = horizontal ? to.left : to.top
       const end = horizontal ? el.scrollWidth - el.clientWidth : el.scrollHeight - el.clientHeight
       if (back ? at > 1 : at < end - 1)
         return el as HTMLElement
@@ -243,9 +448,18 @@ export default defineNuxtPlugin(() => {
 
     const horizontal = dir === 'left' || dir === 'right'
     const back = dir === 'up' || dir === 'left'
-    const by = (horizontal ? el.clientWidth : el.clientHeight) * 0.8 * (back ? -1 : 1)
+    // A screen on from where it is *heading*, so a second press during the
+    // first one's animation moves a second screen rather than re-asking for
+    // most of the first.
+    const at = resting(el)
+    const step = (horizontal ? el.clientWidth : el.clientHeight) * 0.8 * (back ? -1 : 1)
     const was = (document.activeElement as HTMLElement | null)?.getBoundingClientRect()
-    el.scrollBy({ [horizontal ? 'left' : 'top']: by, behavior: 'instant' })
+    const to = glide(el, { top: at.top + (horizontal ? 0 : step), left: at.left + (horizontal ? step : 0) })
+    // How far the page moves from where it is *now* — and from where it will
+    // really stop, not where we asked for, or a press into the last half-screen
+    // of a page would drop focus that never went anywhere. That is what decides
+    // whether what has focus is on its way off the screen.
+    const by = horizontal ? to.left - el.scrollLeft : to.top - el.scrollTop
 
     // Whatever was focused is being scrolled away from, so let go: the next
     // press starts from the top of what's now on screen. Only where it really
