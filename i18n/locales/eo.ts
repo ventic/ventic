@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Ankoraŭ nenio elektita, do la fono estas nune plata koloro.",
   "Nothing downloading.": "Nenio elŝutiĝas.",
   "Nothing here.": "Nenio ĉi tie.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Nenio kongruas.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Nenio sur ĉi tiu aparato povas malfermi tiun dosieron. HEVC/x265 kaj AV1 dependas de la aparata dekodilo, kaj pli malnovaj skatoloj havas nek unu nek la alian — provu eldonon 1080p x264.",
   "Nothing to play": "Nenio por ludi",

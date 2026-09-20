@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "아직 아무것도 선택하지 않아 배경은 당분간 단색입니다.",
   "Nothing downloading.": "다운로드 중인 항목이 없습니다.",
   "Nothing here.": "여기에는 아무것도 없습니다.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "일치하는 항목이 없습니다.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "이 기기에서는 그 파일을 열 수 없습니다. HEVC/x265와 AV1은 하드웨어 디코더에 의존하는데, 오래된 박스에는 둘 다 없습니다 — 1080p x264 릴리스를 시도해 보세요.",
   "Nothing to play": "재생할 것이 없습니다",

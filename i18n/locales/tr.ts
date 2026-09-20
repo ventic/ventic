@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Henüz bir şey seçilmedi, bu yüzden arka plan şimdilik düz bir renk.",
   "Nothing downloading.": "İnen bir şey yok.",
   "Nothing here.": "Burada bir şey yok.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Eşleşen bir şey yok.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Bu cihazda o dosyayı açabilecek hiçbir şey yok. HEVC/x265 ve AV1 donanım çözücüsüne bağlıdır, eski kutularda ikisi de bulunmaz — 1080p x264 bir sürüm deneyin.",
   "Nothing to play": "Oynatılacak bir şey yok",

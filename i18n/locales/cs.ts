@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Zatím nic nevybráno, takže pozadí je zatím jednolitá barva.",
   "Nothing downloading.": "Nic se nestahuje.",
   "Nothing here.": "Nic tu není.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Nic neodpovídá.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Nic v tomto zařízení nedokáže ten soubor otevřít. HEVC/x265 a AV1 závisí na hardwarovém dekodéru a starší boxy nemají ani jedno — zkuste vydání 1080p x264.",
   "Nothing to play": "Není co přehrát",

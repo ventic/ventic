@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "まだ何も選ばれていないので、背景はいまのところ単色です。",
   "Nothing downloading.": "ダウンロード中のものはありません。",
   "Nothing here.": "ここには何もありません。",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "一致するものがありません。",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "この端末ではそのファイルを開けません。HEVC/x265 と AV1 はハードウェアデコーダーに依存しますが、古いボックスにはどちらもありません。1080p x264 のリリースを試してください。",
   "Nothing to play": "再生できるものがありません",

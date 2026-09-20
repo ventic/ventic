@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Cha deach dad a thaghadh fhathast, agus mar sin 's e dath rèidh a th' anns a' chùlaibh an-dràsta.",
   "Nothing downloading.": "Chan eil dad 'ga luchdachadh a-nuas.",
   "Nothing here.": "Chan eil dad an-seo.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Chan eil dad a' freagairt.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Chan urrainn do dhad air an uidheam seo am faidhle sin fhosgladh. Tha HEVC/x265 agus AV1 an urra ris an dì-chòdaichear bathair-chruaidh, agus chan eil gin dhiubh aig bogsaichean nas sine — feuch sgaoileadh 1080p x264.",
   "Nothing to play": "Chan eil dad ri chluich",

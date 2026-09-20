@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Taya' trabiha ma ayek, pot enao un plåtu na kulot ha' i background på'go.",
   "Nothing downloading.": "Taya' mana'tutunok.",
   "Nothing here.": "Taya' guini.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Taya' parehu.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Taya' gi este na device siña ha baba ayu na fail. HEVC/x265 yan AV1 dependi gi hardware decoder, ya i åmko' na box taya' ni uno — chagi un 1080p x264 na release.",
   "Nothing to play": "Tåya' para u ma play",

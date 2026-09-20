@@ -965,6 +965,26 @@ export async function torrentDetails(id: number, engine = ENGINE): Promise<Engin
   }
 }
 
+/**
+ * One torrent's live figures, from the same two engines `torrentDetails` reads.
+ *
+ * Its own endpoint because neither of the others answers this question: the
+ * details above carry no stats, and the list that does carries every other
+ * torrent on that device with them. Asked of a mirror, it is how a film cast
+ * here reports the swarm it is actually coming from — this device's engine has
+ * never heard of it, so the player had nothing to show but a spinner.
+ */
+export async function torrentStats(id: number, engine = ENGINE): Promise<TorrentStats | null> {
+  try {
+    const get = engine === ENGINE || !('__TAURI_INTERNALS__' in globalThis) ? globalThis.fetch : tauriFetch
+    const res = await get(`${engine}/torrents/${id}/stats/v1`)
+    return res.ok ? await res.json() as TorrentStats : null
+  }
+  catch {
+    return null
+  }
+}
+
 export function streamUrl(id: number, index: number, engine = ENGINE) {
   return `${engine}/torrents/${id}/stream/${index}`
 }

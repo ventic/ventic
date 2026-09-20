@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Ende nuk është zgjedhur asgjë, prandaj sfondi për momentin është një ngjyrë e plotë.",
   "Nothing downloading.": "Nuk po shkarkohet asgjë.",
   "Nothing here.": "Këtu nuk ka asgjë.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Asgjë nuk përputhet.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Asgjë në këtë pajisje nuk mund ta hapë atë skedar. HEVC/x265 dhe AV1 varen nga dekoduesi harduerik, dhe kutitë më të vjetra nuk kanë asnjërin — provo një version 1080p x264.",
   "Nothing to play": "S'ka asgjë për të luajtur",

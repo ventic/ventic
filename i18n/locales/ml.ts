@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "ഇതുവരെ ഒന്നും തിരഞ്ഞെടുത്തിട്ടില്ല, അതിനാൽ പശ്ചാത്തലം തൽക്കാലം ഒറ്റനിറമാണ്.",
   "Nothing downloading.": "ഒന്നും ഡൗൺലോഡ് ആകുന്നില്ല.",
   "Nothing here.": "ഇവിടെ ഒന്നുമില്ല.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "ഒന്നും ചേരുന്നില്ല.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "ഈ ഉപകരണത്തിൽ ഒന്നിനും ആ ഫയൽ തുറക്കാനാവില്ല. HEVC/x265, AV1 എന്നിവ ഹാർഡ്‌വെയർ ഡീകോഡറിനെ ആശ്രയിക്കുന്നു, പഴയ ബോക്സുകളിൽ രണ്ടുമില്ല — 1080p x264 റിലീസ് പരീക്ഷിക്കുക.",
   "Nothing to play": "പ്ലേ ചെയ്യാൻ ഒന്നുമില്ല",

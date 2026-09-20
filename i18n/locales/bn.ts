@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "এখনও কিছু বাছা হয়নি, তাই পটভূমি আপাতত একরঙা।",
   "Nothing downloading.": "কিছুই ডাউনলোড হচ্ছে না।",
   "Nothing here.": "এখানে কিছু নেই।",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "কিছুই মেলে না।",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "এই ডিভাইসের কোনও কিছুই ওই ফাইলটি খুলতে পারে না। HEVC/x265 ও AV1 হার্ডওয়্যার ডিকোডারের উপর নির্ভর করে, আর পুরোনো বক্সে দুটোর কোনওটিই নেই — একটি 1080p x264 রিলিজ দেখুন।",
   "Nothing to play": "চালানোর মতো কিছু নেই",

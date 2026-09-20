@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "لم يُختَر شيء بعد، فالخلفية لون مسطح في الوقت الحالي.",
   "Nothing downloading.": "لا شيء قيد التنزيل.",
   "Nothing here.": "لا شيء هنا.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "لا شيء يطابق.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "لا شيء على هذا الجهاز يستطيع فتح ذلك الملف. يعتمد HEVC/x265 وAV1 على مفكك الترميز العتادي، والصناديق الأقدم لا تملك أيًا منهما — جرّب إصدار x264 بدقة 1080p.",
   "Nothing to play": "لا شيء للتشغيل",

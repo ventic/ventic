@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Res es pas encara causit, doncas lo fons es una color unida per ara.",
   "Nothing downloading.": "Res se telecarga pas.",
   "Nothing here.": "I a pas res aicí.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Cap de correspondéncia.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Res sus aqueste aparelh pòt pas dobrir aqueste fichièr. HEVC/x265 e AV1 dependon del descodificador material, e las bóstias mai ancianas n'an cap — ensajatz una publicacion 1080p x264.",
   "Nothing to play": "Res de legir",

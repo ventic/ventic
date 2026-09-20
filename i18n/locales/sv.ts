@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Inget valt än, så bakgrunden är en enfärgad yta så länge.",
   "Nothing downloading.": "Inget laddas ner.",
   "Nothing here.": "Inget här.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Inget matchar.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Ingenting på den här enheten kan öppna den filen. HEVC/x265 och AV1 är beroende av hårdvaruavkodaren, och äldre boxar har varken eller — prova en 1080p x264-utgåva.",
   "Nothing to play": "Inget att spela",

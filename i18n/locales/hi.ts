@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "अभी कुछ नहीं चुना गया, इसलिए फ़िलहाल पृष्ठभूमि एक सादा रंग है।",
   "Nothing downloading.": "कुछ भी डाउनलोड नहीं हो रहा।",
   "Nothing here.": "यहाँ कुछ नहीं है।",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "कुछ भी मेल नहीं खाता।",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "इस डिवाइस पर कुछ भी उस फ़ाइल को नहीं खोल सकता। HEVC/x265 और AV1 हार्डवेयर डिकोडर पर निर्भर हैं, और पुराने बॉक्स में दोनों में से कोई नहीं होता — 1080p x264 रिलीज़ आज़माएँ।",
   "Nothing to play": "चलाने के लिए कुछ नहीं",

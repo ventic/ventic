@@ -2516,8 +2516,13 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
            useful button is the one that plays something else. -->
       <template v-else-if="centre === 'stuck'">
         <v-icon :icon="mdiAlertCircleOutline" size="30" color="warning" />
+        <!-- Whose swarm it is decides what anybody can do about it: the release
+             a cast is starved of is the sending device's, and so is the screen
+             with a button to pick another one on it. -->
         <div class="text-body-medium">
-          {{ $t('Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.') }}
+          {{ fromCast
+            ? $t('Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.')
+            : $t('Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.') }}
         </div>
         <button v-if="pickable" :class="BTN" @click="emit('another')">
           <v-icon :icon="mdiSwapHorizontal" size="18" /> {{ $t('Try a different release') }}

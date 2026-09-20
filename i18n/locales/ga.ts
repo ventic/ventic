@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Níl aon rud roghnaithe fós, mar sin is dath comhréidh é an cúlra go fóill.",
   "Nothing downloading.": "Níl aon rud á íoslódáil.",
   "Nothing here.": "Níl aon rud anseo.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Níl aon rud ag teacht leis.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Ní féidir le haon rud ar an ngléas seo an comhad sin a oscailt. Braitheann HEVC/x265 agus AV1 ar an díchódóir crua-earraí, agus níl ceachtar acu ag boscaí níos sine — bain triail as eisiúint 1080p x264.",
   "Nothing to play": "Níl aon rud le seinm",

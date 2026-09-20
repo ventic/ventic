@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Midagi pole veel valitud, nii et taust on esialgu ühtlane värv.",
   "Nothing downloading.": "Midagi ei laadita alla.",
   "Nothing here.": "Siin pole midagi.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Midagi ei vasta.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Miski selles seadmes ei suuda seda faili avada. HEVC/x265 ja AV1 sõltuvad riistvaralisest dekoodrist ja vanematel karpidel pole kumbagi — proovi 1080p x264 väljalaset.",
   "Nothing to play": "Pole midagi esitada",

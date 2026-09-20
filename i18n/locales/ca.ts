@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Encara no s'ha triat res, així que de moment el fons és un color pla.",
   "Nothing downloading.": "No s'està baixant res.",
   "Nothing here.": "Aquí no hi ha res.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "No hi ha cap coincidència.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Res en aquest dispositiu no pot obrir aquest fitxer. HEVC/x265 i AV1 depenen del descodificador de maquinari, i els aparells més antics no en tenen cap: prova un llançament 1080p x264.",
   "Nothing to play": "No hi ha res per reproduir",

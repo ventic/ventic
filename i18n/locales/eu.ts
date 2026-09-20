@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Oraindik ez da ezer aukeratu, beraz atzeko planoa kolore laua da oraingoz.",
   "Nothing downloading.": "Ez da ezer deskargatzen ari.",
   "Nothing here.": "Hemen ez dago ezer.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Ez dator bat ezer.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Gailu honetan ezerk ezin du fitxategi hori ireki. HEVC/x265 eta AV1 hardware-deskodetzailearen mende daude, eta kutxa zaharragoek ez dute bat ere: saiatu 1080p x264 argitalpen batekin.",
   "Nothing to play": "Ez dago ezer erreproduzitzeko",

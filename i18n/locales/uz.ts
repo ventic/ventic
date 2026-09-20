@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Hali hech narsa tanlanmagan, shuning uchun fon hozircha bir xil rangda.",
   "Nothing downloading.": "Hech narsa yuklab olinmayapti.",
   "Nothing here.": "Bu yerda hech narsa yoʻq.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Hech narsa mos kelmadi.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Bu qurilmada u faylni ochadigan hech narsa yoʻq. HEVC/x265 va AV1 apparat dekoderiga bogʻliq, eski qutilarda esa ikkalasi ham yoʻq — 1080p x264 relizini sinab koʻring.",
   "Nothing to play": "Ijro etadigan narsa yoʻq",

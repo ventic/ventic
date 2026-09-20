@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "עדיין לא נבחר דבר, ולכן הרקע הוא בינתיים צבע אחיד.",
   "Nothing downloading.": "שום דבר לא בהורדה.",
   "Nothing here.": "אין כאן כלום.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "אין התאמות.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "שום דבר במכשיר הזה לא יכול לפתוח את הקובץ הזה. HEVC/x265 ו‑AV1 תלויים במפענח החומרה, ולקופסאות ישנות אין אף אחד מהם — נסה מהדורת 1080p x264.",
   "Nothing to play": "אין מה לנגן",

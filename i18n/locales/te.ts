@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "ఇంకా ఏదీ ఎంచుకోలేదు, కాబట్టి నేపథ్యం ప్రస్తుతానికి ఒకే రంగు.",
   "Nothing downloading.": "ఏదీ డౌన్‌లోడ్ కావట్లేదు.",
   "Nothing here.": "ఇక్కడ ఏమీ లేదు.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "ఏదీ సరిపోలడం లేదు.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "ఈ పరికరంలో ఆ ఫైల్‌ను తెరవగలిగేది ఏదీ లేదు. HEVC/x265, AV1 హార్డ్‌వేర్ డీకోడర్‌పై ఆధారపడతాయి, పాత బాక్స్‌లలో రెండూ లేవు — 1080p x264 విడుదలను ప్రయత్నించండి.",
   "Nothing to play": "ప్లే చేయడానికి ఏమీ లేదు",

@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Nog niks gekies nie, so die agtergrond is vir eers 'n plat kleur.",
   "Nothing downloading.": "Niks laai af nie.",
   "Nothing here.": "Niks hier nie.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Niks pas nie.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Niks op hierdie toestel kan daardie lêer oopmaak nie. HEVC/x265 en AV1 hang van die hardewaredekodeerder af, en ouer bokse het nie een nie — probeer 'n 1080p x264-vrystelling.",
   "Nothing to play": "Niks om te speel nie",

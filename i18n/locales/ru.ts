@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Пока ничего не выбрано, поэтому фон сейчас однотонный.",
   "Nothing downloading.": "Ничего не загружается.",
   "Nothing here.": "Здесь ничего нет.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Ничего не найдено.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Ничто на этом устройстве не может открыть этот файл. HEVC/x265 и AV1 зависят от аппаратного декодера, а у более старых приставок нет ни того, ни другого — попробуйте релиз 1080p x264.",
   "Nothing to play": "Нечего воспроизводить",

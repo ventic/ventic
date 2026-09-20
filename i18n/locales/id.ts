@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Belum ada yang dipilih, jadi latarnya untuk sementara warna polos.",
   "Nothing downloading.": "Tidak ada yang sedang diunduh.",
   "Nothing here.": "Tidak ada apa-apa di sini.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Tidak ada yang cocok.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Tidak ada di perangkat ini yang bisa membuka berkas itu. HEVC/x265 dan AV1 bergantung pada dekoder perangkat keras, dan boks lama tidak punya keduanya — coba rilis 1080p x264.",
   "Nothing to play": "Tidak ada yang bisa diputar",

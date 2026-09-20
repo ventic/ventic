@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "ยังไม่ได้เลือกอะไร พื้นหลังจึงเป็นสีพื้นไปก่อน",
   "Nothing downloading.": "ไม่มีอะไรกำลังดาวน์โหลด",
   "Nothing here.": "ไม่มีอะไรที่นี่",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "ไม่มีอะไรตรงกัน",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "ไม่มีอะไรบนอุปกรณ์นี้เปิดไฟล์นั้นได้ HEVC/x265 และ AV1 ต้องพึ่งตัวถอดรหัสในฮาร์ดแวร์ และกล่องรุ่นเก่าไม่มีทั้งสองอย่าง — ลองรีลีส 1080p x264 ดู",
   "Nothing to play": "ไม่มีอะไรให้เล่น",

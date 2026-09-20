@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Δεν έχει επιλεγεί τίποτα ακόμη, οπότε το φόντο είναι προς το παρόν ένα σκέτο χρώμα.",
   "Nothing downloading.": "Δεν γίνεται καμία λήψη.",
   "Nothing here.": "Δεν υπάρχει τίποτα εδώ.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Τίποτα δεν ταιριάζει.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Τίποτα σε αυτή τη συσκευή δεν μπορεί να ανοίξει αυτό το αρχείο. Τα HEVC/x265 και AV1 εξαρτώνται από τον αποκωδικοποιητή υλικού, και τα παλαιότερα κουτιά δεν έχουν κανένα από τα δύο — δοκιμάστε μια έκδοση 1080p x264.",
   "Nothing to play": "Δεν υπάρχει τίποτα για αναπαραγωγή",

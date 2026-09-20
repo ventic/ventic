@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Dim byd wedi'i ddewis eto, felly lliw plaen yw'r cefndir am y tro.",
   "Nothing downloading.": "Dim byd yn lawrlwytho.",
   "Nothing here.": "Dim byd yma.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Dim byd yn cyfateb.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Ni all dim ar y ddyfais hon agor y ffeil honno. Mae HEVC/x265 ac AV1 yn dibynnu ar y dadgodiwr caledwedd, a does gan flychau hŷn yr un o'r ddau — rhowch gynnig ar ryddhad 1080p x264.",
   "Nothing to play": "Dim byd i'w chwarae",

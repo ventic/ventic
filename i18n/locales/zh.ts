@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "尚未选择任何图片，因此背景暂时是纯色。",
   "Nothing downloading.": "没有正在下载的内容。",
   "Nothing here.": "这里空空如也。",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "没有匹配项。",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "本设备上没有任何组件能打开该文件。HEVC/x265 和 AV1 依赖硬件解码器，而老旧盒子两者都没有——请试试 1080p x264 的资源。",
   "Nothing to play": "没有可播放的内容",

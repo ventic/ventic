@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "இன்னும் எதுவும் தேர்வு செய்யப்படவில்லை, எனவே பின்னணி தற்போது ஒரே வண்ணமாக உள்ளது.",
   "Nothing downloading.": "எதுவும் பதிவிறங்கவில்லை.",
   "Nothing here.": "இங்கே எதுவும் இல்லை.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "எதுவும் பொருந்தவில்லை.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "இந்தச் சாதனத்தில் அந்தக் கோப்பைத் திறக்கக்கூடியது எதுவும் இல்லை. HEVC/x265 மற்றும் AV1 வன்பொருள் குறிவிலக்கியைச் சார்ந்தவை, பழைய பெட்டிகளில் இரண்டுமே இல்லை — 1080p x264 வெளியீட்டை முயலுங்கள்.",
   "Nothing to play": "இயக்க எதுவும் இல்லை",

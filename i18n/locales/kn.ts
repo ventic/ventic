@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "ಇನ್ನೂ ಏನೂ ಆಯ್ಕೆಯಾಗಿಲ್ಲ, ಹಾಗಾಗಿ ಸದ್ಯಕ್ಕೆ ಹಿನ್ನೆಲೆ ಒಂದೇ ಬಣ್ಣ.",
   "Nothing downloading.": "ಏನೂ ಡೌನ್‌ಲೋಡ್ ಆಗುತ್ತಿಲ್ಲ.",
   "Nothing here.": "ಇಲ್ಲಿ ಏನೂ ಇಲ್ಲ.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "ಏನೂ ಹೊಂದುತ್ತಿಲ್ಲ.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "ಈ ಸಾಧನದಲ್ಲಿ ಯಾವುದೂ ಆ ಫೈಲ್ ತೆರೆಯಲಾರದು. HEVC/x265 ಮತ್ತು AV1 ಹಾರ್ಡ್‌ವೇರ್ ಡಿಕೋಡರ್ ಅನ್ನು ಅವಲಂಬಿಸಿವೆ, ಹಳೆಯ ಬಾಕ್ಸ್‌ಗಳಲ್ಲಿ ಎರಡೂ ಇಲ್ಲ — 1080p x264 ಬಿಡುಗಡೆ ಪ್ರಯತ್ನಿಸಿ.",
   "Nothing to play": "ಪ್ಲೇ ಮಾಡಲು ಏನೂ ಇಲ್ಲ",

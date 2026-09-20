@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Hîn tiştek nehatiye hilbijartin, ji ber vê yekê paşxane niha rengekî sade ye.",
   "Nothing downloading.": "Tiştek nayê daxistin.",
   "Nothing here.": "Li vir tiştek tune.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Tiştek li hev nayê.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Tiştek li ser vê amûrê nikare wî pelî veke. HEVC/x265 û AV1 bi veşifrekerê hardware ve girêdayî ne, û qutiyên kevintir yek ji wan jî nînin — berdanek 1080p x264 biceribîne.",
   "Nothing to play": "Tiştek ji bo lêdanê tune",

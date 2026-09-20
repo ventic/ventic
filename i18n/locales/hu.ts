@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Még nincs kiválasztva semmi, így a háttér egyelőre egyszínű.",
   "Nothing downloading.": "Semmi sem töltődik le.",
   "Nothing here.": "Itt nincs semmi.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Nincs találat.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Ezen az eszközön semmi sem tudja megnyitni azt a fájlt. A HEVC/x265 és az AV1 a hardveres dekódolótól függ, a régebbi dobozokban pedig egyik sincs — próbálj egy 1080p x264 kiadást.",
   "Nothing to play": "Nincs mit lejátszani",

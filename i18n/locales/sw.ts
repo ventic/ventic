@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Bado hakuna kilichochaguliwa, hivyo mandharinyuma ni rangi moja kwa sasa.",
   "Nothing downloading.": "Hakuna kinachopakuliwa.",
   "Nothing here.": "Hakuna kitu hapa.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Hakuna kinacholingana.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Hakuna kitu kwenye kifaa hiki kinachoweza kufungua faili hiyo. HEVC/x265 na AV1 hutegemea kisimbuzi cha maunzi, na visanduku vya zamani havina hata kimoja — jaribu toleo la 1080p x264.",
   "Nothing to play": "Hakuna cha kucheza",

@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "ჯერ არაფერია არჩეული, ამიტომ ფონი ამჟამად ერთფეროვანია.",
   "Nothing downloading.": "არაფერი იტვირთება.",
   "Nothing here.": "აქ არაფერია.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "არაფერი ემთხვევა.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "ამ მოწყობილობაზე ვერაფერი გახსნის ამ ფაილს. HEVC/x265 და AV1 აპარატურულ დეკოდერზეა დამოკიდებული, ძველ მოწყობილობებს კი არცერთი აქვს — სცადეთ 1080p x264 გამოშვება.",
   "Nothing to play": "დასაკრავი არაფერია",

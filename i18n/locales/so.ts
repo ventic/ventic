@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Weli waxba lama dooran, sidaas darteed asalku hadda waa midab keli ah.",
   "Nothing downloading.": "Waxba lama soo dejinayo.",
   "Nothing here.": "Halkan waxba kuma jiraan.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Waxba kuma habboona.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Waxba qalabkan kuma furi karaan faylkaas. HEVC/x265 iyo AV1 waxay ku tiirsan yihiin furaha qalabka, sanduuqyada duqoobayna midna ma laha — isku day sii deyn 1080p x264.",
   "Nothing to play": "Wax la ciyaaro ma jiro",

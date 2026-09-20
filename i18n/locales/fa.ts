@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "هنوز چیزی انتخاب نشده، پس پس‌زمینه فعلاً یک رنگ ساده است.",
   "Nothing downloading.": "چیزی در حال دانلود نیست.",
   "Nothing here.": "اینجا چیزی نیست.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "چیزی جور درنمی‌آید.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "هیچ چیز روی این دستگاه نمی‌تواند آن فایل را باز کند. HEVC/x265 و AV1 به رمزگشای سخت‌افزاری وابسته‌اند و جعبه‌های قدیمی‌تر هیچ‌کدام را ندارند — یک نسخهٔ 1080p x264 را امتحان کنید.",
   "Nothing to play": "چیزی برای پخش نیست",

@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Još ništa nije odabrano, pa je pozadina zasad jednobojna.",
   "Nothing downloading.": "Ništa se ne preuzima.",
   "Nothing here.": "Ovdje nema ničega.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Ništa ne odgovara.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Ništa na ovom uređaju ne može otvoriti tu datoteku. HEVC/x265 i AV1 ovise o hardverskom dekoderu, a stariji uređaji nemaju nijedan — probaj izdanje 1080p x264.",
   "Nothing to play": "Nema se što reproducirati",

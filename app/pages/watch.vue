@@ -2,7 +2,7 @@
 import type MpvPlayer from '~/components/MpvPlayer.vue'
 import type { CastDevice } from '~/utils/cast'
 import type { MediaType } from '~/utils/tmdb'
-import type { Release } from '~/utils/torrents'
+import type { Release, TorrentStats } from '~/utils/torrents'
 import {
   mdiAccountGroup,
   mdiAlertCircleOutline,
@@ -75,9 +75,25 @@ const src = ref('')
  */
 const streaming = ref<{ id: number, length: number } | null>(null)
 
+/**
+ * A film cast to this device, and the swarm figures the device that sent it
+ * answers for — polled, because this device's own engine has never heard of it.
+ *
+ * Without them a cast was a bare "Buffering" with nothing after it: no speed, no
+ * peers, no idea whether the film was two minutes away or never coming. The
+ * other device knows all three and its mirror already answers the question (see
+ * `mirrorParts`), which is also what makes the dead-swarm notice below work on
+ * the receiving screen rather than only on the one nobody is watching.
+ */
+const castStats = ref<TorrentStats | null>(null)
+useIntervalFn(async () => {
+  const parts = mirrorParts(src.value)
+  castStats.value = parts ? await torrentStats(parts.id, parts.engine) : null
+}, 3000)
+
 // The downloads store already polls every torrent's stats for the whole app, so
 // a second poll of this one would only ask the engine the same question twice.
-const stats = computed(() => downloads.torrents.find(t => t.id === torrentId.value)?.stats ?? null)
+const stats = computed(() => downloads.torrents.find(t => t.id === torrentId.value)?.stats ?? castStats.value)
 
 /** Releases given up on in this sitting — see `exclude` in `startTorrent`. */
 const abandoned = ref<string[]>([])
@@ -444,6 +460,12 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
             <p class="text-body-medium opacity-70">
               {{ $t('This device is streaming the film to it. Leave Ventic running until you\'re done — closing it stops the stream.') }}
             </p>
+            <!-- The swarm this screen is now the only witness to: cast before a
+                 film has a head start, the other device simply waits, and both
+                 screens used to say nothing at all about why. -->
+            <div v-if="statusLine" class="text-body-small tabular-nums opacity-50">
+              {{ statusLine }}
+            </div>
             <div class="mt-2 flex gap-2">
               <v-btn variant="tonal" :prepend-icon="mdiStop" @click="stopCasting">
                 {{ $t('Stop casting') }}

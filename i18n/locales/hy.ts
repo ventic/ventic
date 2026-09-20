@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Դեռ ոչինչ ընտրված չէ, ուստի ֆոնը առայժմ միագույն է։",
   "Nothing downloading.": "Ոչինչ չի ներբեռնվում։",
   "Nothing here.": "Այստեղ ոչինչ չկա։",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Ոչինչ չի համընկնում։",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Այս սարքում ոչինչ չի կարող բացել այդ ֆայլը։ HEVC/x265-ը և AV1-ը կախված են սարքային ապակոդավորիչից, իսկ հին արկղերն ունեն ոչ մեկը — փորձեք 1080p x264 թողարկում։",
   "Nothing to play": "Նվագարկելու բան չկա",

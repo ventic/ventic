@@ -315,6 +315,7 @@ export default {
   "Nothing chosen yet, so the background is a flat colour for now.": "Chưa chọn gì, nên hiện tại nền chỉ là một màu phẳng.",
   "Nothing downloading.": "Không có gì đang tải xuống.",
   "Nothing here.": "Không có gì ở đây.",
+  "Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.": "TODO_TRANSLATION: Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.",
   "Nothing matches.": "Không có gì khớp.",
   "Nothing on this device can open that file. HEVC/x265 and AV1 depend on the hardware decoder, and older boxes have neither — try a 1080p x264 release.": "Không có gì trên thiết bị này mở được tệp đó. HEVC/x265 và AV1 phụ thuộc vào bộ giải mã phần cứng, mà các hộp đời cũ thì không có cả hai — hãy thử một bản phát hành 1080p x264.",
   "Nothing to play": "Không có gì để phát",
