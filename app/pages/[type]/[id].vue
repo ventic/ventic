@@ -10,7 +10,7 @@ definePageMeta({
 const route = useRoute()
 const ui = useUiStore()
 const library = useLibraryStore()
-const { mobile } = useDisplay()
+const { mobile, width, height } = useDisplay()
 
 const type = computed(() => route.params.type as MediaType)
 const id = computed(() => String(route.params.id))
@@ -51,6 +51,41 @@ const credits = computed(() => {
 })
 
 const trailer = ref(false)
+
+// A trailer on a television is the whole screen, not a card in the middle of
+// one — and the window cost frames as well as room. Measured on the test set
+// over 20s of the same trailer: the embed in a rounded, elevated card over the
+// blurred backdrop missed 70% of its frame deadlines, and filling the screen
+// instead, 24%.
+//
+// The rest is the size YouTube picks its stream from, which is the player's own
+// box and the only lever there is — the quality parameters it once honoured are
+// all ignored now. The embed asks for roughly twice its width in pixels, so a
+// box this wide is what fetches 720p rather than the 1080p this decoder cannot
+// hold: on the worst trailer of the three tested, the frames past the 99th went
+// 129ms at 854 to 42ms at 640, and 480 bought another 8ms at a visible cost in
+// sharpness. 720p blown up on a screen across a room beats 1080p that stutters.
+// None of it touches a desktop, where the window is the right shape and the
+// machine can afford the pixels.
+const tv = isTv() === true
+const FRAME_WIDTH = 640
+
+/**
+ * The player laid out at `FRAME_WIDTH` and scaled back up to fill the screen.
+ * The embed reads its own box, not ours, so this is the only lever on which
+ * stream YouTube sends — there is no quality parameter it still honours.
+ */
+const frame = computed(() => {
+  if (!tv)
+    return {}
+  const scale = width.value / FRAME_WIDTH
+  return {
+    width: `${FRAME_WIDTH}px`,
+    height: `${height.value / scale}px`,
+    transform: `scale(${scale})`,
+    transformOrigin: 'top left',
+  }
+})
 
 // Escape hatch: YouTube refuses to embed some titles, and the dialog just shows
 // its "unavailable" card. Opens in the OS browser under Tauri, a tab under `bun dev`.
@@ -278,17 +313,23 @@ const playLabel = computed(() => [
 
       <!-- v-if on the iframe, not just the dialog: v-dialog keeps its content
            mounted after the first close, and YouTube would keep playing. -->
-      <v-dialog v-model="trailer" max-width="1100">
-        <v-card class="overflow-hidden">
+      <v-dialog v-model="trailer" :max-width="tv ? undefined : 1100" :fullscreen="tv">
+        <!-- On a television the card is the screen: square, black, no shadow
+             and no actions row — Back closes it, which is the one key a remote
+             has for the job, and a square opaque layer filling the screen is
+             what lets the compositor stop drawing the blurred backdrop under
+             it. -->
+        <v-card :class="tv ? 'h-full bg-black' : 'overflow-hidden'" :rounded="tv ? '0' : undefined" :flat="tv">
           <iframe
             v-if="trailer"
             :src="`https://www.youtube-nocookie.com/embed/${media?.trailer}?autoplay=1`"
-            class="aspect-video w-full border-0"
-            style="zoom: var(--frame-zoom, 1)"
+            class="border-0"
+            :class="{ 'aspect-video w-full': !tv }"
+            :style="{ zoom: 'var(--frame-zoom, 1)', ...frame }"
             allow="autoplay; encrypted-media; fullscreen"
             allowfullscreen
           />
-          <v-card-actions>
+          <v-card-actions v-if="!tv">
             <v-btn :prepend-icon="mdiOpenInNew" size="small" variant="text" @click="openTrailer">
               {{ $t('Open on YouTube') }}
             </v-btn>

@@ -66,3 +66,34 @@ export function pickDirection(from: Box, boxes: Box[], dir: Dir): number {
 
   return best
 }
+
+/**
+ * A box as it can actually be seen: each edge pulled inside every scroller the
+ * element sits in, so something scrolled out of its own grid collapses onto the
+ * edge it went past instead of reporting where it would have been.
+ *
+ * A rect is the whole document's, not the visible part's, and the picker had no
+ * idea: a poster three rows above the fold still measured level with the
+ * toolbar, so "right" off the search box landed on it rather than on Settings,
+ * and "up" out of the drawer landed on one 350px above the screen — after which
+ * every further press was measured from somewhere nobody could see.
+ *
+ * Collapsing rather than dropping is the whole trick. A horizontal row's next
+ * card is off the right edge by design and pressing right has to reach it; sat
+ * on the edge it came from, it is still the nearest thing that way and still
+ * wins — while something clean off the top is no longer level with anything.
+ */
+export function clipped(box: Box, clips: Box[]): Box {
+  // Destructured, never spread: what arrives here is a real DOMRect, whose
+  // edges are getters on the prototype, so `{ ...box }` is `{}` and every edge
+  // comes back NaN — which the picker reads as nothing in any direction, and
+  // the whole page stops answering the arrow keys.
+  let { left, top, right, bottom } = box
+  for (const c of clips) {
+    left = Math.min(Math.max(left, c.left), c.right)
+    right = Math.max(Math.min(right, c.right), c.left)
+    top = Math.min(Math.max(top, c.top), c.bottom)
+    bottom = Math.max(Math.min(bottom, c.bottom), c.top)
+  }
+  return { left, top, right, bottom }
+}

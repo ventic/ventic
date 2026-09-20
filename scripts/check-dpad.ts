@@ -5,7 +5,7 @@ import type { Box } from '../app/utils/dpad'
 // half of the remote — BACK, which is Kotlin's to catch and the page's to answer.
 import assert from 'node:assert'
 import { readdirSync, readFileSync } from 'node:fs'
-import { pickDirection } from '../app/utils/dpad'
+import { clipped, pickDirection } from '../app/utils/dpad'
 
 function box(left: number, top: number, width: number, height: number): Box {
   return { left, top, right: left + width, bottom: top + height }
@@ -111,6 +111,54 @@ for (const dir of ['up', 'down', 'left', 'right'] as const)
   assert.strictEqual(pickDirection(dialog, actions, dir), -1, `a wrapper has nothing ${dir} of it`)
 assert.strictEqual(pickDirection(actions[0]!, actions.slice(1), 'right'), 0, 'while its buttons walk normally')
 
+/* --- what can actually be seen -------------------------------------------- */
+
+// A rect is the whole document's. The page scrolls inside a region below the
+// toolbar, so a poster three rows above the fold still reports a box level with
+// the search field — and "right" off the search box landed on that poster
+// instead of on Downloads, after which every further press was measured from
+// somewhere nobody could see. Boxes measured on the TV at 1280x720.
+const view = box(0, 0, 1280, 720)
+const region = box(236, 66, 1044, 654)
+const goneUp = box(1000, -260, 184, 321)
+assert.deepStrictEqual(
+  clipped(goneUp, [region, view]),
+  { left: 1000, top: 66, right: 1184, bottom: 66 },
+  'a card scrolled above its grid collapses onto the grid\'s top edge',
+)
+assert.strictEqual(
+  pickDirection(searchBox, [clipped(goneUp, [region, view]), downloads], 'right'),
+  1,
+  'so right off the search box reaches Downloads, not a poster above the fold',
+)
+
+// Collapsing and not dropping, because a horizontal row's next card is off the
+// right edge by design: sat on the edge it went past, it is still the nearest
+// thing that way and still wins.
+const row = box(236, 200, 1044, 321)
+const onRow = box(1100, 200, 184, 321)
+const nextAlong = box(1300, 200, 184, 321)
+assert.strictEqual(
+  pickDirection(clipped(onRow, [row, view]), [clipped(nextAlong, [row, view])], 'right'),
+  0,
+  'the next card along a row is still reachable once clipped to the row',
+)
+
+// What actually arrives here is a DOMRect, whose edges are getters on the
+// prototype rather than own properties — so a `{ ...box }` copy is empty, every
+// edge comes back NaN, and the picker reads that as nothing in any direction.
+// Measured on the TV as a page that answered no arrow key at all.
+const live: Box = Object.create({ left: 300, top: 200, right: 484, bottom: 521 })
+assert.deepStrictEqual(
+  clipped(live, [row, view]),
+  { left: 300, top: 200, right: 484, bottom: 521 },
+  'a box whose edges live on its prototype survives clipping',
+)
+
+// Nothing to clip against leaves a box alone, and a box already inside stays put.
+assert.deepStrictEqual(clipped(onRow, []), onRow, 'no clips, no change')
+assert.deepStrictEqual(clipped(box(300, 200, 184, 321), [row, view]), box(300, 200, 184, 321), 'a visible box is unchanged')
+
 /* --- BACK, which is a contract between two languages ---------------------- */
 
 /**
@@ -135,6 +183,25 @@ const manifest = readFileSync(
   'utf8',
 )
 const plugin = readFileSync(new URL('../app/plugins/dpad.client.ts', import.meta.url), 'utf8')
+
+// Instant, not smooth. A rect read while a scroll animation is in flight is a
+// lie: a second press during one measured the page from where it was going to
+// be, so every press past the first aimed further than a row and the page slid
+// on for a second after the last of them — measured on the TV as a press
+// landing 500ms and several hundred pixels late.
+assert.ok(
+  !/behavior: 'smooth'/.test(plugin),
+  'the d-pad scrolls instantly, or the next press measures a page mid-flight',
+)
+
+// A press that would leave a region still holding content that way has to
+// scroll it instead. A title page's synopsis is prose — nothing above the Play
+// row is a target at all — so up went straight to the toolbar and the title,
+// poster and overview could never be got back to.
+assert.ok(
+  /const region = scroller\(from, dir\)/.test(plugin) && /!region\.contains\(/.test(plugin),
+  'move() scrolls a region rather than escaping it',
+)
 
 // A checkbox or a switch has focus and no caret. Counted as typing, left/right
 // off one did nothing, and a button beside it was out of a remote's reach.

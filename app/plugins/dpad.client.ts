@@ -1,4 +1,4 @@
-import type { Dir } from '~/utils/dpad'
+import type { Box, Dir } from '~/utils/dpad'
 import { addPluginListener } from '@tauri-apps/api/core'
 
 /**
@@ -99,11 +99,40 @@ export default defineNuxtPlugin(() => {
     })
   }
 
+  /**
+   * Every scroller `el` sits inside, plus the window, as boxes — what `clipped`
+   * needs to say where the element can actually be seen. Memoised on the parent
+   * chain, because a grid's few hundred candidates share a handful of them and
+   * `getComputedStyle` is the expensive part.
+   */
+  function clips(el: Element, memo: Map<Element, Box[]>): Box[] {
+    const parent = el.parentElement
+    if (!parent)
+      return [{ left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight }]
+    const known = memo.get(parent)
+    if (known)
+      return known
+    const above = clips(parent, memo)
+    const style = getComputedStyle(parent)
+    // `hidden` and `clip` cut a box off just as surely as a scroller does, and
+    // a card row is both — `overflow-x: auto` makes the other axis compute to
+    // `auto` too, which is exactly the clipping the row really does.
+    const own = /auto|scroll|hidden|clip/.test(style.overflowX + style.overflowY)
+      ? [parent.getBoundingClientRect(), ...above]
+      : above
+    memo.set(parent, own)
+    return own
+  }
+
   function show(el: HTMLElement) {
     el.focus({ preventScroll: true })
     // `nearest` keeps the row or grid it lives in from jumping any further than
-    // it has to.
-    el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' })
+    // it has to. Instant, not smooth: a rect read while a scroll animation is in
+    // flight is a lie, so a second press during one measured the page from where
+    // it was going to be rather than from where it was — every press past the
+    // first aimed further than a row and the page slid on for a second after the
+    // last of them. One press, one step, and the next press measures the truth.
+    el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' })
   }
 
   function onScreen(el: HTMLElement) {
@@ -161,12 +190,45 @@ export default defineNuxtPlugin(() => {
     // Descendants stay in play (a card's own Play button is a real target);
     // ancestors don't, since their box encloses ours in every direction.
     const list = all.filter(el => el !== from && !el.contains(from))
-    const at = pickDirection(from.getBoundingClientRect(), list.map(el => el.getBoundingClientRect()), dir)
+    const memo = new Map<Element, Box[]>()
+    const seen = (el: HTMLElement) => clipped(el.getBoundingClientRect(), clips(el, memo))
+    const at = pickDirection(seen(from), list.map(seen), dir)
     if (at < 0)
+      return false
+
+    // A press that would leave a region still holding content that way scrolls
+    // it instead. A title page's synopsis is prose, so nothing above the buttons
+    // is a target at all and up escaped straight to the toolbar — which left the
+    // title, the poster and the overview unreachable for the rest of the visit,
+    // there being nothing to move *to* that would bring them back.
+    const region = scroller(from, dir)
+    if (region && !region.contains(list[at]!))
       return false
 
     show(list[at]!)
     return true
+  }
+
+  /**
+   * The nearest thing around `el` with somewhere left to go that way, if any.
+   * Wrung dry in that direction doesn't count — keep walking up for something
+   * that isn't.
+   */
+  function scroller(el: Element | null, dir: Dir) {
+    const horizontal = dir === 'left' || dir === 'right'
+    const back = dir === 'up' || dir === 'left'
+
+    for (; el; el = el.parentElement) {
+      const style = getComputedStyle(el)
+      if (!/auto|scroll/.test(horizontal ? style.overflowX : style.overflowY))
+        continue
+
+      const at = horizontal ? el.scrollLeft : el.scrollTop
+      const end = horizontal ? el.scrollWidth - el.clientWidth : el.scrollHeight - el.clientHeight
+      if (back ? at > 1 : at < end - 1)
+        return el as HTMLElement
+    }
+    return null
   }
 
   /**
@@ -175,28 +237,28 @@ export default defineNuxtPlugin(() => {
    * page of prose between two buttons has to be readable without one.
    */
   function nudge(dir: Dir) {
+    const el = scroller(document.activeElement ?? document.querySelector('[data-dpad-start]'), dir)
+    if (!el)
+      return false
+
     const horizontal = dir === 'left' || dir === 'right'
     const back = dir === 'up' || dir === 'left'
+    const by = (horizontal ? el.clientWidth : el.clientHeight) * 0.8 * (back ? -1 : 1)
+    const was = (document.activeElement as HTMLElement | null)?.getBoundingClientRect()
+    el.scrollBy({ [horizontal ? 'left' : 'top']: by, behavior: 'instant' })
 
-    for (let el = document.activeElement ?? document.querySelector('[data-dpad-start]'); el; el = el.parentElement) {
-      const style = getComputedStyle(el)
-      if (!/auto|scroll/.test(horizontal ? style.overflowX : style.overflowY))
-        continue
-
-      const at = horizontal ? el.scrollLeft : el.scrollTop
-      const end = horizontal ? el.scrollWidth - el.clientWidth : el.scrollHeight - el.clientHeight
-      // Wrung dry in that direction — keep walking up for something that isn't.
-      if (back ? at < 1 : at > end - 1)
-        continue
-
-      const step = (horizontal ? el.clientWidth : el.clientHeight) * 0.8
-      el.scrollBy({ [horizontal ? 'left' : 'top']: back ? -step : step, behavior: 'smooth' })
-      // Whatever was focused is being scrolled away from, so let go: the next
-      // press starts from the top of what's now on screen.
-      ;(document.activeElement as HTMLElement | null)?.blur()
-      return true
-    }
-    return false
+    // Whatever was focused is being scrolled away from, so let go: the next
+    // press starts from the top of what's now on screen. Only where it really
+    // has gone, though — the page moves under it by `by`, and on a title page,
+    // where the prose is what scrolls and the buttons stay put, dropping focus
+    // costs a press and reveals nothing.
+    const box = el.getBoundingClientRect()
+    const stays = was && (horizontal
+      ? was.left - by < box.right && was.right - by > box.left
+      : was.top - by < box.bottom && was.bottom - by > box.top)
+    if (!stays)
+      (document.activeElement as HTMLElement | null)?.blur()
+    return true
   }
 
   /**

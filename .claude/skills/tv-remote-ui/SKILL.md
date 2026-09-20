@@ -22,6 +22,31 @@ pages get remote support for free as long as they follow the rules below.
   closer: a run along the toolbar has to reach Downloads 264px away rather than
   fall into the grid 74px below. Drift costs double only among equals, which is
   what keeps a grid walking straight down its column.
+- **A rect is the document's, not the screen's**, so every candidate is put
+  through `clipped()` first: each edge pulled inside every scroller it sits in,
+  collapsing onto the edge it went past rather than being dropped. Without it a
+  poster three rows above the fold still measured level with the toolbar — right
+  off the search box landed on it instead of on Settings, and up out of the
+  drawer landed on one 350px above the screen, after which every further press
+  was measured from somewhere nobody could see. Collapsing and not dropping is
+  what keeps a horizontal row walking: its next card is off the right edge by
+  design, and sat on that edge it is still the nearest thing that way. It is
+  handed a real `DOMRect`, whose edges are prototype getters — destructure it,
+  never spread it, or every edge is `NaN` and the page answers no arrow at all.
+- **A press never leaves a scroll region that still has content that way**; it
+  scrolls the region instead (`scroller()`, which `nudge` shares). A title
+  page's synopsis is prose, so nothing above the Play row is a target and up
+  escaped straight to the toolbar — leaving the title, poster and overview
+  unreachable for the rest of the visit, there being nothing to move *to* that
+  would bring them back.
+- **Scrolling is instant, never smooth.** A rect read while a scroll animation
+  is in flight is a lie, so a press arriving during one measured the page from
+  where it was going to be: past the first press each one aimed further than a
+  row, and the page slid on for a second after the last of them. Measured on the
+  set at ~500ms and several hundred pixels of lag per press; one press is now
+  exactly one row. `nudge` likewise keeps focus unless the element it was on
+  really did scroll out of view — dropping it otherwise costs a press and
+  reveals nothing.
 - The handler sits on `document` in the **bubble** phase and bails on
   `e.defaultPrevented`, so any component that already handles arrows keeps them:
   Vuetify sliders, lists, selects, and the player's seek keys.
