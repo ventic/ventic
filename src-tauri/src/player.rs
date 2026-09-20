@@ -33,32 +33,27 @@ use crate::player_socket;
 // window's input region follows its bounding shape. The video window itself
 // never changes size for the UI, so nothing rescales when a bar appears.
 //
-// x11-dl doesn't wrap the Shape extension, so its one entry point is bound by
-// hand out of libXext.
+// It goes on in *one* request. The obvious way round — set the window back to a
+// plain rectangle, then subtract the holes — leaves mpv's window covering every
+// bar in between, and the server acts on each request as it arrives: one reshape
+// is one flash of the whole chrome. That is invisible when it happens once and
+// is exactly what a tooltip fading in looks like, since its box grows by a
+// frame's worth every frame and each new size is a reshape. So the region is
+// built client-side and handed over whole, as the Win32 backend builds its HRGN.
+//
+// x11-dl wraps the region calls but not the Shape extension, so that one entry
+// point is bound by hand out of libXext.
 // ----------------------------------------------------------------------------
 const SHAPE_BOUNDING: libc::c_int = 0;
 const SHAPE_SET: libc::c_int = 0;
-const SHAPE_SUBTRACT: libc::c_int = 3;
-const SHAPE_UNSORTED: libc::c_int = 0;
 
-#[repr(C)]
-#[derive(Clone, Copy)]
-struct XRectangle {
-	x: libc::c_short,
-	y: libc::c_short,
-	width: libc::c_ushort,
-	height: libc::c_ushort,
-}
-
-type ShapeRectsFn = unsafe extern "C" fn(
+type ShapeRegionFn = unsafe extern "C" fn(
 	*mut x11_dl::xlib::Display,
 	x11_dl::xlib::Window,
 	libc::c_int,
 	libc::c_int,
 	libc::c_int,
-	*const XRectangle,
-	libc::c_int,
-	libc::c_int,
+	x11_dl::xlib::Region,
 	libc::c_int,
 );
 
@@ -72,17 +67,17 @@ pub struct Cutout {
 	height: u32,
 }
 
-fn shape_fn() -> Option<ShapeRectsFn> {
+fn shape_fn() -> Option<ShapeRegionFn> {
 	static SHAPE: std::sync::OnceLock<Option<usize>> = std::sync::OnceLock::new();
 	let addr = SHAPE.get_or_init(|| unsafe {
 		let lib = libc::dlopen(c"libXext.so.6".as_ptr(), libc::RTLD_LAZY);
 		if lib.is_null() {
 			return None;
 		}
-		let sym = libc::dlsym(lib, c"XShapeCombineRectangles".as_ptr());
+		let sym = libc::dlsym(lib, c"XShapeCombineRegion".as_ptr());
 		if sym.is_null() { None } else { Some(sym as usize) }
 	});
-	addr.map(|a| unsafe { std::mem::transmute::<usize, ShapeRectsFn>(a) })
+	addr.map(|a| unsafe { std::mem::transmute::<usize, ShapeRegionFn>(a) })
 }
 
 /// The X11 child window mpv renders into, kept alive for the player's lifetime
@@ -142,40 +137,35 @@ impl Embed {
 		}
 	}
 
-	/// Reset the window to a plain rectangle, then subtract each cutout from it.
+	/// The window, minus every cutout, in a single request — see the note above.
 	/// Re-applied on every geometry change: a shape is stored in window
 	/// coordinates and does not grow when the window is resized.
 	fn set_shape(&self, w: u32, h: u32, cutouts: &[Cutout]) {
 		let Some(shape) = shape_fn() else {
 			return; // no libXext: controls simply stay behind the video
 		};
-		let clip = |v: i32| v.clamp(0, i32::from(i16::MAX)) as libc::c_short;
-		let full = XRectangle { x: 0, y: 0, width: w.max(1) as libc::c_ushort, height: h.max(1) as libc::c_ushort };
-		let holes: Vec<XRectangle> = cutouts
-			.iter()
-			.filter(|c| c.width > 0 && c.height > 0)
-			.map(|c| XRectangle {
-				x: clip(c.x),
-				y: clip(c.y),
-				width: c.width.min(u32::from(u16::MAX)) as libc::c_ushort,
-				height: c.height.min(u32::from(u16::MAX)) as libc::c_ushort,
-			})
-			.collect();
+		let rect = |x: i32, y: i32, w: u32, h: u32| x11_dl::xlib::XRectangle {
+			x: x.clamp(0, i32::from(i16::MAX)) as libc::c_short,
+			y: y.clamp(0, i32::from(i16::MAX)) as libc::c_short,
+			width: w.min(u32::from(u16::MAX)) as libc::c_ushort,
+			height: h.min(u32::from(u16::MAX)) as libc::c_ushort,
+		};
 		unsafe {
-			shape(self.display, self.window, SHAPE_BOUNDING, 0, 0, &full, 1, SHAPE_SET, SHAPE_UNSORTED);
-			if !holes.is_empty() {
-				shape(
-					self.display,
-					self.window,
-					SHAPE_BOUNDING,
-					0,
-					0,
-					holes.as_ptr(),
-					holes.len() as libc::c_int,
-					SHAPE_SUBTRACT,
-					SHAPE_UNSORTED,
-				);
+			// Xlib's region ops take the destination as a source, so subtracting
+			// in place is sound (libX11 saves both rect lists before it touches
+			// the destination's).
+			let region = (self.xlib.XCreateRegion)();
+			let holes = (self.xlib.XCreateRegion)();
+			let mut full = rect(0, 0, w.max(1), h.max(1));
+			(self.xlib.XUnionRectWithRegion)(&mut full, region, region);
+			for c in cutouts.iter().filter(|c| c.width > 0 && c.height > 0) {
+				let mut r = rect(c.x, c.y, c.width, c.height);
+				(self.xlib.XUnionRectWithRegion)(&mut r, holes, holes);
 			}
+			(self.xlib.XSubtractRegion)(region, holes, region);
+			shape(self.display, self.window, SHAPE_BOUNDING, 0, 0, region, SHAPE_SET);
+			(self.xlib.XDestroyRegion)(region);
+			(self.xlib.XDestroyRegion)(holes);
 			(self.xlib.XFlush)(self.display);
 		}
 	}
