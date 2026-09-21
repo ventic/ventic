@@ -11,9 +11,11 @@
 # keystore is the identity a phone checks before it will replace an install. Each
 # is skipped when its secret is absent — the build still succeeds, it just ships a
 # bundle the OS warns about (and, for Android, one that cannot upgrade an earlier
-# install). Windows is the one that is still unsigned — and the fix there is not
-# another secret: signing the installer after the bundler has already signed it
-# invalidates the updater signature, exactly as the AppImage repack below does.
+# install). Windows is the fourth: SIGNPATH_API_TOKEN, where the certificate is
+# the SignPath Foundation's and the private key never leaves their HSM. Signing
+# an installer the bundler has already signed invalidates the updater signature,
+# exactly as the AppImage repack does — so both are put right in the `updater`
+# job at the end, and neither platform may do it from its own job.
 name: Release
 
 on:
@@ -125,6 +127,12 @@ jobs:
             args: ''
             targets: ''
     runs-on: ${{ matrix.os }}
+    # Lifted out of `secrets` so the Windows signing steps can be skipped by a
+    # step-level `if:`, which cannot read that context — the same reason the
+    # Apple identity is staged in a step and the Android keystore checked in a
+    # shell. Without the token the installers ship unsigned, as they always have.
+    env:
+      SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
@@ -234,6 +242,105 @@ jobs:
           # files on the download page answering a question nobody asked.
           uploadUpdaterSignatures: false
 
+      # Windows code signing, which is what stops SmartScreen calling a download
+      # from an unknown publisher. The certificate is the SignPath Foundation's
+      # and its private key never leaves their HSM, so nothing here can sign
+      # anything: the installers go up as a workflow artifact and SignPath
+      # *fetches them from GitHub itself*, which is how it can attest that what
+      # it signed came out of this workflow run and not from somebody holding the
+      # API token. That is also why this cannot be a `signCommand` in
+      # tauri.conf.json — the bundler would hand the file over directly, with no
+      # origin for SignPath to verify, and it would be signing three artifacts
+      # one at a time while a human waits to approve each one.
+      #
+      # So the two installers are signed and the Ventic.exe *inside* them is not.
+      # That is the part SmartScreen actually reads — it checks the file that was
+      # downloaded, and an installed binary carries no mark of the web — and the
+      # alternative is signing before bundling, which is the signCommand above.
+      # The .msi's copy could be signed on its own (`<pe-file>` nested in
+      # `<msi-file>` in the artifact configuration); the NSIS installer's could
+      # not, and NSIS is what the updater runs, so one of the two would always be
+      # the odd one out. Revisit if an antivirus ever flags the installed exe.
+      #
+      # Flat, because actions/upload-artifact zips whatever it is given and the
+      # artifact configuration in SignPath has to describe that zip's contents.
+      # Two wildcards at the root is the whole of it; nsis/ and msi/ subfolders
+      # would be two more elements that have to agree with GitHub's own rules
+      # about what a multi-path upload nests under.
+      - name: Stage the Windows installers for signing
+        if: runner.os == 'Windows' && env.SIGNPATH_API_TOKEN != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p signpath
+          cp src-tauri/target/release/bundle/nsis/*-setup.exe \
+             src-tauri/target/release/bundle/msi/*.msi signpath/
+          ls -la signpath
+
+      - name: Upload the installers for SignPath to fetch
+        id: unsigned
+        if: runner.os == 'Windows' && env.SIGNPATH_API_TOKEN != ''
+        uses: actions/upload-artifact@v5
+        with:
+          name: windows-unsigned
+          path: signpath/*
+          if-no-files-found: error
+
+      - name: Sign the Windows installers
+        if: runner.os == 'Windows' && env.SIGNPATH_API_TOKEN != ''
+        uses: signpath/github-action-submit-signing-request@v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: 5e9a5a40-af12-4861-91c3-da89aca3c851
+          project-slug: ventic
+          # release-signing unless a repo variable says otherwise, which is the
+          # only way to rehearse this: set SIGNPATH_SIGNING_POLICY to
+          # test-signing, push a tag, and *delete the draft* — a test
+          # certificate is trusted by no machine on earth, so an installer
+          # carrying one is worse than an unsigned installer, not better.
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY || 'release-signing' }}
+          artifact-configuration-slug: installers
+          github-artifact-id: ${{ steps.unsigned.outputs.artifact-id }}
+          output-artifact-directory: signed
+          # The Foundation approves every release signing request by hand, so
+          # this is waiting for a person: an hour rather than the ten minutes the
+          # action defaults to. A timeout here fails the release while the
+          # signing request is still perfectly alive on their side.
+          wait-for-completion-timeout-in-seconds: 3600
+
+      # Replace the assets tauri-action uploaded minutes ago, and re-sign both
+      # installers for the updater: SignPath rewrote the files, so the .sig the
+      # bundler made describes installers that no longer exist. Same problem as
+      # the AppImage repack below, same fix — the manifest itself is patched in
+      # the `updater` job, which is the only place it can be done without racing
+      # the other runners.
+      - name: Ship the signed installers
+        if: runner.os == 'Windows' && env.SIGNPATH_API_TOKEN != ''
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          gh release upload "${{ github.ref_name }}" signed/* --clobber
+          # Upload first, sign second: the .sig files are plumbing between jobs
+          # and have no business on the release page. No key is a release
+          # without in-app updates, which is a warning everywhere else here.
+          if [ -n "${TAURI_SIGNING_PRIVATE_KEY:-}" ]; then
+            for bundle in signed/*; do bun run tauri signer sign "$bundle"; done
+          else
+            echo "::warning::No TAURI_SIGNING_PRIVATE_KEY secret — the signed installers ship without in-app updates."
+          fi
+
+      - name: Hand the Windows signatures to the updater job
+        if: runner.os == 'Windows' && env.SIGNPATH_API_TOKEN != ''
+        uses: actions/upload-artifact@v5
+        with:
+          name: windows-signatures
+          path: signed/*.sig
+          if-no-files-found: ignore
+
       # tauri-action drives the bundler itself, so scripts/build/index.ts — and
       # the AppImage repack it ends with — never runs here. Do it to the bundle
       # tauri-action left behind and replace the asset it just uploaded, or the
@@ -276,9 +383,11 @@ jobs:
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
         run: bun scripts/build/macos/bundle-dylib.ts src-tauri/target/release/bundle/macos/Ventic.app
 
-  # `latest.json` is written by all three desktop runners at once, each merging
-  # its platforms into the copy already on the release — so the Linux signature
-  # can only be corrected once every one of them has finished writing.
+  # `latest.json` is written by every desktop runner, each merging its platforms
+  # into the copy already on the release — so a bundle rewritten after the
+  # bundler signed it can only be corrected once all of them have finished
+  # writing. Two are: the repacked AppImage, and the SignPath-signed Windows
+  # installers.
   updater:
     needs: desktop
     runs-on: ubuntu-latest
@@ -287,16 +396,23 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: ${{ env.BUN_VERSION }}
-      # Absent when the Linux job had no signing key, so this must not fail the
-      # release — the script skips on a signature that isn't there.
+      # Either is absent when its job had nothing to sign with, so neither may
+      # fail the release — the script skips on a signature that isn't there.
       - uses: actions/download-artifact@v5
         continue-on-error: true
         with:
           name: appimage-signature
           path: appimage-signature
+      - uses: actions/download-artifact@v5
+        continue-on-error: true
+        with:
+          name: windows-signatures
+          path: windows-signatures
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bun scripts/build/linux/appimage-signature.ts "${{ github.ref_name }}" appimage-signature/*.AppImage.sig
+        run: |
+          bun scripts/build/updater-signature.ts "${{ github.ref_name }}" \
+            appimage-signature/*.AppImage.sig windows-signatures/*.sig
 
   android:
     # The draft release has to exist before there is anything to upload to.

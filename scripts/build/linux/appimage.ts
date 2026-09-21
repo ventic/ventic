@@ -98,7 +98,7 @@ function unbundleWayland() {
  * signature to invalidate either, and this is a no-op.
  *
  * Putting the new signature into `latest.json` is a separate job on the release
- * — see scripts/build/linux/appimage-signature.ts for why it can't be done here.
+ * — see scripts/build/updater-signature.ts for why it can't be done here.
  */
 function resign(image: string) {
   if (!process.env.TAURI_SIGNING_PRIVATE_KEY)

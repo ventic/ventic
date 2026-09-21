@@ -253,7 +253,7 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   `check:library`, `check:player`, `check:swipe`, `check:boot`,
   `check:perf`, `check:android-downloads`, `check:updates`, `check:supporters`,
   `check:audio`, `check:people`, `check:cast`, `check:iptv`, `check:i18n`,
-  `check:macos`, `check:steps`, `check:settings-search`).
+  `check:macos`, `check:signing`, `check:steps`, `check:settings-search`).
   Add to those rather than pulling in a test framework. `bun run check` runs
   every one of them — it reads the names out of package.json rather than holding
   a list, so a check added today is in that sweep today. `bun run check:types` is
@@ -584,15 +584,35 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   declared under *App content → Foreground service permissions*, with a video
   of a download continuing off screen. That one is `DownloadService`'s and
   stays.
-- **The AppImage is rewritten after it is signed.**
-  `scripts/build/linux/appimage.ts` strips libwayland and repacks *after*
-  tauri-action has already put a signature for the original file into
-  `latest.json`, so the release ships an artifact the updater refuses. The
-  workflow signs the repacked file again and a separate `updater` job
-  (`scripts/build/linux/appimage-signature.ts`) puts that signature in the
-  manifest — separate because all three desktop runners read-modify-write
-  `latest.json` in parallel, and a patch from inside the Linux job loses the
-  race. Touch either script and check the other still matches.
+- **Two bundles are rewritten after they are signed, and the manifest has to be
+  told.** `scripts/build/linux/appimage.ts` strips libwayland and repacks the
+  AppImage, and SignPath returns the Windows installers with a certificate
+  embedded — both *after* tauri-action has put a signature for the original
+  bytes into `latest.json`, so the release ships artifacts the updater refuses
+  with `signature verification failed`, and nothing about the release looks
+  wrong. Whoever rewrites a bundle signs it again in its own job and hands the
+  `.sig` over as a workflow artifact; a separate `updater` job
+  (`scripts/build/updater-signature.ts`) puts those signatures in the manifest —
+  separate because every desktop runner read-modify-writes `latest.json`, and a
+  patch from inside the Linux or Windows job is overwritten by whichever
+  finishes last. Entries are matched by the file each one already *signs* —
+  read out of minisign's trusted comment — because each bundle is in there twice
+  (`windows-x86_64` and `windows-x86_64-nsis` are one file) and the `url` cannot
+  say which: tauri-action writes GitHub's API asset id there, never a name.
+  `bun run check:signing` holds the seam against a real signature.
+- **Windows is signed by SignPath, and nothing in this repo can sign anything.**
+  The certificate is the SignPath Foundation's, the private key lives on their
+  HSM, and the installers are signed because SignPath *fetches them from GitHub*
+  and can therefore attest which workflow run built them — so the release
+  workflow uploads them with `actions/upload-artifact` and hands over an
+  artifact id, and a `bundle.windows.signCommand` in tauri.conf.json would not
+  work (no origin to verify, and one approval per artifact). The policy slug is
+  `release-signing`, overridable with a `SIGNPATH_SIGNING_POLICY` repo variable
+  for rehearsing against `test-signing` — whose certificate no machine trusts,
+  so a draft built with it is for deleting, never publishing. Skipped whole
+  without `SIGNPATH_API_TOKEN`, like every other signature here. The artifact
+  configuration in SignPath (`installers`) describes upload-artifact's *zip*,
+  which is why the two bundles are staged flat first.
 - Cargo resolves `[target.'cfg(…)'.dependencies]` against the **target triple
   only**. Tauri's `desktop`/`mobile` cfgs are emitted by `tauri-build` and work
   in `#[cfg(…)]` but not there — a dep gated on `cfg(desktop)` is silently never

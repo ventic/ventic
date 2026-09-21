@@ -30,6 +30,7 @@
     "check:people": "bun scripts/check-people.ts",
     "check:perf": "bun scripts/check-perf.ts",
     "check:player": "bun scripts/check-player.ts",
+    "check:signing": "bun scripts/check-signing.ts",
     "check:torrents": "bun scripts/check-torrents.ts",
     "check:updates": "bun scripts/check-updates.ts",
     "check:supporters": "bun scripts/check-supporters.ts",
