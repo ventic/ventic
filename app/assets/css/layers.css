@@ -252,4 +252,14 @@
   html.tv .v-tooltip {
     display: none;
   }
+
+  /* A phone is the same story told by a finger: a tap is an enter with no
+     leave, so the label a hover would have flashed stays up until something
+     else is tapped. A laptop's touchscreen still reports `hover: hover` and
+     keeps them. */
+  @media (hover: none) {
+    .v-tooltip {
+      display: none;
+    }
+  }
 }
