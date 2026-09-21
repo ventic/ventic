@@ -1,10 +1,8 @@
 <script lang="ts" setup>
-import type { AudioSettings, Leveller } from '~/utils/audio'
 import type { PlayerEngine } from '~/utils/htmlvideo'
 import type { KeyAction } from '~/utils/keys'
 import type { Subtitle, SubtitleFile, SubtitleLanguage } from '~/utils/subtitles'
 import type { Media } from '~/utils/tmdb'
-import type { PieceMap } from '~/utils/torrents'
 import {
   mdiAlertCircleOutline,
   mdiAutoFix,
@@ -252,6 +250,37 @@ const scrubbing = ref(false)
 const volumeHeld = ref(false)
 const errorMsg = ref('')
 
+// Where the stream comes from — a fact about `props.src` and nothing else, and
+// read by everything below from the spinner's wording to what a hover may decode.
+/** The stream is the local engine's, rather than a link a source resolved itself. */
+const fromEngine = computed(() => props.src.startsWith(ENGINE))
+
+/**
+ * The film is being served by the device that cast it here — `mirrored` reads
+ * the mirror's own port off the URL (see utils/cast).
+ *
+ * Worth telling apart because everything this screen can say about a failure is
+ * a sentence pointing somebody at a machine, and for a cast it is neither of the
+ * other two: not this device's engine, and not the source's link. Saying either
+ * sends them looking at the wrong one.
+ */
+const fromCast = computed(() => mirrored(props.src))
+
+// ---------------------------------------------------------------------------
+// Seek previews — the frame under the cursor, and what the engine actually
+// holds. Both are `useSeekPreview`: it is ffmpeg and a piece bitfield, not
+// playback. Built here rather than beside the seek bar because `heldSpan` is
+// what the subtitle sync reads, and that is further up the file.
+// ---------------------------------------------------------------------------
+const { thumb, approx, onHover, warm, cancelThumbs, dropThumbs, heldSpan } = useSeekPreview({
+  native,
+  src: () => props.src,
+  position,
+  duration,
+  started,
+  fromCast,
+})
+
 // ---------------------------------------------------------------------------
 // mpv IPC
 // ---------------------------------------------------------------------------
@@ -298,7 +327,9 @@ async function readPointer(): Promise<Pointer | null> {
 
 /** The `<video>` path's OSD, since there is no mpv to draw one. */
 const osdText = ref('')
-let osdTimer: ReturnType<typeof setTimeout> | null = null
+/** How long the message on screen stays up — read by `startOsd` as it starts. */
+const osdMs = ref(1200)
+const { start: startOsd } = useTimeoutFn(() => (osdText.value = ''), osdMs, { immediate: false })
 
 /**
  * Text over the video without a cutout: let mpv itself render it. The trailing 0
@@ -312,9 +343,8 @@ function osd(text: string, ms = 1200) {
     return ipc(['show-text', text, ms, 0])
 
   osdText.value = text
-  if (osdTimer)
-    clearTimeout(osdTimer)
-  osdTimer = setTimeout(() => (osdText.value = ''), ms)
+  osdMs.value = ms
+  startOsd()
 }
 
 // ---------------------------------------------------------------------------
@@ -338,15 +368,39 @@ const expanded = ref('')
 const probing = ref('')
 /** The downloaded file currently showing, which is what auto-sync works on. */
 const activeUrl = ref('')
-const subDelay = ref(0)
-/** mpv's `sub-speed`. Only auto-sync ever moves it off 1. */
-const subSpeed = ref(1)
-const syncing = ref(false)
-/** The slow second pass is running: the whole film rather than what just played. */
-const syncWide = ref(false)
-const syncNote = ref('')
-/** The best fit of a pass that wasn't sure enough to apply itself. */
-const guess = ref<Sync | null>(null)
+
+// ---------------------------------------------------------------------------
+// Timing — all of it `useSubtitleSync`, which owns the delay, the rate and
+// what the last pass had to say about them. Desktop only: it reads the audio
+// with ffmpeg, and only a file we downloaded ourselves has cues to line up.
+// ---------------------------------------------------------------------------
+const {
+  syncable,
+  subDelay,
+  subSpeed,
+  syncing,
+  syncWide,
+  syncNote,
+  guess,
+  delayText,
+  guessText,
+  setDelay,
+  setSubSpeed,
+  nudgeDelay,
+  resetSync,
+  applyFit,
+  autoSync,
+} = useSubtitleSync({
+  native,
+  src: () => props.src,
+  position,
+  duration,
+  activeUrl,
+  heldSpan,
+  ipc,
+  osd,
+})
+
 let subsFetched = false
 /** Set once mpv has the file open, which is when tracks and a duration exist. */
 let loaded = false
@@ -414,101 +468,21 @@ function applySubtitleStyle() {
 watch(() => settings.subs, applySubtitleStyle, { deep: true })
 
 // ---------------------------------------------------------------------------
-// Levelling and the dialogue boost — see utils/audio.ts for what the two do.
-// Pushed once the file is open and again on every edit, like the subtitle
-// style, and once more whenever the audio track changes: which filter fits
-// depends on the channel layout, and a 5.1 track and a stereo commentary want
-// different ones.
+// Levelling and the dialogue boost. All of it is `usePlayerAudio`: a per-title
+// setting, and one chain built from it — the only thing this side has to do is
+// tell it what mpv says it is decoding, which arrives on the poll.
 // ---------------------------------------------------------------------------
-/**
- * Which title's settings are in force — `movie:603`, `tv:1396`. Empty for a
- * bare magnet, which has no title to remember anything against.
- */
-const audioKey = computed(() => props.media ? titleKey(props.media.type, props.media.id) : '')
-
-/** A magnet's edits, which live as long as this playback and no longer. */
-const looseAudio = ref<AudioSettings | null>(null)
-
-/** What this film is actually playing with: its own settings, or the default. */
-const audio = computed(() => audioKey.value
-  ? settings.audioFor(audioKey.value)
-  : looseAudio.value ?? settings.audio)
-
-/** Has this film been given settings of its own? Then it can also be given them back. */
-const ownAudio = computed(() => !!audioKey.value && audioKey.value in settings.audioByTitle)
-
-/**
- * How mpv is decoding the track that is playing — `5.1(side)`, `stereo` — and
- * how many channels that is. Read off the poll rather than asked for here: a
- * track only has a layout once mpv has reconfigured onto it, which is a moment
- * after the `aid` that selected it was set.
- */
-let layout = { name: '', channels: 0 }
-
-async function applyAudio() {
-  if (!started.value)
-    return
-
-  // ExoPlayer has no filter graph, so the two settings cross the bridge as
-  // themselves and Player.kt decides what the platform's audio effects can do
-  // with them. The <video> path answers neither and plays on unfiltered.
-  if (!native) {
-    for (const [name, value] of Object.entries(audioProps(audio.value)))
-      ipc(['set_property', name, value])
-    return
-  }
-
-  const chain = mpvAudioChain(audio.value, layout.name, layout.channels)
-  if (!chain) {
-    ipc(['af', 'clr', ''])
-    return
-  }
-
-  // A layout mpv named and libavfilter won't parse takes the whole chain down
-  // with it — the command answers "error running command" and the film plays on
-  // unfiltered. The retry drops the one filter that names a layout and keeps
-  // the levelling, which needs no layout at all.
-  const res = await ipc(['af', 'set', chain])
-  const plain = mpvAudioChain(audio.value)
-  if (chain !== plain && res?.error && res.error !== 'success')
-    ipc(['af', 'set', plain])
-}
-
-// Whichever of the two is in force, and the settings page editing the default
-// while this is open counts as a change to a film that hasn't overridden it.
-watch(audio, applyAudio, { deep: true })
-
-/**
- * An edit here is about *this* film. One mix in twenty is the one you can't
- * hear a word of, and levelling every film afterwards because of that one would
- * be its own complaint — so the panel writes a per-title entry (`setAudioFor`)
- * and *Settings → Audio* keeps setting what everything else starts from. Put
- * back to the default and the entry is dropped again; see `rememberAudio`.
- */
-function editAudio(next: AudioSettings) {
-  if (audioKey.value)
-    settings.setAudioFor(audioKey.value, next)
-  else
-    looseAudio.value = next
-}
-
-function setLevel(v: Leveller) {
-  editAudio({ ...audio.value, normalize: v })
-  osd(v === 'off' ? $t('Levelling off') : $t('Levelling: {level}', { level: LEVELLERS.find(l => l.value === v)!.title() }))
-}
-
-const boostText = computed(() => audio.value.dialogue ? `+${audio.value.dialogue} dB` : $t('Off'))
-
-function nudgeBoost(delta: number) {
-  editAudio({ ...audio.value, dialogue: Math.min(MAX_DIALOGUE, Math.max(0, audio.value.dialogue + delta)) })
-  osd($t('Dialogue: {boost}', { boost: boostText.value }))
-}
-
-/** Back to whatever everything else plays with. */
-function useDefaultAudio() {
-  editAudio({ ...settings.audio })
-  osd($t('Using the usual audio settings'))
-}
+const {
+  audio,
+  ownAudio,
+  boostText,
+  applyAudio,
+  setLevel,
+  nudgeBoost,
+  useDefaultAudio,
+  setLayout,
+  forgetLayout,
+} = usePlayerAudio({ native, started, media: () => props.media, ipc, osd })
 
 // The subtitles the page draws itself, wherever mpv isn't drawing them. Both
 // kinds arrive here: downloaded files as parsed cues, and a track muxed into the
@@ -787,150 +761,6 @@ async function applyPreferredSub() {
 }
 
 // ---------------------------------------------------------------------------
-// Timing. A file cut for another release is early or late, and one cut for
-// another framerate is early or late by a little more every minute. mpv answers
-// both: `sub-delay` shifts the cues and `sub-speed` multiplies their timestamps,
-// so `t = cue * speed + delay`. Which pair to use is what the audio decides.
-// ---------------------------------------------------------------------------
-/**
- * Only a file we downloaded ourselves has cues to line up; muxed tracks are
- * already cut to the release. And only the desktop can listen to the audio at
- * all — `audio_envelope` shells out to ffmpeg, which Android has no way to run.
- */
-const syncable = computed(() => native && !!probed(activeUrl.value)?.cues.length)
-// Two decimals, trailing zero trimmed: the fit lands well inside a tenth of a
-// second and rounding the display to one would show "+0.0s" for a real shift.
-const seconds = (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(2).replace(/0$/, '')}s`
-const delayText = computed(() => seconds(subDelay.value))
-const guessText = computed(() => seconds(guess.value?.offset ?? 0))
-
-/** The first look. Cheap to read, and enough for most files. */
-const SYNC_WINDOW = 1200
-
-function setDelay(seconds: number) {
-  subDelay.value = Math.round(seconds * 100) / 100
-  ipc(['set_property', 'sub-delay', subDelay.value])
-}
-
-/** Only ever 1 or one of `RATES`; a nudge of the delay leaves it alone. */
-function setSubSpeed(rate: number) {
-  subSpeed.value = rate
-  ipc(['set_property', 'sub-speed', rate])
-}
-
-function nudgeDelay(delta: number) {
-  // Back onto the tenth-of-a-second grid: a fit leaves the delay somewhere in
-  // between, and stepping from 0.14 to 0.24 reads like a stuck button.
-  setDelay(Math.round((subDelay.value + delta) * 10) / 10)
-  syncNote.value = ''
-  guess.value = null
-  osd($t('Subtitle delay {delay}', { delay: delayText.value }))
-}
-
-/**
- * The audio behind `span` seconds of playback, clipped to what is on disk — the
- * unbroken stretch the picture is in (`heldSpan`). The bytes just played used
- * to be taken as certainly there, which a stream forgets as it goes and a seek
- * forward never fetched; ffmpeg reading outside the stretch pulls pieces away
- * from the film, or blocks on ones that never come.
- */
-async function playedSpan(span: number) {
-  const whole = duration.value || span
-  const [lo, hi] = await heldSpan()
-  const from = Math.max(lo * whole, Math.min(position.value - span, whole - span), 0)
-  const to = Math.max(from, Math.min(from + span, hi * whole))
-  return { from, to, length: to - from }
-}
-
-async function fitOver(cues: Cue[], from: number, to: number) {
-  const envelope = await invoke<number[]>('audio_envelope', {
-    url: props.src,
-    start: from,
-    duration: to - from,
-  })
-  return bestSync(cues, Float32Array.from(envelope), from)
-}
-
-/**
- * Both numbers are absolute — the fit is measured from the file's own
- * timestamps — so this replaces a delay set by hand rather than adding to it.
- */
-function applyFit(fit: Sync) {
-  const was = subDelay.value
-  const wasSpeed = subSpeed.value
-  setDelay(fit.offset)
-  setSubSpeed(fit.speed)
-  guess.value = null
-  const moved = Math.abs(subDelay.value - was) >= 0.05 || fit.speed !== wasSpeed
-
-  if (fit.speed !== 1) {
-    // A rate error is global, so this one holds for the whole film rather than
-    // just the scene it was measured on.
-    syncNote.value = $t('This file was cut for a different framerate — stretched to fit, delay {delay}.', { delay: delayText.value })
-    osd($t('Subtitles synced ({delay}, rate fixed)', { delay: delayText.value }), 2500)
-  }
-  else if (!moved) {
-    syncNote.value = $t('Already in sync at {delay}.', { delay: delayText.value })
-  }
-  else {
-    syncNote.value = $t('Delay set to {delay}.', { delay: delayText.value })
-    osd($t('Subtitles synced ({delay})', { delay: delayText.value }), 2000)
-  }
-}
-
-async function autoSync() {
-  const file = probed(activeUrl.value)
-  if (syncing.value || !file?.cues.length)
-    return
-  syncing.value = true
-  syncNote.value = ''
-  guess.value = null
-  try {
-    const near = await playedSpan(Math.min(SYNC_WINDOW, duration.value || SYNC_WINDOW))
-    let fit = near.length >= SYNC_MIN_WINDOW ? await fitOver(file.cues, near.from, near.to) : null
-
-    // Twenty minutes of an old, quiet or sparsely-spoken film can honestly mean
-    // anything — and the rest of the film is more of the same signal, which is
-    // exactly what a weak one needs. Reading the lot is a few seconds of ffmpeg
-    // on a normal encode and half a second of arithmetic — a minute of I/O on a
-    // 4K remux, which is why it waits for the cheap look to fail first, and only
-    // ever covers what the download has actually reached.
-    if (!fit || !synced(fit)) {
-      const all = await playedSpan(duration.value || SYNC_WINDOW)
-      if (all.length >= SYNC_MIN_WINDOW && all.length > near.length + 60) {
-        syncWide.value = true
-        const wide = await fitOver(file.cues, all.from, all.to)
-        if (!fit || wide.confidence > fit.confidence)
-          fit = wide
-      }
-    }
-
-    if (!fit) {
-      syncNote.value = $t('Not enough has played yet — auto-sync needs about {minutes} minutes of audio to be sure. Nudge the delay for now.', { minutes: Math.round(SYNC_MIN_WINDOW / 60) })
-      return
-    }
-
-    if (!synced(fit)) {
-      // A confident wrong answer is worse than none. The best it found is still
-      // worth offering though: a file a minute out is unwatchable, and one wrong
-      // button is cheaper than six hundred taps of the nudge.
-      guess.value = fit.score > 0.05 ? fit : null
-      syncNote.value = $t('Couldn\'t tell — the audio doesn\'t line up clearly with this file. Try a different subtitle file, or nudge the delay by hand.')
-      return
-    }
-
-    applyFit(fit)
-  }
-  catch (e) {
-    syncNote.value = e instanceof Error ? e.message : String(e)
-  }
-  finally {
-    syncing.value = false
-    syncWide.value = false
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Menus. One panel, three lists — a popup would need its own cutout and a
 // Vuetify overlay renders outside this root, where the tracker can't see it.
 // ---------------------------------------------------------------------------
@@ -1017,87 +847,17 @@ function toggleFullscreen() {
 }
 
 // ---------------------------------------------------------------------------
-// Geometry + cutouts
+// The frame loop. Two jobs have to happen per frame and this is the only place
+// either can: advance the clock so the seek bar moves at 60fps rather than
+// stepping once per poll, and put mpv's window where the box is. The second
+// half is `useNativeSurface` — none of it is about playback, and the two shims
+// have no surface to chase.
 // ---------------------------------------------------------------------------
-interface Rect { x: number, y: number, width: number, height: number }
-
-/**
- * CSS px → physical px, measured rather than worked out.
- *
- * Only mpv needs this, and app scale on every target mpv runs on is the
- * webview's own page zoom (`app.vue`) — which the engines fold into
- * `devicePixelRatio` or leave beside it, and disagree about. Getting it wrong
- * parks mpv's window in the wrong place, so nothing here reasons about it: ask
- * the platform how many real pixels wide this webview is and divide by how many
- * the page thinks it is.
- *
- * Re-measured whenever the CSS viewport changes width, which is what a resize
- * and a change of zoom both do — no listener, and no round trip per frame. The
- * value it starts at is right for the ordinary case of no zoom at all, so the
- * frame or two before the first answer lands is not a jump.
- */
-let pxRatio = window.devicePixelRatio || 1
-let measuredAt = 0
-
-function measurePx() {
-  const css = window.innerWidth
-  if (css === measuredAt || !css)
-    return
-  measuredAt = css
-  useTauriWebviewWindowGetCurrentWebviewWindow().size().then(size => (pxRatio = size.width / css)).catch(() => {
-    // No answer to be had — `devicePixelRatio` is what it keeps, which is
-    // right for the only case that reaches here with mpv running: no zoom.
-  })
-}
-
-/**
- * The webview viewport, in the same physical pixels the box is measured in.
- *
- * Sent alongside every geometry push for the backend that places its surface by
- * ratio rather than by scale factor (macOS — see `player_render_mac.rs`). The
- * X11 and Win32 backends are already in the units they need and ignore it.
- */
-function viewport(dpr: number) {
-  return {
-    viewW: Math.max(1, Math.round(window.innerWidth * dpr)),
-    viewH: Math.max(1, Math.round(window.innerHeight * dpr)),
-  }
-}
-
-/**
- * What has to show through mpv's window. `[data-cut]` is this file's own bars;
- * the second half is every Vuetify overlay — a tooltip, and the cast dialog the
- * bar opens. Those teleport to the app root, so a search scoped to the player
- * would never find them and mpv would paint over them: an open dialog that dims
- * the screen and then shows nothing, which is what it did.
- */
-const CUT = '[data-cut], .v-overlay--active > .v-overlay__content'
-
-/** Every overlay's rectangle, clipped to the video box and in physical pixels. */
-function cutouts(box: DOMRect, dpr: number): Rect[] {
-  const out: Rect[] = []
-  // A closed tooltip is `display: none` and measures 0x0, which the clip drops.
-  for (const el of document.querySelectorAll<HTMLElement>(CUT)) {
-    const r = el.getBoundingClientRect()
-    const left = Math.max(r.left, box.left)
-    const top = Math.max(r.top, box.top)
-    const right = Math.min(r.right, box.right)
-    const bottom = Math.min(r.bottom, box.bottom)
-    if (right - left < 1 || bottom - top < 1)
-      continue // fully outside the video (mid-slide, or off-screen)
-    out.push({
-      x: Math.round((left - box.left) * dpr),
-      y: Math.round((top - box.top) * dpr),
-      width: Math.round((right - left) * dpr),
-      height: Math.round((bottom - top) * dpr),
-    })
-  }
-  return out
-}
+const surface = useNativeSurface(boxEl, overlay)
+const { waitForBox } = surface
 
 let rafId = 0
 let lastFrame = 0
-let lastKey = ''
 
 /**
  * One loop for both jobs that have to happen per frame: push geometry when it
@@ -1129,75 +889,13 @@ function frame(now: number) {
 
   // Neither shim has a surface to chase: the bars stack in CSS and the picture
   // is laid out by the page like anything else.
-  if (!native)
-    return
-
-  const el = boxEl.value
-  if (!el)
-    return
-  const r = el.getBoundingClientRect()
-  measurePx()
-  const dpr = pxRatio
-  // Hide the native surface when the box is off-screen or not laid out —
-  // otherwise it keeps painting over whatever the page scrolls under it.
-  const visible = r.width >= 16 && r.height >= 16
-    && r.bottom > 0 && r.top < window.innerHeight
-    && r.right > 0 && r.left < window.innerWidth
-
-  const geom = {
-    ...viewport(dpr),
-    x: Math.round(r.left * dpr),
-    y: Math.round(r.top * dpr),
-    width: Math.max(1, Math.round(r.width * dpr)),
-    height: Math.max(1, Math.round(r.height * dpr)),
-    visible,
-    // Only a surface in front of the page needs holes cutting in it.
-    cutouts: visible && overlay ? cutouts(r, dpr) : [],
-  }
-  const key = JSON.stringify(geom)
-  if (key === lastKey)
-    return
-  lastKey = key
-  invoke('player_set_geometry', geom).catch(() => {})
-}
-
-/**
- * mpv fails to create its video output on a 1x1 window and exits silently, so
- * never start until the box has a real size.
- */
-function waitForBox(timeoutMs = 4000): Promise<DOMRect | null> {
-  return new Promise(resolve => {
-    const deadline = performance.now() + timeoutMs
-    const check = () => {
-      const r = boxEl.value?.getBoundingClientRect()
-      if (r && r.width >= 16 && r.height >= 16)
-        resolve(r)
-      else if (performance.now() > deadline)
-        resolve(null)
-      else
-        requestAnimationFrame(check)
-    }
-    check()
-  })
+  if (native)
+    surface.push()
 }
 
 // `poll` is a hoisted function declaration, so wiring the interval up here (of
 // necessity, since start/stopPlayer below drive it) is safe.
 const { pause: stopPoll, resume: startPoll } = useIntervalFn(poll, 200, { immediate: false })
-
-/** The stream is the local engine's, rather than a link a source resolved itself. */
-const fromEngine = computed(() => props.src.startsWith(ENGINE))
-
-/**
- * The film is being served by the device that cast it here — `mirrored` reads
- * the mirror's own port off the URL (see utils/cast).
- *
- * Worth telling apart because everything this screen can say about a failure is
- * a sentence pointing somebody at a machine, and for a cast it is neither of the
- * other two: not this device's engine, and not the source's link. Saying either
- * sends them looking at the wrong one.
- */
-const fromCast = computed(() => mirrored(props.src))
 
 /**
  * What the spinner says while a film is opening. Three different waits look
@@ -1382,18 +1080,9 @@ async function startPlayer() {
     }
 
     if (native) {
-      // Re-measure: the window may have been resized while the probe ran.
-      const b = boxEl.value!.getBoundingClientRect()
-      measurePx()
-      const dpr = pxRatio
-      await invoke('player_start', {
-        url: props.src,
-        ...viewport(dpr),
-        x: Math.round(b.left * dpr),
-        y: Math.round(b.top * dpr),
-        width: Math.max(1, Math.round(b.width * dpr)),
-        height: Math.max(1, Math.round(b.height * dpr)),
-      })
+      // Measured now, not when the box was waited for: the window may have been
+      // resized while the probe ran.
+      await invoke('player_start', { url: props.src, ...surface.measure()!.wire })
     }
     else {
       engine ??= exoEngine() ?? videoEngine(videoEl.value!)
@@ -1412,12 +1101,9 @@ async function startPlayer() {
     aid.value = 'no'
     activeUrl.value = ''
     subText.value = ''
-    layout = { name: '', channels: 0 } // a fresh mpv carries no filters either
-    subDelay.value = 0 // a fresh mpv starts at zero
-    subSpeed.value = 1
-    syncNote.value = ''
-    guess.value = null
-    lastKey = '' // force a geometry + shape push on the next frame
+    forgetLayout() // a fresh mpv carries no filters either
+    resetSync() // a fresh mpv starts at zero and knows nothing of this file
+    surface.reset() // the next frame pushes geometry and shape for the new window
 
     // Clicks and the wheel land on the video window in front of the page, never
     // on the webview. On X11 that window is mpv's own, so it can answer them
@@ -1448,7 +1134,7 @@ async function stopPlayer() {
   // difference between "watching this" and "watched this far" to a sync.
   saveProgress()
   started.value = false
-  lastKey = ''
+  surface.reset()
   if (native)
     await invoke('player_stop').catch(() => {})
   else
@@ -1577,12 +1263,10 @@ async function poll() {
   // A layout is mpv's first word on the track it is actually playing, and the
   // audio filters are built from it. Only mpv answers these, so on the other
   // backends this never fires and the push below is the only one.
-  const channels = typeof p['audio-params/channels'] === 'string' ? p['audio-params/channels'] : ''
-  const count = typeof p['audio-params/channel-count'] === 'number' ? p['audio-params/channel-count'] : 0
-  if (channels !== layout.name || count !== layout.channels) {
-    layout = { name: channels, channels: count }
-    applyAudio()
-  }
+  setLayout(
+    typeof p['audio-params/channels'] === 'string' ? p['audio-params/channels'] : '',
+    typeof p['audio-params/channel-count'] === 'number' ? p['audio-params/channel-count'] : 0,
+  )
 
   // Tracks only exist once mpv has the file open, and a duration is the first
   // sign of that.
@@ -1640,195 +1324,6 @@ const volumeIcon = computed(() => {
 })
 
 // ---------------------------------------------------------------------------
-// Seek previews
-// ---------------------------------------------------------------------------
-// The frame under the cursor on the seek bar — but only ever for a position the
-// engine already holds. Decoding one it doesn't would have librqbit go and fetch
-// that piece, and a hover the user never commits to would be taking bandwidth
-// off the film currently playing. `haveAt` is what says no; a debrid release has
-// no swarm to take anything from, so those aren't gated at all.
-//
-// ffmpeg does the decoding, which is the same line `syncable` draws: the <video>
-// and ExoPlayer builds have no way to run it.
-/**
- * Long enough to coalesce a sweep across the bar, short enough to disappear into
- * the ~75ms the decode itself costs. Nearly all of that is fixed — spawning
- * ffmpeg, opening the file, seeking — so waiting longer buys no less work.
- */
-const HOVER_MS = 80
-/** Frames are decoded per 5s bucket — finer than the eye wants at a film's scale. */
-const BUCKET = 5
-/**
- * How far off a stand-in frame may be. Generous on purpose: it goes up dimmed,
- * the time under it is exact, and the real frame replaces it a moment later. A
- * roughly right picture beats an empty box for that moment.
- */
-const NEAR_S = 60
-/** Where the walk starts before halving its way down to `BUCKET`. */
-const COARSE = BUCKET * 128
-
-const thumb = ref<string | null>(null)
-/** The frame up is a neighbour's, not this position's. Shown faded. */
-const approx = ref(false)
-/** Blob URL per bucket, `''` for a position ffmpeg had no frame at. */
-const thumbs = new Map<number, string>()
-/** Buckets ffmpeg is busy with, so a sweep can't queue the same one twice. */
-const pending = new Set<number>()
-let pieces: PieceMap | null = null
-let haves: Uint8Array | null = null
-let havesAt = 0
-let wanted = -1
-let hoverTimer: ReturnType<typeof setTimeout> | undefined
-/**
- * Bumped to disown every decode in flight — the frame ffmpeg is working on is of
- * a film nobody is looking at any more, or isn't playing at all. Not the cache's
- * identity: hiding the bar calls the work off without throwing the frames away.
- */
-let era = 0
-
-function cancelThumbs() {
-  era++
-}
-
-function dropThumbs() {
-  cancelThumbs()
-  thumbs.forEach(url => url && URL.revokeObjectURL(url))
-  thumbs.clear()
-  pending.clear()
-  thumb.value = null
-  pieces = null
-  haves = null
-}
-
-async function onDisk(at: number) {
-  const parts = streamParts(props.src)
-  // A plain URL has every byte one range request away. A cast mirror is
-  // another device's torrent with nothing here to ask what it holds, and a
-  // guess of "yes" would have every hover fetch pieces over there.
-  if (!parts)
-    return !fromCast.value
-  pieces ??= await pieceMap(parts.id, parts.index)
-  // Refetched as the download grows. A stale bitfield only ever hides a frame
-  // we could have shown, never invents one we haven't got.
-  if (!haves || Date.now() - havesAt > 5000) {
-    haves = await torrentHaves(parts.id)
-    havesAt = Date.now()
-  }
-  return !!pieces && !!haves && haveAt(pieces, haves, at / (duration.value || 1))
-}
-
-/**
- * Where the stretch of the film on disk around the picture starts and ends, as
- * fractions of it — what the subtitle sync may read (`playedSpan`). A plain url
- * has every byte one range request away; a cast mirror is another device's
- * torrent, and only what already played there is sure to be held.
- */
-async function heldSpan(): Promise<[number, number]> {
-  const now = position.value / (duration.value || 1)
-  const parts = streamParts(props.src)
-  if (!parts)
-    return fromCast.value ? [0, now] : [0, 1]
-  pieces ??= await pieceMap(parts.id, parts.index)
-  haves = await torrentHaves(parts.id)
-  havesAt = Date.now()
-  return (pieces && haves && heldAround(pieces, haves, now)) || [now, now]
-}
-
-/** Decode one bucket into the cache, unless it's there or on its way. */
-async function grab(bucket: number) {
-  if (thumbs.has(bucket) || pending.has(bucket))
-    return
-  const mine = era
-  pending.add(bucket)
-  try {
-    // Left uncached when the bytes aren't down yet — unlike a miss, that is an
-    // answer which changes as the download runs.
-    if (!await onDisk(bucket))
-      return
-    const bytes = await invoke<ArrayBuffer>('thumbnail', { url: props.src, at: bucket }).catch(() => null)
-    // Next episode may have started while ffmpeg worked, and this frame is of
-    // the last one — under a bucket number the new film will read as its own.
-    if (mine !== era)
-      return
-    // Misses are remembered too: a position ffmpeg can't decode never will.
-    thumbs.set(bucket, bytes?.byteLength ? URL.createObjectURL(new Blob([bytes], { type: 'image/jpeg' })) : '')
-  }
-  finally {
-    pending.delete(bucket)
-  }
-}
-
-/**
- * Put up the best frame we have for `bucket`: its own, or a neighbour's faded
- * out. Over a film the walk has been across, that makes the bubble land filled
- * in and sharpen a moment later, rather than opening empty every time.
- */
-function show(bucket: number) {
-  const exact = thumbs.get(bucket)
-  approx.value = !exact
-  thumb.value = exact || nearestFrame(thumbs, bucket, NEAR_S)
-}
-
-function onHover(at: number | null) {
-  clearTimeout(hoverTimer)
-  if (at === null || !native || !duration.value) {
-    thumb.value = null
-    return
-  }
-
-  const bucket = Math.floor(at / BUCKET) * BUCKET
-  wanted = bucket
-  show(bucket)
-  // Cached, or cached as a position ffmpeg gets nothing from — either way there
-  // is nothing left to decode.
-  if (thumbs.has(bucket))
-    return
-
-  // Only where the cursor comes to rest gets decoded, not every pixel it swept.
-  hoverTimer = setTimeout(async () => {
-    await grab(bucket)
-    // The cursor may have moved on while ffmpeg worked.
-    if (wanted === bucket)
-      show(bucket)
-    // A cursor that stopped is about to nudge. Both neighbours cost one ffmpeg
-    // each against a wait the user would otherwise sit through twice.
-    for (const near of [bucket - BUCKET, bucket + BUCKET]) {
-      if (near >= 0 && near < duration.value)
-        void grab(near)
-    }
-  }, HOVER_MS)
-}
-
-/**
- * With the bar up, fill the cache in `walkOrder`'s order so a scrub lands on a
- * frame already in hand rather than waiting on ffmpeg for one.
- *
- * The bar is the whole trigger: it means someone is at the controls, and it
- * hides 2.8s into untouched playback — so a film watched straight through never
- * warms a single frame. One at a time, and every bucket goes through `grab`, so
- * the walk thins out by itself over a part-downloaded film.
- */
-let warming = false
-
-async function warm() {
-  if (warming || !native || !started.value)
-    return
-  const mine = era
-  warming = true
-  try {
-    for (const at of walkOrder(duration.value, BUCKET, COARSE)) {
-      // The bar hiding is a whole film's worth of work called off.
-      if (mine !== era)
-        return
-      await grab(at)
-    }
-  }
-  finally {
-    warming = false
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Auto-hiding chrome
 // ---------------------------------------------------------------------------
 /**
@@ -1850,7 +1345,14 @@ const hovering = ref(false)
 const hoverable = useMediaQuery('(hover: hover)')
 /** A control in the chrome holds keyboard focus — someone is driving with a remote. */
 const focused = ref(false)
-let hideTimer: ReturnType<typeof setTimeout> | null = null
+/**
+ * `useTimeoutFn` rather than a bare `setTimeout`, because this one is armed for
+ * seconds at a time and the component can go in the middle of them: leaving a
+ * film mid-playback left a timer to fire `hideChrome` on a player that had
+ * already stopped. It goes with the scope now, which is the only way this stays
+ * true as `hideChrome` grows.
+ */
+const { start: startHide, stop: stopHide } = useTimeoutFn(() => hideChrome(), IDLE_MS, { immediate: false })
 
 /**
  * A mouse click focuses the button it lands on too, and nothing ever takes that
@@ -1926,14 +1428,12 @@ function hideChrome() {
 function noteActivity() {
   ui.value = true
   showPointer(true)
-  if (hideTimer)
-    clearTimeout(hideTimer)
-  hideTimer = null
+  stopHide()
   // Keep them up while paused, stopped, hovered, or reading a menu — hiding only
   // makes sense mid-playback. Focus does *not* keep them up: on a TV every press
   // leaves something focused, which pinned the bars over the film for good.
   if (started.value && !paused.value && !menu.value && !(hovering.value && hoverable.value))
-    hideTimer = setTimeout(hideChrome, IDLE_MS)
+    startHide()
 }
 
 // Not `focused`: the blur `hideChrome` does would fire this straight back.
@@ -1955,7 +1455,21 @@ watchDebounced(() => buffering.value && started.value, v => (stalled.value = v),
  * too, and this side can only see that playback is waiting, which it also does
  * on a slow swarm that is still feeding it.
  */
-const stuck = computed(() => !!props.quiet && stalled.value && !paused.value)
+const starving = computed(() => !!props.quiet && stalled.value && !paused.value)
+
+/**
+ * …and it has stayed that way for longer than the page takes to notice
+ * otherwise. `quiet` is 45 s of no bytes, which a film **paused** over a full
+ * stream window also is — so pressing play on one raised this for the two
+ * seconds the stats poll takes to report the swarm feeding again, and a film
+ * that was filling perfectly well announced itself dead.
+ *
+ * Only the rise waits. The fall is immediate, or the notice would outlive the
+ * problem it names by the same three seconds.
+ */
+const stuck = ref(false)
+watchDebounced(starving, v => (stuck.value = v), { debounce: 3000 })
+watch(starving, on => on || (stuck.value = false))
 
 /**
  * Seconds the end-of-playback screen waits before rolling into the next
@@ -1964,15 +1478,24 @@ const stuck = computed(() => !!props.quiet && stalled.value && !paused.value)
 const AUTO_NEXT = 10
 
 const countdown = ref(0)
-let nextTimer: ReturnType<typeof setInterval> | null = null
 // Resolved here rather than calling `navigateTo` from the timer: that one wants
-// a Nuxt instance, and a setInterval callback has none.
+// a Nuxt instance, and a timer callback has none.
 const router = useRouter()
 
+const { pause: pauseCountdown, resume: resumeCountdown } = useIntervalFn(() => {
+  if (--countdown.value > 0)
+    return
+  stopCountdown()
+  // `replace`, like the button below: rolling into the next episode is carrying
+  // on with the same thing, and a push would leave Back pointing at the episode
+  // you just sat through instead of out of the player.
+  const to = props.next?.to
+  if (to)
+    router.replace(to)
+}, 1000, { immediate: false })
+
 function stopCountdown() {
-  if (nextTimer)
-    clearInterval(nextTimer)
-  nextTimer = null
+  pauseCountdown()
   countdown.value = 0
 }
 
@@ -1984,18 +1507,8 @@ watch([ended, () => props.next?.to], ([done, to]) => {
   if (!done || !to)
     return
   countdown.value = AUTO_NEXT
-  nextTimer = setInterval(() => {
-    if (--countdown.value <= 0) {
-      stopCountdown()
-      // `replace`, like the button below: rolling into the next episode is
-      // carrying on with the same thing, and a push would leave Back pointing
-      // at the episode you just sat through instead of out of the player.
-      router.replace(to)
-    }
-  }, 1000)
+  resumeCountdown()
 })
-
-onBeforeUnmount(stopCountdown)
 
 const centre = computed(() => {
   if (errorMsg.value)
@@ -2165,22 +1678,18 @@ const DOUBLE_TAP_MS = 300
 /** Which side to flash an arrow on, so a seek is visibly a seek. */
 const seekFlash = ref<'back' | 'forward' | ''>('')
 let lastTap = 0
-let flashTimer: ReturnType<typeof setTimeout> | null = null
+const { start: startFlash } = useTimeoutFn(() => (seekFlash.value = ''), 500, { immediate: false })
 
 function flashSeek(side: 'back' | 'forward') {
   seekFlash.value = side
-  if (flashTimer)
-    clearTimeout(flashTimer)
-  flashTimer = setTimeout(() => (seekFlash.value = ''), 500)
+  startFlash()
 }
 
 /** Show the bars, or put them away — what a bare tap does. */
 function toggleChrome() {
   if (ui.value) {
     hideChrome()
-    if (hideTimer)
-      clearTimeout(hideTimer)
-    hideTimer = null
+    stopHide()
   }
   else {
     noteActivity()
@@ -2279,12 +1788,16 @@ watch(() => behind && started.value, on => {
   document.documentElement.classList.toggle('ventic-video', on)
 })
 
+// Capture phase, so the keys a focused control would otherwise swallow whole
+// reach the player first. `useEventListener` rather than a pair in the mount
+// hooks: it goes with the scope, like the timers above.
+useEventListener(window, 'keydown', onKey, true)
+
 onMounted(() => {
-  window.addEventListener('keydown', onKey, true)
   // Ahead of the first geometry push rather than alongside it, so the window
   // mpv opens is already the right size at any scale but 100%.
   if (native)
-    measurePx()
+    surface.readScale()
   rafId = requestAnimationFrame(frame)
   listenToNativeMouse()
   if (props.fullscreen)
@@ -2295,17 +1808,11 @@ onMounted(() => {
 onBeforeUnmount(() => {
   cancelAnimationFrame(rafId)
   document.documentElement.classList.remove('ventic-video')
-  window.removeEventListener('keydown', onKey, true)
   mounted = false
   nativeMouse.forEach(off => off())
   stopPoll()
   saveProgress()
-  clearTimeout(hoverTimer)
-  dropThumbs()
-  if (osdTimer)
-    clearTimeout(osdTimer)
-  if (flashTimer)
-    clearTimeout(flashTimer)
+  // The frame cache gives its blobs back on its own (`onScopeDispose`).
   if (windowFullscreen.value)
     setWindowFullscreen(false)
   // The watcher above dies with the component, so the last thing it asked for

@@ -97,3 +97,85 @@ export function clipped(box: Box, clips: Box[]): Box {
   }
   return { left, top, right, bottom }
 }
+
+// -----------------------------------------------------------------------------
+// The scrolling half. Everything below is arithmetic the plugin used to keep
+// inside its own closure, where `check:dpad` could only assert that the code
+// looked right — it could not run it. Each of these is a bug that reached the
+// television, so each of them is tested now.
+// -----------------------------------------------------------------------------
+
+/** A scroll position: what `scrollTop`/`scrollLeft` are, and what a glide aims at. */
+export interface Offset { top: number, left: number }
+
+/**
+ * Where a scroller can actually stop, given how far it has to give in each
+ * axis.
+ *
+ * Clamping is the whole point and it is not a tidying-up: a destination the
+ * scroller can never reach is one `resting` goes on answering with for ever,
+ * and every later press is then measured against a page that does not exist.
+ * One nudge to the foot of a title page left everything judged against a page
+ * 517px further down, and "down" off the last row of More like this jumped into
+ * the sidebar.
+ */
+export function within(to: Offset, maxTop: number, maxLeft: number): Offset {
+  return {
+    top: Math.max(0, Math.min(to.top, Math.max(0, maxTop))),
+    left: Math.max(0, Math.min(to.left, Math.max(0, maxLeft))),
+  }
+}
+
+/**
+ * One frame of the ease toward `goal`, `ms` after the frame that put us `at`.
+ *
+ * Exponential rather than a fixed curve, because the platform's own smooth
+ * scroll cannot be retargeted: a `scrollTo` mid-animation *cancels* what is
+ * running and eases in from a standstill, so a press landing mid-scroll stopped
+ * the page dead and started again. Measured on the set, eight presses 120ms
+ * apart — the page crawled at 5px a frame for three seconds and then covered
+ * 2000px in half of one, once the presses stopped. A target this is already
+ * chasing costs nothing to move: there is no curve to restart, and the speed
+ * already there carries into it.
+ *
+ * `EASE` is the time constant in ms — about 95% of the way there in a fifth of
+ * a second. `ms` is capped by the caller so a dropped second's worth of frames
+ * eases rather than teleports.
+ */
+export const EASE = 70
+
+export function eased(at: Offset, goal: Offset, ms: number): Offset {
+  const k = 1 - Math.exp(-ms / EASE)
+  return {
+    top: at.top + (goal.top - at.top) * k,
+    left: at.left + (goal.left - at.left) * k,
+  }
+}
+
+/** Close enough to stop easing and sit exactly on it. Sub-pixel, so it is invisible. */
+export function arrived(at: Offset, goal: Offset) {
+  return Math.abs(goal.top - at.top) < 0.5 && Math.abs(goal.left - at.left) < 0.5
+}
+
+/**
+ * How far a span has to move to sit between `near` and `far` — `nearest`:
+ * nothing if it already does, and never further than lining its leading edge
+ * up, which is what stops something taller than the viewport jumping past.
+ *
+ * Worked out here rather than asked of `scrollIntoView`, which computes the
+ * same thing from wherever the page has got to and cannot be made to ask about
+ * the page at rest — so mid-animation it asked for the whole remaining distance
+ * plus* a row, and each press of a burst aimed further than the last.
+ */
+export function nearest(from: number, to: number, near: number, far: number) {
+  if (from < near)
+    return from - near
+  if (to > far)
+    return Math.min(to - far, from - near)
+  return 0
+}
+
+/** The same box, moved. */
+export function shift(box: Box, dx: number, dy: number): Box {
+  return { left: box.left + dx, top: box.top + dy, right: box.right + dx, bottom: box.bottom + dy }
+}

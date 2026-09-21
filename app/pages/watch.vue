@@ -109,6 +109,9 @@ async function start() {
   src.value = ''
   torrent.value = null
   streaming.value = null
+  // With the rest of them: `tryAnother` deletes the torrent this still names, and
+  // leaving it set points `stats` at an id the engine no longer has.
+  torrentId.value = null
 
   try {
     // ?magnet=… hand-picks the release and skips the lookup — that's how the
@@ -273,9 +276,20 @@ const failure = computed(() => errorMsg.value
 /** The one failure whose fix is a button away rather than a retry. */
 const noSources = computed(() => failure.value === NO_SOURCES())
 
+/**
+ * What the bar over the film calls it.
+ *
+ * "Loading…" only while a title is genuinely on its way. A link, a local file,
+ * a live channel and a bare magnet are all played without one — nothing is
+ * being looked up and nothing ever arrives — so the bar sat there claiming a
+ * title was coming for the length of the film. An episode with no name still
+ * says which episode it is, which is the part a season pack's viewer needs.
+ */
 const heading = computed(() => {
-  const name = title.value?.title ?? (route.query.title as string) ?? $t('Loading…')
-  return season.value && episode.value ? `${name} · S${season.value}E${episode.value}` : name
+  const named = title.value?.title || String(route.query.title ?? '')
+  const name = named || (id.value && !mediaError.value ? $t('Loading…') : '')
+  const tag = season.value && episode.value ? `S${season.value}E${episode.value}` : ''
+  return [name, tag].filter(Boolean).join(' · ')
 })
 
 const progressPct = computed(() => {
@@ -512,7 +526,9 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
 
           <template v-else>
             <v-progress-circular indeterminate color="primary" size="40" />
-            <div class="text-title-large">
+            <!-- A link or a local file has no title to name, and `step` below is
+                 the line that actually says what is happening. -->
+            <div v-if="heading" class="text-title-large">
               {{ heading }}
             </div>
             <div class="text-body-medium opacity-70">
@@ -571,7 +587,7 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
         <template #info>
           <div class="flex min-w-0 items-center gap-4">
             <div class="min-w-0">
-              <div class="truncate text-title-medium">
+              <div v-if="heading" class="truncate text-title-medium">
                 {{ heading }}
               </div>
               <div v-if="torrent" class="truncate text-body-small opacity-50">

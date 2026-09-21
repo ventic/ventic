@@ -27,6 +27,16 @@ const pending = computed(() => ui.pending)
  */
 const value = computed(() => (pending.value ? setupValue(pending.value) : ''))
 
+/**
+ * The address as the dialog prints it. Masked on **both** branches: an Xtream
+ * login becomes a URL with the account's password in its query string, a panel's
+ * own `get.php` playlist link already is one, and this dialog is read across a
+ * room. The invalid branch is the one that matters — that is the address
+ * somebody mistyped and is about to read out to whoever is helping them.
+ */
+const shown = computed(() =>
+  (value.value || pending.value?.url || '').replace(/password=[^&]*/gi, 'password=…'))
+
 const COPY: Record<SetupKind, { title: () => string, lead: () => string, note: () => string, action: () => string }> = {
   source: {
     title: () => $t('Add this source?'),
@@ -100,10 +110,8 @@ function confirm() {
         <p class="text-body-medium">
           {{ copy.lead() }}
         </p>
-        <!-- The address as it will be stored, minus a password: an Xtream login
-             becomes a URL with the account's password in its query string, and
-             this dialog is read across a room. -->
-        <code class="break-all rounded-lg bg-surface-container-high px-3 py-2 text-body-small">{{ value ? value.replace(/password=[^&]*/, 'password=…') : pending?.url }}</code>
+        <!-- The address as it will be stored, minus a password — see `shown`. -->
+        <code class="break-all rounded-lg bg-surface-container-high px-3 py-2 text-body-small">{{ shown }}</code>
         <p v-if="pending?.user" class="text-body-small opacity-70">
           {{ $t('Username: {name}', { name: pending.user }) }}
         </p>

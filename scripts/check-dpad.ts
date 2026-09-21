@@ -5,7 +5,7 @@ import type { Box } from '../app/utils/dpad'
 // half of the remote — BACK, which is Kotlin's to catch and the page's to answer.
 import assert from 'node:assert'
 import { readdirSync, readFileSync } from 'node:fs'
-import { clipped, pickDirection } from '../app/utils/dpad'
+import { arrived, clipped, eased, nearest, pickDirection, shift, within } from '../app/utils/dpad'
 
 function box(left: number, top: number, width: number, height: number): Box {
   return { left, top, right: left + width, bottom: top + height }
@@ -224,13 +224,59 @@ assert.ok(
 // matches where it lands, so every press afterwards is measured against a page
 // that does not exist. Measured on the set: one nudge to the foot of a title
 // page and "down" off the last row of More like this jumped into the sidebar.
+//
+// That page: a grid 2400px tall in a 720px window, so 1680px is as far as it
+// goes. A nudge is 0.8 of a screen, and five of them ask for more than exists.
+assert.deepStrictEqual(within({ top: 2304, left: 0 }, 1680, 0), { top: 1680, left: 0 }, 'a heading stops where the scroller does')
+assert.deepStrictEqual(within({ top: -576, left: 0 }, 1680, 0), { top: 0, left: 0 }, 'and never above the top')
+assert.deepStrictEqual(within({ top: 400, left: 0 }, 1680, 0), { top: 400, left: 0 }, 'a reachable one is left alone')
+// A row narrower than its own box has nowhere to go: `scrollWidth - clientWidth`
+// is negative there, and an unguarded clamp would answer with that.
+assert.deepStrictEqual(within({ top: 0, left: 120 }, 0, -40), { top: 0, left: 0 }, 'nothing to scroll is not a negative destination')
+
+// The ease is exponential so that a press landing mid-scroll only moves the
+// target — there is no curve to restart. Two properties are what make that
+// true, and both are what the platform's smooth scroll would not give.
+const half = eased({ top: 0, left: 0 }, { top: 1000, left: 0 }, 16)
+assert.ok(half.top > 0 && half.top < 1000, 'a frame closes some of the gap')
+// Retargeting keeps the speed already there: one 16ms frame toward a target
+// twice as far covers twice the ground, rather than starting from a standstill.
+const far = eased({ top: 0, left: 0 }, { top: 2000, left: 0 }, 16)
+assert.ok(Math.abs(far.top - half.top * 2) < 0.001, 'moving the target does not restart the curve')
+// Same gap, longer frame, more ground — and never past it, whatever the frame
+// cost. A dropped second's worth would otherwise teleport.
+assert.ok(eased({ top: 0, left: 0 }, { top: 1000, left: 0 }, 64).top > half.top, 'a longer frame covers more')
+assert.ok(eased({ top: 0, left: 0 }, { top: 1000, left: 0 }, 5000).top <= 1000, 'and never overshoots')
+assert.ok(arrived({ top: 999.9, left: 0 }, { top: 1000, left: 0 }), 'sub-pixel is arrived')
+assert.ok(!arrived({ top: 998, left: 0 }, { top: 1000, left: 0 }), 'two pixels is not')
+
+// `nearest` is `scrollIntoView`'s block: 'nearest' computed against the page at
+// rest instead of mid-animation, which is the whole reason it is ours. The
+// window is the set's, 720px tall with a 64px bar over it.
+assert.strictEqual(nearest(300, 480, 64, 720), 0, 'a row already in view does not move')
+assert.strictEqual(nearest(20, 200, 64, 720), -44, 'one clipped at the top comes down to the bar')
+assert.strictEqual(nearest(700, 880, 64, 720), 160, 'one below the fold comes up by what it overhangs')
+// Taller than the window: line the leading edge up and no further, or a long
+// card would jump its own top clean past the viewport.
+assert.strictEqual(nearest(600, 1600, 64, 720), 536, 'something taller than the window stops at its own top')
+
+// The plugin routes through those rather than keeping arithmetic of its own —
+// which is what let the four above be regexes over the source for a release.
 assert.ok(
-  /Math\.min\(to\.top, el\.scrollHeight - el\.clientHeight\)/.test(plugin),
-  'a heading is clamped to where the scroller can stop',
+  /within\(to, el\.scrollHeight - el\.clientHeight/.test(plugin),
+  'the plugin clamps a heading through `within`',
 )
 assert.ok(
-  /const goal = within\(el, to\)/.test(plugin),
-  'and re-clamped each frame, since a grid that mounts a page moves that end',
+  /const goal = reach\(el, to\)/.test(plugin) && /eased\(put, goal, gone\)/.test(plugin),
+  'and re-clamps each frame, since a grid that mounts a page moves that end',
+)
+
+// `shift` is how a rect measured now is read as the rect it will be once every
+// scroll of ours has landed.
+assert.deepStrictEqual(
+  shift(box(300, 800, 184, 321), 0, -517),
+  box(300, 283, 184, 321),
+  'a box moves with the scroll that has not finished yet',
 )
 
 // A press that would leave a region still holding content that way has to

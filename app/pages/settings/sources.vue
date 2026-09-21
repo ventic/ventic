@@ -79,12 +79,13 @@ function addPlaylist() {
     }
   }
   else {
-    value = playlist.value.trim()
-    if (!value)
+    if (!playlist.value.trim())
       return
-    // Only a URL, and only http(s): the fetch goes through Rust, and a `file://`
-    // or `javascript:` here would be asking it to open something else entirely.
-    if (!/^https?:\/\//i.test(value)) {
+    // `httpUrl` and not a test of our own: what a phone sends to this same list
+    // goes through it (`setupValue` in utils/cast.ts), and a box that accepts
+    // what the phone refuses is two rules where there is meant to be one.
+    value = httpUrl(playlist.value)
+    if (!value) {
       playlistError.value = $t('A playlist is an http:// or https:// link to an M3U file.')
       return
     }

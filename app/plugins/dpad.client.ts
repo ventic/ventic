@@ -1,4 +1,4 @@
-import type { Box, Dir } from '~/utils/dpad'
+import type { Box, Dir, Offset } from '~/utils/dpad'
 import { addPluginListener } from '@tauri-apps/api/core'
 
 /**
@@ -60,27 +60,16 @@ export default defineNuxtPlugin(() => {
    *
    * `WeakMap`s because an entry is worth exactly as long as its element.
    */
-  const heading = new WeakMap<Element, { top: number, left: number }>()
+  const heading = new WeakMap<Element, Offset>()
   /** What the loop last put there, so a wheel or a finger is noticed. */
-  const written = new WeakMap<Element, { top: number, left: number }>()
+  const written = new WeakMap<Element, Offset>()
   const moving = new Set<Element>()
   let frame = 0
   let drawn = 0
 
-  /**
-   * How quickly the gap to the target closes, as a time constant in ms — about
-   * 95% of the way there in a fifth of a second. Exponential rather than a
-   * fixed duration so that retargeting is free: there is no curve to restart,
-   * only a target to move.
-   */
-  const EASE = 70
-
-  /** Where this scroller can actually stop. */
-  function within(el: Element, to: { top: number, left: number }) {
-    return {
-      top: Math.max(0, Math.min(to.top, el.scrollHeight - el.clientHeight)),
-      left: Math.max(0, Math.min(to.left, el.scrollWidth - el.clientWidth)),
-    }
+  /** `within`, asked about a real scroller — how far it has to give, each axis. */
+  function reach(el: Element, to: Offset) {
+    return within(to, el.scrollHeight - el.clientHeight, el.scrollWidth - el.clientWidth)
   }
 
   function step(now: number) {
@@ -88,7 +77,6 @@ export default defineNuxtPlugin(() => {
     const gone = Math.min(now - drawn, 64)
     drawn = now
     frame = 0
-    const k = 1 - Math.exp(-gone / EASE)
 
     for (const el of [...moving]) {
       const to = heading.get(el)
@@ -102,9 +90,9 @@ export default defineNuxtPlugin(() => {
       }
       // Re-clamped every frame, not just when aimed: a grid that has just
       // mounted another page, or dropped one, moves the end it can stop at.
-      const goal = within(el, to)
-      const at = { top: put.top + (goal.top - put.top) * k, left: put.left + (goal.left - put.left) * k }
-      const done = Math.abs(goal.top - at.top) < 0.5 && Math.abs(goal.left - at.left) < 0.5
+      const goal = reach(el, to)
+      const at = eased(put, goal, gone)
+      const done = arrived(at, goal)
       el.scrollTop = done ? goal.top : at.top
       el.scrollLeft = done ? goal.left : at.left
       // Read back rather than assumed: the scroller rounds and clamps, and an
@@ -180,10 +168,6 @@ export default defineNuxtPlugin(() => {
   /** Every box `el` is clipped to, and how far short of rest its ancestors are. */
   interface Clips { boxes: Box[], dx: number, dy: number }
 
-  function shift(box: Box, dx: number, dy: number): Box {
-    return { left: box.left + dx, top: box.top + dy, right: box.right + dx, bottom: box.bottom + dy }
-  }
-
   /**
    * Every scroller `el` sits inside, plus the window, as boxes — what `clipped`
    * needs to say where the element can actually be seen — and the offset that
@@ -234,8 +218,8 @@ export default defineNuxtPlugin(() => {
    * judged against a page 517px further down, and "down" off the last row of
    * More like this jumped into the sidebar.
    */
-  function glide(el: Element, to: { top: number, left: number }) {
-    const at = within(el, to)
+  function glide(el: Element, to: Offset) {
+    const at = reach(el, to)
     heading.set(el, at)
     // Somebody who cannot bear the movement gets none of it; `scroll-behavior`
     // would have honoured this for us, and an animation of our own has to say
@@ -271,35 +255,20 @@ export default defineNuxtPlugin(() => {
     return Number.parseFloat(style[`scrollPadding${side}` as 'scrollPaddingTop']) || 0
   }
 
-  /**
-   * How far a span has to move to sit between `near` and `far` — `nearest`:
-   * nothing if it already does, and never further than lining its leading edge
-   * up, which is what stops something taller than the viewport jumping past.
-   */
-  function nearest(from: number, to: number, near: number, far: number) {
-    if (from < near)
-      return from - near
-    if (to > far)
-      return Math.min(to - far, from - near)
-    return 0
-  }
-
   function show(el: HTMLElement, memo: Map<Element, Clips>) {
     el.focus({ preventScroll: true })
 
-    // The destination is worked out here rather than asked of
-    // `scrollIntoView`, which computes `nearest` from wherever the page has got
-    // to and cannot be made to ask about the page at rest — so mid-animation it
-    // asked for the whole remaining distance *plus* a row, and each press of a
-    // burst aimed further than the last.
+    // Every scroller this sits in, innermost first, each asked how far it has to
+    // move for the box to be inside it (`nearest`, in utils/dpad — and why it is
+    // ours rather than `scrollIntoView`'s).
     //
     // Jumping the scrollers to where they were heading and back first did fix
     // the destination, and was worse: **writing `scrollTop` cancels a running
     // smooth scroll**, so every press restarted the animation from a standstill
     // instead of letting Chromium retarget the one already running. Measured on
     // the set, eight presses 120ms apart — the page crawled at 5px a frame for
-    // three seconds and then flew 2000px in half of one. A bare `scrollTo`
-    // retargets and keeps the speed it already had.
+    // three seconds and then flew 2000px in half of one. Easing toward a moving
+    // target has no standstill in it, which is what `glide` does instead.
     let box = settled(el, memo).box
     for (let p = el.parentElement; p; p = p.parentElement) {
       const style = getComputedStyle(p)

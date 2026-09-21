@@ -192,18 +192,6 @@ export default defineNuxtConfig({
     modules: 'app/modules',
   },
 
-  imports: {
-    presets: [
-      {
-        from: 'zod',
-        imports: [
-          'z',
-          { name: 'infer', as: 'zInfer', type: true },
-        ],
-      },
-    ],
-  },
-
   router: {
     options: {
       scrollBehaviorType: 'smooth',
