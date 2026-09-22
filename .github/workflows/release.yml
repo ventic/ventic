@@ -24,6 +24,10 @@ on:
 
 permissions:
   contents: write
+  # SignPath fetches the installers artifact with this job's GITHUB_TOKEN;
+  # without it the connector answers "User has no access to the requested
+  # GitHub resource".
+  actions: read
 
 # Baked into the frontend bundle at build time (nuxt.config runtimeConfig).
 env:
