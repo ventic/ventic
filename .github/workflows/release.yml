@@ -292,7 +292,11 @@ jobs:
 
       - name: Sign the Windows installers
         if: runner.os == 'Windows' && env.SIGNPATH_API_TOKEN != ''
-        uses: signpath/github-action-submit-signing-request@v3
+        # v2, not v3: v3's connector answers "User has no access to the
+        # requested GitHub resource" for a correctly set up project
+        # (SignPath/github-action-submit-signing-request#18). Try v3 again
+        # once that issue is closed.
+        uses: signpath/github-action-submit-signing-request@v2
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
           organization-id: 5e9a5a40-af12-4861-91c3-da89aca3c851
