@@ -43,12 +43,12 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
  * from drifting apart.
  */
 const BUILD = {
-  tag: '2026-08-26-c318236b88',
+  tag: '2026-09-26-0fd3430ee9',
   binaries: [
     {
       member: 'mpv.exe',
-      asset: 'mpv-x86_64-20260826-git-c318236b88.7z',
-      sha256: '69ed2d037f976987970d94c630496254c1d121f2e37cd4743b98465cec27882c',
+      asset: 'mpv-x86_64-20260926-git-0fd3430ee9.7z',
+      sha256: 'd5a38e83a9a6d55ccc3dc9397730bc7b37720093ee67f5251cc7ed3617e84665',
       // How to find the same binary in a release this file has never seen (see
       // `resolve()`). Anchored, because every release also holds -dev, -debug,
       // -lgpl and AVX2-only (-v3) variants of the same name.
@@ -62,8 +62,8 @@ const BUILD = {
      */
     {
       member: 'ffmpeg.exe',
-      asset: 'ffmpeg-x86_64-git-a8c7afa7d.7z',
-      sha256: '506ac478f2bf4b6dd8087c33d907ca573629713fe6067fac2140edb7760b1746',
+      asset: 'ffmpeg-x86_64-git-b139ba11d.7z',
+      sha256: 'e1d5af7030429ea0a28e73acaa5711ea757f77041648e959998283bc3060ccc4',
       match: /^ffmpeg-x86_64-git-[0-9a-f]+\.7z$/,
     },
   ],
@@ -170,7 +170,13 @@ async function resolve(): Promise<Release> {
   if (pinned.ok)
     return BUILD
 
-  const res = await fetch('https://api.github.com/repos/zhongfly/mpv-winbuild/releases/latest')
+  // Anonymous API calls are rate-limited per IP, and a hosted runner shares its
+  // IP with everyone else's jobs — so in CI this answered 403 exactly when the
+  // pin had gone and it was the only way forward. The workflow passes its token.
+  const token = process.env.GITHUB_TOKEN
+  const res = await fetch('https://api.github.com/repos/zhongfly/mpv-winbuild/releases/latest', {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
   if (!res.ok)
     throw new Error(`mpv build ${BUILD.tag} is gone and the newest one could not be looked up → HTTP ${res.status}`)
   const tag = (await res.json() as { tag_name: string }).tag_name

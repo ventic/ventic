@@ -159,6 +159,8 @@ jobs:
       # Windows ships no mpv, so the bundle carries one (tauri.windows.conf.json).
       - if: runner.os == 'Windows'
         run: bun scripts/build/mpv.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # macOS links libmpv instead of launching mpv, so it is needed to build at
       # all. Carrying it — and the ffmpeg tree behind it — into the .app is then
