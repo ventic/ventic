@@ -387,7 +387,16 @@ function buildAndroid(extra: string[], aab = false) {
   // `strip=symbols`), so a panic in logcat still names functions. Set here rather
   // than in Cargo.toml so `tauri:dev` on the desktop keeps its full backtraces;
   // with `--target` in play cargo won't apply it to host build scripts.
-  const env: Record<string, string> = { ...androidEnv(), RUSTFLAGS: '-Cstrip=debuginfo' }
+  //
+  // max-page-size: Play refuses a bundle whose 64-bit libraries can't load on a
+  // 16 KB-page kernel. NDK r28+ links that way by default, r27 does not — and r27
+  // is the runner image's ANDROID_NDK_HOME, so a bundle built here passed and the
+  // one CI built was rejected. Said outright, it no longer depends on which NDK
+  // the machine happens to have. Harmless on armv7, which Play doesn't check.
+  const env: Record<string, string> = {
+    ...androidEnv(),
+    RUSTFLAGS: '-Cstrip=debuginfo -Clink-arg=-Wl,-z,max-page-size=16384',
+  }
 
   // The one thing the two artifacts no longer share. Play rejects a bundle that
   // asks for REQUEST_INSTALL_PACKAGES — self-updating is not one of its permitted
