@@ -430,11 +430,6 @@ jobs:
     # The draft release has to exist before there is anything to upload to.
     needs: desktop
     runs-on: ubuntu-latest
-    # The Play upload step is skipped without this. A step-level `if:` cannot read
-    # the `secrets` context, but it can read `env` — so the secret is lifted here
-    # rather than checked in a shell, the way the keystore below has to be.
-    env:
-      PLAY_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
@@ -536,29 +531,17 @@ jobs:
             exit 1
           }
 
-      # Until GOOGLE_PLAY_SERVICE_ACCOUNT exists the step below is skipped and the
-      # .aab is built and binned, leaving the console with nothing to upload — and
-      # it can't be rebuilt on a laptop, because the signing key is a secret here.
-      # So keep it downloadable. The .aab is deliberately not a release asset: it
-      # installs nowhere, and every human wants the .apk beside it.
+      # Google Play's copy of this build. It goes up when the release is
+      # *published*, not now (play.yml): the notes Play shows as "What's new" are
+      # written on the draft after this run, and this is the only place the .aab
+      # exists — it can't be rebuilt on a laptop, because the signing key is a
+      # secret here. Not a release asset: it installs nowhere, and every human
+      # wants the .apk beside it.
       - uses: actions/upload-artifact@v5
         with:
           name: play-bundle
           path: src-tauri/gen/android/app/build/outputs/bundle/**/*.aab
           if-no-files-found: error
-
-      # Play's own review reads the *first* upload of a versionCode and there is
-      # no undo, so this lands on the internal track and is promoted by hand in the
-      # console. Nothing happens at all until the service account secret exists.
-      - name: Publish to Google Play
-        if: env.PLAY_JSON != ''
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
-          packageName: com.ventic.app
-          releaseFiles: src-tauri/gen/android/app/build/outputs/bundle/**/*.aab
-          track: internal
-          status: completed
 
       - name: Attach the APK
         env:

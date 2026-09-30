@@ -253,7 +253,8 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   `check:library`, `check:player`, `check:swipe`, `check:boot`,
   `check:perf`, `check:android-downloads`, `check:updates`, `check:supporters`,
   `check:audio`, `check:people`, `check:cast`, `check:iptv`, `check:i18n`,
-  `check:macos`, `check:signing`, `check:steps`, `check:settings-search`).
+  `check:macos`, `check:signing`, `check:play-notes`, `check:steps`,
+  `check:settings-search`).
   Add to those rather than pulling in a test framework. `bun run check` runs
   every one of them — it reads the names out of package.json rather than holding
   a list, so a check added today is in that sweep today. `bun run check:types` is

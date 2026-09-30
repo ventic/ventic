@@ -1,0 +1,80 @@
+# Google Play gets a release the moment the GitHub one is published.
+#
+# The tag's own run (release.yml) builds the .aab and keeps it as the
+# `play-bundle` artifact, but it can't upload it: the notes are written on the
+# draft afterwards, and Play shows them to every user as "What's new". So this
+# runs on *publish*, takes that bundle from the tag's run and the notes from the
+# release as it was published, and sends both.
+#
+# It goes straight to production and Google's review, and once that passes Play
+# updates everybody on its own — so publishing the GitHub release is the one
+# button for both stores. Nothing happens until GOOGLE_PLAY_SERVICE_ACCOUNT
+# exists, and Play's API only ever *adds* to an app: the very first bundle has
+# to be uploaded by hand in the console.
+name: Google Play
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  actions: read # the bundle is an artifact of another run
+
+env:
+  BUN_VERSION: 1.4.0
+
+jobs:
+  play:
+    # A pre-release is for testers on GitHub, not for everyone on Play.
+    if: ${{ !github.event.release.prerelease }}
+    runs-on: ubuntu-latest
+    # A step-level `if:` cannot read `secrets`, but it can read `env`.
+    env:
+      PLAY_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
+    steps:
+      - name: Skip without a Play service account
+        if: env.PLAY_JSON == ''
+        run: echo "::warning::No GOOGLE_PLAY_SERVICE_ACCOUNT secret — nothing was sent to Google Play."
+
+      - uses: actions/checkout@v5
+        if: env.PLAY_JSON != ''
+      - uses: oven-sh/setup-bun@v2
+        if: env.PLAY_JSON != ''
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      # The newest run for the tag, re-runs included. Artifacts expire (90 days by
+      # default), so a draft left longer than that has nothing to send.
+      - name: Fetch the bundle the tag built
+        if: env.PLAY_JSON != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          run=$(gh run list -R "$GITHUB_REPOSITORY" -w release.yml --branch "$TAG" -L 1 \
+            --json databaseId --jq '.[0].databaseId // empty')
+          [ -n "$run" ] || { echo "::error::No release.yml run for $TAG."; exit 1; }
+          gh run download "$run" -R "$GITHUB_REPOSITORY" -n play-bundle -D bundle
+          find bundle -name '*.aab'
+
+      - name: Write "What's new" from the release notes
+        if: env.PLAY_JSON != ''
+        env:
+          BODY: ${{ github.event.release.body }}
+        run: |
+          mkdir whatsnew
+          printf '%s' "$BODY" | bun scripts/build/play-notes.ts > whatsnew/whatsnew-en-US
+          cat whatsnew/whatsnew-en-US
+
+      - name: Publish to Google Play
+        if: env.PLAY_JSON != ''
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
+          packageName: com.ventic.app
+          releaseFiles: bundle/**/*.aab
+          track: production
+          status: completed
+          whatsNewDirectory: whatsnew
