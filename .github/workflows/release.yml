@@ -81,7 +81,9 @@ jobs:
             # The numeric REST id, which is what tauri-action's releaseId takes —
             # `gh release view --json id` answers the GraphQL node id instead.
             id=$(gh api "repos/$REPO/releases" -f tag_name="$TAG" \
-              -f name="Ventic $TAG" -F draft=true --jq .id)
+              -f name="Ventic $TAG" -F draft=true \
+              -f body="[Code signing policy](https://github.com/$REPO#code-signing-policy)" \
+              --jq .id)
             echo "Created draft $id."
           fi
           echo "id=$id" >> "$GITHUB_OUTPUT"

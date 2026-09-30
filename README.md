@@ -67,6 +67,7 @@ https://github.com/user-attachments/assets/2d0bd58f-c838-43e2-a0ce-e503f9317aa8
   - [Adding a source by link](#adding-a-source-by-link)
 - [Your library](#your-library)
 - [Privacy](#privacy)
+- [Code signing policy](#code-signing-policy)
 - [Install](#install)
   - [Opening it on macOS](#opening-it-on-macos)
 - [Configuration](#configuration)
@@ -424,9 +425,26 @@ that carry none, as every torrent client does.
 
 <p align="right"><a href="#readme-top">&#9650; back to top</a></p>
 
+## Code signing policy
+
+Free code signing provided by [SignPath.io](https://signpath.io), certificate by
+[SignPath Foundation](https://signpath.org). This covers the Windows installers (`.exe` and `.msi`).
+
+- Committers and reviewers: [tilenpirih](https://github.com/tilenpirih)
+- Approvers: [tilenpirih](https://github.com/tilenpirih)
+
+Every signed release is built by this repository's
+[release workflow](.github/workflows/release.yml) and approved by hand before it is signed.
+
+Privacy policy: see [Privacy](#privacy) — no telemetry, and every service the app contacts is
+listed there with the reason.
+
+<p align="right"><a href="#readme-top">&#9650; back to top</a></p>
+
 ## Install
 
-Grab the latest build from the [Releases page][releases].
+Grab the latest build from the [Releases page][releases]. The Windows installers are signed — see
+the [Code signing policy](#code-signing-policy).
 
 | Platform | Format | Notes |
 | --- | --- | --- |
