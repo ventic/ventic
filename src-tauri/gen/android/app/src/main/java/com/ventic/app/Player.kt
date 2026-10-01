@@ -506,7 +506,10 @@ class VenticPlayer(private val activity: MainActivity) {
             .put("id", found.size)
             .put("type", kind)
             .put("lang", f.language ?: JSONObject.NULL)
-            .put("title", f.label ?: label(f)),
+            // A codec tells two audio tracks apart and says nothing about a
+            // subtitle: media3 hands every text track over in its own cue
+            // format, so each one read "English — X-MEDIA3-CUES".
+            .put("title", f.label ?: if (kind == "audio") label(f) else JSONObject.NULL),
         )
         if (group.isTrackSelected(i)) {
           if (group.type == C.TRACK_TYPE_AUDIO) aid = found.size else sid = found.size

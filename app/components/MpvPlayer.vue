@@ -6,6 +6,7 @@ import type { Media } from '~/utils/tmdb'
 import {
   mdiAlertCircleOutline,
   mdiAutoFix,
+  mdiCancel,
   mdiCheck,
   mdiChevronDown,
   mdiChevronUp,
@@ -13,13 +14,12 @@ import {
   mdiEarHearing,
   mdiExitToApp,
   mdiFastForward10,
+  mdiFormatBold,
   mdiFullscreen,
   mdiFullscreenExit,
-  mdiMinus,
   mdiPause,
   mdiPlay,
   mdiPlaySpeed,
-  mdiPlus,
   mdiReload,
   mdiRestore,
   mdiRewind10,
@@ -210,6 +210,9 @@ const BTN = 'inline-flex items-center gap-1.5 border-0 rounded-lg bg-white/12 px
 
 /** One choice inside the speed / audio / subtitle menu. */
 const MENU_ROW = computed(() => `flex w-full items-center justify-between gap-2.5 border-0 bg-transparent rounded-lg text-left text-label-large transition-colors duration-100 hover:bg-white/9 ${big.value ? 'px-3 py-3' : 'px-2.5 py-2'}`)
+
+/** A named stepper inside the menu: the name, then less / the value / more. */
+const STEP_ROW = 'flex items-center justify-between gap-3 px-2.5 py-1'
 
 /** Section heading between groups of menu rows. */
 const MENU_GROUP = 'px-2.5 pb-1 pt-2.5 text-label-small uppercase opacity-45'
@@ -436,20 +439,44 @@ watch(footerHeight, h => h && (barHeight.value = h))
 const menuBottom = computed(() => barHeight.value + 10)
 /** Is the chrome up? Declared here because `subPos` measures against it. */
 const ui = ref(true)
+
+// Which panel is open, and which tab of the subtitle one — here for the same
+// reason. The rest of the panels' code is under "Menus" below.
+type Menu = '' | 'subs' | 'audio' | 'speed'
+const menu = ref<Menu>('')
+const SUB_TABS = [
+  { value: 'language', title: () => $t('Language') },
+  { value: 'look', title: () => $t('Appearance') },
+  { value: 'timing', title: () => $t('Timing') },
+] as const
+type SubTab = typeof SUB_TABS[number]['value']
+/** Choosing is what the subtitle panel is opened for, so it always opens there. */
+const subTab = ref<SubTab>('language')
+
+/**
+ * The Appearance tab is up. The line then sits exactly where it will once the
+ * chrome has gone — no lift over the bar or the panel, and the bar put away
+ * while the tab is open — because a position that can only be judged with the
+ * panel shut is one being set blind.
+ */
+const styling = computed(() => menu.value === 'subs' && subTab.value === 'look')
+
 /**
  * Where the subtitle line goes. The bottom bar covers the bottom of the picture
  * and mpv draws underneath it, so while the chrome is up the subtitles move
  * above it rather than sitting behind it — and higher again for an open panel,
  * whose height is 0 with none mounted.
  */
-const subPos = computed(() => subtitleLift(
-  settings.subs.position,
-  // A television's panel is full height and off to the right, so it is beside
-  // the subtitles rather than over them; lifting for it would push the line to
-  // the top of the picture to clear something that was never in the way.
-  !tv && menuHeight.value ? menuBottom.value + menuHeight.value + 8 : ui.value ? menuBottom.value : 0,
-  boxHeight.value,
-))
+const subPos = computed(() => styling.value
+  ? settings.subs.position
+  : subtitleLift(
+      settings.subs.position,
+      // A television's panel is full height and off to the right, so it is beside
+      // the subtitles rather than over them; lifting for it would push the line to
+      // the top of the picture to clear something that was never in the way.
+      !tv && menuHeight.value ? menuBottom.value + menuHeight.value + 8 : ui.value ? menuBottom.value : 0,
+      boxHeight.value,
+    ))
 
 watch(subPos, pos => {
   if (started.value && native)
@@ -507,6 +534,14 @@ function captioned(text: string) {
 const cueStyle = computed(() => subtitleCss(settings.subs, boxHeight.value))
 
 /**
+ * …or, while the Appearance tab is up and nobody on screen is talking, the
+ * settings page's sample: a size changed between two lines of dialogue is a
+ * change nobody sees. mpv draws its own and has no such line to show.
+ */
+const cueShown = computed(() => cueText.value
+  || (styling.value && !native ? $t('It was the fall that killed him.\nNot the drop — the sudden stop.') : ''))
+
+/**
  * Subtitle files that came inside the torrent, one row each. `startTorrent`
  * already downloaded the ones belonging to this video (see `pickSubtitleFiles`),
  * and the stream URL is what mpv opens — no OpenSubtitles, no matching a file to
@@ -544,7 +579,15 @@ async function loadReleaseSubs() {
 
 watch(() => props.src, loadReleaseSubs, { immediate: true })
 
-const subLanguages = computed(() => byLanguage(externals.value))
+/**
+ * The language subtitles are chosen in goes on top — as it stood when the list
+ * arrived, so picking another doesn't reshuffle the rows under the cursor. A
+ * remote walks this a row at a time, and the one wanted was otherwise thirty
+ * presses down an alphabet.
+ */
+const firstLang = ref('')
+const subLanguages = computed(() => byLanguage(externals.value)
+  .sort((a, b) => Number(b.name === firstLang.value) - Number(a.name === firstLang.value)))
 const embedded = computed(() => tracks.value.filter(t => t.type === 'sub' && !t.external))
 const audioTracks = computed(() => tracks.value.filter(t => t.type === 'audio'))
 const subsOn = computed(() => sid.value !== 'no')
@@ -597,7 +640,9 @@ async function fetchExternals() {
     const id = props.imdbId || await findImdbId(title, season > 0, year)
     if (!id)
       throw new Error($t('Couldn\'t match “{title}” to a title OpenSubtitles knows.', { title }))
-    externals.value = await findSubtitles(id, season, episode, videoName.value)
+    const found = await findSubtitles(id, season, episode, videoName.value)
+    firstLang.value = langName(subLang.value)
+    externals.value = found
     subsFetched = true
   }
   catch (e) {
@@ -763,9 +808,8 @@ async function applyPreferredSub() {
 // ---------------------------------------------------------------------------
 // Menus. One panel, three lists — a popup would need its own cutout and a
 // Vuetify overlay renders outside this root, where the tracker can't see it.
+// `menu` and the subtitle panel's tabs are declared further up, by `subPos`.
 // ---------------------------------------------------------------------------
-type Menu = '' | 'subs' | 'audio' | 'speed'
-const menu = ref<Menu>('')
 const MENU_TITLES: Record<Exclude<Menu, ''>, () => string> = {
   subs: () => $t('Subtitles'),
   audio: () => $t('Audio'),
@@ -793,6 +837,7 @@ function openMenu(name: Exclude<Menu, ''>) {
   if (menu.value === name)
     return closeMenu()
   menu.value = name
+  subTab.value = 'language'
   opener = document.activeElement instanceof HTMLElement ? document.activeElement : null
   refreshTracks()
   if (name === 'subs')
@@ -814,6 +859,48 @@ function setSpeed(v: number) {
   ipc(['set_property', 'speed', v])
   osd(v === 1 ? $t('Normal speed') : $t('Speed {rate}×', { rate: v }))
 }
+
+/**
+ * Left and right along the subtitle tabs change tab as they go. The open tab is
+ * the row's only stop — the rest are tabindex -1, which the d-pad skips — so up
+ * out of a list always lands on the tab already open, never on a neighbour that
+ * would switch the panel under the cursor. At either end the key is left to the
+ * d-pad.
+ */
+function onTabKey(e: KeyboardEvent) {
+  const row = e.currentTarget as HTMLElement
+  const ahead = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0
+  // Order on screen, not in the DOM: a right-to-left language lays the row out
+  // the other way round.
+  const by = getComputedStyle(row).direction === 'rtl' ? -ahead : ahead
+  const at = SUB_TABS.findIndex(t => t.value === subTab.value) + by
+  if (!ahead || !SUB_TABS[at])
+    return
+  e.preventDefault()
+  subTab.value = SUB_TABS[at].value
+  ;(row.children[at] as HTMLElement).focus()
+}
+
+const { locale } = useNuxtApp().$i18n
+const percent = (v: number) => new Intl.NumberFormat(locale.value, { style: 'percent' }).format(v)
+
+/** The Appearance tab's numbers, on the settings page's own steps (SUBTITLE_STEPS). */
+const LOOK: { key: keyof typeof SUBTITLE_STEPS, title: () => string, format?: (v: number) => string }[] = [
+  { key: 'size', title: () => $t('Size') },
+  { key: 'position', title: () => $t('Vertical position') },
+  { key: 'background', title: () => $t('Background'), format: percent },
+  { key: 'outline', title: () => $t('Outline') },
+]
+
+// The panel's steppers are the settings pages' own, which edit a number. These
+// three are the ones that aren't simply one: a nudge says so on screen, and a
+// font is a name.
+const delay = computed({ get: () => subDelay.value, set: v => nudgeDelay(v - subDelay.value) })
+const boost = computed({ get: () => audio.value.dialogue, set: v => nudgeBoost(v - audio.value.dialogue) })
+const font = computed({
+  get: () => SUBTITLE_FONTS.indexOf(settings.subs.font),
+  set: (i: number) => (settings.subs.font = SUBTITLE_FONTS[i] ?? settings.subs.font),
+})
 
 // ---------------------------------------------------------------------------
 // OS window fullscreen (the app window, not a CSS trick — mpv is a real window
@@ -1895,13 +1982,15 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
     </div>
 
     <!-- Subtitles, where the page draws them itself. Pinned to `sub-pos` the
-         same way mpv reads it: 100 is the bottom of the frame. -->
+         same way mpv reads it: 100 is the bottom of the frame. A television's
+         panel runs the height of the picture down its right side, so while it
+         is open the line centres in what is left rather than under it. -->
     <div
-      v-if="cueText"
+      v-if="cueShown"
       class="pointer-events-none absolute inset-x-0 px-[6%] text-center leading-tight"
-      :style="{ bottom: `${Math.max(0, 104 - subPos)}%` }"
+      :style="{ bottom: `${Math.max(0, 104 - subPos)}%`, right: tv && menu ? '26rem' : undefined }"
     >
-      <span class="inline-block whitespace-pre-line rounded px-1.5" :style="cueStyle">{{ cueText }}</span>
+      <span class="inline-block whitespace-pre-line rounded px-1.5" :style="cueStyle">{{ cueShown }}</span>
     </div>
 
     <!-- The same notices mpv would `show-text`, for the backend that can't. -->
@@ -2100,7 +2189,7 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
         data-cut
         data-dpad-scope
         class="absolute right-4 flex flex-col overflow-hidden border rounded-xl"
-        :class="[SURFACE, tv ? 'top-4 w-100' : 'w-75']"
+        :class="[SURFACE, tv ? 'top-4 w-100' : 'w-90']"
         :style="{
           bottom: `${menuBottom}px`,
           // A phone held sideways is 395px tall with two bars in it, so a
@@ -2113,14 +2202,45 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
         @pointerenter="hovering = true"
         @pointerleave="hovering = false"
       >
+        <!-- The cross is a pointer's: a remote has Back. As a d-pad stop it sat
+             level with the right-hand column below and took every press up
+             from there, so the tabs were reachable from half the panel. -->
         <header class="flex items-center justify-between border-b border-white/9 py-2 pl-3.5 pr-2 text-title-small">
           <span>{{ menuTitle }}</span>
-          <button v-tooltip:top="$t('Close')" class="!h-7 !min-w-7" :class="ICO" @click="closeMenu">
+          <button v-tooltip:top="$t('Close')" tabindex="-1" class="!h-7 !min-w-7" :class="ICO" @click="closeMenu">
             <v-icon :icon="mdiClose" size="16" />
           </button>
         </header>
 
-        <div data-menu-list class="overflow-y-auto p-1.5">
+        <!-- The subtitle panel is three tabs, and opens on the one it is opened
+             for: choosing. Plain buttons, for the reason settings-segment gives;
+             only the open one is a stop — see `onTabKey`. -->
+        <div
+          v-if="menu === 'subs'"
+          role="tablist"
+          class="mx-1.5 mt-1.5 flex shrink-0 gap-1 rounded-lg bg-white/6 p-1"
+          @keydown="onTabKey"
+        >
+          <button
+            v-for="t in SUB_TABS"
+            :key="t.value"
+            role="tab"
+            :aria-selected="subTab === t.value"
+            :tabindex="subTab === t.value ? 0 : -1"
+            class="min-w-0 flex-1 border-0 rounded-md px-2 text-label-large leading-tight transition-colors duration-120"
+            :class="[
+              big ? 'py-2.5' : 'py-1.5',
+              subTab === t.value ? 'bg-white text-black' : 'bg-transparent text-white/70 hover:bg-white/9 hover:text-white',
+            ]"
+            @click="subTab = t.value"
+          >
+            {{ t.title() }}
+          </button>
+        </div>
+
+        <!-- Keyed, so a tab opens at its own top rather than at the last one's
+             scroll. -->
+        <div :key="menu + subTab" data-menu-list class="overflow-y-auto p-1.5">
           <template v-if="menu === 'speed'">
             <button v-for="v in SPEEDS" :key="v" :class="[MENU_ROW, speed === v && 'text-primary']" @click="setSpeed(v)">
               <span>{{ v === 1 ? $t('Normal') : `${v}×` }}</span>
@@ -2135,8 +2255,11 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
               :class="[MENU_ROW, aid === t.id && 'text-primary']"
               @click="setAudio(t)"
             >
-              <span class="truncate">{{ trackLabel(t) }}</span>
-              <v-icon v-if="aid === t.id" :icon="mdiCheck" size="16" />
+              <span class="flex min-w-0 items-center gap-3">
+                <lang-flag :code="t.lang" />
+                <span class="truncate">{{ trackLabel(t) }}</span>
+              </span>
+              <v-icon v-if="aid === t.id" class="shrink-0" :icon="mdiCheck" size="16" />
             </button>
             <p v-if="!audioTracks.length" :class="NOTE">
               {{ $t('This file has one audio track.') }}
@@ -2144,9 +2267,9 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
 
             <!-- The same two settings the Audio page holds, where they can be
                  heard: a mix is only ever wrong about its dialogue while it is
-                 playing. Rows rather than the page's slider and segment — a
-                 remote is the input here, and a row with a tick is what every
-                 other list in this panel already is. -->
+                 playing. Rows rather than the page's segment — a remote is the
+                 input here, and a row with a tick is what every other list in
+                 this panel already is. -->
             <p :class="MENU_GROUP">
               {{ $t('Evening out the volume') }}
             </p>
@@ -2163,17 +2286,9 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
             <p :class="MENU_GROUP">
               {{ $t('Dialogue') }}
             </p>
-            <div class="flex items-center justify-between px-2.5 py-1">
+            <div :class="STEP_ROW">
               <span class="text-label-large opacity-70">{{ $t('Boost') }}</span>
-              <div class="flex items-center gap-0.5">
-                <button v-tooltip:top="$t('Less')" class="!h-7 !min-w-7" :class="ICO" @click="nudgeBoost(-1)">
-                  <v-icon :icon="mdiMinus" size="14" />
-                </button>
-                <span class="w-16 text-center text-label-large tabular-nums">{{ boostText }}</span>
-                <button v-tooltip:top="$t('More')" class="!h-7 !min-w-7" :class="ICO" @click="nudgeBoost(1)">
-                  <v-icon :icon="mdiPlus" size="14" />
-                </button>
-              </div>
+              <settings-stepper v-model="boost" :min="0" :max="MAX_DIALOGUE" :format="() => boostText" />
             </div>
             <!-- Only while this film has an entry of its own: it is both the
                  way back and the only sign that there is anything to go back
@@ -2188,75 +2303,79 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
             </p>
           </template>
 
-          <template v-else>
-            <button :class="[MENU_ROW, !subsOn && 'text-primary']" @click="subsOff">
-              <span>{{ $t('Off') }}</span>
-              <v-icon v-if="!subsOn" :icon="mdiCheck" size="16" />
+          <!-- Settings → Subtitles with the film behind it: the same store, so a
+               change here is the setting, for this film and every one after. -->
+          <template v-else-if="subTab === 'look'">
+            <div v-for="l in LOOK" :key="l.key" :class="STEP_ROW">
+              <span class="text-label-large opacity-70">{{ l.title() }}</span>
+              <settings-stepper v-model="settings.subs[l.key]" v-bind="SUBTITLE_STEPS[l.key]" :format="l.format" />
+            </div>
+            <div :class="STEP_ROW">
+              <span class="text-label-large opacity-70">{{ $t('Font') }}</span>
+              <settings-stepper v-model="font" :min="0" :max="SUBTITLE_FONTS.length - 1" :format="() => settings.subs.font" />
+            </div>
+            <!-- The presets alone: the page's colour picker is a popup, and a
+                 popup is an overlay this panel's cutout can't follow. -->
+            <div :class="STEP_ROW">
+              <span class="text-label-large opacity-70">{{ $t('Colour') }}</span>
+              <div class="flex gap-2">
+                <button
+                  v-for="c in SUBTITLE_COLOURS"
+                  :key="c"
+                  class="border border-white/20 rounded-full"
+                  :class="[
+                    big ? 'size-9' : 'size-7',
+                    settings.subs.color.toLowerCase() === c && 'ring-2 ring-white ring-offset-2 ring-offset-[#0e0f11]',
+                  ]"
+                  :style="{ backgroundColor: c }"
+                  :aria-label="c"
+                  :aria-pressed="settings.subs.color.toLowerCase() === c"
+                  @click="settings.subs.color = c"
+                />
+              </div>
+            </div>
+            <button :class="MENU_ROW" :aria-pressed="settings.subs.bold" @click="settings.subs.bold = !settings.subs.bold">
+              <span class="flex items-center gap-2">
+                <v-icon :icon="mdiFormatBold" size="16" /> {{ $t('Bold') }}
+              </span>
+              <v-icon v-if="settings.subs.bold" :icon="mdiCheck" size="16" />
             </button>
+            <button
+              :class="MENU_ROW"
+              :aria-pressed="settings.subs.hideCaptions"
+              @click="settings.subs.hideCaptions = !settings.subs.hideCaptions"
+            >
+              <span class="flex items-center gap-2">
+                <v-icon :icon="mdiEarHearing" size="16" /> {{ $t('Hide sound descriptions') }}
+              </span>
+              <v-icon v-if="settings.subs.hideCaptions" :icon="mdiCheck" size="16" />
+            </button>
+            <p :class="NOTE">
+              {{ $t('Drops “(electricity buzzing)” and “MAN:” from subtitles written for the hard of hearing.') }}
+            </p>
+            <button :class="MENU_ROW" @click="settings.resetSubs()">
+              <span class="flex items-center gap-2">
+                <v-icon :icon="mdiRestore" size="16" /> {{ $t('Reset to mpv defaults') }}
+              </span>
+            </button>
+          </template>
 
-            <template v-if="embedded.length">
-              <p :class="MENU_GROUP">
-                {{ $t('In this file') }}
-              </p>
-              <button
-                v-for="t in embedded"
-                :key="t.id"
-                :class="[MENU_ROW, sid === t.id && 'text-primary']"
-                @click="useTrack(t)"
-              >
-                <span class="truncate">{{ trackLabel(t) }}</span>
-                <v-icon v-if="sid === t.id" :icon="mdiCheck" size="16" />
-              </button>
-            </template>
-
-            <!-- Shipped inside the torrent, so they need no lookup and no net. -->
-            <template v-if="release.length">
-              <p :class="MENU_GROUP">
-                {{ $t('In this release') }}
-              </p>
-              <button
-                v-for="r in release"
-                :key="r.file.url"
-                :class="[MENU_ROW, activeUrl === r.file.url && 'text-primary']"
-                @click="loadFile(r.file, r.lang)"
-              >
-                <span class="min-w-0 flex-1">
-                  <span class="block truncate">{{ r.lang.name }}</span>
-                  <!-- The file's own name, since here we actually have one. -->
-                  <span class="block truncate text-label-small opacity-45">{{ r.file.name }}</span>
-                </span>
-                <v-icon v-if="activeUrl === r.file.url" class="shrink-0" :icon="mdiCheck" size="16" />
-              </button>
-            </template>
-
-            <template v-if="subsOn">
-              <p :class="MENU_GROUP">
-                {{ $t('Text') }}
-              </p>
-              <button :class="MENU_ROW" @click="settings.subs.hideCaptions = !settings.subs.hideCaptions">
-                <span class="flex items-center gap-2">
-                  <v-icon :icon="mdiEarHearing" size="16" /> {{ $t('Hide sound descriptions') }}
-                </span>
-                <v-icon v-if="settings.subs.hideCaptions" :icon="mdiCheck" size="16" />
-              </button>
-              <p :class="NOTE">
-                {{ $t('Drops “(electricity buzzing)” and “MAN:” from subtitles written for the hard of hearing.') }}
-              </p>
-
-              <p :class="MENU_GROUP">
-                {{ $t('Timing') }}
-              </p>
-              <div class="flex items-center justify-between px-2.5 py-1">
+          <template v-else-if="subTab === 'timing'">
+            <p v-if="!subsOn" :class="NOTE">
+              {{ $t('Subtitles off') }}
+            </p>
+            <template v-else>
+              <div :class="STEP_ROW">
                 <span class="text-label-large opacity-70">{{ $t('Delay') }}</span>
-                <div class="flex items-center gap-0.5">
-                  <button v-tooltip:top="$t('Earlier (z)')" class="!h-7 !min-w-7" :class="ICO" @click="nudgeDelay(-0.1)">
-                    <v-icon :icon="mdiMinus" size="14" />
-                  </button>
-                  <span class="w-16 text-center text-label-large tabular-nums">{{ delayText }}</span>
-                  <button v-tooltip:top="$t('Later (Z)')" class="!h-7 !min-w-7" :class="ICO" @click="nudgeDelay(0.1)">
-                    <v-icon :icon="mdiPlus" size="14" />
-                  </button>
-                </div>
+                <settings-stepper
+                  v-model="delay"
+                  :min="-3600"
+                  :max="3600"
+                  :step="0.1"
+                  :format="() => delayText"
+                  :less="$t('Earlier (z)')"
+                  :more="$t('Later (Z)')"
+                />
               </div>
               <button
                 class="disabled:pointer-events-none disabled:opacity-40"
@@ -2289,6 +2408,56 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
                 {{ $t('Only downloaded subtitles can be synced; the file\'s own tracks already match it.') }}
               </p>
             </template>
+          </template>
+
+          <template v-else>
+            <button :class="[MENU_ROW, !subsOn && 'text-primary']" @click="subsOff">
+              <span class="flex items-center gap-3">
+                <v-icon :icon="mdiCancel" size="22" /> {{ $t('Off') }}
+              </span>
+              <v-icon v-if="!subsOn" :icon="mdiCheck" size="16" />
+            </button>
+
+            <template v-if="embedded.length">
+              <p :class="MENU_GROUP">
+                {{ $t('In this file') }}
+              </p>
+              <button
+                v-for="t in embedded"
+                :key="t.id"
+                :class="[MENU_ROW, sid === t.id && 'text-primary']"
+                @click="useTrack(t)"
+              >
+                <span class="flex min-w-0 items-center gap-3">
+                  <lang-flag :code="t.lang" />
+                  <span class="truncate">{{ trackLabel(t) }}</span>
+                </span>
+                <v-icon v-if="sid === t.id" class="shrink-0" :icon="mdiCheck" size="16" />
+              </button>
+            </template>
+
+            <!-- Shipped inside the torrent, so they need no lookup and no net. -->
+            <template v-if="release.length">
+              <p :class="MENU_GROUP">
+                {{ $t('In this release') }}
+              </p>
+              <button
+                v-for="r in release"
+                :key="r.file.url"
+                :class="[MENU_ROW, activeUrl === r.file.url && 'text-primary']"
+                @click="loadFile(r.file, r.lang)"
+              >
+                <span class="min-w-0 flex flex-1 items-center gap-3">
+                  <lang-flag :code="r.lang.code" />
+                  <span class="min-w-0">
+                    <span class="block truncate">{{ r.lang.name }}</span>
+                    <!-- The file's own name, since here we actually have one. -->
+                    <span class="block truncate text-label-small opacity-45">{{ r.file.name }}</span>
+                  </span>
+                </span>
+                <v-icon v-if="activeUrl === r.file.url" class="shrink-0" :icon="mdiCheck" size="16" />
+              </button>
+            </template>
 
             <p :class="MENU_GROUP">
               OpenSubtitles
@@ -2314,7 +2483,10 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
                   :class="[MENU_ROW, l.files.some(f => f.url === activeUrl) && 'text-primary']"
                   @click="useLanguage(l)"
                 >
-                  <span class="truncate">{{ l.name }}</span>
+                  <span class="flex min-w-0 items-center gap-3">
+                    <lang-flag :code="l.code" />
+                    <span class="truncate">{{ l.name }}</span>
+                  </span>
                   <v-progress-circular v-if="probing === l.name" indeterminate size="13" width="2" />
                   <span v-else class="text-label-small opacity-45">{{ l.files.length }}</span>
                 </button>
@@ -2330,12 +2502,13 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
 
               <!-- The listing itself says nothing about a file, so every row
                    here is read out of the downloaded cues: what it runs to, how
-                   many lines it has, and whether that is this video at all. -->
+                   many lines it has, and whether that is this video at all.
+                   Indented to the names above, past the flag. -->
               <template v-if="expanded === l.name">
                 <button
                   v-for="f in variants[l.name] ?? []"
                   :key="f.url"
-                  class="pl-6" :class="[MENU_ROW, activeUrl === f.url && 'text-primary']"
+                  class="pl-11" :class="[MENU_ROW, activeUrl === f.url && 'text-primary']"
                   @click="loadFile(f, l)"
                 >
                   <span class="min-w-0 flex-1">
@@ -2366,9 +2539,10 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
       <!-- Measured rather than summed (`footerEl`): the panel above it and the
            subtitle lift both read its height, and it has three heights — a
            phone's, a television's, a desktop's — that used to be kept in step
-           by hand. -->
+           by hand. Away while the subtitles are being styled (`styling`); the
+           panel keeps its place off the last height measured. -->
       <footer
-        v-show="ui"
+        v-show="ui && !styling"
         ref="footerEl"
         data-cut
         class="absolute inset-x-0 bottom-0 border-t px-4 pb-2 pt-3 sm:px-5"

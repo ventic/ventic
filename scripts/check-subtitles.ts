@@ -15,6 +15,7 @@ import {
   findSubtitles,
   fitsRuntime,
   isCaptions,
+  langFlag,
   langName,
   parseCues,
   probeLanguage,
@@ -399,6 +400,16 @@ for (const [short, ...long] of [['en', 'eng'], ['sl', 'slv'], ['de', 'deu', 'ger
     assert.equal(langName(code!), langName(short!), `${code} and ${short} are one language`)
 }
 
+// A flag beside a language is one of the language picker's — the only pictures
+// the bundle carries — found by the name both codes resolve to.
+const FLAGS = { en: 'flag:us', de: 'flag:de', pt: 'flag:br', zh: 'flag:cn' }
+assert.equal(langFlag('ger', FLAGS), 'flag:de', 'an mkv\'s bibliographic code finds its flag')
+assert.equal(langFlag('deu', FLAGS), 'flag:de', 'and so does the terminological one')
+assert.equal(langFlag('pob', FLAGS), 'flag:br', 'and OpenSubtitles\' own code for a variety, by what it is a variety of')
+assert.equal(langFlag('zht', FLAGS), 'flag:cn')
+assert.equal(langFlag('aka', FLAGS), undefined, 'a language the app has no locale for has no flag')
+assert.equal(langFlag('', FLAGS), undefined, 'and a track that names no language has none either')
+
 // ---------------------------------------------------------------------------
 // The "choose subtitles for me" seam, which is a template and a store rather
 // than a function anything out here can call — three files that have to agree
@@ -442,11 +453,13 @@ assert.ok(player.includes('data-menu-list'), 'the menu list is marked for the fo
 assert.match(player, /querySelector<HTMLElement>\('\[data-menu-list\] button'\)/, 'and openMenu focuses the first row in it')
 
 // The hard-of-hearing toggle sat under however many languages OpenSubtitles
-// answered with — forty rows of scrolling on a TV for a two-state switch.
+// answered with — forty rows of scrolling on a TV for a two-state switch. It
+// and the timing are tabs of their own now, and the panel opens on choosing.
 assert.ok(
   player.indexOf('Hide sound descriptions') < player.lastIndexOf('OpenSubtitles'),
-  'the text and timing controls come before the language list, not after it',
+  'the text and timing controls come before the language list, not under it',
 )
+assert.match(player, /menu\.value = name\n\s+subTab\.value = 'language'/, 'the subtitle panel always opens on choosing')
 assert.ok(page.includes('subs.hideCaptions'), 'and the same toggle is on the settings page')
 
 if (process.argv.includes('--live')) {

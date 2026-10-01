@@ -35,8 +35,6 @@ const language = computed({
   set: (code: string) => (settings.subLang = code),
 })
 
-const COLOURS = ['#ffffff', '#f2e14c', '#9fd8ff', '#ffb787', '#c0c0c0']
-
 const percent = (value: number) => new Intl.NumberFormat(locale.value, { style: 'percent' }).format(value)
 
 /** Preview frame height. mpv sizes subtitles against a 720-tall window. */
@@ -130,7 +128,7 @@ const SAMPLE = computed(() => $t('It was the fall that killed him.\nNot the drop
       <v-select v-model="settings.subs.font" :items="SUBTITLE_FONTS" :label="$t('Font')" />
 
       <settings-row :label="$t('Size')">
-        <settings-stepper v-model="settings.subs.size" :min="16" :max="90" :step="4" />
+        <settings-stepper v-model="settings.subs.size" v-bind="SUBTITLE_STEPS.size" />
       </settings-row>
 
       <v-switch v-model="settings.subs.bold" :label="$t('Bold')" color="primary" hide-details density="compact" />
@@ -138,7 +136,7 @@ const SAMPLE = computed(() => $t('It was the fall that killed him.\nNot the drop
       <div class="text-label-medium pt-1 opacity-70">
         {{ $t('Colour') }}
       </div>
-      <settings-swatches v-model="settings.subs.color" :colours="COLOURS" />
+      <settings-swatches v-model="settings.subs.color" :colours="SUBTITLE_COLOURS" />
     </settings-section>
 
     <settings-section
@@ -147,13 +145,13 @@ const SAMPLE = computed(() => $t('It was the fall that killed him.\nNot the drop
       :keywords="$t('border, shadow, contrast, readability, background box, subtitle position, move subtitles up, margin')"
     >
       <settings-row :label="$t('Outline')">
-        <settings-stepper v-model="settings.subs.outline" :min="0" :max="5" :step="0.5" />
+        <settings-stepper v-model="settings.subs.outline" v-bind="SUBTITLE_STEPS.outline" />
       </settings-row>
       <settings-row :label="$t('Background')">
-        <settings-stepper v-model="settings.subs.background" :min="0" :max="1" :step="0.1" :format="percent" />
+        <settings-stepper v-model="settings.subs.background" v-bind="SUBTITLE_STEPS.background" :format="percent" />
       </settings-row>
       <settings-row :label="$t('Vertical position')">
-        <settings-stepper v-model="settings.subs.position" :min="50" :max="120" :step="10" />
+        <settings-stepper v-model="settings.subs.position" v-bind="SUBTITLE_STEPS.position" />
       </settings-row>
     </settings-section>
 

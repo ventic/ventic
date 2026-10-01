@@ -27,6 +27,7 @@
  * won't: how long it runs, how many lines it has, and whether it is the
  * captioned cut — see `fitsRuntime`.
  */
+import type { Steps } from './steps'
 import { fetch as tauriFetch } from '@tauri-apps/plugin-http'
 import { mirrored } from './cast'
 import { imdbIdByTitle, runtimeText } from './tmdb'
@@ -100,6 +101,34 @@ export function langName(code: string) {
   catch {
     return code // not a language tag at all
   }
+}
+
+/**
+ * What each of OpenSubtitles' own codes above is a variety of, for the one thing
+ * that wants the language rather than the variety: its flag.
+ */
+const VARIETY_OF: Record<string, string> = { pob: 'pt', zht: 'zh', zhe: 'zh' }
+
+/** Name → flag, built once per UI language rather than once per row. */
+const FLAGS = new Map<string, Map<string, string>>()
+
+/**
+ * The flag beside a subtitle or audio language, out of `flags` — the language
+ * picker's, keyed by UI locale, and the only pictures the bundle carries (see
+ * `flags` in nuxt.config). Matched on the name a code resolves to, like every
+ * other comparison here, so an mkv's "ger" and OpenSubtitles' "deu" get the
+ * one flag; a language the app has no locale for gets none.
+ */
+export function langFlag(code: string, flags: Record<string, string>) {
+  if (!code)
+    return undefined
+  const ui = globalThis.document?.documentElement.lang || 'en'
+  let byName = FLAGS.get(ui)
+  if (!byName) {
+    byName = new Map(Object.entries(flags).map(([locale, icon]) => [langName(locale), icon]))
+    FLAGS.set(ui, byName)
+  }
+  return byName.get(langName(VARIETY_OF[code.toLowerCase()] ?? code))
 }
 
 export interface SubtitleLanguage {
@@ -813,6 +842,23 @@ export const SUBTITLE_DEFAULTS: SubtitleStyle = {
   position: 100,
   hideCaptions: false,
 }
+
+/**
+ * How far one press of a stepper moves each number above — one table for the
+ * settings page and the player's own Appearance tab, so the two can't step
+ * differently. Fine on purpose: the line is judged by eye against a picture,
+ * and position used to move a tenth of the frame per press, jumping clean past
+ * the spot it was being walked towards.
+ */
+export const SUBTITLE_STEPS = {
+  size: { min: 16, max: 90, step: 1 },
+  outline: { min: 0, max: 5, step: 0.1 },
+  background: { min: 0, max: 1, step: 0.05 },
+  position: { min: 50, max: 120, step: 1 },
+} satisfies Record<string, Steps>
+
+/** The colour presets — the whole control on a TV, where no colour canvas can be driven. */
+export const SUBTITLE_COLOURS = ['#ffffff', '#f2e14c', '#9fd8ff', '#ffb787', '#c0c0c0']
 
 /** The fonts every desktop and Android build can be assumed to resolve. */
 export const SUBTITLE_FONTS = ['sans-serif', 'serif', 'monospace', 'Roboto', 'Arial', 'Verdana', 'Georgia']
