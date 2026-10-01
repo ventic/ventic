@@ -122,9 +122,12 @@ pub async fn sweep(api: &Api, folder: &Path) {
 mod tests {
 	use std::io::SeekFrom;
 	use std::net::Ipv4Addr;
+	use std::num::NonZeroU32;
+	use std::sync::Arc;
 
+	use librqbit::limits::LimitsConfig;
 	use librqbit::spawn_utils::BlockingSpawner;
-	use librqbit::{create_torrent, AddTorrent, AddTorrentOptions, CreateTorrentOptions, ListenerOptions, Session, SessionOptions};
+	use librqbit::{create_torrent, AddTorrent, AddTorrentOptions, CreateTorrentOptions, ListenerOptions, ManagedTorrent, Session, SessionOptions};
 	use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeek, AsyncSeekExt};
 	use tokio::time::timeout;
 
@@ -138,6 +141,77 @@ mod tests {
 		let _ = std::fs::remove_dir_all(&dir);
 		std::fs::create_dir_all(&dir).unwrap();
 		dir
+	}
+
+	/// `path` — a file, or a folder of them — seeded over loopback, and a leecher
+	/// for it writing into `into`. Added paused and initialised, so whatever a test
+	/// sets up is in place before the first byte is fetched. The seeder comes back
+	/// only to be kept alive.
+	async fn swarm(path: &Path, into: &Path, ratelimits: LimitsConfig) -> (Arc<Session>, Arc<Session>, Arc<ManagedTorrent>) {
+		let torrent = create_torrent(
+			path,
+			CreateTorrentOptions { piece_length: Some(PIECE as u32), ..Default::default() },
+			&BlockingSpawner::new(1),
+		)
+		.await
+		.unwrap()
+		.as_bytes()
+		.unwrap();
+		// A folder's files are named from inside it, a single file from beside it.
+		let folder = if path.is_dir() { path } else { path.parent().unwrap() };
+
+		let seeder = Session::new_with_opts(
+			folder.to_owned(),
+			SessionOptions {
+				dht: None,
+				disable_local_service_discovery: true,
+				listen: Some(ListenerOptions { listen_addr: (Ipv4Addr::LOCALHOST, 0).into(), ..Default::default() }),
+				..Default::default()
+			},
+		)
+		.await
+		.unwrap();
+		seeder
+			.add_torrent(
+				AddTorrent::from_bytes(torrent.clone()),
+				Some(AddTorrentOptions {
+					output_folder: Some(folder.to_string_lossy().into_owned()),
+					overwrite: true,
+					..Default::default()
+				}),
+			)
+			.await
+			.unwrap()
+			.into_handle()
+			.unwrap()
+			.wait_until_completed()
+			.await
+			.unwrap();
+
+		let leecher = Session::new_with_opts(
+			into.to_owned(),
+			SessionOptions { dht: None, disable_local_service_discovery: true, ..Default::default() },
+		)
+		.await
+		.unwrap();
+		let handle = leecher
+			.add_torrent(
+				AddTorrent::from_bytes(torrent),
+				Some(AddTorrentOptions {
+					paused: true,
+					initial_peers: Some(vec![seeder.listen_addr().unwrap()]),
+					output_folder: Some(into.to_string_lossy().into_owned()),
+					overwrite: true,
+					ratelimits,
+					..Default::default()
+				}),
+			)
+			.await
+			.unwrap()
+			.into_handle()
+			.unwrap();
+		handle.wait_until_initialized().await.unwrap();
+		(seeder, leecher, handle)
 	}
 
 	/// Which pieces the engine says it has, by index.
@@ -168,68 +242,12 @@ mod tests {
 		// Never zero, so a punched hole read back as data can't pass for the film.
 		let film: Vec<u8> = (0..LEN).map(|i| (i % 251 + 1) as u8).collect();
 		std::fs::write(seed_dir.join("film.mkv"), &film).unwrap();
-		let torrent = create_torrent(
-			&seed_dir.join("film.mkv"),
-			CreateTorrentOptions { piece_length: Some(PIECE as u32), ..Default::default() },
-			&BlockingSpawner::new(1),
-		)
-		.await
-		.unwrap()
-		.as_bytes()
-		.unwrap();
-
-		let seeder = Session::new_with_opts(
-			seed_dir.clone(),
-			SessionOptions {
-				dht: None,
-				disable_local_service_discovery: true,
-				listen: Some(ListenerOptions { listen_addr: (Ipv4Addr::LOCALHOST, 0).into(), ..Default::default() }),
-				..Default::default()
-			},
-		)
-		.await
-		.unwrap();
-		let seeding = seeder
-			.add_torrent(
-				AddTorrent::from_bytes(torrent.clone()),
-				Some(AddTorrentOptions {
-					output_folder: Some(seed_dir.to_string_lossy().into_owned()),
-					overwrite: true,
-					..Default::default()
-				}),
-			)
-			.await
-			.unwrap()
-			.into_handle()
-			.unwrap();
-		seeding.wait_until_completed().await.unwrap();
 
 		let leech_dir = scratch("leech");
-		let leecher = Session::new_with_opts(
-			leech_dir.clone(),
-			SessionOptions { dht: None, disable_local_service_discovery: true, ..Default::default() },
-		)
-		.await
-		.unwrap();
-		let api = Api::new(leecher.clone(), None, None);
 		// Paused until the window is set, or the first second of it downloads
 		// whatever the natural order reaches.
-		let handle = leecher
-			.add_torrent(
-				AddTorrent::from_bytes(torrent),
-				Some(AddTorrentOptions {
-					paused: true,
-					initial_peers: Some(vec![seeder.listen_addr().unwrap()]),
-					output_folder: Some(leech_dir.to_string_lossy().into_owned()),
-					overwrite: true,
-					..Default::default()
-				}),
-			)
-			.await
-			.unwrap()
-			.into_handle()
-			.unwrap();
-		handle.wait_until_initialized().await.unwrap();
+		let (_seeder, leecher, handle) = swarm(&seed_dir.join("film.mkv"), &leech_dir, LimitsConfig::default()).await;
+		let api = Api::new(leecher.clone(), None, None);
 		handle.set_stream_window(8 * PIECE).unwrap();
 		leecher.unpause(&handle).await.unwrap();
 		let id = handle.id();
@@ -267,6 +285,56 @@ mod tests {
 		handle.set_stream_window(0).unwrap();
 		timeout(Duration::from_secs(20), handle.wait_until_completed()).await.unwrap().unwrap();
 		assert_eq!(std::fs::read(&file).unwrap(), film);
+
+		let _ = std::fs::remove_dir_all(seed_dir);
+		let _ = std::fs::remove_dir_all(leech_dir);
+	}
+
+	/// The other half of the patch's piece order: a *download* that is being
+	/// watched fetches the file on screen before the rest of its torrent, where
+	/// librqbit walks a pack by name — so watching episode 5 waited on 1 to 4, and
+	/// so did every download the player had paused until it was on the disk.
+	///
+	/// The reader sits on the last byte of `b`, which leaves its lookahead one
+	/// piece and the order of everything else to the walk; the download is slowed
+	/// to a trickle so that the order can be seen at all.
+	#[tokio::test(flavor = "multi_thread")]
+	async fn watched_file_first() {
+		const FILE: u64 = 16 * PIECE;
+		let seed_dir = scratch("pack-seed");
+		let pack = seed_dir.join("pack");
+		std::fs::create_dir_all(&pack).unwrap();
+		// `a` sorts first, so it is the one the walk would otherwise fetch first.
+		for name in ["a.mkv", "b.mkv"] {
+			std::fs::write(pack.join(name), (0..FILE).map(|i| (i % 251 + 1) as u8).collect::<Vec<_>>()).unwrap();
+		}
+
+		let leech_dir = scratch("pack-leech");
+		let slow = LimitsConfig { download_bps: NonZeroU32::new(512 * 1024), upload_bps: None };
+		let (_seeder, leecher, handle) = swarm(&pack, &leech_dir, slow).await;
+		let index = |name: &str| {
+			handle
+				.with_metadata(|m| m.file_infos.iter().position(|f| f.relative_filename.ends_with(name)).unwrap())
+				.unwrap()
+		};
+		let (a, b) = (index("a.mkv"), index("b.mkv"));
+
+		let mut stream = handle.clone().stream(b).await.unwrap();
+		stream.seek(SeekFrom::End(-1)).await.unwrap();
+		leecher.unpause(&handle).await.unwrap();
+
+		let of_a = timeout(Duration::from_secs(20), async {
+			loop {
+				let have = handle.stats().file_progress;
+				if have[b] == FILE {
+					return have[a];
+				}
+				tokio::time::sleep(Duration::from_millis(20)).await;
+			}
+		})
+		.await
+		.expect("the file being read should come down");
+		assert!(of_a < FILE / 2, "the file under the reader comes first, not the one named first ({of_a} of {FILE} bytes of it)");
 
 		let _ = std::fs::remove_dir_all(seed_dir);
 		let _ = std::fs::remove_dir_all(leech_dir);

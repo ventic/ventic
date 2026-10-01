@@ -1,4 +1,4 @@
-import type { DiskSpace, EngineFile, EngineTorrent, Room } from '~/utils/torrents'
+import type { DiskSpace, EngineFile, EngineTorrent, Room, Started } from '~/utils/torrents'
 import { mdiAlertCircleOutline, mdiCheckCircleOutline, mdiFormatListBulleted, mdiPauseCircleOutline, mdiTrayArrowDown } from '@mdi/js'
 import { invoke } from '@tauri-apps/api/core'
 
@@ -163,10 +163,16 @@ export const useDownloadsStore = defineStore('downloads', () => {
   /** The biggest film this device can keep — what Play prefers, and Download insists on. */
   const fits = computed(() => Math.min(budget.value, fileLimit.value))
 
-  /** The torrent being watched: never evicted, and the only one downloading. */
-  const focused = ref<number | null>(null)
-  /** What `focus` paused, so `release` can put it back. */
-  let paused: number[] = []
+  /**
+   * What is playing: the torrent (-1 for a link) and the file in it, its length
+   * — which is how `onDisk` knows when all of it has arrived — and whether the
+   * engine was downloading it before Play was pressed (`Started.running`).
+   */
+  const playing = shallowRef<Pick<Started, 'id' | 'index' | 'length' | 'url' | 'running'> | null>(null)
+  /** The torrent being watched: never evicted, and never held back for Wi-Fi. */
+  const focused = computed(() => playing.value?.id ?? null)
+  /** What `focus` paused, so it can be put back; null while it holds nothing. */
+  let paused: number[] | null = null
 
   /**
    * Drop what the engine no longer holds. Only ever called with a list the
@@ -321,6 +327,7 @@ export const useDownloadsStore = defineStore('downloads', () => {
       await refresh()
       await evict()
       await meter()
+      await hold()
     },
     2000,
     { immediateCallback: true },
@@ -354,39 +361,78 @@ export const useDownloadsStore = defineStore('downloads', () => {
   )
 
   /**
-   * Playback owns the downlink: every other *download* pauses so the whole pipe
-   * goes to the stream, and is put back on `release`. Finished torrents keep
-   * seeding — they cost no download bandwidth, and `uploadLimit` already holds
-   * their upload down to a quarter of the line while anyone is watching.
-   *
-   * `id` is -1 while a direct link is playing. The engine has never heard of it,
-   * but the downlink is just as busy, so everything else still gets out of the way.
+   * Is everything the player reads already on this device? A file of the
+   * user's own is; a link never is, since the engine can't see one arrive and
+   * it is the network for as long as it plays; and a torrent is once the last
+   * byte of the file playing has landed.
    */
-  async function focus(id: number) {
+  function onDisk(p: NonNullable<typeof playing.value>) {
+    if (p.id < 0)
+      return !/^https?:/i.test(p.url)
+    const have = torrents.value.find(t => t.id === p.id)?.stats?.file_progress?.[p.index] ?? 0
+    return p.length > 0 && have >= p.length
+  }
+
+  /**
+   * Start again what playback paused — unless only-on-Wi-Fi is holding
+   * downloads back right now: starting them would spend the data the setting
+   * exists to save, and `meter` would stop them again two seconds later anyway.
+   */
+  async function unpause(ids: number[]) {
+    if (settings.wifiOnly && metered.value)
+      held = [...new Set([...held, ...ids])]
+    else
+      await Promise.all(ids.map(id => torrentAction(id, 'start').catch(() => {})))
+  }
+
+  /**
+   * Playback owns the downlink until what it plays is on the disk: every
+   * other *download* pauses so the whole pipe goes to the film, and starts again
+   * the moment its last byte lands (`hold`) — so the next episode is already
+   * coming down by the time this one ends — or on `release`, whichever is first. The
+   * engine fetches the file on screen first inside its own torrent too (see
+   * `watched_file_first` in buffer.rs), so the rest of a season pack goes on
+   * downloading behind it and never in front of it.
+   *
+   * Finished torrents keep seeding throughout — they cost no download
+   * bandwidth, and `uploadLimit` already holds their upload down to a quarter
+   * of the line while anyone is watching.
+   */
+  async function focus(started: Started) {
+    const before = playing.value
     // The same torrent again — Try again, or the next episode of a season pack —
     // is not a change of film. Releasing it would pause it, or delete a stream
-    // that is about to play.
-    if (focused.value === id)
+    // that is about to play, and what it was before the first of them is still
+    // what it goes back to. A torrent the film before this paused was running
+    // until it did.
+    const same = before?.id === started.id
+    const running = same ? before.running : started.running || !!paused?.includes(started.id)
+    if (!same) {
+      await release()
+      const t = torrents.value.find(t => t.id === started.id)
+      if (t)
+        touched.value[t.info_hash] = Date.now()
+    }
+    playing.value = { id: started.id, index: started.index, length: started.length, url: started.url, running }
+
+    // Already holding (an episode on from the last), or nothing to hold it for.
+    if (paused || onDisk(playing.value))
       return
-    await release()
-    focused.value = id
-
-    const playing = torrents.value.find(t => t.id === id)
-    if (playing)
-      touched.value[playing.info_hash] = Date.now()
-
-    // A finished torrent asks the network for nothing, so nothing has to get
-    // out of its way: playing off the disk leaves background downloads running.
-    if (playing?.stats?.finished)
-      return
-
     paused = torrents.value
       // 'checking' too: a torrent still pulling its metadata is competing already.
-      .filter(t => t.id !== id && ['downloading', 'checking'].includes(torrentStatus(t)))
+      .filter(t => t.id !== started.id && ['downloading', 'checking'].includes(torrentStatus(t)))
       .map(t => t.id)
     await Promise.all(paused.map(other => torrentAction(other, 'pause').catch(() => {})))
-    if (playing)
-      await torrentAction(id, 'start').catch(() => {}) // it may have been paused
+    await refresh()
+  }
+
+  /** Hand the downlink back the moment the film no longer needs it — see `focus`. */
+  async function hold() {
+    if (!paused || !playing.value || !onDisk(playing.value))
+      return
+    const restore = paused
+    paused = null
+    await unpause(restore)
     await refresh()
   }
 
@@ -431,45 +477,33 @@ export const useDownloadsStore = defineStore('downloads', () => {
   }
 
   /**
-   * Leaving the player stops the download it started — an unwatched torrent has
-   * no reason to keep pulling. A finished one is left seeding: it costs no
-   * download bandwidth and the downloads page can't resume it (its pause button
-   * is disabled once complete).
-   *
-   * A stream is deleted instead, which is the whole of what makes it one — and so
-   * is a film downloaded whole and now watched, when the user keeps none of those.
-   * A film left half-way is kept either way: it is the next play's head start.
-   *
-   * A background download you also watched ends up paused too. One
-   * click on the downloads page fixes it; if that gets annoying, `focus` takes a
-   * flag for "was already running".
+   * Leaving the player: the torrent it played goes back to what it was
+   * (`planRelease`), and so does everything `focus` paused for it. A film left
+   * half-way is kept either way: it is the next play's head start.
    */
   async function release() {
-    const id = focused.value
-    const restore = paused
-    focused.value = null
-    paused = []
-    if (id == null)
+    const p = playing.value
+    const restore = paused ?? []
+    playing.value = null
+    paused = null
+    if (!p)
       return
 
-    // Nothing to pause when a link was playing — only the restores below apply.
-    const own = torrents.value.find(t => t.id === id)
+    // Nothing to do to a link — only the restores below apply.
+    const own = torrents.value.find(t => t.id === p.id)
     // By id for the windowed one: left within seconds of starting, it may not
     // have reached the list yet — and it is still a stream.
-    const gone = id === windowed || (own && (isStream(own.output_folder) || (!settings.keepWatched && watched(own.info_hash))))
-    if (id === windowed)
+    const plan = (own || p.id === windowed) && planRelease({
+      stream: p.id === windowed || isStream(own?.output_folder ?? ''),
+      finished: !!own?.stats?.finished,
+      running: p.running,
+      watched: !!own && !settings.keepWatched && watched(own.info_hash),
+    })
+    if (p.id === windowed)
       windowed = null
-    if (gone)
-      await torrentAction(id, 'delete').catch(() => {})
-    else if (own && !own.stats?.finished)
-      await torrentAction(id, 'pause').catch(() => {})
-    // On mobile data with Wi-Fi only asked for, what playback paused stays
-    // paused — starting it here would spend the data the setting exists to save,
-    // and `meter` would stop it again two seconds later anyway.
-    if (settings.wifiOnly && metered.value)
-      held = [...new Set([...held, ...restore])]
-    else
-      await Promise.all(restore.map(other => torrentAction(other, 'start').catch(() => {})))
+    if (plan)
+      await torrentAction(p.id, plan).catch(() => {})
+    await unpause(restore)
     await refresh()
   }
 

@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import process from 'node:process'
-import { bufferWindow, diskBudget, ENGINE, engineReason, filedAs, findReleases, haveAt, heldAround, httpUrl, isAwkward, isBloated, limitToFiles, MIN_LIBRARY, normalizeSource, parseRelease, pickBest, pickSubtitleFiles, pickVideoFile, planEviction, planNetwork, releaseKey, setQuality, setSources, setStreamDir, shouldStream, STALLED, startTorrent, streamParts, toRelease, uploadLimit, usedBytes } from '../app/utils/torrents'
+import { bufferWindow, diskBudget, ENGINE, engineReason, filedAs, findReleases, haveAt, heldAround, httpUrl, isAwkward, isBloated, limitToFiles, MIN_LIBRARY, normalizeSource, parseRelease, pickBest, pickSubtitleFiles, pickVideoFile, planEviction, planNetwork, planRelease, releaseKey, setQuality, setSources, setStreamDir, shouldStream, STALLED, startTorrent, streamParts, toRelease, uploadLimit, usedBytes } from '../app/utils/torrents'
 // Self-check for the torrent parser/ranker: `bun scripts/check-torrents.ts`.
 // The fixture is the response shape a source answers with, filled in with a
 // public-domain film. `--live <source-url> <imdb-id>` also searches for real.
@@ -561,6 +561,23 @@ assert.deepEqual(
 assert.deepEqual(planNetwork([], null, [], false), { pause: [], start: [], held: [] })
 assert.deepEqual(planNetwork([9], null, [], false).start, [], 'nor is a running one touched')
 
+// --- Leaving the player -------------------------------------------------------
+// It puts back what it found. The case this exists for: a download that was
+// already running when Play was pressed — the rest of a season pack, a film
+// somebody pressed Download on — was paused on the way out, every time.
+
+function leaving(o: Partial<Parameters<typeof planRelease>[0]>) {
+  return planRelease({ stream: false, finished: false, running: false, watched: false, ...o })
+}
+assert.equal(leaving({}), 'pause', 'a download the play started stops with it')
+assert.equal(leaving({ running: true }), null, 'one running before Play goes on running')
+assert.equal(leaving({ finished: true }), null, 'a finished one seeds on')
+assert.equal(leaving({ stream: true }), 'delete', 'a stream is deleted')
+assert.equal(leaving({ stream: true, running: true }), 'delete', 'whatever it was doing before')
+assert.equal(leaving({ watched: true, finished: true }), 'delete', 'watched, by someone who keeps none of those')
+// A pack reads as watched on the one episode filed under it.
+assert.equal(leaving({ watched: true, running: true }), null, 'but never a download that was under way')
+
 // --- Seek previews ------------------------------------------------------------
 
 assert.deepEqual(streamParts(`${ENGINE}/torrents/12/stream/3`), { id: 12, index: 3 })
@@ -752,16 +769,21 @@ const PACK = [
  * whether its metadata has arrived (a magnet is added long before its files are
  * known).
  */
-const engine = { have: 2_000_000_000, held: true, meta: true, folder: '/x' }
+const engine = { have: 2_000_000_000, held: true, meta: true, folder: '/x', state: 'live' }
 let requests: string[] = []
+/** The files the last `update_only_files` told the engine to fetch. */
+let fetching: number[] = []
 
-globalThis.fetch = (async (input: string | URL | Request) => {
+globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
   const url = String(input)
   requests.push(url)
+  if (url.endsWith('/update_only_files'))
+    fetching = JSON.parse(String(init?.body)).only_files
   // Deliberately upper-case where the caller remembers it lower-case: librqbit
   // and the addons do not agree on which, and a case-sensitive compare here
   // would silently re-download everything.
-  const listed = { id: 7, info_hash: 'BBB', name: 'pack', output_folder: engine.folder, stats: { file_progress: [10, engine.have] } }
+  const stats = { state: engine.state, finished: engine.have >= 2_000_000_000, file_progress: [10, engine.have] }
+  const listed = { id: 7, info_hash: 'BBB', name: 'pack', output_folder: engine.folder, stats }
   if (url.startsWith(`${ENGINE}/torrents?with_stats`))
     return Response.json({ torrents: engine.held ? [listed] : [] })
   if (url === `${ENGINE}/torrents/7`)
@@ -819,6 +841,15 @@ assert.ok(!requests.some(u => u.startsWith('https://a.example')), 'the release i
 assert.ok(!requests.some(u => u.includes('overwrite=true')), 'a torrent the engine holds is never re-added')
 assert.ok(requests.some(u => u.includes('update_only_files')), 'told which file to fetch')
 assert.ok(requests.some(u => u.includes('/start')), 'and started, in case it was paused')
+// This pack was added whole, so it was fetching every file. Narrowed to the one
+// played, the rest of a season someone was downloading stopped for good.
+assert.deepEqual(fetching, [0, 1], 'a held pack keeps everything it was fetching')
+// Decided off the engine's own list before this play started it, and it is
+// what tells the player to leave it downloading on the way out.
+assert.ok(resumed.running, 'a download under way says so')
+engine.state = 'paused'
+assert.ok(!(await startTorrent({ imdbId: 'tt0000001', cached })).running, 'one paused before Play goes back to paused')
+engine.state = 'live'
 
 // A magnet added seconds ago has no files yet, and there is nothing here to play
 // from or to narrow. That one still has to go round by the engine and wait for
@@ -840,6 +871,7 @@ assert.ok(requests.some(u => u.startsWith('https://a.example')), 'a copy that is
 // The source said which file (fileIdx 3), so the add is narrowed to it from the
 // start: added whole, an 86-film pack spent minutes hash-checking 269 GB.
 assert.ok(requests.some(u => u.includes('overwrite') && u.includes('only_files=3')), 'narrowed on the add')
+assert.ok(!refound.running, 'and one this play added is the play\'s to stop')
 
 // A stream is deleted when the player closes, so `cached` forgets it — and a
 // hand-picked 720p resumed as whatever the sources recommend. The pick is
@@ -854,7 +886,7 @@ globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) =>
   if (url.startsWith('https://a.example'))
     return Response.json({ streams: offered })
   // An index out of range fails the whole add; the file is picked after it instead.
-  if (refused && url.includes('only_files'))
+  if (refused && url.includes('only_files='))
     return Response.json({ human_readable: 'file id 3 is out of range' }, { status: 400 })
   return engineFetch(input, init)
 }) as typeof fetch
@@ -928,6 +960,8 @@ refused = true
 requests = []
 assert.equal((await startTorrent({ imdbId: 'tt0000001' })).index, 1, 'a bad index still plays')
 assert.ok(requests.some(u => u.includes('overwrite') && !u.includes('only_files')), 'added again without it')
+// Added whole like that, it is still this play's own: narrowed to the film.
+assert.deepEqual(fetching, [1], 'a pack this play added fetches the one file')
 globalThis.fetch = engineFetch
 
 // --- Streaming it instead -----------------------------------------------------

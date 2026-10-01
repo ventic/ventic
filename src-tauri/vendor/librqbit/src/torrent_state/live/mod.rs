@@ -1531,12 +1531,22 @@ impl PeerHandler {
                 } = &mut **g;
                 let pieces = pieces.as_mut().ok_or(Error::ChunkTrackerEmpty)?;
                 // ventic: a stream fetches around its readers and nothing else, so the
-                // natural order through the files is left out altogether.
-                let streaming = FilePriorities::new();
+                // natural order through the files is left out altogether. A download
+                // being read walks the files under its readers first and the rest by
+                // name after: past a reader's 32 MB lookahead, the episode on screen
+                // otherwise waited behind every episode in the pack named before it.
+                let reordered: FilePriorities;
                 let file_priorities = if self.state.streams.window() > 0 {
-                    &streaming
+                    reordered = FilePriorities::new();
+                    &reordered
                 } else {
-                    &*file_priorities
+                    let read: Vec<usize> = self.state.streams.positions().into_iter().map(|(file, _)| file).collect();
+                    if read.is_empty() {
+                        &*file_priorities
+                    } else {
+                        reordered = read.iter().chain(file_priorities.iter().filter(|f| !read.contains(f))).copied().collect();
+                        &reordered
+                    }
                 };
                 let result = pieces.acquire_piece(AcquireRequest {
                     peer: self.addr,

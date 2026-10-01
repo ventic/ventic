@@ -609,22 +609,32 @@ diff -ruN -x VENTIC.md a/src/torrent_state/live/mod.rs b/src/torrent_state/live/
      // If we have all selected pieces but not necessarily all pieces.
      pub(crate) fn is_finished(&self) -> bool {
          self.get_hns().map(|h| h.finished()).unwrap_or_default()
-@@ -1426,6 +1530,14 @@
+@@ -1426,6 +1530,24 @@
                      ..
                  } = &mut **g;
                  let pieces = pieces.as_mut().ok_or(Error::ChunkTrackerEmpty)?;
 +                // ventic: a stream fetches around its readers and nothing else, so the
-+                // natural order through the files is left out altogether.
-+                let streaming = FilePriorities::new();
++                // natural order through the files is left out altogether. A download
++                // being read walks the files under its readers first and the rest by
++                // name after: past a reader's 32 MB lookahead, the episode on screen
++                // otherwise waited behind every episode in the pack named before it.
++                let reordered: FilePriorities;
 +                let file_priorities = if self.state.streams.window() > 0 {
-+                    &streaming
++                    reordered = FilePriorities::new();
++                    &reordered
 +                } else {
-+                    &*file_priorities
++                    let read: Vec<usize> = self.state.streams.positions().into_iter().map(|(file, _)| file).collect();
++                    if read.is_empty() {
++                        &*file_priorities
++                    } else {
++                        reordered = read.iter().chain(file_priorities.iter().filter(|f| !read.contains(f))).copied().collect();
++                        &reordered
++                    }
 +                };
                  let result = pieces.acquire_piece(AcquireRequest {
                      peer: self.addr,
                      peer_avg_time: self.counters.average_piece_download_time(),
-@@ -1500,10 +1612,15 @@
+@@ -1500,10 +1622,15 @@
              .get_chunks()?
              .is_chunk_ready_to_upload(&chunk_info)
          {
@@ -642,7 +652,7 @@ diff -ruN -x VENTIC.md a/src/torrent_state/live/mod.rs b/src/torrent_state/live/
          }
  
          self.state
-@@ -1658,14 +1775,22 @@
+@@ -1658,14 +1785,22 @@
  
              // Acquire a piece using the strategy: try steal (10x) → reserve → steal (3x).
              let new_piece_notify = self.state.new_pieces_notify.notified();

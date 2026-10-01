@@ -25,6 +25,7 @@
     "check:cast": "bun scripts/check-cast.ts",
     "check:boot": "bun scripts/check-boot.ts",
     "check:dpad": "bun scripts/check-dpad.ts",
+    "check:downloads": "bun scripts/check-downloads.ts",
     "check:library": "bun scripts/check-library.ts",
     "check:macos": "bun scripts/check-macos.ts",
     "check:people": "bun scripts/check-people.ts",

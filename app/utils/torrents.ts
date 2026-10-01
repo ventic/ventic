@@ -1176,6 +1176,13 @@ export interface Started {
   stream: boolean
   /** Bytes in the file that plays, 0 for a link. What the buffer's bitrate comes from. */
   length: number
+  /**
+   * The engine was already downloading this torrent before the play asked for
+   * it — a film someone pressed Download on, or the rest of a season pack. The
+   * player leaves that one downloading when it closes (`release`); only what a
+   * play started stops with it.
+   */
+  running: boolean
 }
 
 /**
@@ -1198,7 +1205,10 @@ async function heldCopy(hash: string, want: number | null, of?: { season?: numbe
   const index = want ?? pickVideoFile(files, null, of)
   const size = index == null ? 0 : files[index]?.length ?? 0
   const have = index == null ? 0 : held.stats?.file_progress?.[index] ?? 0
-  return { id: held.id, hash: held.info_hash, files, index, ready: !!size && have >= size, folder: held.output_folder }
+  // Read before anything here starts it, off a list asked for just now — see `Started.running`.
+  const s = held.stats
+  const running = !!s && !s.finished && !s.error && (s.state === 'live' || s.state === 'initializing')
+  return { id: held.id, hash: held.info_hash, files, index, ready: !!size && have >= size, folder: held.output_folder, running }
 }
 
 /**
@@ -1213,17 +1223,19 @@ function magnetHash(magnet: string) {
 
 /**
  * Which files the engine should be fetching for this play: the video, the
- * subtitles that belong to it, and — for a torrent already narrowed to
- * something — whatever it was already told to fetch. A pack you are part-way
- * through keeps downloading what it was told to and *gains* this file, rather
- * than being reset to it.
+ * subtitles that belong to it, and — for a torrent the engine already `held` —
+ * whatever it was already told to fetch. A pack you are part-way through keeps
+ * downloading what it was told to and *gains* this file, rather than being
+ * reset to it. That includes a pack added whole, which was told every file:
+ * narrowed to the one played, the rest of a season someone was downloading
+ * stopped for good the first time they pressed Play on an episode of it.
+ *
+ * A torrent this play just added is narrowed to the file, whatever the add
+ * named — added whole, a pack pulls all 60 episodes down for the one watched.
  */
-function wantedFiles(files: EngineFile[], index: number) {
-  const included = files.flatMap((f, i) => f.included ? [i] : [])
-  // Nothing narrowed means the whole torrent is wanted, and listing every index
-  // back would be the same thing said the long way.
+function wantedFiles(files: EngineFile[], index: number, held: boolean) {
   const wanted = [index, ...pickSubtitleFiles(files, index)]
-  return included.length < files.length ? [...new Set([...included, ...wanted])] : wanted
+  return held ? [...new Set([...files.flatMap((f, i) => f.included ? [i] : []), ...wanted])] : wanted
 }
 
 /**
@@ -1239,7 +1251,7 @@ async function playHeld(held: NonNullable<Awaited<ReturnType<typeof heldCopy>>>,
   if (missing.length)
     await limitToFiles(held.id, [...held.files.flatMap((f, i) => f.included ? [i] : []), ...missing])
   // A short episode can fit inside its own buffer, and is still a stream.
-  return { id: held.id, index: held.index!, hash: held.hash, url: '', torrent, stream: isStream(held.folder), length: held.files[held.index!]?.length ?? 0 }
+  return { id: held.id, index: held.index!, hash: held.hash, url: '', torrent, stream: isStream(held.folder), length: held.files[held.index!]?.length ?? 0, running: held.running }
 }
 
 /** Release names and TMDB titles compared on the letters only. */
@@ -1377,13 +1389,13 @@ export async function startTorrent(options: {
 
   // Nothing to add, nothing to fetch, nothing to keep — the link is the stream.
   if (options.url)
-    return { id: -1, index: -1, hash: '', url: options.url, torrent: null, stream: false, length: 0 }
+    return { id: -1, index: -1, hash: '', url: options.url, torrent: null, stream: false, length: 0, running: false }
 
   // A file the user already had is the same deal minus the network: no engine,
   // no disk budget, no swarm, and no TMDB round trip on the way in. mpv opens a
   // path exactly as it opens a URL, so nothing downstream needs to know.
   if (options.local && !magnet)
-    return { id: -1, index: -1, hash: '', url: options.local, torrent: null, stream: false, length: 0 }
+    return { id: -1, index: -1, hash: '', url: options.local, torrent: null, stream: false, length: 0, running: false }
 
   // A magnet the caller named is a release someone chose by hand, so it beats
   // whatever is already on the disk. Asked before the id lookup below, because
@@ -1444,7 +1456,7 @@ export async function startTorrent(options: {
       options.onPicked?.(picked)
       // The source resolved this one itself — there is no torrent to add.
       if (picked.url)
-        return { id: -1, index: -1, hash: '', url: picked.url, torrent: picked, stream: false, length: 0 }
+        return { id: -1, index: -1, hash: '', url: picked.url, torrent: picked, stream: false, length: 0, running: false }
       magnet = picked.magnet
       hint = picked.fileIdx
     }
@@ -1476,7 +1488,7 @@ export async function startTorrent(options: {
     const index = options.fileIndex ?? pickVideoFile(already.files, hint, options)
     if (index == null)
       throw new Error($t('That torrent holds no video file.'))
-    await limitToFiles(already.id, wantedFiles(already.files, index))
+    await limitToFiles(already.id, wantedFiles(already.files, index, true))
     // It may have been paused: by `release` on the way out of the last film, by
     // "only on Wi-Fi", or by a pack left alone while something else played. The
     // add used to be what started it again.
@@ -1489,6 +1501,7 @@ export async function startTorrent(options: {
       torrent: picked,
       stream: isStream(already.folder),
       length: already.files[index]?.length ?? 0,
+      running: already.running,
     }
   }
 
@@ -1510,14 +1523,14 @@ export async function startTorrent(options: {
 
   // The subtitles this release ships come down with the video: a few hundred KB
   // each, and the engine only serves a file it was told to download.
-  await limitToFiles(added.id, wantedFiles(files, index))
+  await limitToFiles(added.id, wantedFiles(files, index, !!already))
 
   // Asked again now the file is known, for a size no source gave — it is
   // already in the download folder, so a stream that isn't is only windowed,
   // and goes when the player does.
   const length = files[index]?.length ?? 0
   const stream = already ? isStream(already.folder) : early || !!options.streamIf?.(length)
-  return { id: added.id, index, hash: added.details.info_hash, url: '', torrent: picked, stream, length }
+  return { id: added.id, index, hash: added.details.info_hash, url: '', torrent: picked, stream, length, running: !!already?.running }
 }
 
 export function magnetForHash(hash: string) {
@@ -1686,6 +1699,23 @@ export function planNetwork(running: number[], keep: number | null, held: number
 
   const pause = running.filter(id => id !== keep)
   return { pause, start: [], held: [...new Set([...held, ...pause])] }
+}
+
+/**
+ * What leaving the player does to the torrent it played: put back what it found.
+ *
+ * A stream is deleted, which is the whole of what makes it one. A download the
+ * play started is paused — an unwatched torrent has no reason to keep pulling —
+ * or deleted once `watched` (to the end, by someone who keeps none of those).
+ * One that was already `running` when Play was pressed is left downloading and
+ * never deleted: a film somebody pressed Download on first, or a season pack,
+ * which reads as watched on the one episode filed under it with the rest of it
+ * still coming down. A finished one is left seeding.
+ */
+export function planRelease(t: { stream: boolean, finished: boolean, running: boolean, watched: boolean }) {
+  if (t.stream || (t.watched && !t.running))
+    return 'delete'
+  return t.finished || t.running ? null : 'pause'
 }
 
 export function bytesText(n: number) {

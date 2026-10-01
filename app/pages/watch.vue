@@ -156,8 +156,9 @@ async function start() {
     torrentId.value = started.url ? null : started.id
 
     // Pause everything else before the stream starts, so the first buffer gets
-    // the whole connection. Nothing to pause for a finished torrent — see `focus`.
-    await downloads.focus(started.id)
+    // the whole connection — until the film is on the disk, or nothing to pause
+    // at all for one that already is. See `focus`.
+    await downloads.focus(started)
 
     // A film this device can't keep plays through a window of its torrent —
     // sized now from a guess at how long it runs, and again below once the
@@ -185,8 +186,8 @@ watch(
   { immediate: true },
 )
 
-// Leaving the player stops the download and hands the connection back to
-// whatever was paused for it. Every exit route unmounts — Esc, Back, the browser
+// Leaving the player stops the download it started and hands the connection
+// back to whatever was paused for it. Every exit route unmounts — Esc, Back, the browser
 // history, switching to another title — so this is the one place it belongs.
 // ---------------------------------------------------------------------------
 // Casting — this film, playing on another device on the network
@@ -237,8 +238,8 @@ function handOver(device: CastDevice) {
 /**
  * Stop serving the film to the network and let the download go back to normal.
  * `release` is the one `onBeforeUnmount` deliberately skipped while a cast was
- * running: it pauses the torrent, and the torrent is what the other device is
- * reading from.
+ * running: it pauses a torrent the play started, and the torrent is what the
+ * other device is reading from.
  */
 async function stopCasting() {
   // The other device first, while it still has something to read: stopping the

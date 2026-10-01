@@ -2,7 +2,8 @@
 
 This is librqbit 9.0.0-rc.0 as crates.io ships it, minus its web UI and its
 packaging files, plus one change: a torrent can be **streamed** instead of
-downloaded. Cargo takes it from here through `[patch.crates-io]` in
+downloaded — and one downloaded while it is watched fetches what is on screen
+first. Cargo takes it from here through `[patch.crates-io]` in
 `src-tauri/Cargo.toml`, and `../librqbit.patch` is the whole diff — read that
 rather than this folder.
 
@@ -19,6 +20,12 @@ Every change is marked `ventic:` in the source.
   each open reader and nothing else: `acquire_next_piece` in
   `torrent_state/live/mod.rs` leaves the natural walk through the files out.
   Set back to 0, it is a download again.
+- **The file being watched first** — the same spot in `acquire_next_piece`.
+  A *download* with a reader open walks the files under its readers before the
+  rest, where librqbit walks a torrent's files by name. A reader's lookahead is
+  only 32 MB, so past it the episode on screen used to wait behind every episode
+  in the pack named before it — and so did every other download the player
+  pauses until the film it is playing is on the disk.
 - **Forgetting** — `TorrentStateLive::forget_outside`. A piece of a file being
   read that no reader is near has its have bit cleared
   (`ChunkTracker::forget_piece`), which queues it again so a reader that comes
@@ -52,7 +59,9 @@ Every change is marked `ventic:` in the source.
 
 `src-tauri/src/buffer.rs` is the only caller. Its `stream_window` test
 (`cargo test --lib buffer`) runs all of the above end to end over loopback, a
-seeder and a streaming leecher, in under a second.
+seeder and a streaming leecher, in under a second; `watched_file_first` beside
+it holds the file order, on a two-file pack slowed to a trickle so the order
+can be seen.
 
 ## Moving to a newer librqbit
 

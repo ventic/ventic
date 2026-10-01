@@ -212,6 +212,21 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   that was asked for, so the rest are read off the file name — safe only there,
   since the pack's siblings already say which show it is. Ambiguous means no
   id at all: writing progress onto the wrong film is worse than writing none.
+- **Playback holds the downlink only until the film is on the disk.** `focus`
+  pauses every other download while the file playing is still arriving, and
+  `hold` (on the poll) starts them again the moment its last byte lands — so
+  the next episode is coming down before this one ends. Inside a pack the
+  engine fetches the file being read first (a `ventic:` change in the vendored
+  librqbit; `cargo test --lib buffer` holds it), or the episode on screen
+  waited behind every one named before it. Leaving the player puts back what
+  it found (`planRelease`): a torrent already downloading when Play was
+  pressed goes on downloading, and only what the play started is paused. That
+  is `Started.running`, read off the engine inside `startTorrent` because
+  `startTorrent` is what starts it. A play never narrows a torrent the engine
+  already holds, only adds to it (`wantedFiles`), or a pack added whole lost
+  every other file the first time one of them was played. `check:downloads`
+  drives the real store through all of it against a fake engine — the only
+  check that runs a store, because the bug was in the wiring.
 - **A film this device can't keep streams through a buffer instead.**
   `shouldStream` in `utils/torrents.ts` is the whole decision. *Automatic*
   (Settings → Storage) downloads a film that fits the budget — everything played
@@ -254,7 +269,7 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   `check:perf`, `check:android-downloads`, `check:updates`, `check:supporters`,
   `check:audio`, `check:people`, `check:cast`, `check:iptv`, `check:i18n`,
   `check:macos`, `check:signing`, `check:play-notes`, `check:steps`,
-  `check:settings-search`).
+  `check:settings-search`, `check:downloads`).
   Add to those rather than pulling in a test framework. `bun run check` runs
   every one of them — it reads the names out of package.json rather than holding
   a list, so a check added today is in that sweep today. `bun run check:types` is
