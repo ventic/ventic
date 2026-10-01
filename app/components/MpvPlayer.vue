@@ -2214,7 +2214,10 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
 
         <!-- The subtitle panel is three tabs, and opens on the one it is opened
              for: choosing. Plain buttons, for the reason settings-segment gives;
-             only the open one is a stop — see `onTabKey`. -->
+             only the open one is a stop — see `onTabKey`. That one is filled in
+             the accent, which is also the colour of the d-pad's ring, so the
+             ring is drawn outside the tab rather than inset into it, where it
+             would vanish into the fill. -->
         <div
           v-if="menu === 'subs'"
           role="tablist"
@@ -2227,10 +2230,10 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
             role="tab"
             :aria-selected="subTab === t.value"
             :tabindex="subTab === t.value ? 0 : -1"
-            class="min-w-0 flex-1 border-0 rounded-md px-2 text-label-large leading-tight transition-colors duration-120"
+            class="min-w-0 flex-1 border-0 rounded-md px-2 text-label-large leading-tight transition-colors duration-120 focus:!outline-offset-2"
             :class="[
               big ? 'py-2.5' : 'py-1.5',
-              subTab === t.value ? 'bg-white text-black' : 'bg-transparent text-white/70 hover:bg-white/9 hover:text-white',
+              subTab === t.value ? 'bg-primary text-on-primary font-medium' : 'bg-transparent text-white/70 hover:bg-white/9 hover:text-white',
             ]"
             @click="subTab = t.value"
           >
