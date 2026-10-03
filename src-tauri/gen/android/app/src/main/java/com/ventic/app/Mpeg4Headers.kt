@@ -5,6 +5,7 @@ import androidx.media3.common.C
 import androidx.media3.common.DataReader
 import androidx.media3.common.Format
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.ParsableBitArray
 import androidx.media3.common.util.ParsableByteArray
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.extractor.Extractor
@@ -14,6 +15,8 @@ import androidx.media3.extractor.ExtractorsFactory
 import androidx.media3.extractor.PositionHolder
 import androidx.media3.extractor.SeekMap
 import androidx.media3.extractor.TrackOutput
+import androidx.media3.extractor.mkv.MatroskaExtractor
+import androidx.media3.extractor.text.DefaultSubtitleParserFactory
 import androidx.media3.extractor.text.SubtitleParser
 import java.io.ByteArrayOutputStream
 import java.io.EOFException
@@ -38,24 +41,45 @@ import java.io.EOFException
  * code — none, or that stray byte — holds its format back until the first
  * sample, and is then announced with everything in front of that sample's first
  * VOP start code as its `csd-0`, which is what media3's own TS reader does for
- * the same codec. Every other track passes straight through.
+ * the same codec. Every other track passes straight through, bar two Matroska
+ * repairs further down (`SkipsCompressed`, `Counted`) that live here because
+ * this is the one factory both routes read through.
  */
 @androidx.annotation.OptIn(UnstableApi::class)
 class Mpeg4Headers(private val inner: ExtractorsFactory) : ExtractorsFactory {
-  override fun createExtractors(): Array<Extractor> = inner.createExtractors().map(::Wrapped).toTypedArray()
+  override fun createExtractors(): Array<Extractor> = inner.createExtractors().map(::wrap).toTypedArray()
 
   override fun createExtractors(uri: Uri, responseHeaders: Map<String, List<String>>): Array<Extractor> =
-    inner.createExtractors(uri, responseHeaders).map(::Wrapped).toTypedArray()
+    inner.createExtractors(uri, responseHeaders).map(::wrap).toTypedArray()
+
+  // What DefaultExtractorsFactory builds its own Matroska reader with, so the one
+  // swapped in below reads subtitles exactly as that one would have.
+  private var subtitles: SubtitleParser.Factory = DefaultSubtitleParserFactory()
+  private var transcoding = true
+
+  private fun wrap(extractor: Extractor): Extractor = Wrapped(
+    if (extractor is MatroskaExtractor) {
+      SkipsCompressed(subtitles, if (transcoding) 0 else MatroskaExtractor.FLAG_EMIT_RAW_SUBTITLE_DATA)
+    } else {
+      extractor
+    },
+  )
 
   // DefaultMediaSourceFactory sets up subtitle parsing through these, and the
   // interface's own defaults would quietly do nothing with it.
   override fun setSubtitleParserFactory(factory: SubtitleParser.Factory) =
-    apply { inner.setSubtitleParserFactory(factory) }
+    apply {
+      subtitles = factory
+      inner.setSubtitleParserFactory(factory)
+    }
 
   @Deprecated("Forwarded for as long as DefaultMediaSourceFactory still calls it")
   @Suppress("DEPRECATION")
   override fun experimentalSetTextTrackTranscodingEnabled(enabled: Boolean) =
-    apply { inner.experimentalSetTextTrackTranscodingEnabled(enabled) }
+    apply {
+      transcoding = enabled
+      inner.experimentalSetTextTrackTranscodingEnabled(enabled)
+    }
 
   override fun experimentalSetCodecsToParseWithinGopSampleDependencies(codecs: Int) =
     apply { inner.experimentalSetCodecsToParseWithinGopSampleDependencies(codecs) }
@@ -69,7 +93,13 @@ class Mpeg4Headers(private val inner: ExtractorsFactory) : ExtractorsFactory {
       val tracks = HashMap<Int, TrackOutput>()
       inner.init(object : ExtractorOutput {
         override fun track(id: Int, type: Int) = tracks.getOrPut(id) {
-          output.track(id, type).let { if (type == C.TRACK_TYPE_VIDEO) Held(it) else it }
+          output.track(id, type).let {
+            when (type) {
+              C.TRACK_TYPE_VIDEO -> Held(it)
+              C.TRACK_TYPE_AUDIO -> Counted(it)
+              else -> it
+            }
+          }
         }
 
         override fun endTracks() = output.endTracks()
@@ -162,5 +192,97 @@ class Mpeg4Headers(private val inner: ExtractorsFactory) : ExtractorsFactory {
 
     private fun startCodeAt(b: ByteArray, i: Int) =
       b[i] == 0.toByte() && b[i + 1] == 0.toByte() && b[i + 2] == 1.toByte()
+  }
+
+  /**
+   * Gives an AAC track laid out by a program config element the channel count
+   * media3 leaves at 0.
+   *
+   * FFmpeg's encoder writes 7.1 that way — channelConfiguration 0, and the
+   * layout in-band — and media3 (1.8.0) reads no PCE, so the track reaches the
+   * player as 0 channels. The decoder doesn't mind (it reads the PCE itself and
+   * comes out with 8), but the track selector ranks audio by channel count when
+   * no track is flagged default, so a film's 7.1 soundtrack lost to its own
+   * stereo commentary: The Descent, cast to the TV, played the director talking
+   * over it. mpv takes the first track and never noticed.
+   */
+  private class Counted(private val out: TrackOutput) : TrackOutput by out {
+    override fun format(format: Format) {
+      val pce = format.initializationData.firstOrNull()
+        ?.takeIf { format.sampleMimeType == MimeTypes.AUDIO_AAC && format.channelCount <= 0 }
+      val channels = pce?.let(::pceChannels) ?: 0
+      out.format(if (channels > 0) format.buildUpon().setChannelCount(channels).build() else format)
+    }
+
+    // A default method on the interface, which `by` doesn't forward: left out,
+    // every audio track's duration would quietly go nowhere.
+    override fun durationUs(durationUs: Long) = out.durationUs(durationUs)
+  }
+
+  /**
+   * A Matroska reader that leaves out a track it can't decompress, rather than
+   * the whole film.
+   *
+   * mkvmerge zlib-compresses PGS and VobSub subtitles by default, and media3
+   * (1.8.0) reads header stripping and nothing else: one such track throws
+   * `ContentCompAlgo 0 not supported` before a single frame is decoded, and the
+   * film fails as a container that "could not be read". Measured on a BluRay
+   * x265 release carrying eight PGS tracks, which mpv plays without a word —
+   * so it played on the laptop and failed when cast to the TV. Nothing is lost
+   * by leaving them out: a bitmap subtitle has no text, and text is all the
+   * page draws (`onCues` in Player.kt).
+   *
+   * ponytail: any compressed track, not only a subtitle. A zlib picture or sound
+   * has never turned up (FFmpeg's muxer never compresses, mkvmerge only
+   * subtitles), and would play without it rather than fail.
+   */
+  private class SkipsCompressed(subtitles: SubtitleParser.Factory, flags: Int) : MatroskaExtractor(subtitles, flags) {
+    private var compressed = false
+
+    override fun integerElement(id: Int, value: Long) {
+      // ContentCompAlgo; 3 is header stripping, the one media3 reads.
+      if (id == 0x4254 && value != 3L) compressed = true else super.integerElement(id, value)
+    }
+
+    override fun endMasterElement(id: Int) {
+      // The end of a TrackEntry, where its codec is settled whatever order the
+      // elements came in. A codec media3 doesn't know is a track it leaves out.
+      if (id == 0xAE && compressed) {
+        compressed = false
+        getCurrentTrack(id).codecId = "ventic/compressed"
+      }
+      super.endMasterElement(id)
+    }
+  }
+}
+
+/**
+ * The channels an AAC AudioSpecificConfig's program config element lays out
+ * (ISO 14496-3, 1.6.2.1 and 4.4.1.1), or 0 where it has none to read.
+ */
+private fun pceChannels(asc: ByteArray): Int {
+  val b = ParsableBitArray(asc)
+  return try {
+    val objectType = b.readBits(5)
+    if (b.readBits(4) == 0xF) b.skipBits(24) // a sampling rate spelled out
+    // Main, LC, SSR or LTP, whose config this layout is part of — and
+    // channelConfiguration 0, the one that says a PCE follows.
+    if (objectType !in 1..4 || b.readBits(4) != 0) return 0
+    b.skipBits(1) // frameLengthFlag
+    if (b.readBit()) b.skipBits(14) // dependsOnCoreCoder, and the coder's delay
+    b.skipBits(1 + 4 + 2 + 4) // extensionFlag; the PCE's own tag, object type and rate
+    val elements = b.readBits(4) + b.readBits(4) + b.readBits(4) // front, side, back
+    var channels = b.readBits(2) // LFE
+    b.skipBits(3 + 4) // data and coupling elements
+    if (b.readBit()) b.skipBits(4) // mono mixdown
+    if (b.readBit()) b.skipBits(4) // stereo mixdown
+    if (b.readBit()) b.skipBits(3) // matrix mixdown
+    repeat(elements) {
+      channels += if (b.readBit()) 2 else 1 // a channel pair, or one channel
+      b.skipBits(4)
+    }
+    channels
+  } catch (_: IllegalStateException) {
+    0 // shorter than it says it is
   }
 }

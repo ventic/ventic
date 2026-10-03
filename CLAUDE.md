@@ -89,7 +89,12 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   dies. `Mpeg4Headers.kt` wraps the extractors and puts the real header (from the
   first keyframe) back; both media source routes in `Player.kt` must read through
   it, which `check:player` holds. Before blaming a codec, `ffmpeg -c copy` the file
-  and play the copy: if the remux plays, it is the container.
+  and play the copy: if the remux plays, it is the container. The same wrapper
+  carries two Matroska repairs. A track compressed with anything but header
+  stripping (mkvmerge zlib-compresses PGS subtitles by default) made media3 throw
+  `ContentCompAlgo 0 not supported` and fail the whole film, so it is left out.
+  And an AAC track laid out by a PCE (FFmpeg's 7.1) read as 0 channels and lost
+  the track selection to a stereo commentary, so its channels are counted.
 - **Nothing tells the desktop a film is on, so the app does.** Two hours of
   playback is two hours of no input, which every idle timer reads as an empty
   room — the screen blanks, or the machine suspends, mid-film. mpv would

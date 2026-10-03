@@ -376,6 +376,15 @@ assert.equal(kotlin.match(/DefaultMediaSourceFactory\(activity, extractors\)/g)?
 assert.match(kotlin, /\.setMediaSourceFactory\(DefaultMediaSourceFactory\(activity, extractors\)\)/, 'and the plain one is the player\'s own')
 assert.match(kotlin, /extractors by lazy \{ Mpeg4Headers\(DefaultExtractorsFactory\(\)\) \}/, 'which wraps the stock extractors')
 
+// The same wrapper carries two Matroska fixes, measured on a BluRay x265 release
+// that mpv played and the TV refused: a zlib-compressed PGS track (mkvmerge's
+// default) threw and failed the whole film, and its 7.1 AAC, laid out by a PCE,
+// read as 0 channels — so the track selector chose the stereo commentary.
+const headers = await Bun.file('src-tauri/gen/android/app/src/main/java/com/ventic/app/Mpeg4Headers.kt').text()
+assert.match(headers, /extractor is MatroskaExtractor\) \{\s*SkipsCompressed\(/, 'the stock Matroska reader is swapped for one that leaves out a track it can\'t decompress')
+assert.match(headers, /C\.TRACK_TYPE_AUDIO -> Counted\(it\)/, 'and every audio track reads through the PCE channel count')
+assert.match(headers, /class Counted\([\s\S]*?override fun durationUs\(durationUs: Long\) = out\.durationUs\(durationUs\)[\s\S]*?class SkipsCompressed/, 'which forwards the default method `by` leaves out')
+
 // --- A link the source resolved itself is somebody else's host ------------------
 // `waitForStream` is the one thing in the player bound by CORS, and it is the
 // gate every stream passes before mpv or ExoPlayer is handed it. The local
