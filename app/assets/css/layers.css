@@ -134,9 +134,13 @@
   }
 
   /* Vuetify's color props compile to bg-* utility classes, which this app
-     doesn't ship ($color-pack: false), so panels clear their children here. */
+     doesn't ship ($color-pack: false), so panels clear their children here.
+     The overlay surfaces too: a select's popup is a sheet around a list, and a
+     menu is usually a card around one, and VList paints itself opaque `surface`
+     — so the frost above was there all along, under a solid list. */
   .panel .v-list,
-  .panel .v-toolbar__content {
+  .panel .v-toolbar__content,
+  .v-overlay__content > :is(.v-card, .v-sheet) .v-list {
     background: transparent;
   }
 

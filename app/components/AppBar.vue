@@ -105,7 +105,7 @@ watch(() => route.path, () => {
            same in the bar along the bottom (AppNav). -->
       <v-menu v-if="!mobile" location="bottom end" offset="6">
         <template #activator="{ props: menu }">
-          <v-btn v-bind="menu" icon variant="text" :aria-label="$t('Profile')">
+          <v-btn v-bind="menu" icon variant="text" color="on-surface" :aria-label="$t('Profile')">
             <profile-avatar :profile="profiles.current" :size="32" />
             <v-tooltip activator="parent" :text="profileName(profiles.current)" />
           </v-btn>
