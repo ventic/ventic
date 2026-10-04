@@ -13,6 +13,9 @@ type ListName = 'favourites' | 'watchlist'
  * Five flat records in localStorage rather than a database. A card
  * snapshot is ~300 bytes, so the 5MB budget holds roughly ten thousand of them;
  * add pruning the day someone actually fills it.
+ *
+ * All of it is the current profile's: every key goes through `scoped()` (see
+ * utils/profiles), so each person's library is its own set of the same maps.
  */
 export const useLibraryStore = defineStore('library', () => {
   /**
@@ -20,17 +23,17 @@ export const useLibraryStore = defineStore('library', () => {
    * render without asking TMDB for a hundred titles one at a time. Keyed by
    * titleKey.
    */
-  const media = useLocalStorage<Record<string, Media>>('ventic.media', {})
+  const media = useLocalStorage<Record<string, Media>>(scoped('ventic.media'), {})
   /** Keyed by progressKey — one entry per movie and per episode. */
-  const progress = useLocalStorage<Record<string, Progress>>('ventic.progress', {})
+  const progress = useLocalStorage<Record<string, Progress>>(scoped('ventic.progress'), {})
 
   /**
    * Two lists, both titleKey -> when it was added, newest first when sorted.
    * Kept apart on purpose: a favourite is something you loved, the watchlist is
    * something you mean to get to.
    */
-  const favourites = useLocalStorage<Record<string, number>>('ventic.favourites', {})
-  const watchlist = useLocalStorage<Record<string, number>>('ventic.watchlist', {})
+  const favourites = useLocalStorage<Record<string, number>>(scoped('ventic.favourites'), {})
+  const watchlist = useLocalStorage<Record<string, number>>(scoped('ventic.watchlist'), {})
 
   /**
    * Live TV channels you starred, by `channelKey` -> when. Its own map rather
@@ -39,7 +42,7 @@ export const useLibraryStore = defineStore('library', () => {
    * no TMDB id, no poster, no page. All it needs is to sort to the top of the
    * Live TV grid.
    */
-  const favouriteChannels = useLocalStorage<Record<string, number>>('ventic.liveFavourites', {})
+  const favouriteChannels = useLocalStorage<Record<string, number>>(scoped('ventic.liveFavourites'), {})
 
   /**
    * What this device has deleted, `<map>:<entry>` -> when. Only sync reads it
@@ -50,7 +53,7 @@ export const useLibraryStore = defineStore('library', () => {
    * back for ever. Pruned on write; a deletion older than that has reached every
    * screen that was ever going to hear about it.
    */
-  const deleted = useLocalStorage<Record<string, number>>('ventic.deleted', {})
+  const deleted = useLocalStorage<Record<string, number>>(scoped('ventic.deleted'), {})
 
   /** `forget('favourites:movie:603')` — the map name is the localStorage key's suffix. */
   function forget(...keys: string[]) {

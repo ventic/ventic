@@ -1109,6 +1109,28 @@ watch(() => started.value && !paused.value, on => {
 })
 
 // ---------------------------------------------------------------------------
+// Watch time
+//
+// A profile with a daily limit spends it here, on the same "a film is on" the
+// screen is kept awake for — so pausing stops the clock. Out of time, the player
+// leaves rather than covering itself: on a desktop the picture is a native
+// window the page can't draw over, and leaving is what saves the position.
+// ---------------------------------------------------------------------------
+const profiles = useProfilesStore()
+const TICK = 10
+
+useIntervalFn(() => {
+  if (!started.value || paused.value)
+    return
+  const before = profiles.left
+  profiles.spend(TICK)
+  if (before > 300 && profiles.left <= 300)
+    osd($t('5 minutes of watch time left today'), 5000)
+  if (profiles.timeUp)
+    emit('exit')
+}, TICK * 1000)
+
+// ---------------------------------------------------------------------------
 // Lifecycle
 // ---------------------------------------------------------------------------
 async function startPlayer() {

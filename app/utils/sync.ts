@@ -26,8 +26,10 @@
  * without a browser or a server.
  */
 import type { Backup } from './backup'
+import type { Profile } from './profiles'
 import { fetch as tauriFetch } from '@tauri-apps/plugin-http'
 import { readBackup } from './backup'
+import { unscope } from './profiles'
 
 const PREFIX = 'ventic.'
 
@@ -52,22 +54,29 @@ export const GROUP_DEFAULTS: Groups = { library: true, sources: true, preference
  * Credentials don't need listing: `makeBackup` drops the SECRET set before this
  * file ever sees a key, which is also why the sync's own settings can't sync.
  */
-const NEVER = new Set(['cached', 'local', 'downloadDir', 'touched', 'peakUpload', 'ground', 'updateSkipped', 'castReceive', 'castName', 'castAsk', 'sync'])
+const NEVER = new Set(['cached', 'local', 'downloadDir', 'touched', 'peakUpload', 'ground', 'updateSkipped', 'castReceive', 'castName', 'castAsk', 'sync', 'profile', 'watchTime'])
 
-/** Watch state — the reason anybody asked for this. */
-const LIBRARY = new Set(['media', 'progress', 'favourites', 'watchlist', 'liveFavourites', 'deleted'])
+/**
+ * Watch state — the reason anybody asked for this — and whose it is: the
+ * profiles travel with their libraries, and the PIN with the profiles it locks,
+ * or another screen would get a child's profile with nothing guarding it.
+ */
+const LIBRARY = new Set(['media', 'progress', 'favourites', 'watchlist', 'liveFavourites', 'deleted', 'profiles', 'pin'])
 
 /**
  * Maps whose entries carry their own timestamp, so two libraries merge entry by
  * entry rather than one of them winning whole. The name is the key's suffix, and
  * `library.ts` writes its tombstones under exactly these — see `forget` there.
+ * The profile registry is one too, carrying its own tombstones as `gone`.
  */
-const TIMED = new Set(['progress', 'favourites', 'watchlist', 'liveFavourites'])
+const TIMED = new Set(['progress', 'favourites', 'watchlist', 'liveFavourites', 'profiles'])
 
-/** Deletions this device knows about, `<map>:<entry>` -> when. */
+/** Deletions this device knows about, `<map>:<entry>` -> when. One per profile. */
 export const DELETED = `${PREFIX}deleted`
 /** Poster and title snapshots. Added to, never individually removed. */
 export const MEDIA = `${PREFIX}media`
+/** Everyone on the install — see utils/profiles. */
+const PROFILES = `${PREFIX}profiles`
 
 /**
  * How long a deletion is remembered. Long enough for a television switched on
@@ -113,11 +122,19 @@ export const SYNC_GROUPS: { key: GroupKey, title: () => string, hint: () => stri
   },
 ]
 
+/**
+ * The name every table here is keyed by, whoever's it is: a profile's copy of a
+ * key is the same key with `@<profile>` on the end (see utils/profiles).
+ */
+function nameOf(key: string) {
+  return unscope(key)[0].slice(PREFIX.length)
+}
+
 /** Which switch a key answers to, or null for one that never travels. */
 export function groupOf(key: string): GroupKey | null {
   if (!key.startsWith(PREFIX))
     return null
-  const name = key.slice(PREFIX.length)
+  const name = nameOf(key)
   if (NEVER.has(name))
     return null
   if (LIBRARY.has(name))
@@ -203,6 +220,8 @@ export interface Merge {
   local: Record<string, string>
   /** The whole file to send back up. */
   remote: Record<string, string>
+  /** Keys this device holds for a profile deleted elsewhere, to remove from its storage. */
+  drop: string[]
 }
 
 /**
@@ -211,6 +230,10 @@ export interface Merge {
  * A group this device has switched off is not read *and not written*: the file
  * keeps whatever another device put there. Otherwise a laptop with Preferences
  * off would quietly wipe the preferences two other screens are syncing.
+ *
+ * Every profile's maps merge against that profile's own tombstones — the
+ * `deleted` key with the same suffix — and a profile deleted on any screen takes
+ * every key it kept with it, here and in the file.
  */
 export function mergeKeys(
   local: Record<string, string>,
@@ -219,7 +242,12 @@ export function mergeKeys(
   groups: Groups,
   now = Date.now(),
 ): Merge {
-  const tombs = mergeDeleted(json(local[DELETED], {}), json(remote[DELETED], {}), now)
+  const tombs = new Map<string, Record<string, number>>()
+  const tombsOf = (suffix: string) => {
+    if (!tombs.has(suffix))
+      tombs.set(suffix, mergeDeleted(json(local[DELETED + suffix], {}), json(remote[DELETED + suffix], {}), now))
+    return tombs.get(suffix)!
+  }
   const merged: Record<string, string> = {}
 
   for (const key of new Set([...Object.keys(local), ...Object.keys(remote)])) {
@@ -227,18 +255,20 @@ export function mergeKeys(
     if (!group || !(groups[group] ?? GROUP_DEFAULTS[group]))
       continue
 
-    const name = key.slice(PREFIX.length)
-    if (key === DELETED) {
-      merged[key] = JSON.stringify(tombs)
+    const [bare] = unscope(key)
+    const suffix = key.slice(bare.length)
+    const name = bare.slice(PREFIX.length)
+    if (bare === DELETED) {
+      merged[key] = JSON.stringify(tombsOf(suffix))
     }
     // Snapshots of artwork, not state: added to and never individually removed,
     // so a union is the whole merge. An orphan costs a few hundred bytes and is
     // never rendered — nothing lists a title the other three maps have dropped.
-    else if (key === MEDIA) {
+    else if (bare === MEDIA) {
       merged[key] = JSON.stringify({ ...json(remote[key], {}), ...json(local[key], {}) })
     }
     else if (TIMED.has(name)) {
-      merged[key] = JSON.stringify(mergeMap(name, json(local[key], {}), json(remote[key], {}), tombs))
+      merged[key] = JSON.stringify(mergeMap(name, json(local[key], {}), json(remote[key], {}), tombsOf(suffix)))
     }
     else {
       const value = threeWay(local[key], remote[key], base[key])
@@ -247,7 +277,17 @@ export function mergeKeys(
     }
   }
 
-  return { local: merged, remote: { ...remote, ...merged } }
+  const gone = new Set(Object.values(json<Record<string, Profile>>(merged[PROFILES] ?? local[PROFILES], {}))
+    .filter(p => p?.gone)
+    .map(p => p.id))
+  const live = (key: string) => !gone.has(unscope(key)[1])
+  const keep = (keys: Record<string, string>) => Object.fromEntries(Object.entries(keys).filter(([key]) => live(key)))
+
+  return {
+    local: keep(merged),
+    remote: keep({ ...remote, ...merged }),
+    drop: Object.keys(local).filter(key => !live(key)),
+  }
 }
 
 /**
@@ -257,7 +297,10 @@ export function mergeKeys(
  */
 export function baseOf(keys: Record<string, string>) {
   return Object.fromEntries(
-    Object.entries(keys).filter(([key]) => key !== DELETED && key !== MEDIA && !TIMED.has(key.slice(PREFIX.length))),
+    Object.entries(keys).filter(([key]) => {
+      const [bare] = unscope(key)
+      return bare !== DELETED && bare !== MEDIA && !TIMED.has(nameOf(key))
+    }),
   )
 }
 

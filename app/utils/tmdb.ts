@@ -385,11 +385,37 @@ interface RawDetail extends TmdbItem {
   external_ids?: { imdb_id?: string | null }
 }
 
-function certificationOf(raw: RawDetail) {
+// "NR" is passed over: it says nobody rated it, which is what an empty answer
+// already says — and a show often carries it beside the rating it does have.
+function certificationOf(raw: Pick<RawDetail, 'release_dates' | 'content_ratings'>) {
   const dates = raw.release_dates?.results.find(r => r.iso_3166_1 === 'US')
   if (dates)
-    return dates.release_dates.find(d => d.certification)?.certification ?? ''
-  return raw.content_ratings?.results.find(r => r.iso_3166_1 === 'US')?.rating ?? ''
+    return dates.release_dates.find(d => d.certification && d.certification !== 'NR')?.certification ?? ''
+  return raw.content_ratings?.results.find(r => r.iso_3166_1 === 'US' && r.rating && r.rating !== 'NR')?.rating ?? ''
+}
+
+const ratings = new Map<string, Promise<string>>()
+
+/**
+ * One title's US rating on its own: what a child's profile checks a search
+ * result, a filmography or a Play against, where no discover filter could have.
+ * Kept for the session — a page of results asks for twenty at once, and again on
+ * the way back. A failure isn't kept, and reads as unrated meanwhile.
+ */
+export function ratingOf(type: MediaType, id: number | string): Promise<string> {
+  const key = `${type}:${id}`
+  let rating = ratings.get(key)
+  if (!rating) {
+    rating = (type === 'movie'
+      ? tmdb<RawDetail['release_dates']>(`/movie/${id}/release_dates`).then(r => certificationOf({ release_dates: r }))
+      : tmdb<RawDetail['content_ratings']>(`/tv/${id}/content_ratings`).then(r => certificationOf({ content_ratings: r })))
+      .catch(() => {
+        ratings.delete(key)
+        return ''
+      })
+    ratings.set(key, rating)
+  }
+  return rating
 }
 
 function trailerOf(raw: RawDetail) {
@@ -466,7 +492,15 @@ export function useMediaDetail(type: MaybeRefOrGetter<MediaType>, id: MaybeRefOr
     {
       lazy: true,
       watch: [() => toValue(type), () => toValue(id)],
-      transform: raw => raw ? toDetail(raw, toValue(type)) : null,
+      transform: raw => {
+        if (!raw)
+          return null
+        const detail = toDetail(raw, toValue(type))
+        // Play is usually pressed on this page, and a child's profile checks
+        // the rating then — it is already here.
+        ratings.set(`${detail.type}:${detail.id}`, Promise.resolve(detail.certification))
+        return detail
+      },
     },
   )
 }

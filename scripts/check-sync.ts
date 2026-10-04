@@ -192,6 +192,79 @@ assert.deepEqual(
   assert.deepEqual(Object.keys(base), ['ventic.theme'])
 }
 
+// --- Profiles -------------------------------------------------------------------
+
+// A profile's copy of a key is the same key with `@<id>` on it, and travels in
+// the same group as the default profile's.
+assert.equal(groupOf('ventic.progress@k1'), 'library')
+assert.equal(groupOf('ventic.deleted@k1'), 'library')
+assert.equal(groupOf('ventic.theme@k1'), 'preferences')
+// Who is on the install travels with what they watched, and the PIN with the
+// profiles it locks — or another screen gets a child's profile with no lock.
+assert.equal(groupOf('ventic.profiles'), 'library')
+assert.equal(groupOf('ventic.pin'), 'library')
+// Which profile a screen is in, and how long a child watched on it today, are
+// that screen's.
+assert.equal(groupOf('ventic.profile'), null)
+assert.equal(groupOf('ventic.watchTime'), null)
+assert.equal(groupOf('ventic.watchTime@k1'), null)
+
+{
+  // Each profile merges against its own tombstones: the default profile
+  // unfavouriting a film must not take it from the child who also loves it.
+  const laptop = {
+    ...keys({ favourites: {}, deleted: { 'favourites:movie:603': NOW - MINUTE } }),
+    'ventic.favourites@k1': JSON.stringify({ 'movie:603': NOW - 10 * MINUTE }),
+  }
+  const tv = {
+    ...keys({ favourites: { 'movie:603': NOW - 10 * MINUTE } }),
+    'ventic.favourites@k1': JSON.stringify({ 'movie:603': NOW - 10 * MINUTE }),
+  }
+  const merged = mergeKeys(laptop, tv, {}, ALL, NOW)
+  assert.deepEqual(read(merged.local, 'favourites'), {}, 'the default profile\'s deletion applies to it')
+  assert.ok(JSON.parse(merged.local['ventic.favourites@k1']!)['movie:603'], 'and to nobody else')
+
+  // And the other way round: a child's deletion is a child's.
+  const kid = mergeKeys(
+    { 'ventic.progress@k1': '{}', 'ventic.deleted@k1': JSON.stringify({ 'progress:movie:603': NOW - MINUTE }) },
+    { 'ventic.progress@k1': JSON.stringify({ 'movie:603': { position: 1, duration: 2, at: NOW - 10 * MINUTE, watched: false } }), ...keys({ progress: { 'movie:603': { position: 1, duration: 2, at: NOW - 10 * MINUTE, watched: false } } }) },
+    {},
+    ALL,
+    NOW,
+  )
+  assert.deepEqual(JSON.parse(kid.local['ventic.progress@k1']!), {})
+  assert.ok(read(kid.local, 'progress')['movie:603'], 'the default profile keeps its own row')
+}
+
+{
+  // The registry merges entry by entry like progress: a profile made on the
+  // laptop and a rename on the television both survive.
+  const laptop = keys({ profiles: { k1: { id: 'k1', name: 'Kids', colour: '#e53935', at: NOW - MINUTE } } })
+  const tv = keys({ profiles: { default: { id: 'default', name: 'Tilen', colour: '#1e88e5', at: NOW - MINUTE } } })
+  const merged = mergeKeys(laptop, tv, {}, ALL, NOW)
+  assert.deepEqual(Object.keys(read(merged.local, 'profiles')).sort(), ['default', 'k1'])
+}
+
+{
+  // Deleted on the laptop: a tombstone in the registry, newer than the profile
+  // the television still holds — so it stays deleted, and everything it kept
+  // goes with it, from this screen and from the file.
+  const laptop = keys({ profiles: { k1: { id: 'k1', name: '', colour: '', at: NOW - MINUTE, gone: true } } })
+  const tv = {
+    ...keys({ profiles: { k1: { id: 'k1', name: 'Kids', colour: '#e53935', at: NOW - 10 * MINUTE } } }),
+    'ventic.progress@k1': JSON.stringify({ 'movie:603': { position: 1, duration: 2, at: NOW, watched: false } }),
+    'ventic.theme@k1': '"forest"',
+  }
+  const merged = mergeKeys(tv, laptop, {}, ALL, NOW)
+  assert.ok(read(merged.local, 'profiles').k1.gone, 'a deleted profile stays deleted')
+  assert.equal(merged.local['ventic.progress@k1'], undefined)
+  assert.equal(merged.remote['ventic.progress@k1'], undefined, 'and leaves the file too')
+  assert.deepEqual(merged.drop.sort(), ['ventic.progress@k1', 'ventic.theme@k1'], 'this screen removes what it kept')
+}
+
+// A profile's maps are maps here too, so the base leaves them out.
+assert.deepEqual(Object.keys(baseOf({ 'ventic.progress@k1': '{}', 'ventic.media@k1': '{}', 'ventic.theme@k1': '"dark"', 'ventic.profiles': '{}' })), ['ventic.theme@k1'])
+
 // --- The file's address --------------------------------------------------------
 
 assert.equal(target('https://dav.example.com/Ventic'), 'https://dav.example.com/Ventic/ventic-sync.json')

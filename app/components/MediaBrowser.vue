@@ -9,13 +9,15 @@ import type { MediaType } from '~/utils/tmdb'
 const props = defineProps<{ type: MediaType, anime?: boolean }>()
 
 const { lgAndUp } = useDisplay()
+const profiles = useProfilesStore()
 
 const isMovie = props.type === 'movie'
 
 const categories = computed(() => [
   { value: 'popular', title: $t('Popular') },
-  // /trending takes no filters at all, so it can't be narrowed to anime.
-  ...props.anime ? [] : [{ value: 'trending', title: $t('Trending') }],
+  // /trending takes no filters at all, so it can't be narrowed to anime — or to
+  // a child's rating, short of checking pages of grown-ups' titles one by one.
+  ...props.anime || profiles.current.kids ? [] : [{ value: 'trending', title: $t('Trending') }],
   { value: 'top_rated', title: $t('Top rated') },
   isMovie
     ? { value: 'upcoming', title: $t('Upcoming') }
@@ -67,6 +69,8 @@ const request = computed(() => {
     type: props.type,
     params: {
       include_adult: false,
+      // A child's rating ceiling, and the NSFW anime for anyone who hasn't asked for it.
+      ...profiles.discover(props.type),
       with_genres: genres.join(',') || undefined,
       with_original_language: props.anime ? 'ja' : undefined,
       ...sorting[category.value],

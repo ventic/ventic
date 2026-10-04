@@ -274,7 +274,7 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   `check:perf`, `check:android-downloads`, `check:updates`, `check:supporters`,
   `check:audio`, `check:people`, `check:cast`, `check:iptv`, `check:i18n`,
   `check:macos`, `check:signing`, `check:play-notes`, `check:steps`,
-  `check:settings-search`, `check:downloads`).
+  `check:settings-search`, `check:downloads`, `check:profiles`).
   Add to those rather than pulling in a test framework. `bun run check` runs
   every one of them — it reads the names out of package.json rather than holding
   a list, so a check added today is in that sweep today. `bun run check:types` is
@@ -532,6 +532,35 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   process, and the timer with it), and coming back is a device that has missed
   every tick since it was put down, which is exactly the case the feature is
   for.
+- **A profile is a suffix on a key, so the library everyone already had is the
+  default profile.** `scoped('ventic.progress')` (`app/utils/profiles.ts`) is
+  the bare key for the default profile and `ventic.progress@<id>` for any other:
+  nothing was migrated, and an older build still finds the library where it
+  left it. Each store decides per key — watch state and matters of taste go
+  through `scoped()`, what describes the machine (sources, playlists, engine,
+  storage, casting, `uiScale`) does not, because a child's profile with its own
+  source list is a way round every control. Switching is a reload, like a
+  restore, and `ACTIVE` is read once, before any store exists. The registry
+  (`ventic.profiles`) syncs entry by entry with the library; a deleted profile
+  stays in it as `gone` so another screen can't hand it back, `mergeKeys` drops
+  its keys from both sides, and each profile's maps merge against its own
+  `deleted@<id>`. **Parental controls are decided in one place**,
+  `middleware/profile.global.ts`, which every route passes — a cast and a deep
+  link included: a rating ceiling on TMDB's US scale (bounded *below* too, since
+  TMDB files "NR" under the mildest rating), a daily watch time the player spends
+  while `started && !paused` and leaves the film when it runs out (a native mpv
+  window can't be drawn over), and no Live TV, Downloads or Settings. Browse
+  pages ask TMDB for the ceiling (`discoverParams`); search, recommendations and
+  filmographies are checked a title at a time (`allowedOnly`, cached by
+  `ratingOf`), which `useMediaFeed` skips only for a request already carrying
+  `certification.lte`. One household PIN, salted and hashed, travels with the
+  profiles in backups and sync — a child's profile arriving without one would be
+  guarded by nothing. A child's profile survives a restart, and a grown-up's
+  asks again after the app has been away 30 minutes, because a television keeps
+  the process alive through standby. NSFW anime is a keyword exclusion
+  (`NSFW_KEYWORDS`) on discover/tv, off unless a grown-up's profile asks; `ecchi`
+  is deliberately not in it (Fairy Tail has it). `bun run check:profiles` holds
+  the rules and the seams.
 - Go through the store for watch state anyway: `record`, `finish`, `setWatched`,
   `toggleFavourite`, `toggleWatchlist` own the rules about what counts as
   watched. Don't write `progress`/`favourites`/`watchlist` from a component.
@@ -688,8 +717,9 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   Vuetify's own `$vuetify` object.
 - **An options table built at module load can't call `$t` yet**, so its labels
   are functions: `SECTIONS`, `FILTERS`, `LAYOUTS`, `BACKDROP_MODES`,
-  `TORRENT_STATUS` and `MENU_TITLES` all hold `title: () => $t('…')` and are
-  called at the point of use. Inside a component, a plain `computed` is enough.
+  `TORRENT_STATUS`, `MENU_TITLES` and `LEVELS` all hold `title: () => $t('…')`
+  and are called at the point of use. Inside a component, a plain `computed` is
+  enough.
 - **The language picker's flags are the only icons that aren't `@mdi/js`.** A
   country flag emoji is two regional indicator letters — Windows ships no glyph
   for the pair and a TV draws "SI" — so they are Twemoji pictures through

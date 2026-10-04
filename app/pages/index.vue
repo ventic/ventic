@@ -4,12 +4,17 @@ import { mdiBookmark, mdiBookmarkOutline, mdiHeart, mdiHeartOutline, mdiInformat
 
 const ui = useUiStore()
 const library = useLibraryStore()
+const profiles = useProfilesStore()
 const { smAndDown } = useDisplay()
 
+// Trending takes no filters, so a child's profile leads with the popular films
+// its rating allows instead.
 const { data: trending } = useAsyncData(
   'home-trending',
-  () => tmdb<TmdbPage>('/trending/all/day'),
-  { lazy: true, transform: page => page.results.flatMap(item => toMedia(item) ?? []) },
+  () => profiles.current.kids
+    ? tmdb<TmdbPage>('/discover/movie', { sort_by: 'popularity.desc', ...profiles.discover('movie') })
+    : tmdb<TmdbPage>('/trending/all/day'),
+  { lazy: true, transform: page => page.results.flatMap(item => toMedia(item, 'movie') ?? []) },
 )
 
 /**
@@ -44,10 +49,12 @@ const logo = computed(() => featured.value && logos.value?.[`${featured.value.ty
 // ponytail: no auto-advance. It moves the thing under a remote's focus ring,
 // and it is a `useIntervalFn` plus a pause-on-focus rule away if it's missed.
 
-const rows = computed(() => [
-  { title: $t('Popular movies'), request: { path: '/movie/popular', type: 'movie' as const } },
-  { title: $t('Popular shows'), request: { path: '/tv/popular', type: 'tv' as const } },
-])
+// Discover rather than /movie/popular and /tv/popular, which are the same list
+// with no filters: the most popular "show" on TMDB was an erotic anime short.
+const rows = computed(() => (['movie', 'tv'] as const).map(type => ({
+  title: type === 'movie' ? $t('Popular movies') : $t('Popular shows'),
+  request: { path: `/discover/${type}`, type, params: { sort_by: 'popularity.desc', ...profiles.discover(type) } },
+})))
 
 // Enough room for a poster row so v-lazy doesn't collapse before it mounts.
 const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)

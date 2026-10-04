@@ -168,4 +168,7 @@ useStyleTag(computed(() => settings.customCss), { id: 'ventic-custom-css' })
   <nuxt-layout>
     <nuxt-page />
   </nuxt-layout>
+  <!-- Beside the layouts rather than in one: the profile picker and the player
+       have none, and the route middleware asks for the PIN before either is up. -->
+  <pin-dialog />
 </template>

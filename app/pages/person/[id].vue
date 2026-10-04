@@ -65,7 +65,12 @@ useInfiniteScroll(
   () => { shown.value += PAGE },
   { distance: 800, canLoadMore: () => shown.value < (person.value?.credits.length ?? 0) },
 )
-const credits = computed(() => person.value?.credits.slice(0, shown.value) ?? [])
+const slice = computed(() => person.value?.credits.slice(0, shown.value) ?? [])
+// A filmography is no discover request, so a child's profile checks it a title
+// at a time — the slice on screen only, which is what keeps it to a page.
+const profiles = useProfilesStore()
+const allowedSlice = computedAsync(() => profiles.allowedOnly(slice.value), [])
+const credits = computed(() => profiles.current.kids ? allowedSlice.value : slice.value)
 </script>
 
 <template>

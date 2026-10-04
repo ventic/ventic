@@ -4,6 +4,7 @@ import type { SubtitleStyle } from '~/utils/subtitles'
 import type { PlayMode } from '~/utils/torrents'
 import {
   mdiAccountCircleOutline,
+  mdiAccountMultipleOutline,
   mdiCellphone,
   mdiFolderOutline,
   mdiHeartOutline,
@@ -19,7 +20,7 @@ import {
 import { StorageSerializers } from '@vueuse/core'
 import { DEFAULT_SOURCE } from '~/theme/presets'
 
-export type SectionKey = 'appearance' | 'language' | 'sources' | 'phone' | 'subtitles' | 'audio' | 'keyboard' | 'network' | 'storage' | 'account' | 'support' | 'about'
+export type SectionKey = 'appearance' | 'language' | 'sources' | 'phone' | 'subtitles' | 'audio' | 'keyboard' | 'network' | 'storage' | 'profiles' | 'account' | 'support' | 'about'
 
 /**
  * The sidebar of the settings layout, in the order it lists them. A `value` is
@@ -46,6 +47,7 @@ export const SECTIONS: { value: SectionKey, title: () => string, icon: string }[
   ...(onAndroid() ? [] : [{ value: 'keyboard' as const, title: () => $t('Keyboard'), icon: mdiKeyboardOutline }]),
   { value: 'network', title: () => $t('Network'), icon: mdiWifi },
   { value: 'storage', title: () => $t('Storage'), icon: mdiFolderOutline },
+  { value: 'profiles', title: () => $t('Profiles'), icon: mdiAccountMultipleOutline },
   { value: 'account', title: () => $t('Account'), icon: mdiAccountCircleOutline },
   { value: 'support', title: () => $t('Support'), icon: mdiHeartOutline },
   { value: 'about', title: () => $t('About'), icon: mdiInformationOutline },
@@ -59,6 +61,11 @@ export const SECTIONS: { value: SectionKey, title: () => string, icon: string }[
  * tauri-plugin-store. The webview's storage is per-app and survives updates;
  * the day settings have to sync to a backend, this store is the one thing that
  * changes.
+ *
+ * A matter of taste is the profile's — its key goes through `scoped()` (see
+ * utils/profiles): the language, the look, subtitles, audio, shortcuts. What
+ * describes the machine stays shared, whoever is holding the remote: sources,
+ * the network, storage, casting, the interface scale.
  */
 export const useSettingsStore = defineStore('settings', () => {
   /**
@@ -72,27 +79,27 @@ export const useSettingsStore = defineStore('settings', () => {
    * which a `tauri://` origin does not reliably keep — and a `ventic.` key
    * travels in a backup, which a cookie also would not.
    */
-  const locale = useLocalStorage('ventic.locale', '')
+  const locale = useLocalStorage(scoped('ventic.locale'), '')
 
   // --- Appearance ---
-  const theme = useLocalStorage('ventic.theme', 'dark')
+  const theme = useLocalStorage(scoped('ventic.theme'), 'dark')
   /** The colour the "Your colour" themes are generated from (see theme/palette). */
-  const source = useLocalStorage('ventic.themeSource', DEFAULT_SOURCE)
+  const source = useLocalStorage(scoped('ventic.themeSource'), DEFAULT_SOURCE)
   /**
    * Build the palette from whatever is on screen instead, re-reading it every
    * time the art changes. Drives the same two generated themes as `source`
    * does, so it costs no extra palette — see `app.vue`.
    */
-  const themeFromArt = useLocalStorage('ventic.themeFromArt', false)
+  const themeFromArt = useLocalStorage(scoped('ventic.themeFromArt'), false)
   /**
    * Whether a picture of the user's own counts as "what's on screen". Off, only
    * a title's artwork moves the palette and the picture the app rests on leaves
    * the theme's own colours alone — which is the point of choosing a theme and a
    * background that go together.
    */
-  const colourFromPicture = useLocalStorage('ventic.colourFromPicture', false)
+  const colourFromPicture = useLocalStorage(scoped('ventic.colourFromPicture'), false)
   /** Injected as a plain <style> tag, so it outranks everything in a layer. */
-  const customCss = useLocalStorage('ventic.customCss', '')
+  const customCss = useLocalStorage(scoped('ventic.customCss'), '')
   /** Zoom for the whole interface. 1 = the sizes the app ships with. */
   const uiScale = useLocalStorage('ventic.uiScale', 1)
   /**
@@ -248,7 +255,7 @@ export const useSettingsStore = defineStore('settings', () => {
   // --- Subtitles ---
   // mergeDefaults: a build that adds a property must not read `undefined` out
   // of the copy stored by the build before it.
-  const subs = useLocalStorage<SubtitleStyle>('ventic.subStyle', { ...SUBTITLE_DEFAULTS }, { mergeDefaults: true })
+  const subs = useLocalStorage<SubtitleStyle>(scoped('ventic.subStyle'), { ...SUBTITLE_DEFAULTS }, { mergeDefaults: true })
 
   /**
    * Turn subtitles on by themselves when a film starts, in `subLang`.
@@ -260,23 +267,23 @@ export const useSettingsStore = defineStore('settings', () => {
    * player cleared to mean off — this only gives it a name and a switch, so it
    * can be chosen up front instead of discovered.
    */
-  const autoSubs = useLocalStorage('ventic.autoSubs', true)
+  const autoSubs = useLocalStorage(scoped('ventic.autoSubs'), true)
   /** ISO 639 code, as the player last chose or the settings page last set. */
-  const subLang = useLocalStorage('ventic.subLang', '')
+  const subLang = useLocalStorage(scoped('ventic.subLang'), '')
 
   // --- Audio ---
   /**
    * Levelling and the dialogue boost — see utils/audio.ts for what each does.
    * mergeDefaults for the same reason the subtitle style has it.
    */
-  const audio = useLocalStorage<AudioSettings>('ventic.audio', { ...AUDIO_DEFAULTS }, { mergeDefaults: true })
+  const audio = useLocalStorage<AudioSettings>(scoped('ventic.audio'), { ...AUDIO_DEFAULTS }, { mergeDefaults: true })
 
   /**
    * The films that needed something other than the above, by `titleKey` — the
    * player's Audio panel writes these, this page writes the default they fall
    * back to. See `pickAudio` for why the two are separate.
    */
-  const audioByTitle = useLocalStorage<Record<string, AudioSettings>>('ventic.audioByTitle', {})
+  const audioByTitle = useLocalStorage<Record<string, AudioSettings>>(scoped('ventic.audioByTitle'), {})
 
   /** What `key` should play with. An empty key (a bare magnet) gets the default. */
   function audioFor(key: string) {
@@ -289,7 +296,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
   // --- Keyboard ---
   /** The player shortcuts the user moved, by action — see utils/keys.ts. */
-  const keys = useLocalStorage<KeyOverrides>('ventic.keys', {})
+  const keys = useLocalStorage<KeyOverrides>(scoped('ventic.keys'), {})
 
   function resetSubs() {
     subs.value = { ...SUBTITLE_DEFAULTS }

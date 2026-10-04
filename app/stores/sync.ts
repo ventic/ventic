@@ -53,6 +53,10 @@ export const useSyncStore = defineStore('sync', () => {
       const remote = await pull(config.value)
       const merged = mergeKeys(makeBackup(localStorage).keys, remote?.keys ?? {}, config.value.base, config.value.groups)
       write(merged.local)
+      // A profile deleted on another screen. Nothing renders these, so nothing
+      // has to hear about it — the registry's own write above is what does.
+      for (const key of merged.drop)
+        localStorage.removeItem(key)
 
       const payload = JSON.stringify(merged.remote)
       if (payload !== sent) {

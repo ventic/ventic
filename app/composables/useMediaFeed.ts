@@ -21,6 +21,7 @@ export interface FeedRequest {
  * request means "nothing to ask for yet", e.g. an empty search box.
  */
 export function useMediaFeed(request: MaybeRefOrGetter<FeedRequest | null>) {
+  const profiles = useProfilesStore()
   const items = ref<Media[]>([])
   const pending = ref(false)
   const error = ref<string>()
@@ -56,6 +57,7 @@ export function useMediaFeed(request: MaybeRefOrGetter<FeedRequest | null>) {
       // TMDB rejects page > 500 whatever total_pages claims.
       totalPages.value = Math.min(data.total_pages, 500)
 
+      let fresh: Media[] = []
       for (const result of data.results) {
         const media = toMedia(result, request_.type)
         if (!media || seen.has(titleKey(media.type, media.id)))
@@ -63,8 +65,17 @@ export function useMediaFeed(request: MaybeRefOrGetter<FeedRequest | null>) {
         seen.add(titleKey(media.type, media.id))
         if (request_.keepGenre != null && !media.genreIds.includes(request_.keepGenre))
           continue
-        items.value.push(media)
+        fresh.push(media)
       }
+
+      // A child's profile sees only what it may play. A discover request that
+      // carries the rating ceiling already asked TMDB for exactly that (see
+      // `discoverParams`); anything else is checked a title at a time.
+      if (!request_.params?.['certification.lte'])
+        fresh = await profiles.allowedOnly(fresh)
+      if (mine !== generation)
+        return
+      items.value.push(...fresh)
     }
     catch (e) {
       if (mine === generation)

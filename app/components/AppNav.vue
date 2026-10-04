@@ -13,6 +13,7 @@ import { LIBRARY_LISTS } from '~/stores/ui'
  * what says a download is running.
  */
 const downloads = useDownloadsStore()
+const profiles = useProfilesStore()
 const route = useRoute()
 const routeName = useRouteBaseName()
 
@@ -24,10 +25,15 @@ const tabs = computed(() => [
   { title: $t('Library'), icon: mdiHeartOutline, to: localePath('/favourites'), match: LIBRARY_LISTS.map(l => l.value) },
 ])
 
+// A child's profile has no Live TV or Downloads to go to (see the profile middleware).
 const more = computed(() => [
   { title: $t('Anime'), icon: mdiAnimationPlayOutline, to: localePath('/anime') },
-  { title: $t('Live TV'), icon: mdiTelevisionPlay, to: localePath('/live') },
-  { title: $t('Downloads'), icon: mdiTrayArrowDown, to: localePath('/downloads'), badge: downloads.active },
+  ...profiles.current.kids
+    ? []
+    : [
+        { title: $t('Live TV'), icon: mdiTelevisionPlay, to: localePath('/live') },
+        { title: $t('Downloads'), icon: mdiTrayArrowDown, to: localePath('/downloads'), badge: downloads.active },
+      ],
   { title: $t('Settings'), icon: mdiCogOutline, to: localePath('/settings') },
   { title: $t('Account'), icon: mdiAccountCircleOutline, to: localePath('/settings/account') },
 ])
@@ -71,6 +77,12 @@ const PILL = 'grid h-8 w-16 place-items-center rounded-full transition-colors'
   <v-bottom-sheet v-model="sheet">
     <v-card rounded="t-xl" class="pb-[var(--safe-bottom)]">
       <v-list nav class="px-2 py-2">
+        <!-- Whose profile this is, and the way to someone else's. -->
+        <v-list-item :to="localePath('/profiles')" :title="profileName(profiles.current)" :subtitle="$t('Switch profile')" rounded="lg">
+          <template #prepend>
+            <profile-avatar :profile="profiles.current" :size="40" />
+          </template>
+        </v-list-item>
         <v-list-item
           v-for="item in more"
           :key="item.to"

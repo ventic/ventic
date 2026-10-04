@@ -423,11 +423,11 @@ const page = read('../app/pages/settings/subtitles.vue')
 // One value, one place. Two `useLocalStorage` refs on the same key do not see
 // each other inside a document — the storage event is for other tabs — so a
 // second one here would leave the settings page editing a copy that the running
-// player never reads.
-assert.ok(store.includes('useLocalStorage(\'ventic.subLang\''), 'the store owns the chosen language')
-assert.ok(store.includes('useLocalStorage(\'ventic.autoSubs\''), 'and whether to apply it at all')
+// player never reads. Each person's, so through `scoped()` (see utils/profiles).
+assert.ok(store.includes('useLocalStorage(scoped(\'ventic.subLang\')'), 'the store owns the chosen language')
+assert.ok(store.includes('useLocalStorage(scoped(\'ventic.autoSubs\')'), 'and whether to apply it at all')
 assert.ok(
-  !player.includes('useLocalStorage(\'ventic.subLang\''),
+  !player.includes('\'ventic.subLang\''),
   'and the player reads it off the store rather than keeping a second copy of the key',
 )
 for (const key of ['autoSubs', 'subLang'])

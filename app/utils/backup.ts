@@ -17,6 +17,8 @@
  * about what a key *means*, `version` is what a migration hangs off.
  */
 
+import { unscope } from './profiles'
+
 const PREFIX = 'ventic.'
 
 /**
@@ -112,15 +114,19 @@ function entries(value?: string): unknown[] {
 
 /**
  * What restoring this file would bring back, for the confirmation dialog —
- * replacing a library is not something to do on a filename alone.
+ * replacing a library is not something to do on a filename alone. Counted
+ * across every profile in it, since every one of them is replaced.
  */
 export function backupSummary(b: Backup) {
+  const count = (name: string) => Object.entries(b.keys)
+    .filter(([key]) => unscope(key)[0] === `${PREFIX}${name}`)
+    .reduce((n, [, value]) => n + entries(value).length, 0)
   return {
-    titles: entries(b.keys[`${PREFIX}media`]).length,
-    watched: entries(b.keys[`${PREFIX}progress`]).length,
-    favourites: entries(b.keys[`${PREFIX}favourites`]).length,
-    watchlist: entries(b.keys[`${PREFIX}watchlist`]).length,
-    sources: entries(b.keys[`${PREFIX}sources`]).length,
+    titles: count('media'),
+    watched: count('progress'),
+    favourites: count('favourites'),
+    watchlist: count('watchlist'),
+    sources: count('sources'),
     settings: Object.keys(b.keys).length,
   }
 }

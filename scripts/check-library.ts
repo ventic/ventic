@@ -344,6 +344,12 @@ const round = readBackup(JSON.stringify(backup))
 assert.deepEqual(round, backup, 'written and read back unchanged')
 assert.deepEqual(backupSummary(round), { titles: 2, watched: 1, favourites: 1, watchlist: 2, sources: 1, settings: 6 })
 
+// A restore replaces every profile in the file, so the dialog counts all of them.
+assert.deepEqual(
+  backupSummary({ ...round, keys: { ...round.keys, 'ventic.progress@k1': '{"movie:1":{},"movie:2":{}}', 'ventic.favourites@k1': '{"movie:1":1}' } }),
+  { titles: 2, watched: 3, favourites: 2, watchlist: 2, sources: 1, settings: 8 },
+)
+
 // Restoring is assignment, not a merge — but only of what the file names, so a
 // preference this build has and the backup doesn't is left where it is.
 const target = fakeStore({ 'ventic.media': '{}', 'ventic.uiScale': '1.4' })

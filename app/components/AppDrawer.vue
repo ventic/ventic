@@ -8,6 +8,7 @@ import { LIBRARY_LISTS } from '~/stores/ui'
  * so there is no overlay here and nothing to open or close.
  */
 const ui = useUiStore()
+const profiles = useProfilesStore()
 
 // The browse feeds. Computed rather than a plain array because the labels are
 // translated, so the list has to be rebuilt when the language changes — and
@@ -20,8 +21,8 @@ const links = computed(() => [
   { title: $t('Anime'), icon: mdiAnimationPlayOutline, to: localePath('/anime') },
   // Listed even with no playlist configured: the page's own empty state is what
   // says how to fill it, and a feature nobody can see is a feature nobody adds
-  // a playlist for.
-  { title: $t('Live TV'), icon: mdiTelevisionPlay, to: localePath('/live') },
+  // a playlist for. Not on a child's profile, though: nothing on it is rated.
+  ...profiles.current.kids ? [] : [{ title: $t('Live TV'), icon: mdiTelevisionPlay, to: localePath('/live') }],
 ])
 
 // "My stuff" — kept apart from the feeds above.

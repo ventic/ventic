@@ -41,7 +41,7 @@ export const LIBRARY_LISTS: { value: string, title: () => string, icon: string }
 // One layout/size preference shared by every browse page instead of
 // per-page copies. Split it if the pages ever need to disagree.
 export const useUiStore = defineStore('ui', () => {
-  const layout = useLocalStorage<Layout>('ventic.layout', 'grid-detail')
+  const layout = useLocalStorage<Layout>(scoped('ventic.layout'), 'grid-detail')
   // Retired layouts map onto what replaced them so a mandatory toggle never
   // lands on a value it can no longer show: the detailed list became 'list',
   // and the plain grid was folded into the (now only) detailed grid.
@@ -49,11 +49,11 @@ export const useUiStore = defineStore('ui', () => {
     layout.value = 'list'
   if (layout.value as string === 'grid')
     layout.value = 'grid-detail'
-  const cardWidth = useLocalStorage('ventic.cardWidth', 170)
+  const cardWidth = useLocalStorage(scoped('ventic.cardWidth'), 170)
   /** The faces in a Cast row. Its own setting: a headshot is read at a size a poster isn't. */
-  const castWidth = useLocalStorage('ventic.castWidth', 140)
+  const castWidth = useLocalStorage(scoped('ventic.castWidth'), 140)
   /** Desktop: collapsed icon-only sidebar. */
-  const rail = useLocalStorage('ventic.rail', false)
+  const rail = useLocalStorage(scoped('ventic.rail'), false)
   /** Mobile: the section drawers (transfers, settings) are overlays, so they need an open/closed state. */
   const drawer = ref(false)
 
@@ -83,26 +83,26 @@ export const useUiStore = defineStore('ui', () => {
    */
   const pairing = ref<string | null>(null)
 
-  const blur = useLocalStorage('ventic.blur', 44)
-  const tint = useLocalStorage('ventic.tint', 0.92)
+  const blur = useLocalStorage(scoped('ventic.blur'), 44)
+  const tint = useLocalStorage(scoped('ventic.tint'), 0.92)
 
   /** Where the art behind the app comes from, if anywhere. */
-  const backdropMode = useLocalStorage<BackdropMode>('ventic.backdropMode', 'art')
+  const backdropMode = useLocalStorage<BackdropMode>(scoped('ventic.backdropMode'), 'art')
   /** The user's own picture, already downscaled — see `pages/settings/appearance/background.vue`. */
-  const backdropImage = useLocalStorage('ventic.backdropImage', '')
+  const backdropImage = useLocalStorage(scoped('ventic.backdropImage'), '')
   /**
    * Whether pointing at or focusing a card swaps the art, rather than only
    * opening a title. Off by default: sweeping a grid otherwise repaints the
    * whole window per card, which reads as flicker more than as preview.
    */
-  const backdropFollowsHover = useLocalStorage('ventic.backdropHover', false)
+  const backdropFollowsHover = useLocalStorage(scoped('ventic.backdropHover'), false)
   /**
    * With a picture of your own set, whether artwork still takes over while
    * you're on a title. The picture is then what the app rests on — and, with
    * "take the colour from what's on screen", what the palette comes from
    * everywhere the artwork isn't.
    */
-  const artOverCustom = useLocalStorage('ventic.backdropArtOverCustom', true)
+  const artOverCustom = useLocalStorage(scoped('ventic.backdropArtOverCustom'), true)
   /**
    * The picture actually painted and the source colour read off it, published
    * as one value by `AppBackground` once the picture has decoded. The two are
