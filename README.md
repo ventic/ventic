@@ -443,14 +443,14 @@ listed there with the reason.
 
 ## Install
 
-Grab the latest build from the [Releases page][releases]. The Windows installers are signed — see
-the [Code signing policy](#code-signing-policy).
+Grab the latest build from the [Releases page][releases]. On Android, Ventic is also on
+[Google Play](https://play.google.com/store/apps/details?id=com.ventic.app).
 
 | Platform | Format | Notes |
 | --- | --- | --- |
 | **Linux** | `.deb`, `.rpm`, `.AppImage` | Needs `mpv` and `ffmpeg` from your package manager |
 | **Windows** | `.msi`, `.exe` (NSIS) | Ships its own mpv and ffmpeg; WebView2 comes with Windows 11 and updated Windows 10 |
-| **Android / Android TV** | `.apk` | Sideload; also the phone build |
+| **Android / Android TV** | `.apk`, [Google Play](https://play.google.com/store/apps/details?id=com.ventic.app) | One build for phones and TVs. The two are signed with different keys, so switching between them is an uninstall — back up first (*Settings → Account*) |
 | **macOS** | `.app`, `.dmg` | Apple Silicon; carries its own libmpv, so nothing to install first. Unsigned — [one command before the first launch](#opening-it-on-macos) |
 
 First run has no sources and searches nothing. Add one under *Settings → Sources*, or skip that
@@ -469,7 +469,8 @@ is keeping track of does more harm than an out-of-date app:
 | --- | --- |
 | `.AppImage`, `.msi`, `.exe`, `.app`/`.dmg` | Downloads, verifies and installs it, then offers to restart. Windows closes the app to run its installer; Linux and macOS keep running until you restart. |
 | `.deb`, `.rpm`, or a distro package (AUR, Nix, …) | Nothing — those files belong to `apt`, `dnf` or your package manager, and it will offer the new version itself. The panel says so and links to the release. |
-| Android / Android TV | Links to the `.apk`. Android installs updates from the package, and every release is signed with the same key, so it upgrades in place and keeps your library. |
+| Android / Android TV (`.apk`) | Downloads the new `.apk` and hands it to Android's installer. Every release is signed with the same key, so it upgrades in place and keeps your library. |
+| Android from Google Play | Opens the Play listing. Play updates it, usually on its own. |
 | Built from source | Nothing to replace. `git pull` and build again. |
 
 Updates are verified against a signing key built into the app, so a bundle that wasn't produced
