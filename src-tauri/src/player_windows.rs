@@ -554,6 +554,10 @@ pub fn player_start(
 		// mpv.exe is a GUI binary and would not open one anyway, but a console
 		// flashing up on every play is not worth risking.
 		.creation_flags(CREATE_NO_WINDOW)
+		// End option parsing before the url: a cast delivers it from the network
+		// (see cast.rs) and mpv treats a leading `-` as an option, so `--script=…`
+		// would be arbitrary code execution. After `--` it is only ever a file.
+		.arg("--")
 		.arg(&url)
 		.spawn();
 

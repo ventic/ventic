@@ -376,6 +376,11 @@ pub fn player_start(
 		// the *system's*, and inheriting that kills it on the first symbol its
 		// own dependencies have and the bundle's copies don't.
 		.env_remove("LD_LIBRARY_PATH")
+		// End option parsing: the url arrives from the network on a cast (see
+		// cast.rs) and mpv reads any argument starting with `-` as an option, so
+		// `--script=…` and friends would be arbitrary code execution. After `--`
+		// it can only ever be a file to open.
+		.arg("--")
 		.arg(&url)
 		.spawn();
 
