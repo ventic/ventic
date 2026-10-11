@@ -101,7 +101,7 @@ assert.equal(NSFW_KEYWORDS, '198385|256466|155477|325693|378816')
   assert.ok(!needsPin(partner, grownUp, adults, false), 'no child on the install, nothing to guard')
   assert.ok(!needsPin(partner, grownUp, adults, true))
 
-  // At a cold start nobody is in any profile yet — even the one open last asks.
+  // At a locked gate nobody is in any profile — even the one open last asks.
   assert.ok(needsPin(grownUp, grownUp, house, false), 'a grown-up\'s profile takes the PIN at the gate')
   assert.ok(needsPin(partner, grownUp, house, false))
   assert.ok(!needsPin(kid, grownUp, house, false), 'a child picks their own freely')

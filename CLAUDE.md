@@ -555,9 +555,10 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   `ratingOf`), which `useMediaFeed` skips only for a request already carrying
   `certification.lte`. One household PIN, salted and hashed, travels with the
   profiles in backups and sync — a child's profile arriving without one would be
-  guarded by nothing. A child's profile survives a restart, and a grown-up's
-  asks again after the app has been away 30 minutes, because a television keeps
-  the process alive through standby. NSFW anime is a keyword exclusion
+  guarded by nothing. A launch opens whichever profile was open last, a
+  grown-up's included — the picker and its PIN on every start were a chore for
+  the owner, so locking a child out of the grown-up's library is switching to
+  the child's profile before handing the remote over. NSFW anime is a keyword exclusion
   (`NSFW_KEYWORDS`) on discover/tv, off unless a grown-up's profile asks; `ecchi`
   is deliberately not in it (Fairy Tail has it). `bun run check:profiles` holds
   the rules and the seams.

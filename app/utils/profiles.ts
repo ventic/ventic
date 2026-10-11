@@ -152,8 +152,8 @@ export function discoverParams(type: MediaType, profile: Pick<Profile, 'kids' | 
 // --- The PIN -------------------------------------------------------------------
 
 /**
- * Whether going from `from` to `to` takes the PIN. The picker, the menu and a
- * cold start all ask here:
+ * Whether going from `from` to `to` takes the PIN. The picker and the menu
+ * both ask here:
  *
  * - Nothing is guarded in a house with no child profile.
  * - A child's profile is left only with the PIN, for a sibling's too — or the
@@ -161,8 +161,9 @@ export function discoverParams(type: MediaType, profile: Pick<Profile, 'kids' | 
  * - A grown-up's is entered only with it, which is what makes the rule above
  *   mean anything: a child could otherwise just pick it.
  *
- * `chosen` is whether anybody got into `from` this session. At a cold start
- * nobody has, so even the profile that was open last asks.
+ * `chosen` is whether anybody is in `from`. Only a locked gate says no — the
+ * profile this screen was in was deleted on another — and then even the
+ * default asks.
  */
 export function needsPin(to: Profile, from: Profile, all: Profile[], chosen: boolean) {
   if (!all.some(p => p.kids))

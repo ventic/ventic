@@ -1,25 +1,6 @@
 import type { Limits, Profile, Usage } from '~/utils/profiles'
 import type { Media, MediaType } from '~/utils/tmdb'
 
-/** Set once somebody has picked a profile in this process — see `chosen`. */
-const CHOSEN = 'ventic-profile-chosen'
-
-/** Away this long, and a grown-up's profile asks who is watching again. */
-const AWAY = 30 * 60_000
-
-function session(write?: boolean) {
-  try {
-    if (write === undefined)
-      return sessionStorage.getItem(CHOSEN) === '1'
-    if (write)
-      sessionStorage.setItem(CHOSEN, '1')
-    else
-      sessionStorage.removeItem(CHOSEN)
-  }
-  catch {}
-  return false
-}
-
 /**
  * Who is watching, and what they may. `utils/profiles.ts` owns the rules; this
  * holds the state they run over and the one PIN pad everything waits on.
@@ -42,17 +23,16 @@ export const useProfilesStore = defineStore('profiles', () => {
   const guarded = computed(() => list.value.some(p => p.kids))
 
   /**
-   * Whether somebody has said who is watching since the app started. Kept in
-   * sessionStorage, which a switch's reload keeps and a cold start doesn't — so
-   * a launch asks, as a television's streaming apps all do, once there is
-   * anybody to choose between. A child's profile never asks: it is left with
-   * the PIN or not at all, and restarting the app is not a way out of it.
+   * Whether this page may carry on in `current`. A launch opens whichever
+   * profile was open last — asking who is watching, with a PIN behind every
+   * grown-up's, on every start was a chore for the people who own the app, and
+   * a child's profile is still left only with the PIN. So only `lock()` ever
+   * sends anyone back to the picker.
    */
-  const chosen = ref(list.value.length < 2 || !!current.value.kids || session())
+  const chosen = ref(true)
 
   function lock() {
     chosen.value = false
-    session(false)
   }
 
   // The profile this page is built for was deleted on another screen, and the
@@ -63,21 +43,6 @@ export const useProfilesStore = defineStore('profiles', () => {
       active.value = DEFAULT_PROFILE
       lock()
       window.location.assign(localePath('/'))
-    }
-  })
-
-  // A grown-up's profile left open overnight is a child's for the asking in the
-  // morning: a television keeps the app alive through standby, so a cold start
-  // can't be counted on to ask. Away for long enough, and it asks again.
-  let hiddenAt = 0
-  useEventListener(document, 'visibilitychange', () => {
-    if (document.hidden) {
-      hiddenAt = Date.now()
-      return
-    }
-    if (hiddenAt && Date.now() - hiddenAt > AWAY && guarded.value && !current.value.kids && chosen.value) {
-      lock()
-      navigateTo(localePath('/profiles'))
     }
   })
 
@@ -155,7 +120,6 @@ export const useProfilesStore = defineStore('profiles', () => {
       && !(await askPin($t('Enter the parental PIN'), $t('To open {name}.', { name: profileName(p) })))) {
       return false
     }
-    session(true)
     if (p.id === ACTIVE) {
       chosen.value = true
       await navigateTo(to, { replace: true })
