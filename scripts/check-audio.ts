@@ -8,7 +8,7 @@ import assert from 'node:assert'
 // property names Android answers to — a seam between TypeScript and Kotlin that
 // no compiler crosses.
 import { readFileSync } from 'node:fs'
-import { AUDIO_DEFAULTS, audioProps, MAX_DIALOGUE, mpvAudioChain, pickAudio, rememberAudio } from '../app/utils/audio'
+import { AUDIO_DEFAULTS, audioProps, chooseAudioTrack, MAX_DIALOGUE, mpvAudioChain, pickAudio, rememberAudio } from '../app/utils/audio'
 import { exoEngine } from '../app/utils/htmlvideo'
 import './i18n-stub'
 
@@ -68,6 +68,27 @@ assert.deepEqual(rememberAudio(one, 'movie:603', { ...base }, base), {}, 'set ba
 assert.deepEqual(rememberAudio(one, '', { normalize: 'off', dialogue: 0 }, base), one, 'nothing to remember a magnet against')
 // The map handed in is never the map handed back, or a store's ref wouldn't see it.
 assert.notEqual(one, rememberAudio(one, 'tv:1396', { normalize: 'off', dialogue: 2 }, base))
+
+// --- Which track ----------------------------------------------------------
+// The complaint: a dual-audio release opens on whichever track was muxed
+// first. mkv says `kor`, TMDB says `ko`, ExoPlayer may say either.
+const dual = [{ id: 1, lang: 'eng', title: 'Dub' }, { id: 2, lang: 'kor' }, { id: 3, lang: 'eng', title: 'Commentary' }]
+assert.equal(chooseAudioTrack(dual, 1, 'ko'), 2, 'a Korean film opens in Korean')
+assert.equal(chooseAudioTrack(dual, 2, 'ko'), undefined, 'already right: the player\'s pick stands')
+assert.equal(chooseAudioTrack(dual, 3, 'en'), undefined, 'any track in the right language stands, as the file flagged it')
+assert.equal(chooseAudioTrack(dual, 1, 'ja'), undefined, 'not in the film\'s language at all: left alone')
+assert.equal(chooseAudioTrack(dual, 1, ''), undefined, 'a bare magnet has no language to go by')
+assert.equal(chooseAudioTrack([{ id: 1, lang: 'und' }, { id: 2 }], 1, 'en'), undefined, '`und` is not a language')
+
+// What was picked for the show follows it into the next episode, whose file
+// numbers its tracks however it likes.
+const next = [{ id: 4, lang: 'kor' }, { id: 5, lang: 'en', title: 'Commentary' }, { id: 6, lang: 'en', title: 'Dub' }]
+assert.equal(chooseAudioTrack(next, 4, 'ko', { lang: 'eng', title: 'Dub', n: 0 }), 6, 'by language and title, not by id')
+assert.equal(chooseAudioTrack(next, 4, 'ko', { lang: 'eng', title: 'English 5.1', n: 0 }), 5, 'a title this file lacks: its language still holds')
+assert.equal(chooseAudioTrack(next, 6, 'ko', { lang: 'ger', n: 1 }), 4, 'a language this file lacks: back to the original')
+const bare = [{ id: 7 }, { id: 8 }]
+assert.equal(chooseAudioTrack(bare, 7, 'ko', { n: 1 }), 8, 'no language to match: its place among the tracks')
+assert.equal(chooseAudioTrack(bare, 7, 'ko', { lang: 'und', n: 1 }), 8, 'nor is `und` one there')
 
 // --- The Android seam -----------------------------------------------------
 const kotlin = readFileSync(

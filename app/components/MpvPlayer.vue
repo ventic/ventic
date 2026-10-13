@@ -759,6 +759,28 @@ function setAudio(t: Track) {
   // The filters follow on the next poll — see `layout`, which is what notices
   // that another track is another channel layout.
   osd($t('Audio: {name}', { name: trackLabel(t) }))
+  // For the title, not the file: the next episode of the pack opens on it too.
+  if (props.media)
+    settings.audioTrack[titleKey(props.media.type, props.media.id)] = { lang: t.lang, title: t.title, n: audioTracks.value.indexOf(t) }
+}
+
+/**
+ * The track this title was last switched to, or else the one in the language
+ * it was made in — see `chooseAudioTrack`. Once per file, and quietly: an OSD
+ * saying the film is in the language it was made in is noise.
+ */
+let audioChosen = false
+async function chooseAudio() {
+  audioChosen = true
+  await refreshTracks()
+  const media = props.media
+  if (!media || aid.value === 'no')
+    return
+  const id = chooseAudioTrack(audioTracks.value, aid.value, media.lang ?? '', settings.audioTrack[titleKey(media.type, media.id)])
+  if (id !== undefined && id !== aid.value) {
+    aid.value = id
+    ipc(['set_property', 'aid', id])
+  }
 }
 
 function toggleSubs() {
@@ -1205,6 +1227,7 @@ async function startPlayer() {
     silentSaid = false
     started.value = true
     loaded = false
+    audioChosen = false
     tracks.value = []
     sid.value = 'no'
     aid.value = 'no'
@@ -1259,7 +1282,7 @@ async function restart() {
 // Polling: playback props, plus a liveness check so a dead mpv reports itself
 // instead of leaving a black rectangle behind.
 // ---------------------------------------------------------------------------
-const POLLED = ['pause', 'paused-for-cache', 'duration', 'time-pos', 'demuxer-cache-time', 'volume', 'mute', 'speed', 'mouse-pos', 'sub-text', 'audio-params/channels', 'audio-params/channel-count']
+const POLLED = ['pause', 'paused-for-cache', 'duration', 'time-pos', 'demuxer-cache-time', 'volume', 'mute', 'speed', 'mouse-pos', 'sub-text', 'audio-params/channels', 'audio-params/channel-count', 'aid']
 
 let tick = 0
 let lastMouse = ''
@@ -1391,6 +1414,11 @@ async function poll() {
       osd($t('Resumed at {time}', { time: fmt(saved) }), 2500)
     }
   }
+  // A track playing is the first sign there are tracks to choose between, and
+  // not the length: ExoPlayer can know that a beat before it lists them, and
+  // the page's <video> never lists any.
+  if (!audioChosen && typeof p.aid === 'number')
+    await chooseAudio()
 }
 
 // ---------------------------------------------------------------------------

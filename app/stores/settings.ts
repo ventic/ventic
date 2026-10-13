@@ -1,4 +1,4 @@
-import type { AudioSettings } from '~/utils/audio'
+import type { AudioChoice, AudioSettings } from '~/utils/audio'
 import type { KeyOverrides } from '~/utils/keys'
 import type { SubtitleStyle } from '~/utils/subtitles'
 import type { PlayMode } from '~/utils/torrents'
@@ -294,6 +294,13 @@ export const useSettingsStore = defineStore('settings', () => {
     audioByTitle.value = rememberAudio(audioByTitle.value, key, next, audio.value)
   }
 
+  /**
+   * The audio track the player was last switched to, by `titleKey` — so a
+   * series keeps it across episodes. See `chooseAudioTrack`; there is no
+   * default to set here, because the film's own language already is one.
+   */
+  const audioTrack = useLocalStorage<Record<string, AudioChoice>>(scoped('ventic.audioTrack'), {})
+
   // --- Keyboard ---
   /** The player shortcuts the user moved, by action — see utils/keys.ts. */
   const keys = useLocalStorage<KeyOverrides>(scoped('ventic.keys'), {})
@@ -302,5 +309,5 @@ export const useSettingsStore = defineStore('settings', () => {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, closeToTray, castReceive, castName, castAsk, castCode, castTarget, downloadDir, playMode, keepWatched, bufferAhead, bufferBehind, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, keys, resetSubs }
+  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, closeToTray, castReceive, castName, castAsk, castCode, castTarget, downloadDir, playMode, keepWatched, bufferAhead, bufferBehind, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, audioTrack, keys, resetSubs }
 })

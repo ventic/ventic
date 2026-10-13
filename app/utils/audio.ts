@@ -25,6 +25,7 @@
  * where it can, and there is no PCM in this process to filter. It stays a
  * no-op rather than an error; the amplifier has its own night mode.
  */
+import { langName } from './subtitles'
 
 /** How hard the leveller works. Off is the default: nobody's mix is altered unasked. */
 export type Leveller = 'off' | 'light' | 'medium' | 'strong'
@@ -172,4 +173,54 @@ export function audioProps(a: AudioSettings): Record<string, string | number> {
     'audio-normalize': a.normalize,
     'dialogue-boost': a.dialogue,
   }
+}
+
+/** An audio track as both players list it in `track-list`. */
+export interface AudioTrack { id: number, lang?: string, title?: string }
+
+/**
+ * The audio track a title was last switched to, by what it is rather than
+ * where it sits — another episode of a pack, or another release of the show,
+ * numbers its tracks however it likes. `n`, its place among the audio tracks,
+ * only settles it for a track that names no language.
+ */
+export interface AudioChoice { lang?: string, title?: string, n: number }
+
+/** `kor` and `ko` as the one name they share. `und` is a tag saying there is none. */
+function spoken(lang?: string) {
+  return lang && lang !== 'und' ? langName(lang) : ''
+}
+
+/**
+ * Which audio track a film should open on, or undefined to leave the player's.
+ *
+ * The player's own pick is the container's default flag, or else the first
+ * track — which on a dual-audio release is whichever the muxer happened to put
+ * first, so a Korean film opened in its English dub. Two answers go over it:
+ *
+ *   - **What was chosen for this title**, which is how a season pack stays in
+ *     the audio picked on episode one. Matched on language, then the track's
+ *     title among the tracks in that language (a "Commentary" or a second
+ *     studio's dub is the same language), and on position only for a track
+ *     with no language to match. Not there, and the next rule decides.
+ *   - **The language it was made in**, TMDB's `original_language`. Only when
+ *     the track playing is in some other one: of two tracks in the right
+ *     language, the one the file marked default is the better guess.
+ *
+ * Nothing is chosen globally, unlike subtitles: "the original" is already the
+ * right answer for every film, and a title that wants its dub remembers it.
+ */
+export function chooseAudioTrack(tracks: AudioTrack[], playing: number, original: string, chosen?: AudioChoice): number | undefined {
+  if (chosen) {
+    const lang = spoken(chosen.lang)
+    const same = tracks.filter(t => spoken(t.lang) === lang)
+    const hit = (chosen.title ? same.find(t => t.title === chosen.title) : undefined)
+      ?? (lang ? same[0] : tracks[chosen.n])
+    if (hit)
+      return hit.id
+  }
+  const want = spoken(original)
+  if (!want || spoken(tracks.find(t => t.id === playing)?.lang) === want)
+    return
+  return tracks.find(t => spoken(t.lang) === want)?.id
 }
