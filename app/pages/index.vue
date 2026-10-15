@@ -49,6 +49,15 @@ const logo = computed(() => featured.value && logos.value?.[`${featured.value.ty
 // ponytail: no auto-advance. It moves the thing under a remote's focus ring,
 // and it is a `useIntervalFn` plus a pause-on-focus rule away if it's missed.
 
+// A finger flicks the panel to the next title (v-touch) rather than aiming for
+// a 6px pill. Touch only, so a mouse and a remote never see it; there is no
+// drawer on this page for it to fight with, and a vertical drag still scrolls.
+function step(by: number) {
+  const n = spotlight.value.length
+  if (n)
+    at.value = (at.value + by + n) % n
+}
+
 // Discover rather than /movie/popular and /tv/popular, which are the same list
 // with no filters: the most popular "show" on TMDB was an erotic anime short.
 const rows = computed(() => (['movie', 'tv'] as const).map(type => ({
@@ -65,7 +74,7 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
     <!-- The panel is its own picture rather than a hole onto the app backdrop:
          that one is off entirely in two of the three backdrop modes, and a hero
          with nothing behind it is worse than no hero. -->
-    <section class="relative mx-4 mt-2 h-[42vh] min-h-64 overflow-hidden rounded-2xl bg-black/75 md:mx-6 md:h-[56vh]">
+    <section v-touch="{ left: () => step(1), right: () => step(-1) }" class="relative mx-4 mt-2 h-[42vh] min-h-64 overflow-hidden rounded-2xl bg-black/75 md:mx-6 md:h-[56vh]">
       <transition
         enter-active-class="transition-opacity duration-500"
         leave-active-class="transition-opacity duration-500"
@@ -105,18 +114,22 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
 
         <!-- Both limits, because a wordmark is any shape: a wide one meets the
              width, a stacked one the height, and neither may push the copy up
-             out of a TV's 400px panel. -->
+             out of a TV's 400px panel. And where the panel is still too short
+             (a 9:16 phone, where the pills wrap to a line of their own) the
+             logo is what gives: min-h-0 lets it shrink, and the description
+             is shrink-0, because line-clamp's overflow:hidden otherwise made
+             it the only thing in this column that could. -->
         <img
           v-if="logo"
           :src="logo"
           :alt="featured.title"
-          class="mb-1 max-h-20 max-w-[min(28rem,80%)] self-start object-contain drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)] md:max-h-[18vh] xl:max-w-[36rem]"
+          class="mb-1 max-h-20 min-h-0 max-w-[min(28rem,80%)] self-start object-contain drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)] md:max-h-[18vh] xl:max-w-[36rem]"
         >
         <h1 v-else class="max-w-3xl text-headline-medium font-bold drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)] md:text-display-small xl:text-display-medium">
           {{ featured.title }}
         </h1>
 
-        <p class="line-clamp-2 max-w-2xl text-body-medium opacity-85 lg:line-clamp-4">
+        <p class="line-clamp-2 max-w-2xl shrink-0 text-body-medium opacity-85 lg:line-clamp-4">
           {{ featured.overview }}
         </p>
 
