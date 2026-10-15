@@ -100,7 +100,8 @@ shows. Ventic embeds the real thing and keeps the library around it honest and l
   webview's `<video>` answers the *same* command protocol, so there is one player component and
   one set of controls rather than three.
 - **Your library stays yours.** History, progress, favourites and the watchlist live in this
-  device's storage. No Ventic account, no Ventic server, no sync — one file carries the lot.
+  device's storage. No Ventic account and no Ventic server — one file carries the lot, and sync
+  goes through a WebDAV folder you already have.
 - **Usable from the sofa.** Full d-pad navigation, focus-first styling and an Android TV build —
   a remote reaches everything a mouse does.
 - **No sources, ever.** The empty source list is a deliberate feature, not an oversight. It is
@@ -118,6 +119,7 @@ shows. Ventic embeds the real thing and keeps the library around it honest and l
 
 Home, Movies, TV, Anime, Search, plus Favourites, Watchlist and History. TMDB metadata
 throughout — posters, backdrops, cast, ratings, per-episode watched state and resume points.
+Live TV from an M3U playlist or an Xtream login, and a profile per person.
 
 </td>
 <td width="33%" valign="top">
@@ -133,8 +135,8 @@ with audio auto-sync, seek-preview thumbnails, audio and subtitle track menus, s
 **Own the pipes**
 
 An in-process BitTorrent engine with a real downloads page: magnets, `.torrent` files, file
-selection, seeding, speed limits, a disk budget that evicts oldest-watched first, and a
-Wi-Fi-only switch.
+selection, seeding, speed limits, a disk budget that evicts oldest-watched first, a
+Wi-Fi-only switch, streaming through a buffer where the disk is small, and a VPN kill switch.
 
 </td>
 </tr>
@@ -143,29 +145,87 @@ Wi-Fi-only switch.
 <table>
 <tr>
 <td width="50%" align="center">
-<img src="docs/media/detail.png" width="100%" alt="Title detail page"><br/>
-<sub><b>Detail</b> &middot; backdrop, cast, ratings, seasons and episodes, with resume points and
-watched ticks per episode.</sub>
+<img src="docs/media/home.webp" width="100%" alt="Home"><br/>
+<sub><b>Home</b> &middot; a featured title, then Continue watching across films and episodes,
+then TMDB's lists.</sub>
 </td>
 <td width="50%" align="center">
-<img src="docs/media/player.png" width="100%" alt="Player"><br/>
-<sub><b>Player</b> &middot; embedded mpv with seek-preview frames, track menus and subtitle styling
-that previews live.</sub>
+<img src="docs/media/detail.webp" width="100%" alt="Title detail page"><br/>
+<sub><b>Detail</b> &middot; backdrop, cast, ratings, the trailer, and a Resume button that knows
+where you stopped.</sub>
 </td>
 </tr>
 <tr>
 <td width="50%" align="center">
-<img src="docs/media/downloads.png" width="100%" alt="Downloads page"><br/>
-<sub><b>Downloads</b> &middot; the torrent engine's own UI — per-file selection, seeding, speed
-limits, disk budget.</sub>
+<img src="docs/media/player.webp" width="100%" alt="Player with the subtitle menu open"><br/>
+<sub><b>Player</b> &middot; the release's own subtitle files and OpenSubtitles in one menu, with
+appearance and timing a tab away.</sub>
 </td>
 <td width="50%" align="center">
-<img src="docs/media/themes.png" width="100%" alt="Appearance settings"><br/>
+<img src="docs/media/season.webp" width="100%" alt="A season's episode list"><br/>
+<sub><b>Episodes</b> &middot; watched ticks and resume points per episode, and the next one picked
+up from Continue watching.</sub>
+</td>
+</tr>
+<tr>
+<td width="50%" align="center">
+<img src="docs/media/downloads.webp" width="100%" alt="Downloads page"><br/>
+<sub><b>Downloads</b> &middot; the torrent engine's own UI — live speed and peers, per-file
+selection, seeding, speed limits, disk budget.</sub>
+</td>
+<td width="50%" align="center">
+<img src="docs/media/live.webp" width="100%" alt="Live TV channels"><br/>
+<sub><b>Live TV</b> &middot; channels from an M3U playlist or an Xtream login, by category, with
+favourites first.</sub>
+</td>
+</tr>
+<tr>
+<td width="50%" align="center">
+<img src="docs/media/themes.webp" width="100%" alt="Appearance settings"><br/>
 <sub><b>Appearance</b> &middot; a palette generated from any colour, 26 presets,
 poster size, app scale and a global CSS box.</sub>
 </td>
+<td width="50%" align="center">
+<img src="docs/media/profiles.webp" width="100%" alt="Profile picker"><br/>
+<sub><b>Profiles</b> &middot; a library per person, and a child's profile with a rating ceiling and
+a daily watch time behind one PIN.</sub>
+</td>
 </tr>
 </table>
+
+<table>
+<tr>
+<td width="50%" align="center">
+<img src="docs/media/tv-home.webp" width="100%" alt="Ventic on a television"><br/>
+<sub><b>On a TV</b> &middot; the same app at ten feet, every screen reachable with the remote's
+arrows, OK and Back.</sub>
+</td>
+<td width="50%" align="center">
+<img src="docs/media/tv-phone-setup.webp" width="100%" alt="The phone setup code on a television"><br/>
+<sub><b>Your phone is the keyboard</b> &middot; scan the code and type an address on the phone
+instead of with the remote.</sub>
+</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td width="20%" align="center"><img src="docs/media/phone-home.webp" width="100%" alt="Home on a phone"></td>
+<td width="20%" align="center"><img src="docs/media/phone-detail.webp" width="100%" alt="Detail on a phone"></td>
+<td width="20%" align="center"><img src="docs/media/phone-downloads.webp" width="100%" alt="Downloads on a phone"></td>
+<td width="20%" align="center"><img src="docs/media/phone-live.webp" width="100%" alt="Live TV on a phone"></td>
+<td width="20%" align="center"><img src="docs/media/phone-setup-form.webp" width="100%" alt="The setup form the phone opens"></td>
+</tr>
+<tr>
+<td colspan="5" align="center"><sub><b>On a phone</b> &middot; a bar along the bottom instead of a
+sidebar, and the same library, player and downloads. The last one is the form a phone opens from
+the TV's code.</sub></td>
+</tr>
+</table>
+
+<sub>Every film and series in these screenshots is in the US public domain or under a Creative
+Commons licence: the Blender Foundation's open movies, Pioneer One, and classics whose copyright has
+expired or lapsed. The Live TV channels are a made-up demo playlist.</sub>
 
 <br/>
 
@@ -178,8 +238,11 @@ poster size, app scale and a global CSS box.</sub>
 | **Search** | One box across TMDB; results carry straight through to a source search |
 | **Favourites** / **Watchlist** / **History** | The three local lists |
 | **Detail** | Backdrop, synopsis, cast, trailer, seasons and episodes with per-episode state |
+| **People** | An actor's or director's page, with their films and shows to browse on from |
+| **Live TV** | Channels from an M3U playlist or an Xtream login, filtered by category and searchable, favourites first |
 | **Downloads** | The engine's UI — add, pick files, pause, seed, limit, evict |
-| **Settings** | Appearance, Sources, Subtitles, Audio, Network, Storage, Account, Support, About |
+| **Profiles** | Who's watching — a library per person, and a child's profile with a rating ceiling and a daily watch time, behind one household PIN |
+| **Settings** | Appearance, Language, Sources, Use your phone, Subtitles, Audio, Keyboard, Network, Storage, Profiles, Account, Support, About — with a search box that finds a setting in any of the 72 languages |
 | **Phone as keyboard** | Scan the code on the TV and type on your phone instead of with the remote — a source, a playlist, an Xtream login or the folder to sync with. The form is served by the TV itself, needs the code it is showing, and nothing is kept until the TV asks you |
 
 <p align="right"><a href="#readme-top">&#9650; back to top</a></p>
@@ -258,6 +321,9 @@ The engine runs inside the app process, which has consequences worth knowing.
 | **Seeding** | On by default, with upload and download limits |
 | **Disk budget** | Oldest-watched evicted first when the cache limit is reached; nothing playing is ever touched |
 | **Wi-Fi only** | Pauses background torrents on a metered connection and restarts exactly the ones it paused — never one you paused, never the film being watched |
+| **Streaming** | A film the device can't keep plays through a buffer instead: the engine fetches a window around the picture and forgets what has played. *Automatic* (Settings → Storage) does that for whatever doesn't fit the budget, and for everything on a drive as small as a TV box's; *Stream only* keeps nothing |
+| **Playback first** | While a film is still arriving, everything else waits; the moment its last byte lands the rest resume, so the next episode is coming down before this one ends |
+| **VPN kill switch** | Settings → Network ties the engine to the VPN's interface, so when the tunnel drops there is no route out at all — nothing polls for a leak. Linux and macOS; Android has its own *Block connections without VPN* |
 | **Android** | A foreground service keeps the process alive while something is downloading; without it, "the user opened another app" means "the download stopped" |
 
 <p align="right"><a href="#readme-top">&#9650; back to top</a></p>
@@ -383,8 +449,7 @@ bundle's `Info.plist` and can't change it at runtime, so the `stremio://` switch
 ## Your library
 
 Watch history, progress, favourites, the watchlist and every preference on the settings page live
-in this device's `localStorage`. There is no Ventic account and no Ventic server, and nothing is
-synced anywhere — *Settings → Account* says as much.
+in this device's `localStorage`. There is no Ventic account and no Ventic server.
 
 **A backup file** is what stops that meaning "one cleared webview from gone". *Settings → Account →
 Save a backup* writes `ventic-backup.json` into your documents folder (a browser session downloads
@@ -393,8 +458,19 @@ so restoring changes what the app searches — which is why it asks first. It de
 any key holding a credential: a backup is something you copy onto a stick and mail to yourself, and
 a credential in one can't be taken back.
 
-Carrying the file to another machine is also how a library moves between screens. Syncing without
-one is planned and not built.
+**Sync** keeps several screens in step without a server of ours in the middle. *Settings → Account
+→ Sync* takes the address of a WebDAV folder you already have — a Nextcloud or ownCloud, a NAS,
+a hosted drive, `rclone serve` — and every device reads and writes the same small file there.
+Entries merge one at a time by when they changed, so a film watched on the laptop and an episode
+watched on the TV both survive, and a deletion is remembered so the other screen doesn't hand it
+back. Watch state, sources and preferences are three separate switches, and preferences start off:
+a subtitle size that suits a laptop is the wrong one across a living room. Credentials never travel,
+and nothing that names one machine (its download folder, its local files) does either.
+
+**Profiles** split the library by person on one device. Each profile has its own history,
+favourites, watchlist and taste in themes and subtitles; sources, the network and storage stay
+shared. A child's profile carries a rating ceiling and a daily watch time, checked on every route
+into the app, and one household PIN guards the grown-ups' profiles.
 
 <p align="right"><a href="#readme-top">&#9650; back to top</a></p>
 
@@ -402,7 +478,7 @@ one is planned and not built.
 
 - **No analytics, no telemetry, no crash reporting.** Nothing phones home.
 - **No account and no server.** There is nothing to sign into, and watch state never leaves the
-  device.
+  device — unless you turn on sync, and then only for the WebDAV folder you named.
 - **Credentials stay on the device.** Debrid keys, if you use one, live inside the source URL you
   added, and the backup file leaves credential-bearing keys out.
 - **You decide what it can search.** With no sources configured, the app queries no one for
@@ -417,6 +493,7 @@ Besides the sources you add and the peers your torrents connect to, Ventic reach
 | **YouTube** (`youtube-nocookie.com`) | A title's trailer, in YouTube's own embedded player on its no-cookie domain. |
 | **GitHub** (`api.github.com`) | One request at startup asking whether a newer Ventic has been released — the public releases endpoint, unauthenticated, sending nothing but the request itself. |
 | **GitHub** (`raw.githubusercontent.com`) | `supporters.json` from this repository, when *Settings → Support* is opened. A static file; Ko-fi is never contacted by the app. |
+| **Addresses you type** | A Live TV playlist or Xtream server, and the WebDAV folder sync uses — each only once you have added it. Casting and the phone setup page stay on your own network. |
 
 `app/utils/torrents.ts` additionally appends a handful of well-known public trackers to magnets
 that carry none, as every torrent client does.
