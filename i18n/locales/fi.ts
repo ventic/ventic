@@ -80,6 +80,7 @@ export default {
   "Back to show": "Takaisin sarjaan",
   "Background": "Tausta",
   "Backup": "Varmuuskopio",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Takana",
   "Best": "Paras",
   "Bigger than this quality needs — may not keep up while streaming": "Suurempi kuin tämä laatu vaatii — ei ehkä pysy mukana suoratoistossa",

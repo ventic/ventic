@@ -80,6 +80,7 @@ export default {
   "Back to show": "කතා මාලාවට ආපසු",
   "Background": "පසුබිම",
   "Backup": "උපස්ථය",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "පසුපසින්",
   "Best": "හොඳම",
   "Bigger than this quality needs — may not keep up while streaming": "මෙම ගුණාත්මකභාවයට අවශ්‍ය ප්‍රමාණයට වඩා විශාලයි — ප්‍රවාහ නැරඹීමේදී පසුබට විය හැක",

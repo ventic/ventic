@@ -80,6 +80,7 @@ export default {
   "Back to show": "Atgal į serialą",
   "Background": "Fonas",
   "Backup": "Atsarginė kopija",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Atgal",
   "Best": "Geriausia",
   "Bigger than this quality needs — may not keep up while streaming": "Didesnis, nei reikia šiai kokybei — transliuojant gali nespėti",

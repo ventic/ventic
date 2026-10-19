@@ -80,6 +80,7 @@ export default {
   "Back to show": "Zpět na seriál",
   "Background": "Pozadí",
   "Backup": "Záloha",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Dozadu",
   "Best": "Nejlepší",
   "Bigger than this quality needs — may not keep up while streaming": "Větší, než tahle kvalita potřebuje — při streamování nemusí stíhat",

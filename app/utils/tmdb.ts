@@ -349,6 +349,8 @@ export interface MediaDetail extends Media {
   episodeCount: number
   /** The newest episode that has aired; TMDB's season counts include announced ones. */
   lastAired: { season: number, episode: number } | null
+  /** The series a film belongs to — every Harry Potter, every Toy Story. */
+  collection: { id: number, name: string } | null
   budget: number
   revenue: number
 }
@@ -385,6 +387,7 @@ interface RawDetail extends TmdbItem {
   release_dates?: { results: { iso_3166_1: string, release_dates: { certification: string }[] }[] }
   content_ratings?: { results: { iso_3166_1: string, rating: string }[] }
   external_ids?: { imdb_id?: string | null }
+  belongs_to_collection?: { id: number, name: string } | null
 }
 
 // "NR" is passed over: it says nobody rated it, which is what an empty answer
@@ -479,6 +482,7 @@ function toDetail(raw: RawDetail, type: MediaType): MediaDetail {
     lastAired: raw.last_episode_to_air?.season_number && raw.last_episode_to_air.episode_number
       ? { season: raw.last_episode_to_air.season_number, episode: raw.last_episode_to_air.episode_number }
       : null,
+    collection: raw.belongs_to_collection ? { id: raw.belongs_to_collection.id, name: raw.belongs_to_collection.name } : null,
     budget: raw.budget ?? 0,
     revenue: raw.revenue ?? 0,
   }
@@ -507,6 +511,29 @@ export function useMediaDetail(type: MaybeRefOrGetter<MediaType>, id: MaybeRefOr
         return detail
       },
     },
+  )
+}
+
+/**
+ * The rest of a film's series, oldest first — the order anybody watches one in.
+ * Through the profile's rating check like every list, because a collection
+ * runs from the family film to the one that isn't.
+ */
+export function useCollection(id: MaybeRefOrGetter<number | null | undefined>) {
+  return useAsyncData(
+    () => `collection-${toValue(id) ?? ''}`,
+    async () => {
+      const at = toValue(id)
+      if (!at)
+        return null
+      const raw = await tmdb<{ name: string, parts?: TmdbItem[] }>(`/collection/${at}`)
+      const parts = (raw.parts ?? [])
+        .flatMap(item => toMedia(item, 'movie') ?? [])
+        // A part still unannounced has no date, and goes last.
+        .sort((a, b) => (a.year || '9999').localeCompare(b.year || '9999'))
+      return { name: raw.name, parts: await useProfilesStore().allowedOnly(parts) }
+    },
+    { lazy: true, watch: [() => toValue(id)] },
   )
 }
 

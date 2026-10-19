@@ -80,6 +80,7 @@ export default {
   "Back to show": "Tagasi sarja juurde",
   "Background": "Taust",
   "Backup": "Varukoopia",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Taga",
   "Best": "Parim",
   "Bigger than this quality needs — may not keep up while streaming": "Suurem, kui see kvaliteet nõuab — voogesitusel ei pruugi järele jõuda",

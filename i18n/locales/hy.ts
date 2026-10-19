@@ -80,6 +80,7 @@ export default {
   "Back to show": "Հետ սերիալին",
   "Background": "Ֆոն",
   "Backup": "Պահուստ",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Հետ",
   "Best": "Լավագույնը",
   "Bigger than this quality needs — may not keep up while streaming": "Ավելի մեծ, քան պահանջում է այս որակը — հոսքային դիտման ժամանակ կարող է չհասցնել",

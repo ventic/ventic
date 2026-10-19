@@ -80,6 +80,7 @@ export default {
   "Back to show": "Buyela ohlelweni",
   "Background": "Isizinda",
   "Backup": "Isipele",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Emuva",
   "Best": "Okungcono kakhulu",
   "Bigger than this quality needs — may not keep up while streaming": "Kukhulu kunalokho leli zinga lekhwalithi elikudingayo — kungenzeka lingakwazi ukuhambisana nesakazo",

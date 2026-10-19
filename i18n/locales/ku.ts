@@ -80,6 +80,7 @@ export default {
   "Back to show": "Vegere rêzefîlmê",
   "Background": "Paşxane",
   "Backup": "Kopiya ewlehiyê",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Paş",
   "Best": "Herî baş",
   "Bigger than this quality needs — may not keep up while streaming": "Ji ya ku ev kalîte hewce dike mezintir — dibe ku di dema streamê de negihîje",

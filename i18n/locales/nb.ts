@@ -80,6 +80,7 @@ export default {
   "Back to show": "Tilbake til serien",
   "Background": "Bakgrunn",
   "Backup": "Sikkerhetskopi",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Bak",
   "Best": "Best",
   "Bigger than this quality needs — may not keep up while streaming": "Større enn denne kvaliteten trenger — kan komme til å ikke henge med under strømming",

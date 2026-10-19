@@ -80,6 +80,7 @@ export default {
   "Back to show": "সিরিজে ফিরে যান",
   "Background": "পটভূমি",
   "Backup": "ব্যাকআপ",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "পেছনে",
   "Best": "সেরা",
   "Bigger than this quality needs — may not keep up while streaming": "এই মানের জন্য যা দরকার তার চেয়ে বড় — স্ট্রিম করার সময় হয়তো তাল মেলাতে পারবে না",

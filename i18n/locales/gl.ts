@@ -80,6 +80,7 @@ export default {
   "Back to show": "Volver á serie",
   "Background": "Fondo",
   "Backup": "Copia de seguranza",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Por detrás",
   "Best": "Mellor",
   "Bigger than this quality needs — may not keep up while streaming": "Máis grande do que precisa esta calidade: pode non seguir o ritmo ao reproducir en liña",

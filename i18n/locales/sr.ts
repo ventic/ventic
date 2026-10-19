@@ -80,6 +80,7 @@ export default {
   "Back to show": "Назад на серију",
   "Background": "Позадина",
   "Backup": "Резервна копија",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Назад",
   "Best": "Најбоље",
   "Bigger than this quality needs — may not keep up while streaming": "Веће него што овај квалитет захтева — можда неће моћи да прати током преноса",

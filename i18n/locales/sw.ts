@@ -80,6 +80,7 @@ export default {
   "Back to show": "Rudi kwenye kipindi",
   "Background": "Mandharinyuma",
   "Backup": "Nakala rudufu",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Nyuma",
   "Best": "Bora",
   "Bigger than this quality needs — may not keep up while streaming": "Kubwa kuliko ubora huu unavyohitaji — huenda isiendane wakati wa mtiririko",

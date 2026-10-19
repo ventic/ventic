@@ -80,6 +80,7 @@ export default {
   "Back to show": "షోకు తిరిగి వెళ్లు",
   "Background": "నేపథ్యం",
   "Backup": "బ్యాకప్",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "వెనుక",
   "Best": "ఉత్తమం",
   "Bigger than this quality needs — may not keep up while streaming": "ఈ నాణ్యతకు అవసరమైనదాని కంటే పెద్దది — స్ట్రీమింగ్‌లో సరిపోకపోవచ్చు",

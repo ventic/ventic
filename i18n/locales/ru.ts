@@ -80,6 +80,7 @@ export default {
   "Back to show": "Назад к сериалу",
   "Background": "Фон",
   "Backup": "Резервная копия",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Позади",
   "Best": "Лучший",
   "Bigger than this quality needs — may not keep up while streaming": "Больше, чем нужно для этого качества — может не успевать при потоковом просмотре",

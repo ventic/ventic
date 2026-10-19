@@ -80,6 +80,7 @@ export default {
   "Back to show": "मालिकेकडे परत",
   "Background": "पार्श्वभूमी",
   "Backup": "बॅकअप",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "मागे",
   "Best": "सर्वोत्तम",
   "Bigger than this quality needs — may not keep up while streaming": "या दर्जासाठी लागते त्यापेक्षा मोठे — प्रवाहित करताना कदाचित टिकाव धरणार नाही",

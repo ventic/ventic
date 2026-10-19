@@ -80,6 +80,7 @@ export default {
   "Back to show": "Reen al la serio",
   "Background": "Fono",
   "Backup": "Sekurkopio",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Malantaŭe",
   "Best": "Plej bona",
   "Bigger than this quality needs — may not keep up while streaming": "Pli granda ol ĉi tiu kvalito bezonas — eble ne sukcesos sekvi dum fluado",

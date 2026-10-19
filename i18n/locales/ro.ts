@@ -80,6 +80,7 @@ export default {
   "Back to show": "Înapoi la serial",
   "Background": "Fundal",
   "Backup": "Copie de rezervă",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "În urmă",
   "Best": "Cel mai bun",
   "Bigger than this quality needs — may not keep up while streaming": "Mai mare decât cere această calitate — s-ar putea să nu țină pasul la redare în flux",

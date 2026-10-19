@@ -80,6 +80,7 @@ export default {
   "Back to show": "시리즈로 돌아가기",
   "Background": "배경",
   "Backup": "백업",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "뒤쪽",
   "Best": "최적",
   "Bigger than this quality needs — may not keep up while streaming": "이 화질에 필요한 것보다 큽니다 — 스트리밍 중에 따라오지 못할 수 있습니다",

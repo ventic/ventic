@@ -80,6 +80,7 @@ export default {
   "Back to show": "Diziye dön",
   "Background": "Arka plan",
   "Backup": "Yedek",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Geri",
   "Best": "En iyi",
   "Bigger than this quality needs — may not keep up while streaming": "Bu kalitenin gerektirdiğinden büyük — akış sırasında yetişemeyebilir",

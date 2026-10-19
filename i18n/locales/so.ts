@@ -80,6 +80,7 @@ export default {
   "Back to show": "Dib ugu noqo taxanaha",
   "Background": "Asalka",
   "Backup": "Nuqul kayd ah",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Gadaal",
   "Best": "Ugu fiican",
   "Bigger than this quality needs — may not keep up while streaming": "Ka weyn intii tayadani u baahnayd — laga yaabee inuusan soo raacin inta la sii daayo",

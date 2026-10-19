@@ -80,6 +80,7 @@ export default {
   "Back to show": "ಧಾರಾವಾಹಿಗೆ ಹಿಂದಿರುಗಿ",
   "Background": "ಹಿನ್ನೆಲೆ",
   "Backup": "ಬ್ಯಾಕಪ್",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "ಹಿಂದೆ",
   "Best": "ಅತ್ಯುತ್ತಮ",
   "Bigger than this quality needs — may not keep up while streaming": "ಈ ಗುಣಮಟ್ಟಕ್ಕೆ ಬೇಕಾದದ್ದಕ್ಕಿಂತ ದೊಡ್ಡದು — ಸ್ಟ್ರೀಮ್ ಮಾಡುವಾಗ ಸಾಥ್ ನೀಡದಿರಬಹುದು",

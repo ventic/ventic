@@ -80,6 +80,7 @@ export default {
   "Back to show": "Atpakaļ uz seriālu",
   "Background": "Fons",
   "Backup": "Dublējums",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Atpakaļ",
   "Best": "Labākais",
   "Bigger than this quality needs — may not keep up while streaming": "Lielāks, nekā šai kvalitātei vajadzīgs — straumējot var nepaspēt",

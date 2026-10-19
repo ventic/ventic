@@ -80,6 +80,7 @@ export default {
   "Back to show": "Kembali ke serial",
   "Background": "Latar",
   "Backup": "Cadangan",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Di belakang",
   "Best": "Terbaik",
   "Bigger than this quality needs — may not keep up while streaming": "Lebih besar dari yang dibutuhkan kualitas ini — mungkin tidak mengejar saat streaming",

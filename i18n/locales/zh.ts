@@ -80,6 +80,7 @@ export default {
   "Back to show": "返回剧集",
   "Background": "背景",
   "Backup": "备份",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "后方",
   "Best": "最佳",
   "Bigger than this quality needs — may not keep up while streaming": "超出这个画质所需的大小——串流时可能跟不上",

@@ -80,6 +80,7 @@ export default {
   "Back to show": "தொடருக்குத் திரும்பு",
   "Background": "பின்னணி",
   "Backup": "காப்புப் பிரதி",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "பின்னால்",
   "Best": "சிறந்தது",
   "Bigger than this quality needs — may not keep up while streaming": "இந்தத் தரத்திற்குத் தேவையானதைவிடப் பெரியது — ஸ்ட்ரீம் செய்யும்போது ஈடுகொடுக்காமல் போகலாம்",

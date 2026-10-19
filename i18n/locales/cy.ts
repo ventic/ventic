@@ -80,6 +80,7 @@ export default {
   "Back to show": "Yn ôl i'r gyfres",
   "Background": "Cefndir",
   "Backup": "Copi wrth gefn",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Y tu ôl",
   "Best": "Gorau",
   "Bigger than this quality needs — may not keep up while streaming": "Yn fwy nag sydd ei angen ar yr ansawdd hwn — efallai na fydd yn dal i fyny wrth ffrydio",

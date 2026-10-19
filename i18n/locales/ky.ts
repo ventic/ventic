@@ -80,6 +80,7 @@ export default {
   "Back to show": "Сериалга кайтуу",
   "Background": "Фон",
   "Backup": "Камдык көчүрмө",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Артта",
   "Best": "Эң жакшысы",
   "Bigger than this quality needs — may not keep up while streaming": "Бул сапатка керектүүдөн чоңураак — агым менен көргөндө үлгүрбөй калышы мүмкүн",

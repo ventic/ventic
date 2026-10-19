@@ -80,6 +80,7 @@ export default {
   "Back to show": "番組に戻る",
   "Background": "背景",
   "Backup": "バックアップ",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "巻き戻し分",
   "Best": "最適",
   "Bigger than this quality needs — may not keep up while streaming": "この画質に必要な以上のサイズ — ストリーミング中に追いつかない可能性があります",

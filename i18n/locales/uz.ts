@@ -80,6 +80,7 @@ export default {
   "Back to show": "Serialga qaytish",
   "Background": "Fon",
   "Backup": "Zaxira nusxa",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Orqada",
   "Best": "Eng yaxshi",
   "Bigger than this quality needs — may not keep up while streaming": "Bu sifat talab qilganidan katta — oqim vaqtida yetib bormasligi mumkin",

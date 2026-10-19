@@ -80,6 +80,7 @@ export default {
   "Back to show": "Balik sa palabas",
   "Background": "Background",
   "Backup": "Backup",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Paurong",
   "Best": "Pinakamahusay",
   "Bigger than this quality needs — may not keep up while streaming": "Mas malaki kaysa sa kailangan ng kalidad na ito — baka hindi makasabay habang nagse-stream",

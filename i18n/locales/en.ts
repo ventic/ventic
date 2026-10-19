@@ -80,6 +80,7 @@ export default {
   "Back to show": "Back to show",
   "Background": "Background",
   "Backup": "Backup",
+  "Because you watched {title}": "Because you watched {title}",
   "Behind": "Behind",
   "Best": "Best",
   "Bigger than this quality needs — may not keep up while streaming": "Bigger than this quality needs — may not keep up while streaming",

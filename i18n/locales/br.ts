@@ -80,6 +80,7 @@ export default {
   "Back to show": "Distreiñ d'an heuliad",
   "Background": "Drekleur",
   "Backup": "Gwaredenn",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "A-dreñv",
   "Best": "Gwellañ",
   "Bigger than this quality needs — may not keep up while streaming": "Brasoc'h eget ma ranker evit ar berzhded-mañ — marteze ne heuilho ket e-pad al lanv",

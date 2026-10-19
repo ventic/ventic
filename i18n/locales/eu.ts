@@ -80,6 +80,7 @@ export default {
   "Back to show": "Itzuli telesailera",
   "Background": "Atzeko planoa",
   "Backup": "Babeskopia",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Atzetik",
   "Best": "Onena",
   "Bigger than this quality needs — may not keep up while streaming": "Kalitate honek behar duena baino handiagoa: baliteke jarioan ez iristea",

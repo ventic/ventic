@@ -80,6 +80,7 @@ export default {
   "Back to show": "Kembali ke siri",
   "Background": "Latar",
   "Backup": "Sandaran",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Ke belakang",
   "Best": "Terbaik",
   "Bigger than this quality needs — may not keep up while streaming": "Lebih besar daripada yang diperlukan kualiti ini — mungkin tidak mampu mengejar semasa penstriman",

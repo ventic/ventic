@@ -80,6 +80,7 @@ export default {
   "Back to show": "Πίσω στη σειρά",
   "Background": "Φόντο",
   "Backup": "Αντίγραφο ασφαλείας",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Πίσω",
   "Best": "Καλύτερο",
   "Bigger than this quality needs — may not keep up while streaming": "Μεγαλύτερο απ' όσο χρειάζεται αυτή η ποιότητα — μπορεί να μην προλαβαίνει κατά τη ροή",

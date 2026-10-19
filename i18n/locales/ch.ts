@@ -80,6 +80,7 @@ export default {
   "Back to show": "Tåtte gi serie",
   "Background": "Background",
   "Backup": "Backup",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Tåtte",
   "Best": "Mås maolek",
   "Bigger than this quality needs — may not keep up while streaming": "Mås dångkulo ki nesesita este na kalidåt — siña ti ha sigi anai mama'stream",

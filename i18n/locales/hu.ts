@@ -80,6 +80,7 @@ export default {
   "Back to show": "Vissza a sorozathoz",
   "Background": "Háttér",
   "Backup": "Biztonsági mentés",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Hátra",
   "Best": "Legjobb",
   "Bigger than this quality needs — may not keep up while streaming": "Nagyobb, mint amennyit ez a minőség igényel — streamelés közben elképzelhető, hogy nem tart lépést",

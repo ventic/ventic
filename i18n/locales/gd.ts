@@ -80,6 +80,7 @@ export default {
   "Back to show": "Air ais dhan t-sreath",
   "Background": "Cùlaibh",
   "Backup": "Lethbhreac-glèidhidh",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Air dheireadh",
   "Best": "As fheàrr",
   "Bigger than this quality needs — may not keep up while streaming": "Nas motha na tha am fheum air a' chàileachd seo — dh'fhaodadh nach cùm e suas rè sruthadh",

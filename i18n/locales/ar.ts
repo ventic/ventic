@@ -80,6 +80,7 @@ export default {
   "Back to show": "العودة إلى المسلسل",
   "Background": "الخلفية",
   "Backup": "نسخة احتياطية",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "للخلف",
   "Best": "الأفضل",
   "Bigger than this quality needs — may not keep up while streaming": "أكبر مما تحتاجه هذه الجودة — قد لا يواكب أثناء البث",

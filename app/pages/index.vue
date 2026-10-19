@@ -66,6 +66,13 @@ const rows = computed(() => (['movie', 'tv'] as const).map(type => ({
   request: { path: `/discover/${type}`, type, params: { sort_by: 'popularity.desc', ...profiles.discover(type) } },
 })))
 
+/**
+ * The last title played, for a row of what TMDB recommends after it — the one
+ * thing on Home that is about this profile rather than about everybody. A
+ * title known only by a placeholder has no name to say it by, and is passed.
+ */
+const lastPlayed = computed(() => library.history.find(m => m.title !== UNKNOWN_TITLE) ?? null)
+
 // Enough room for a poster row so v-lazy doesn't collapse before it mounts.
 const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
 </script>
@@ -220,6 +227,14 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
           :style="{ width: ui.rowCard }"
         />
       </scroll-row>
+
+      <v-lazy v-if="lastPlayed" :min-height="rowHeight" transition="fade-transition">
+        <media-slider
+          :key="`${lastPlayed.type}-${lastPlayed.id}`"
+          :title="$t('Because you watched {title}', { title: lastPlayed.title })"
+          :request="{ path: `/${lastPlayed.type}/${lastPlayed.id}/recommendations`, type: lastPlayed.type }"
+        />
+      </v-lazy>
 
       <!-- Only the rows in view fetch their page; the rest wait until scrolled to. -->
       <v-lazy

@@ -80,6 +80,7 @@ export default {
   "Back to show": "Kthehu te seriali",
   "Background": "Sfondi",
   "Backup": "Kopje rezervë",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Prapa",
   "Best": "Më i miri",
   "Bigger than this quality needs — may not keep up while streaming": "Më i madh se ç'kërkon kjo cilësi — mund të mos e mbajë ritmin gjatë transmetimit",

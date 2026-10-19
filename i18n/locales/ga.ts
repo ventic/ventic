@@ -80,6 +80,7 @@ export default {
   "Back to show": "Ar ais chuig an tsraith",
   "Background": "Cúlra",
   "Backup": "Cúltaca",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Ar gcúl",
   "Best": "Is fearr",
   "Bigger than this quality needs — may not keep up while streaming": "Níos mó ná mar a theastaíonn ón gcáilíocht seo — b'fhéidir nach gcoinneodh sé suas le linn sruthaithe",

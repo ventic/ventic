@@ -80,6 +80,7 @@ export default {
   "Back to show": "უკან სერიალზე",
   "Background": "ფონი",
   "Backup": "სარეზერვო ასლი",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "უკან",
   "Best": "საუკეთესო",
   "Bigger than this quality needs — may not keep up while streaming": "უფრო დიდი, ვიდრე ამ ხარისხს სჭირდება — ნაკადური ყურებისას შეიძლება ვერ აუწყოს",

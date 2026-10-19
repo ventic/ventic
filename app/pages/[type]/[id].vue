@@ -16,6 +16,7 @@ const type = computed(() => route.params.type as MediaType)
 const id = computed(() => String(route.params.id))
 
 const { data: media, status, error } = useMediaDetail(type, id)
+const { data: collection } = useCollection(() => media.value?.collection?.id)
 
 // This page's art is the app backdrop, for exactly as long as the page is up.
 let mine = 0
@@ -328,6 +329,19 @@ const playLabel = computed(() => [
           :poster="media.poster"
           :show="media"
         />
+
+        <!-- The rest of the series, before the cast: which one comes next is
+             the question a film's page is asked most after "is it any good". -->
+        <scroll-row v-if="collection && collection.parts.length > 1" :title="collection.name">
+          <media-card
+            v-for="part in collection.parts"
+            :key="part.id"
+            :media="part"
+            :detail="ui.isDetailed"
+            class="shrink-0"
+            :style="{ width: ui.rowCard }"
+          />
+        </scroll-row>
 
         <cast-row v-if="media?.cast.length" :title="$t('Cast')" :people="media.cast" />
 

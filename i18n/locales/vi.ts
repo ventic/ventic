@@ -80,6 +80,7 @@ export default {
   "Back to show": "Về lại phim bộ",
   "Background": "Nền",
   "Backup": "Bản sao lưu",
+  "Because you watched {title}": "TODO_TRANSLATION: Because you watched {title}",
   "Behind": "Phía sau",
   "Best": "Tốt nhất",
   "Bigger than this quality needs — may not keep up while streaming": "Lớn hơn mức chất lượng này cần — có thể không theo kịp khi phát trực tuyến",
