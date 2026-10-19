@@ -4,6 +4,7 @@ import { mdiBookmark, mdiBookmarkOutline, mdiHeart, mdiHeartOutline, mdiInformat
 
 const ui = useUiStore()
 const library = useLibraryStore()
+const calendar = useCalendarStore()
 const profiles = useProfilesStore()
 const { smAndDown } = useDisplay()
 
@@ -202,6 +203,19 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
           :media="entry.media"
           :to="entry.season ? episodeLink(entry.media.id, entry.season, entry.episode) : undefined"
           :detail="ui.isDetailed"
+          class="shrink-0"
+          :style="{ width: ui.rowCard }"
+        />
+      </scroll-row>
+
+      <!-- Episodes of shows this profile follows that came out this week and
+           haven't been watched — the calendar's first row, where it will be
+           seen. Each opens its episode's page, as Continue watching does. -->
+      <scroll-row v-if="calendar.rows.fresh.length" :title="$t('New episodes')">
+        <airing-card
+          v-for="a in calendar.rows.fresh"
+          :key="`${a.show}-${a.season}-${a.episode}`"
+          :airing="a"
           class="shrink-0"
           :style="{ width: ui.rowCard }"
         />

@@ -12,12 +12,15 @@ const props = defineProps<{
 
 const ui = useUiStore()
 const library = useLibraryStore()
+const calendar = useCalendarStore()
 
 // The bar measures a film's place in the file and a show's place in the show,
 // so it has to say which — see `watchBar`. The tick is about the title as a
 // whole, which is a different question.
 const bar = computed(() => library.cardBar(props.media))
 const watched = computed(() => library.isWatched(props.media))
+/** A followed show with an episode out this week that hasn't been watched. */
+const fresh = computed(() => props.media.type === 'tv' && calendar.isNew(props.media.id))
 
 // A grid holds hundreds of these, and the overlay's buttons and tooltips are ~9
 // Vuetify components each — mounting them per card is what made switching
@@ -96,6 +99,15 @@ const reserve = computed(() => `${ui.cardWidth}px ${Math.round(ui.cardWidth * 1.
            because at 10 feet colour alone doesn't carry. -->
       <div v-if="watched" class="absolute right-1.5 top-1.5 grid size-5 place-items-center rounded-full bg-primary text-on-primary">
         <svg viewBox="0 0 24 24" class="size-3.5 fill-current"><path :d="mdiCheck" /></svg>
+      </div>
+      <!-- Words rather than a dot: this is the one badge that asks for
+           something, and a dot says nothing at ten feet. -->
+      <div
+        v-if="fresh"
+        class="absolute top-1.5 rounded-full bg-primary px-1.5 py-0.5 text-label-small text-on-primary"
+        :class="watched ? 'right-8' : 'right-1.5'"
+      >
+        {{ $t('New') }}
       </div>
 
       <transition

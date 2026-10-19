@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { mdiAccountCircleOutline, mdiAnimationPlayOutline, mdiCogOutline, mdiDotsHorizontal, mdiFilmstrip, mdiHeartOutline, mdiHomeOutline, mdiTelevisionClassic, mdiTelevisionPlay, mdiTrayArrowDown } from '@mdi/js'
+import { mdiAccountCircleOutline, mdiAnimationPlayOutline, mdiCalendarMonthOutline, mdiCogOutline, mdiDotsHorizontal, mdiFilmstrip, mdiHeartOutline, mdiHomeOutline, mdiTelevisionClassic, mdiTelevisionPlay, mdiTrayArrowDown } from '@mdi/js'
 import { LIBRARY_LISTS } from '~/stores/ui'
 
 /**
@@ -28,6 +28,7 @@ const tabs = computed(() => [
 // A child's profile has no Live TV or Downloads to go to (see the profile middleware).
 const more = computed(() => [
   { title: $t('Anime'), icon: mdiAnimationPlayOutline, to: localePath('/anime') },
+  { title: $t('Calendar'), icon: mdiCalendarMonthOutline, to: localePath('/calendar') },
   ...profiles.current.kids
     ? []
     : [
@@ -42,7 +43,7 @@ const sheet = ref(false)
 const name = computed(() => routeName(route) ?? '')
 // The two feeds that live in the sheet light the tab up, so the bar always
 // says where you are.
-const inMore = computed(() => ['anime', 'live'].includes(name.value))
+const inMore = computed(() => ['anime', 'live', 'calendar'].includes(name.value))
 
 watch(() => route.fullPath, () => (sheet.value = false))
 

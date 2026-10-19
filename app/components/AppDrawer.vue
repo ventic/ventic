@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { mdiAnimationPlayOutline, mdiFilmstrip, mdiHomeOutline, mdiTelevisionClassic, mdiTelevisionPlay } from '@mdi/js'
+import { mdiAnimationPlayOutline, mdiCalendarMonthOutline, mdiFilmstrip, mdiHomeOutline, mdiTelevisionClassic, mdiTelevisionPlay } from '@mdi/js'
 import { LIBRARY_LISTS } from '~/stores/ui'
 
 /**
@@ -25,8 +25,12 @@ const links = computed(() => [
   ...profiles.current.kids ? [] : [{ title: $t('Live TV'), icon: mdiTelevisionPlay, to: localePath('/live') }],
 ])
 
-// "My stuff" — kept apart from the feeds above.
-const library = computed(() => LIBRARY_LISTS.map(l => ({ title: l.title(), icon: l.icon, to: localePath(`/${l.value}`) })))
+// "My stuff" — kept apart from the feeds above. The calendar is the same lists
+// looked at by date, so it sits with them.
+const library = computed(() => [
+  ...LIBRARY_LISTS.map(l => ({ title: l.title(), icon: l.icon, to: localePath(`/${l.value}`) })),
+  { title: $t('Calendar'), icon: mdiCalendarMonthOutline, to: localePath('/calendar') },
+])
 </script>
 
 <template>
