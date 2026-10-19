@@ -1215,8 +1215,17 @@ const skipTarget = computed(() => {
   return { label: kind === 'intro' ? $t('Skip intro') : $t('Skip credits'), to: '', end: c.end }
 })
 
+/**
+ * The last minute of an episode, for a file that names no credits — which is
+ * every file on a television, where nothing reads chapters. What is left by
+ * then is credits often enough, and the next episode is what is wanted.
+ */
+const upNext = computed(() => props.next && duration.value > 600 ? { label: props.next.label, to: props.next.to, end: duration.value } : null)
+const lastMinute = computed(() => !!upNext.value && duration.value - second.value <= 60)
+
 /** Gone for the chapter's last few seconds: there is nothing left to skip by then. */
-const skip = computed(() => skipTarget.value && skipTarget.value.end - second.value > 3 ? skipTarget.value : null)
+const skip = computed(() => (skipTarget.value && skipTarget.value.end - second.value > 3 ? skipTarget.value : null)
+  ?? (lastMinute.value ? upNext.value : null))
 
 function skipPart() {
   const target = skip.value
@@ -1912,6 +1921,8 @@ function onKey(e: KeyboardEvent) {
     return
   }
 
+  // Read before `noteActivity` puts the chrome up.
+  const bare = !ui.value
   noteActivity()
   if (!started.value)
     return
@@ -1950,6 +1961,12 @@ function onKey(e: KeyboardEvent) {
     ? () => seekTo(duration.value * (Number(e.key) / 10))
     : null
   const action = keyed.value[chord(e)]
+  // With a skip offered over the bare picture, OK presses it — the button a
+  // television would have focused, and the one thing on screen to press.
+  if (action === 'controls' && bare && skip.value) {
+    e.preventDefault()
+    return skipPart()
+  }
   const run = action ? ACTIONS[action] : digit
   if (!run)
     return
