@@ -461,12 +461,14 @@ async function tryAnother() {
 
 const backdrop = computed(() => backdropUrl(title.value?.backdrop, 'w1280'))
 
-// What the end-of-playback screen offers. The show's season list carries an
-// episode count per season, which is all the rollover needs.
+/** The episode after this one. The show's season list carries a count per season, which is all the rollover needs. */
+const upNext = computed(() => media.value && season.value && episode.value
+  ? nextEpisode(media.value.seasons, { season: season.value, episode: episode.value, watched: true })
+  : null)
+
+// What the end-of-playback screen offers.
 const next = computed(() => {
-  if (!media.value || !season.value || !episode.value)
-    return null
-  const target = nextEpisode(media.value.seasons, { season: season.value, episode: episode.value, watched: true })
+  const target = upNext.value
   if (!target)
     return null
   const to = watchLink('tv', id.value, target.season, target.episode)
@@ -477,6 +479,33 @@ const next = computed(() => {
     label: $t('Next · S{season} E{episode}', { season: target.season, episode: target.episode }),
   }
 })
+
+/**
+ * The next episode, fetched in the background once most of this one is behind
+ * us — `prefetch` decides whether it may. Asked again every so often rather
+ * than once, because what it waits on (this one landing on the disk) arrives
+ * in its own time; asked of no film cast here, whose episodes are the other
+ * device's.
+ */
+let fetched = ''
+useIntervalFn(async () => {
+  const target = upNext.value
+  const playing = player.value
+  if (!target || castFrom.value || !playing?.duration || playing.position < playing.duration * 0.8)
+    return
+  const nextKey = progressKey('tv', id.value, target.season, target.episode)
+  if (fetched === nextKey)
+    return
+  fetched = nextKey
+  const settled = await downloads.prefetch(nextKey, {
+    imdbId: media.value?.imdbId,
+    named: () => title.value,
+    season: target.season,
+    episode: target.episode,
+  })
+  if (!settled)
+    fetched = ''
+}, 15_000)
 
 /**
  * Out of the player, to the title's own page rather than back a step. An

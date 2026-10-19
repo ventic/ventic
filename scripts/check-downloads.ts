@@ -17,7 +17,8 @@ import './i18n-stub'
 /** The store's own intervals, in the order it sets them up — the first is the poll. */
 const intervals: Array<() => Promise<void>> = []
 const visibility = vue.ref('visible')
-const settings = vue.reactive({ playMode: 'auto', downloadDir: '', sources: [], activeSources: [], quality: '', wifiOnly: false, keepWatched: true, bufferAhead: 5, bufferBehind: 2, upLimit: 0, downLimit: 0 })
+const settings = vue.reactive({ playMode: 'auto', downloadDir: '', sources: [], activeSources: [], quality: '', wifiOnly: false, keepWatched: true, fetchNext: true, bufferAhead: 5, bufferBehind: 2, upLimit: 0, downLimit: 0 })
+let metered: boolean | null = null
 
 Object.assign(globalThis, vue, torrents, {
   defineStore,
@@ -26,18 +27,31 @@ Object.assign(globalThis, vue, torrents, {
   useEventListener: () => {},
   useDocumentVisibility: () => visibility,
   useTimeoutFn: () => {},
-  meteredNetwork: () => null,
+  meteredNetwork: () => metered,
   storageVolumes: () => null,
   useSettingsStore: () => settings,
   useLibraryStore: () => ({ progress: {} }),
 })
 
 /** One torrent as the engine would list it: a file of 100 bytes per entry in `file_progress`. */
-interface Fake { id: number, state: string, finished: boolean, file_progress: number[] }
+interface Fake { id: number, state: string, finished: boolean, file_progress: number[], files?: string[] }
+const filesOf = (t: Fake) => (t.files ?? t.file_progress.map((_, i) => `file${i}.mkv`)).map(name => ({ name, length: 100, included: true }))
 const engine = new Map<number, Fake>()
 
-globalThis.fetch = (async (input: string | URL | Request) => {
+globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
   const url = String(input)
+  // An add, as `startTorrent` makes one: `hash7` becomes torrent 7.
+  if (init?.method === 'POST' && /\/torrents\?overwrite/.test(url)) {
+    const id = Number(String(init.body).match(/btih:hash(\d+)/)?.[1])
+    const t = engine.get(id) ?? { id, state: 'live', finished: false, file_progress: [0] }
+    engine.set(id, t)
+    return Response.json({ id, details: { name: `torrent ${id}`, info_hash: `hash${id}`, files: filesOf(t) } })
+  }
+  const details = url.match(/\/torrents\/(\d+)$/)
+  if (details) {
+    const t = engine.get(Number(details[1]))
+    return t ? Response.json({ id: t.id, info_hash: `hash${t.id}`, name: `torrent ${t.id}`, files: filesOf(t) }) : new Response('gone', { status: 404 })
+  }
   const action = url.match(/\/torrents\/(\d+)\/(pause|start|delete)$/)
   if (action) {
     const t = engine.get(Number(action[1]))
@@ -181,6 +195,69 @@ visibility.value = 'hidden'
 await poll()
 assert.deepEqual(states(), { 1: 'live', 3: 'live' }, 'handed back with nobody looking')
 visibility.value = 'visible'
+await downloads.release()
+
+// --- The next episode, behind this one ------------------------------------------
+
+/** What `watch.vue` asks for at 80%: episode 2 of show 9, here by magnet so no source is searched. */
+const nextUp = (hash = 'hash7') => downloads.prefetch('tv:9:1:2', { magnet: `magnet:?xt=urn:btih:${hash}`, season: 1, episode: 2 })
+
+await holding(1)
+await play(1)
+assert.equal(await nextUp(), false, 'not while this one is still arriving: it would share the pipe')
+assert.ok(!engine.has(7), 'and nothing was added')
+arrive(1, [100], true)
+await poll()
+assert.equal(await nextUp(), true)
+assert.equal(engine.get(7)?.state, 'live', 'on the disk, so the next one starts coming down')
+assert.deepEqual(downloads.cachedFor('tv:9:1:2'), { hash: 'hash7', file: 0 }, 'filed under the episode, so Next plays it with no search')
+await poll()
+assert.equal(await nextUp(), true, 'and asked again, it is already here')
+await downloads.release()
+assert.deepEqual(states(), { 1: 'live', 7: 'live' }, 'leaving the player leaves it downloading')
+
+// The next episode is in the pack on screen: the play started that pack, so
+// leaving would pause it — and the episode asked for with it.
+await holding({ id: 5, file_progress: [100, 0], files: ['Show.S01E01.mkv', 'Show.S01E02.mkv'] })
+await play(5)
+assert.equal(await nextUp('hash5'), true)
+await downloads.release()
+assert.deepEqual(states(), { 5: 'live' }, 'the pack keeps downloading the episode it was asked for')
+
+// Every reason not to.
+for (const [why, set, undo] of [
+  ['switched off', () => (settings.fetchNext = false), () => (settings.fetchNext = true)],
+  ['a device that streams everything', () => (settings.playMode = 'stream'), () => (settings.playMode = 'auto')],
+] as const) {
+  await holding({ id: 1, file_progress: [100], finished: true })
+  await play(1)
+  set()
+  assert.equal(await nextUp(), true, `${why}: settled, so nobody asks again`)
+  assert.ok(!engine.has(7), `${why}: nothing added`)
+  undo()
+  await downloads.release()
+}
+
+await holding({ id: 1, file_progress: [100], finished: true })
+await play(1, { stream: true })
+await downloads.buffer(1, 100)
+assert.equal(await nextUp(), true, 'under a stream: this device does not keep episodes')
+assert.ok(!engine.has(7))
+await downloads.release()
+
+// Only on Wi-Fi, on mobile data: not now, but maybe later.
+settings.wifiOnly = true
+metered = true
+await holding({ id: 1, file_progress: [100], finished: true })
+await play(1)
+await poll()
+assert.equal(await nextUp(), false, 'held back for Wi-Fi, and worth asking again')
+assert.ok(!engine.has(7))
+metered = null
+await poll()
+assert.equal(await nextUp(), true, 'and fetched once Wi-Fi is back')
+assert.ok(engine.has(7))
+settings.wifiOnly = false
 await downloads.release()
 
 console.log('downloads: ok')
