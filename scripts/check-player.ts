@@ -451,7 +451,7 @@ assert.match(kotlin, /"panscan" -> view\?\.resizeMode = if/, 'Player.kt answers 
 // developer may not even have.
 const media = await Bun.file('src-tauri/src/media.rs').text()
 assert.match(lib, /media::media_session/, 'the command is registered')
-assert.match(media, /pub fn media_session\(/, 'under the name it is registered by')
+assert.match(media, /pub (?:async )?fn media_session\(/, 'under the name it is registered by')
 assert.match(mpv, /invoke\('media_session'/, 'and the player calls it by that name')
 assert.match(media, /emit\("media:\/\/command"/, 'what the desktop asks for is emitted…')
 assert.match(mpv, /listen<MediaCommand>\('media:\/\/command'/, '…and listened for under the same name')

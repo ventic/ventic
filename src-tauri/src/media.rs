@@ -65,14 +65,19 @@ pub enum Command {
 /// Publish what is playing, or take the player off the bus with `None`.
 /// Best-effort, like `keep_awake`: a desktop with no session bus has no media
 /// controls to tell, which is not worth an error mid-film.
+///
+/// `async`, and the bus work on a blocking thread, because tauri runs a sync
+/// command on the main thread — and this one is called every few seconds of a
+/// film with a D-Bus round trip in it, which a slow bus would turn into a
+/// stalled window.
 #[tauri::command]
-pub fn media_session(app: AppHandle, now: Option<NowPlaying>) {
-	platform::set(Arc::new(move |command| send(&app, command)), now);
+pub async fn media_session(app: AppHandle, now: Option<NowPlaying>) {
+	let sink: Sink = Arc::new(move |command| send(&app, command));
+	let _ = tauri::async_runtime::spawn_blocking(move || platform::set(sink, now)).await;
 }
 
 /// Where a command from the desktop goes: the page, in the app, and a list in
 /// the test, which is what lets it run without one.
-#[cfg_attr(not(target_os = "linux"), allow(dead_code))]
 type Sink = Arc<dyn Fn(Command) + Send + Sync>;
 
 /// Hand a command to the page — and, for Raise, which is the window's business
