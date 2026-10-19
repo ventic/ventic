@@ -132,6 +132,18 @@ assert.equal(pickBest([sameTier!, hosted!])!.hash, 'bbb', 'a 1080p torrent beats
 assert.equal(pickBest(links, 100)!.url, debrid!.url, 'the storage budget is not its business')
 assert.equal(pickBest([sameTier!], 100), null, 'which a torrent does not get away with')
 
+// An addon that scrapes hosters sizes nothing and labels little ("🅵🅷🅳" is not
+// a resolution anybody parses), so its real streams say neither how big nor how
+// sharp — exactly what an error says. What tells them apart is that they name a
+// file or a playlist, if only inside the proxy's encoded target.
+const hosters = [
+  { name: '🤌 Example 🍿', title: '🎬 Sintel\n🗣 🇬🇧\n🎦 🅵🅷🅳\n🌐 Proxy (ON)', url: 'http://192.168.1.9:8888/extractor/video.m3u8?host=x&d=https%3A%2F%2Fhost.example%2Fmovie%2F1%2F' },
+  { name: '🤌 Example 🌍', title: '🎬 Sintel ▪ S1E1\n🗣 [SUB]\n🌐 Proxy (ON)', url: 'http://192.168.1.9:8888/proxy/stream?d=https%3A%2F%2Fcdn.example%2FSintel_Ep_01.mp4&api_password=p' },
+  { name: '🤌 Example 🪐', title: '🎬 Sintel ▪ S1E1\n🗣 [SUB]\n🌐 Proxy (OFF)', url: 'https://cdn.example/DDL/Sintel_Ep_01.mp4?token=t' },
+]
+assert.deepEqual(hosters.map(s => toRelease(s)?.name), ['Sintel', 'Sintel ▪ S1E1', 'Sintel ▪ S1E1'], 'a link that names its file is a release')
+assert.equal(toRelease({ name: 'Example', title: 'Not released yet', url: 'https://addon.example/notice' }), null, 'and one that names nothing still is not')
+
 // --- Every addon draws its own title -----------------------------------------
 // The protocol fixes the fields, not the text, so each field is read by its look
 // and not its line. Shapes copied from each addon's live output (film swapped
@@ -662,6 +674,9 @@ assert.equal(normalizeSource('ventic://a.example/opt=x,y/manifest.json'), 'https
 // silently hand back someone else's defaults.
 assert.equal(normalizeSource('https://a.example/opt=x,y/manifest.json'), 'https://a.example/opt=x,y')
 assert.equal(normalizeSource('https://a.example/opt=x/manifest.json?v=2'), 'https://a.example/opt=x')
+// A configurable addon's settings page, copied out of the address bar once the
+// settings were right — the settings are the path, and `/configure` is not.
+assert.equal(normalizeSource('https://a.example/eyJ4IjoxfQ==/configure'), 'https://a.example/eyJ4IjoxfQ==')
 assert.equal(normalizeSource('http://192.168.1.9:11470'), 'http://192.168.1.9:11470')
 // A bare host is assumed to be https — that is what gets copied out of a forum
 // post, and what a TV keyboard makes expensive to type in full.
@@ -754,6 +769,10 @@ globalThis.fetch = (async (input: string | URL | Request) => {
 setSources(['https://a.example/'])
 await findReleases('tt0000001', 2, 5)
 assert.equal(asked, 'https://a.example/stream/series/tt0000001:2:5.json')
+// A source saved before `normalizeSource` knew its shape is read through it now.
+setSources(['https://a.example/opt=x/configure'])
+await findReleases('tt0000001')
+assert.equal(asked, 'https://a.example/opt=x/stream/movie/tt0000001.json')
 
 // --- Playing what is already downloaded ---------------------------------------
 // A film on the disk must play with no sources, no peers and no network at all:

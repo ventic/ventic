@@ -28,8 +28,9 @@ let sources: string[] = []
 export const NO_SOURCES = () => $t('No sources configured. Add one in Settings → Sources.')
 
 export function setSources(urls: string[]) {
-  // Trailing slashes would produce `//stream/…`, which some servers 404.
-  sources = urls.map(u => u.trim().replace(/\/+$/, '')).filter(Boolean)
+  // The same rule the settings box applies, so a source saved before that rule
+  // learned a shape (`…/configure`) works without being added again.
+  sources = urls.map(normalizeSource).filter(Boolean)
 }
 
 /**
@@ -47,8 +48,10 @@ export function configuredSources() {
  * bare origin: an addon hands out a scheme link or a `…/manifest.json` URL, and
  * a configured one carries its settings in the path
  * (`https://host/opt=a,b/manifest.json`), which is part of the base and has to
- * survive. A bare host is taken as https, which is the form someone typing it
- * from memory produces.
+ * survive. A configurable addon's settings page ends in `/configure` instead,
+ * and its address bar is what gets copied once the settings are right. A bare
+ * host is taken as https, which is the form someone typing it from memory
+ * produces.
  *
  * Returns '' for anything that isn't a URL, so the caller can say so.
  */
@@ -61,7 +64,7 @@ export function normalizeSource(input: string): string {
   // "https://" on a TV keyboard costs eight presses of a d-pad. https is the
   // only scheme this accepts anyway, so assume it rather than refuse the input.
   const url = (/^[a-z][a-z0-9+.-]*:\/\//i.test(typed) ? typed : `https://${typed}`)
-    .replace(/\/manifest\.json(?:[?#].*)?$/i, '')
+    .replace(/\/(?:manifest\.json|configure)(?:[?#].*)?$/i, '')
     .replace(/\/+$/, '')
 
   return httpUrl(url)
@@ -176,6 +179,11 @@ const MAX_BYTES = 25 * 1024 ** 3
 export const VIDEO_EXTENSIONS = ['mkv', 'mp4', 'webm', 'avi', 'mov', 'm4v', 'ts', 'm2ts', 'flv', 'wmv']
 
 const VIDEO_EXT = new RegExp(`\\.(?:${VIDEO_EXTENSIONS.join('|')})$`, 'i')
+/**
+ * A link to a file or an HLS playlist — at the end of the path, or of a proxy's
+ * percent-encoded target (`/proxy/stream?d=…%2Ffilm.mp4&api_password=…`).
+ */
+const MEDIA_URL = new RegExp(`\\.(?:${VIDEO_EXTENSIONS.join('|')}|m3u8)(?=$|[?&#%])`, 'i')
 
 /**
  * Text subtitles only. VobSub (`.sub` + `.idx`) is a pair of files mpv can only
@@ -347,7 +355,9 @@ export function toRelease(raw: RawStream): Release | null {
 
   // A link that says neither how big nor how sharp is the addon talking — an
   // error, "not released yet" — and ranked as a link it can beat a real copy.
-  if (url && !bytes && !quality)
+  // Unless it names a file or a playlist: an addon scraping hosters sizes
+  // nothing and labels little, and every one of its real streams looks like this.
+  if (url && !bytes && !quality && !MEDIA_URL.test(url))
     return null
 
   const seeders = title.match(SEEDERS)
@@ -511,7 +521,10 @@ export function pickBest(list: Release[], maxBytes = MAX_BYTES, compatible = fal
 }
 
 async function searchOne(base: string, path: string): Promise<Release[]> {
-  const res = await fetch(base + path, { signal: AbortSignal.timeout(20000) })
+  // An addon that scrapes sites on request answers when its slowest scrape gives
+  // up, and one of those gives up at 30 s — every series search on it outlasted
+  // the 20 s this used to allow, and arrived as "No source answered".
+  const res = await fetch(base + path, { signal: AbortSignal.timeout(40000) })
   if (!res.ok)
     throw new Error(`${base} answered HTTP ${res.status}`)
 
