@@ -1426,6 +1426,16 @@ async function startPlayer() {
       ipc(['keybind', 'MBTN_LEFT', 'cycle pause'])
       ipc(['keybind', 'WHEEL_UP', 'add volume 5'])
       ipc(['keybind', 'WHEEL_DOWN', 'add volume -5'])
+      // Windows' own media controls are mpv's there (`media-controls`, on by
+      // default for mpv.exe), and arrive as these keys — which bind to nothing
+      // under --no-input-default-bindings. Linux answers them through
+      // media.rs instead, and never sends them here. Unverified on Windows.
+      for (const key of ['PLAYPAUSE', 'PLAY', 'PAUSE'])
+        ipc(['keybind', key, 'cycle pause'])
+      ipc(['keybind', 'PLAYONLY', 'set pause no'])
+      ipc(['keybind', 'PAUSEONLY', 'set pause yes'])
+      ipc(['keybind', 'FORWARD', 'seek 10'])
+      ipc(['keybind', 'REWIND', 'seek -10'])
     }
 
     startPoll()
