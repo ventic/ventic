@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Cuir an fhoinse seo in eagar",
   "Enter it again": "Cuir isteach arís é",
   "Enter the parental PIN": "Cuir isteach UAP an tuismitheora",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Eachtra {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Anime earótach nach marcálann TMDB mar ábhar do dhaoine fásta, sna liostaí Anime agus Sraitheanna teilifíse. Aimsíonn an cuardach é ar aon nós.",
   "Error": "Earráid",

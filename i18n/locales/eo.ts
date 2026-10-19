@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Redakti ĉi tiun fonton",
   "Enter it again": "Entajpu ĝin denove",
   "Enter the parental PIN": "Entajpu la gepatran PIN-on",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Epizodo {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Erotika animeo, kiun TMDB ne markas kiel por plenkreskuloj, en la listoj Animeo kaj Serioj. Serĉo trovas ĝin ĉiuokaze.",
   "Error": "Eraro",

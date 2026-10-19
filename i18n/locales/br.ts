@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Kemmañ ar vammenn-mañ",
   "Enter it again": "Skrivit anezhañ en-dro",
   "Enter the parental PIN": "Skrivit PIN an tud",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Rann {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Anime erotek ha n'eo ket merket gant TMDB evel evit an oadourien, er rolloù Anime hag Heuliadoù. An enklask a gav anezho memes tra.",
   "Error": "Fazi",

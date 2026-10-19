@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Muokkaa tätä lähdettä",
   "Enter it again": "Syötä se uudelleen",
   "Enter the parental PIN": "Syötä vanhempien PIN-koodi",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Jakso {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Eroottinen anime, jota TMDB ei merkitse aikuisille tarkoitetuksi, Anime- ja Sarjat-listoilla. Haku löytää sen joka tapauksessa.",
   "Error": "Virhe",

@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Hariri chanzo hiki",
   "Enter it again": "Iweke tena",
   "Enter the parental PIN": "Weka PIN ya mzazi",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Kipindi {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Anime za kingono ambazo TMDB haiziwekei alama ya watu wazima, katika orodha za Anime na Vipindi vya TV. Utafutaji huzipata hata hivyo.",
   "Error": "Hitilafu",

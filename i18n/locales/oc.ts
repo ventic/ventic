@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Modificar aquesta font",
   "Enter it again": "Picatz-lo tornamai",
   "Enter the parental PIN": "Picatz lo PIN parental",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Episòdi {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Los anime erotics que TMDB marca pas coma per adults, dins las listas Anime e Serias. La recèrca los tròba de tot biais.",
   "Error": "Error",

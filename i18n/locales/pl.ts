@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Edytuj to źródło",
   "Enter it again": "Wpisz go ponownie",
   "Enter the parental PIN": "Wpisz PIN rodzicielski",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Odcinek {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Erotyczne anime, których TMDB nie oznacza jako treści dla dorosłych, na listach Anime i Seriale. Wyszukiwanie i tak je znajdzie.",
   "Error": "Błąd",

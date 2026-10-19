@@ -189,6 +189,7 @@ export default {
   "Edit this source": "ఈ మూలాన్ని సవరించు",
   "Enter it again": "మళ్లీ నమోదు చేయి",
   "Enter the parental PIN": "తల్లిదండ్రుల PIN నమోదు చేయి",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "ఎపిసోడ్ {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "TMDB పెద్దలకు అని గుర్తించని శృంగార అనిమే, అనిమే మరియు టీవీ షోల జాబితాల్లో. శోధన ఏమైనా దాన్ని కనుగొంటుంది.",
   "Error": "లోపం",

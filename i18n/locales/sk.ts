@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Upraviť tento zdroj",
   "Enter it again": "Zadajte ho znova",
   "Enter the parental PIN": "Zadajte rodičovský PIN",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Epizóda {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Erotické anime, ktoré TMDB neoznačuje ako obsah pre dospelých, v zoznamoch Anime a Seriály. Vyhľadávanie ho nájde tak či tak.",
   "Error": "Chyba",

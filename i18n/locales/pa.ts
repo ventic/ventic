@@ -189,6 +189,7 @@ export default {
   "Edit this source": "ਇਹ ਸਰੋਤ ਸੋਧੋ",
   "Enter it again": "ਇਸਨੂੰ ਦੁਬਾਰਾ ਦਰਜ ਕਰੋ",
   "Enter the parental PIN": "ਮਾਪਿਆਂ ਦਾ PIN ਦਰਜ ਕਰੋ",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "ਕਿਸ਼ਤ {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "ਇਰੋਟਿਕ ਐਨੀਮੇ ਜਿਸਨੂੰ TMDB ਬਾਲਗ ਵਜੋਂ ਨਿਸ਼ਾਨਬੱਧ ਨਹੀਂ ਕਰਦਾ, ਐਨੀਮੇ ਅਤੇ ਲੜੀਆਂ ਦੀਆਂ ਸੂਚੀਆਂ ਵਿੱਚ। ਖੋਜ ਇਸਨੂੰ ਹਰ ਹਾਲ ਲੱਭ ਲੈਂਦੀ ਹੈ।",
   "Error": "ਗ਼ਲਤੀ",

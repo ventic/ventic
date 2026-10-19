@@ -189,6 +189,7 @@ export default {
   "Edit this source": "ערוך את המקור הזה",
   "Enter it again": "יש להזין שוב",
   "Enter the parental PIN": "יש להזין את קוד ה-PIN ההורי",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "פרק {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "אנימה ארוטית ש-TMDB לא מסמנת כתוכן למבוגרים, ברשימות אנימה וסדרות. החיפוש מוצא אותה בכל מקרה.",
   "Error": "שגיאה",

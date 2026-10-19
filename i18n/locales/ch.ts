@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Edit este na source",
   "Enter it again": "Tuge' ta'lo",
   "Enter the parental PIN": "Tuge' i PIN saina",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Episodio {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Erotic na anime ni ti ma marka as TMDB para manamko', gi listan Anime yan Serie TV siha. I aligao ha sodda' ha' todu.",
   "Error": "Linachi",

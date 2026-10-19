@@ -33,6 +33,7 @@
     "check:player": "bun scripts/check-player.ts",
     "check:play-notes": "bun scripts/check-play-notes.ts",
     "check:profiles": "bun scripts/check-profiles.ts",
+    "check:ratings": "bun scripts/check-ratings.ts",
     "check:signing": "bun scripts/check-signing.ts",
     "check:torrents": "bun scripts/check-torrents.ts",
     "check:updates": "bun scripts/check-updates.ts",

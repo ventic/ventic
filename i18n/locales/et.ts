@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Muuda seda allikat",
   "Enter it again": "Sisesta see uuesti",
   "Enter the parental PIN": "Sisesta vanema PIN-kood",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Osa {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Erootiline anime, mida TMDB ei märgi täiskasvanutele mõeldud sisuks, loendites Anime ja Sarjad. Otsing leiab selle igal juhul.",
   "Error": "Viga",

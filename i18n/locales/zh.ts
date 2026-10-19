@@ -189,6 +189,7 @@ export default {
   "Edit this source": "编辑此来源",
   "Enter it again": "再输入一次",
   "Enter the parental PIN": "输入家长 PIN",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "第 {number} 集",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "TMDB 未标记为成人内容的色情动画，出现在动画和剧集列表中。搜索无论如何都能找到它们。",
   "Error": "错误",

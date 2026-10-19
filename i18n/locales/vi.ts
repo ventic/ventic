@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Sửa nguồn này",
   "Enter it again": "Nhập lại lần nữa",
   "Enter the parental PIN": "Nhập mã PIN phụ huynh",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Tập {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Anime khiêu dâm mà TMDB không đánh dấu là người lớn, trong danh sách Anime và Phim bộ. Tìm kiếm vẫn tìm thấy dù thế nào.",
   "Error": "Lỗi",

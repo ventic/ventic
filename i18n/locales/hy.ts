@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Խմբագրել այս աղբյուրը",
   "Enter it again": "Մուտքագրեք այն կրկին",
   "Enter the parental PIN": "Մուտքագրեք ծնողական PIN-ը",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Դրվագ {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Էրոտիկ անիմե, որը TMDB-ն չի նշում որպես մեծահասակների համար, Անիմե և Սերիալներ ցանկերում։ Որոնումը գտնում է այն ամեն դեպքում։",
   "Error": "Սխալ",

@@ -189,6 +189,7 @@ export default {
   "Edit this source": "이 소스 편집",
   "Enter it again": "다시 입력하세요",
   "Enter the parental PIN": "보호자 PIN 입력",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "{number}화",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "TMDB가 성인물로 표시하지 않은 성인 애니메이션으로, 애니메이션 및 TV 프로그램 목록에 나옵니다. 검색에서는 어느 쪽이든 찾을 수 있습니다.",
   "Error": "오류",

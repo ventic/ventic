@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Επεξεργασία αυτής της πηγής",
   "Enter it again": "Πληκτρολογήστε το ξανά",
   "Enter the parental PIN": "Πληκτρολογήστε το γονικό PIN",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Επεισόδιο {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Ερωτικά anime που το TMDB δεν σημειώνει ως περιεχόμενο ενηλίκων, στις λίστες Anime και Σειρές. Η αναζήτηση τα βρίσκει έτσι κι αλλιώς.",
   "Error": "Σφάλμα",

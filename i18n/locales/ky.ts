@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Бул булакты түзөтүү",
   "Enter it again": "Аны кайра киргизиңиз",
   "Enter the parental PIN": "Ата-эне PIN кодун киргизиңиз",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "{number}-бөлүм",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "TMDB чоңдор үчүн деп белгилебеген эротикалык аниме, Аниме жана Сериалдар тизмелеринде. Издөө аны баары бир табат.",
   "Error": "Ката",

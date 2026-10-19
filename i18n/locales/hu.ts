@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Ennek a forrásnak a szerkesztése",
   "Enter it again": "Add meg újra",
   "Enter the parental PIN": "Add meg a szülői PIN-kódot",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "{number}. epizód",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Erotikus anime, amelyet a TMDB nem jelöl felnőtt tartalomnak, az Anime és Sorozatok listákon. A keresés így is, úgy is megtalálja.",
   "Error": "Hiba",

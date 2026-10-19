@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Redaguoti šį šaltinį",
   "Enter it again": "Įveskite jį dar kartą",
   "Enter the parental PIN": "Įveskite tėvų PIN kodą",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "{number} serija",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Erotinis anime, kurio TMDB nepažymi kaip skirto suaugusiesiems, sąrašuose Anime ir Serialai. Paieška jį randa bet kuriuo atveju.",
   "Error": "Klaida",

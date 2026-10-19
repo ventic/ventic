@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Rediģēt šo avotu",
   "Enter it again": "Ievadiet to vēlreiz",
   "Enter the parental PIN": "Ievadiet vecāku PIN kodu",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "{number}. epizode",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Erotisks anime, ko TMDB neatzīmē kā pieaugušajiem paredzētu, sarakstos Anime un Seriāli. Meklēšana to atrod jebkurā gadījumā.",
   "Error": "Kļūda",

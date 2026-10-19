@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Editatu iturburu hau",
   "Enter it again": "Idatzi berriro",
   "Enter the parental PIN": "Idatzi gurasoen PINa",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "{number}. atala",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "TMDBk helduentzako gisa markatzen ez duen anime erotikoa, Anime eta Telesailak zerrendetan. Bilaketak edonola aurkitzen du.",
   "Error": "Errorea",

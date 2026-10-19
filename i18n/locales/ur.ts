@@ -189,6 +189,7 @@ export default {
   "Edit this source": "اس ماخذ میں ترمیم کریں",
   "Enter it again": "اسے دوبارہ درج کریں",
   "Enter the parental PIN": "والدین کا PIN درج کریں",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "قسط {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "شہوانی اینیمے جسے TMDB بالغ کے طور پر نشان زد نہیں کرتا، اینیمے اور ٹی وی شوز کی فہرستوں میں۔ تلاش اسے ہر صورت ڈھونڈ لیتی ہے۔",
   "Error": "خرابی",

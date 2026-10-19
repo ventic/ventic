@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Bu manbani tahrirlash",
   "Enter it again": "Uni yana kiriting",
   "Enter the parental PIN": "Ota-ona PIN kodini kiriting",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "{number}-qism",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "TMDB kattalar uchun deb belgilamagan erotik anime, Anime va Seriallar roʻyxatlarida. Qidiruv baribir topadi.",
   "Error": "Xato",

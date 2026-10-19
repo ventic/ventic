@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Bu kaynağı düzenle",
   "Enter it again": "Tekrar girin",
   "Enter the parental PIN": "Ebeveyn PIN'ini girin",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "{number}. bölüm",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "TMDB'nin yetişkin olarak işaretlemediği erotik animeler, Anime ve Diziler listelerinde. Arama her durumda bulur.",
   "Error": "Hata",

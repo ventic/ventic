@@ -189,6 +189,7 @@ export default {
   "Edit this source": "ഈ ഉറവിടം എഡിറ്റ് ചെയ്യുക",
   "Enter it again": "വീണ്ടും നൽകുക",
   "Enter the parental PIN": "രക്ഷാകർതൃ PIN നൽകുക",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "എപ്പിസോഡ് {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "TMDB മുതിർന്നവർക്കുള്ളതായി അടയാളപ്പെടുത്താത്ത ലൈംഗിക അനിമെ, അനിമെ, പരമ്പരകൾ ലിസ്റ്റുകളിൽ. തിരയൽ എങ്ങനെയായാലും അത് കണ്ടെത്തും.",
   "Error": "പിശക്",

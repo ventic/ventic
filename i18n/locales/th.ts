@@ -189,6 +189,7 @@ export default {
   "Edit this source": "แก้ไขแหล่งนี้",
   "Enter it again": "ป้อนอีกครั้ง",
   "Enter the parental PIN": "ป้อน PIN ผู้ปกครอง",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "ตอนที่ {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "อนิเมะอีโรติกที่ TMDB ไม่ได้ทำเครื่องหมายว่าเป็นเนื้อหาผู้ใหญ่ ในรายการอนิเมะและซีรีส์ การค้นหาจะพบได้ไม่ว่ากรณีใด",
   "Error": "ข้อผิดพลาด",

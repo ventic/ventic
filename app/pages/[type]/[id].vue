@@ -304,6 +304,17 @@ const playLabel = computed(() => [
 
         <cast-row v-if="media?.cast.length" :title="$t('Cast')" :people="media.cast" />
 
+        <!-- Below the cast rather than beside the seasons: it is a grid of
+             links a remote walks a row at a time, so on the way to the
+             recommendations it costs one press per season, and nothing else
+             on the page should have to be reached through it. -->
+        <episode-ratings
+          v-if="type === 'tv' && media?.seasons.length"
+          :key="`ratings-${id}`"
+          :show-id="id"
+          :seasons="media.seasons"
+        />
+
         <media-slider
           v-if="status !== 'pending'"
           :title="$t('More like this')"

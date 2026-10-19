@@ -563,6 +563,73 @@ export function useSeason(id: MaybeRefOrGetter<string | number>, season: MaybeRe
   )
 }
 
+/** One cell of a show's ratings grid. `votes` 0 means TMDB has no rating yet. */
+export interface EpisodeRating {
+  number: number
+  name: string
+  rating: number
+  votes: number
+  air: string
+}
+
+export interface SeasonRatings {
+  number: number
+  episodes: EpisodeRating[]
+}
+
+/**
+ * Where a rating sits between the show's worst episode and its best, 0 to 1 —
+ * what the grid shades by. Relative to the show, because TMDB's episode ratings
+ * huddle between 7 and 9 and on an absolute scale every show is one colour; at
+ * least two points wide, or a show that never dips below 8.5 would paint its
+ * 8.6s as the disasters. Unrated episodes (no votes) take no part in either end.
+ */
+export function ratingScale(episodes: Pick<EpisodeRating, 'rating' | 'votes'>[]) {
+  const ratings = episodes.filter(e => e.votes > 0).map(e => e.rating)
+  if (!ratings.length)
+    return { lo: 0, hi: 0, at: () => 0 }
+  const hi = Math.max(...ratings)
+  const lo = Math.min(Math.min(...ratings), hi - 2)
+  return { lo, hi, at: (rating: number) => Math.max(0, (rating - lo) / (hi - lo)) }
+}
+
+// TMDB takes at most 20 appends per request, and each season is one.
+const MAX_APPENDS = 20
+
+/**
+ * Every episode's rating, for the grid on a show's page. The season list on the
+ * show carries counts only, so this is the seasons themselves — as appends on
+ * the show, which is one request per twenty seasons instead of one per season.
+ */
+export function useEpisodeRatings(id: MaybeRefOrGetter<string | number>, seasons: MaybeRefOrGetter<number[]>) {
+  return useAsyncData(
+    () => `ratings-${toValue(id)}`,
+    async (): Promise<SeasonRatings[]> => {
+      const numbers = toValue(seasons)
+      const chunks: number[][] = []
+      for (let i = 0; i < numbers.length; i += MAX_APPENDS)
+        chunks.push(numbers.slice(i, i + MAX_APPENDS))
+      const pages = await Promise.all(chunks.map(chunk =>
+        tmdb<Record<string, RawSeasonDetail | undefined>>(`/tv/${toValue(id)}`, {
+          append_to_response: chunk.map(n => `season/${n}`).join(','),
+        })))
+      const raw = Object.assign({}, ...pages) as Record<string, RawSeasonDetail | undefined>
+      return numbers.map(number => ({
+        number,
+        episodes: (raw[`season/${number}`]?.episodes ?? []).map(e => ({
+          number: e.episode_number,
+          name: e.name ?? '',
+          rating: e.vote_average ?? 0,
+          votes: e.vote_count ?? 0,
+          air: e.air_date ?? '',
+        })),
+      }))
+    },
+    // Asked for by the grid when it scrolls into reach, not by the page.
+    { lazy: true, immediate: false, watch: [() => toValue(id)] },
+  )
+}
+
 export function useEpisode(
   id: MaybeRefOrGetter<string | number>,
   season: MaybeRefOrGetter<string | number>,

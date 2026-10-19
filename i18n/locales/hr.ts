@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Uredi ovaj izvor",
   "Enter it again": "Unesi ga ponovno",
   "Enter the parental PIN": "Unesi roditeljski PIN",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Epizoda {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Erotski anime koji TMDB ne označava kao sadržaj za odrasle, u popisima Anime i Serije. Pretraživanje ga pronalazi u svakom slučaju.",
   "Error": "Greška",

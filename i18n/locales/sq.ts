@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Redakto këtë burim",
   "Enter it again": "Fute përsëri",
   "Enter the parental PIN": "Fut PIN-in prindëror",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Episodi {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Anime erotike që TMDB nuk i shënon si për të rritur, në listat Anime dhe Seriale. Kërkimi i gjen gjithsesi.",
   "Error": "Gabim",

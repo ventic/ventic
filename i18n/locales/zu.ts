@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Hlela lo mthombo",
   "Enter it again": "Yifake futhi",
   "Enter the parental PIN": "Faka i-PIN yomzali",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Isiqephu {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "I-anime evusa inkanuko i-TMDB engayimakisi njengeyabantu abadala, ohlwini lwe-Anime nolwe-TV. Ukusesha kuyayithola noma kunjalo.",
   "Error": "Iphutha",

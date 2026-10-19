@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Vê çavkaniyê biguherîne",
   "Enter it again": "Dîsa binivîse",
   "Enter the parental PIN": "PIN-a dêûbavan binivîse",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Beş {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Anîmeyên erotîk ên ku TMDB wekî ji bo mezinan nîşan nake, di lîsteyên Anîme û Rêzefîlm de. Lêgerîn wan her tim dibîne.",
   "Error": "Çewtî",

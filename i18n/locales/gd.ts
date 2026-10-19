@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Deasaich an tùs seo",
   "Enter it again": "Cuir a-steach a-rithist e",
   "Enter the parental PIN": "Cuir a-steach PIN a' phàrant",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Eapasod {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Anime drùiseil nach eil TMDB a' comharrachadh mar stuth do dh'inbhich, sna liostaichean Anime is Sreathan TBh. Lorgaidh an lorg e co-dhiù.",
   "Error": "Mearachd",

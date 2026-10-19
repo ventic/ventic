@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Wax ka beddel isha kan",
   "Enter it again": "Mar kale geli",
   "Enter the parental PIN": "Geli PIN-ka waalidka",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Qeybta {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Anime galmo ah oo TMDB aanu u calaamadin dadka waaweyn, liisaska Anime iyo Taxane TV. Raadintu way helaysaa si kastaba.",
   "Error": "Khalad",

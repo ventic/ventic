@@ -189,6 +189,7 @@ export default {
   "Edit this source": "ویرایش این منبع",
   "Enter it again": "دوباره وارد کنید",
   "Enter the parental PIN": "PIN والدین را وارد کنید",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "قسمت {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "انیمه‌های اروتیکی که TMDB آن‌ها را بزرگسالانه علامت نزده، در فهرست‌های انیمه و سریال‌ها. جستجو در هر صورت آن‌ها را پیدا می‌کند.",
   "Error": "خطا",

@@ -189,6 +189,7 @@ export default {
   "Edit this source": "ამ წყაროს რედაქტირება",
   "Enter it again": "შეიყვანეთ ხელახლა",
   "Enter the parental PIN": "შეიყვანეთ მშობლის PIN",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "ეპიზოდი {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "ეროტიკული ანიმე, რომელსაც TMDB არ აღნიშნავს ზრდასრულებისთვის, ანიმესა და სერიალების სიებში. ძიება მას მაინც პოულობს.",
   "Error": "შეცდომა",

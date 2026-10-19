@@ -189,6 +189,7 @@ export default {
   "Edit this source": "Golygu'r ffynhonnell hon",
   "Enter it again": "Rhowch ef eto",
   "Enter the parental PIN": "Rhowch PIN y rhiant",
+  "Episode ratings": "TODO_TRANSLATION: Episode ratings",
   "Episode {number}": "Pennod {number}",
   "Erotic anime that TMDB doesn't mark as adult, in the Anime and TV Shows lists. Search finds it either way.": "Anime erotig nad yw TMDB yn ei farcio fel cynnwys i oedolion, yn y rhestrau Anime a Chyfresi teledu. Mae chwilio'n ei ganfod beth bynnag.",
   "Error": "Gwall",
