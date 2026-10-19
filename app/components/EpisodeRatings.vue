@@ -28,7 +28,18 @@ const { stop } = useIntersectionObserver(root, ([entry]) => {
   }
 }, { rootMargin: '400px' })
 
-const rows = computed(() => (data.value ?? []).filter(s => s.episodes.length))
+/**
+ * Until the ratings arrive, the grid is drawn from the season list the page
+ * already has — the links need nothing more than the numbers. Waiting for the
+ * fetch left nothing here to land on, and a remote pressing down from the cast
+ * went straight past the grid to the recommendations below it.
+ */
+const rows = computed(() => data.value
+  ? data.value.filter(s => s.episodes.length)
+  : props.seasons.map(s => ({
+      number: s.number,
+      episodes: Array.from({ length: s.episodes }, (_, i): EpisodeRating => ({ number: i + 1, name: '', rating: 0, votes: 0, air: '' })),
+    })))
 const scale = computed(() => ratingScale(rows.value.flatMap(s => s.episodes)))
 const widest = computed(() => Math.max(0, ...rows.value.map(s => s.episodes.length)))
 
@@ -72,12 +83,7 @@ const legend = computed(() => `linear-gradient(to right, ${mix(0)}, ${mix(0.5)},
     </div>
 
     <div class="overflow-x-auto scroll-px-4 overscroll-x-contain md:scroll-px-6 no-scrollbar">
-      <!-- Reserved to the grid's own height while it loads, so nothing below
-           it jumps when the seasons arrive. -->
-      <div
-        class="w-max flex flex-col gap-0.5 px-4 pt-2 md:px-6"
-        :style="{ minHeight: rows.length ? undefined : `${seasons.length * 38 + 20}px` }"
-      >
+      <div class="w-max flex flex-col gap-0.5 px-4 pt-2 md:px-6">
         <div v-if="rows.length" class="flex gap-0.5 text-label-small opacity-50" aria-hidden="true">
           <span class="w-9 shrink-0" />
           <span v-for="n in widest" :key="n" class="w-11 shrink-0 text-center">{{ n }}</span>
