@@ -62,7 +62,9 @@ const legend = computed(() => `linear-gradient(to right, ${mix(0)}, ${mix(0.5)},
         {{ $t('Episode ratings') }}
       </h2>
       <v-spacer />
-      <div v-if="scale.hi" class="flex items-center gap-2 text-label-medium opacity-70">
+      <!-- ltr in every language: a gradient's direction is physical, and a
+           scale with its numbers mirrored round it reads backwards. -->
+      <div v-if="scale.hi" dir="ltr" class="flex items-center gap-2 text-label-medium opacity-70">
         <span>{{ scale.lo.toFixed(1) }}</span>
         <div class="h-2 w-24 rounded-full" :style="{ background: legend }" />
         <span>{{ scale.hi.toFixed(1) }}</span>
