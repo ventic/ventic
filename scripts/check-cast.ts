@@ -120,7 +120,7 @@ assert.ok(
 const button = read('app/components/CastButton.vue')
 const send = /async function start\(\)[\s\S]*?\n\}/.exec(button)?.[0] ?? ''
 assert.ok(
-  send.indexOf('hunt?.abort()') > 0 && send.indexOf('hunt?.abort()') < send.indexOf('sendPlay('),
+  send.indexOf('hunt?.abort()') > 0 && send.indexOf('hunt?.abort()') < send.indexOf('castFilm('),
   'the subnet sweep must be stopped before a film is handed over',
 )
 
@@ -427,11 +427,53 @@ assert.equal(mirrorParts(file), null, 'and has no torrent behind it')
 // none, so the network reaches the one being cast and nothing else on the disk.
 assert.match(
   rust,
-  /make_http_api_and_run\(listener, Some\(Router::new\(\)\.route\("\/file\/\{name\}", get\(shared_file\)\)\)\)/,
+  /make_http_api_and_run\(listener, Some\(\s*Router::new\(\)\s*\.route\("\/file\/\{name\}", get\(shared_file\)\)/,
   'the mirror serves the file castUrl points at',
 )
-assert.match(read('app/utils/cast.ts'), /'cast_share', \{ enable, file:/, 'shareEngine tells the mirror which file')
-assert.match(button, /shareEngine\(true, props\.src\)/, 'and the cast button hands it what is playing')
+const utils = read('app/utils/cast.ts')
+assert.match(utils, /'cast_share', \{ enable, file:/, 'shareEngine tells the mirror which file')
+assert.match(button, /castFilm\(target, props\.src, /, 'and the cast button hands it what is playing')
+
+// --- The device being cast to, talking back -----------------------------------
+// It reports how far it got — the sender's library is where the next episode is
+// picked, and it used to keep only the second the film was handed over — and
+// its Next button asks the sender for the next episode, since the sender is the
+// one with the episodes on its disk.
+
+// Both go through the mirror's `/upnp` door, so the names are a seam three
+// files have to agree on.
+for (const what of ['progress', 'next']) {
+  assert.ok(rust.includes(`.route("/${what}", post(${what}))`), `the mirror answers /upnp/${what}`)
+  assert.ok(rust.includes(`reply("cast://${what}", watching)`), `and hands it to the page as cast://${what}`)
+  assert.ok(listener.includes(`listen<CastWatching>('cast://${what}'`), `which listens for cast://${what}`)
+}
+assert.match(utils, /`\$\{from\}\/upnp\/\$\{what\}`/, 'castBack posts where the mirror listens')
+
+// The only routes on a network-wide mirror that act, and `next` starts a
+// download: the code the device answers to is checked before the page hears.
+const reply = /fn reply\([\s\S]*?\n\}/.exec(rust)?.[0] ?? ''
+assert.ok(
+  /!code\.is_empty\(\) && watching\.code != code[\s\S]*StatusCode::FORBIDDEN/.test(reply)
+  && reply.indexOf('watching.code != code') < reply.indexOf('app.emit'),
+  'what the device being cast to says back is checked against its code before the page hears it',
+)
+assert.ok(/watching\.code = String::new\(\)/.test(reply), 'and the code is blanked first')
+// The code it is checked against is the one the film was cast with.
+assert.match(utils, /shareEngine\(true, src, target\.code\)/, 'the mirror is told the code of the device it serves')
+assert.match(rust, /\*guard = code\.unwrap_or_default\(\)/, 'cast_share keeps that code for reply')
+
+// The receiving end: progress goes to whoever served the film, Next is asked of
+// them, and the last report is made before the page goes.
+assert.match(watch, /castBack\(castFrom\.value, ownCode\(\), 'progress'/, 'the player reports back where it got to')
+assert.match(watch, /onBeforeUnmount\(\(\) => \{[^}]*reportBack\(\)/, 'and once more on the way out')
+assert.match(watch, /to: castFrom\.value \? `\$\{to\}&via=/, 'a cast film\'s Next asks the device it came from')
+assert.match(watch, /castBack\(via\.value, ownCode\(\), 'next'/, 'which is asked, rather than this device searching')
+
+// The sending end: progress lands in the library through the store, and Next is
+// played as a pick on this screen would be and handed straight over.
+assert.match(listener, /useLibraryStore\(\)\.record\(/, 'reported progress is recorded by the store, which owns what counts as watched')
+assert.match(listener, /&cast=1`\)/, 'Next opens the episode in cast mode')
+assert.match(watch, /route\.query\.cast \? settings\.castTarget : null[\s\S]{0,120}castFilm\(target, stream,/, 'and cast mode hands it to the device that asked')
 
 console.log('cast: ok')
 process.exit(0)

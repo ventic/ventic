@@ -11,7 +11,7 @@
  * vetted; what it *says* is still somebody else's text, so it goes into the
  * route as query values and nowhere near a template.
  */
-import type { CastPlay, CastSetup } from '~/utils/cast'
+import type { CastPlay, CastSetup, CastWatching } from '~/utils/cast'
 import { isTauri } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 
@@ -127,5 +127,27 @@ export default defineNuxtPlugin(() => {
   listen('cast://stop', () => {
     if (useRouter().currentRoute.value.path === localePath('/watch'))
       navigateTo(localePath('/'))
+  }).catch(() => {})
+
+  // --- The film this device cast, talking back (see `reply` in cast.rs) ----
+
+  // How far the other device has got. This library is where the next episode
+  // gets picked, and without this it only ever knew the second the film was
+  // handed over: an episode watched to the end on the television was still
+  // unwatched here.
+  listen<CastWatching>('cast://progress', ({ payload: p }) => {
+    if (p.id)
+      useLibraryStore().record({ type: p.kind === 'tv' ? 'tv' : 'movie', id: Number(p.id) }, p.season, p.episode, p.position, p.duration)
+  }).catch(() => {})
+
+  // Its Next button. Played here as though picked on this screen, and handed
+  // straight over (`cast` in pages/watch.vue). Leaving the player first for the
+  // reason a cast does above: asking twice for the same episode is the same
+  // route, and the second ask would otherwise do nothing.
+  listen<CastWatching>('cast://next', async ({ payload: p }) => {
+    const player = localePath('/watch')
+    if (useRouter().currentRoute.value.path === player)
+      await navigateTo(localePath('/'))
+    await navigateTo(`${watchLink(p.kind === 'tv' ? 'tv' : 'movie', p.id, p.season, p.episode)}&cast=1`)
   }).catch(() => {})
 })

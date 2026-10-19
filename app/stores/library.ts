@@ -193,11 +193,12 @@ export const useLibraryStore = defineStore('library', () => {
 
   /**
    * Called by the player every couple of seconds, and again whenever playback
-   * pauses or stops. Crossing the 90% mark latches `watched` on, so quitting
-   * during the credits still counts — and a rewatch that starts from zero
-   * clears it again.
+   * pauses or stops — and by another device playing a film cast from this one,
+   * which knows the id and nothing else (see plugins/cast.client.ts). Crossing
+   * the 90% mark latches `watched` on, so quitting during the credits still
+   * counts — and a rewatch that starts from zero clears it again.
    */
-  function record(m: Media, season: number, episode: number, position: number, duration: number) {
+  function record(m: Media | Pick<Media, 'id' | 'type'>, season: number, episode: number, position: number, duration: number) {
     remember(m)
     const key = progressKey(m.type, m.id, season, episode)
     const already = progress.value[key]?.watched === true

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type MpvPlayer from '~/components/MpvPlayer.vue'
-import type { CastDevice } from '~/utils/cast'
+import type { CastDevice, CastWatching } from '~/utils/cast'
 import type { MediaType } from '~/utils/tmdb'
 import type { Release, TorrentStats } from '~/utils/torrents'
 import {
@@ -46,6 +46,27 @@ const live = computed(() => route.query.live === '1')
  * library has never heard of it (see plugins/cast.client.ts).
  */
 const startAt = computed(() => Number(route.query.t) || 0)
+
+/** Set while the next episode of a film cast here is asked for — see `start`. */
+const via = computed(() => String(route.query.via ?? ''))
+
+/**
+ * The device this film was cast from: the mirror its stream comes off (see
+ * utils/cast.ts), or the device being asked for the next episode. Empty for
+ * anything this device plays by itself.
+ *
+ * ponytail: a cast debrid link isn't served by the device that sent it, so it
+ * has no way back — its Next plays here, as every Next did before this.
+ */
+const castFrom = computed(() => via.value || (mirrored(link.value) ? new URL(link.value).origin : ''))
+
+/** This title as the device it was cast from files it — see `castBack`. */
+function watching(position = 0, duration = 0): CastWatching {
+  return { kind: type.value, id: id.value, season: season.value, episode: episode.value, position, duration }
+}
+
+/** The code this device answers to, which is the one a device that cast here knows it by. */
+const ownCode = () => settings.castAsk ? settings.castCode : ''
 
 /** What this playback is remembered as — no id (a bare magnet) means nothing. */
 const key = computed(() => id.value ? progressKey(type.value, id.value, season.value, episode.value) : '')
@@ -114,6 +135,19 @@ async function start() {
   torrentId.value = null
 
   try {
+    // The next episode of a film cast here, asked of the device it came from,
+    // which has the episodes and casts this one over like the last. Its arrival
+    // is a cast, and a cast leaves this page (see plugins/cast.client.ts) — so
+    // still being here after a minute and a half means it isn't coming.
+    if (via.value) {
+      step.value = $t('Asking the other device for the episode…')
+      const problem = await castBack(via.value, ownCode(), 'next', watching())
+      if (problem)
+        throw new Error(problem.message)
+      await new Promise(resolve => setTimeout(resolve, 90_000))
+      throw new Error($t('The other device didn\'t send the episode — its screen says why.'))
+    }
+
     // ?magnet=… hand-picks the release and skips the lookup — that's how the
     // downloads page replays something already in the engine, and the only
     // path that works with no sources configured.
@@ -169,7 +203,20 @@ async function start() {
     }
 
     step.value = $t('Buffering…')
-    src.value = started.url || streamUrl(started.id, started.index)
+    const stream = started.url || streamUrl(started.id, started.index)
+
+    // Asked for by the device this one casts to — its Next button, see
+    // `cast://next` in plugins/cast.client.ts — so it goes straight there.
+    const target = route.query.cast ? settings.castTarget : null
+    if (target) {
+      const problem = await castFilm(target, stream, castPlay())
+      if (mine !== generation)
+        return
+      if (problem)
+        throw new Error(problem.message)
+      return handOver(target)
+    }
+    src.value = stream
   }
   catch (e) {
     if (mine === generation)
@@ -181,7 +228,7 @@ async function start() {
 // that a downloaded film never waits on TMDB. Fires again if you jump straight
 // to another episode without leaving the player.
 watch(
-  () => [key.value, magnet.value, link.value, fileIndex.value].join('|'),
+  () => [key.value, magnet.value, link.value, fileIndex.value, via.value].join('|'),
   () => start(),
   { immediate: true },
 )
@@ -252,8 +299,23 @@ async function stopCasting() {
   leave()
 }
 
+/**
+ * Tell the device this film was cast from how far it has got: that is the
+ * library the next episode is picked from. Off the player for the reason
+ * `castPlay` reads it there, every ten seconds and once more on the way out —
+ * not when the player closes on a jump to the next episode, which has already
+ * moved the route on, and would file this episode's position under that one.
+ */
+function reportBack() {
+  const playing = player.value
+  if (castFrom.value && id.value && playing?.duration)
+    castBack(castFrom.value, ownCode(), 'progress', watching(playing.position, playing.duration))
+}
+useIntervalFn(reportBack, 10_000)
+
 onBeforeUnmount(() => {
   generation++
+  reportBack()
 })
 
 // Unmounted, not before: the player's own unmount hook is what writes down where
@@ -407,8 +469,11 @@ const next = computed(() => {
   const target = nextEpisode(media.value.seasons, { season: season.value, episode: episode.value, watched: true })
   if (!target)
     return null
+  const to = watchLink('tv', id.value, target.season, target.episode)
   return {
-    to: watchLink('tv', id.value, target.season, target.episode),
+    // A film cast here asks the device it came from — that one has the
+    // episodes, and this one may have no sources at all.
+    to: castFrom.value ? `${to}&via=${encodeURIComponent(castFrom.value)}` : to,
     label: $t('Next · S{season} E{episode}', { season: target.season, episode: target.episode }),
   }
 })

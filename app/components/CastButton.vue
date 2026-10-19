@@ -128,19 +128,12 @@ async function start() {
   // a port, and a cast that never happened should not leave one open.
   const wasSharing = await sharingEngine()
   try {
-    const base = await shareEngine(true, props.src)
-    if (!base) {
-      error.value = { message: $t('This device couldn\'t start serving the film to the network.') }
+    const target = { ...device, code: code.value.trim() }
+    error.value = await castFilm(target, props.src, props.play())
+    if (error.value)
       return
-    }
 
-    const problem = await sendPlay(device, code.value.trim(), { ...props.play(), url: castUrl(props.src, base) })
-    if (problem) {
-      error.value = problem
-      return
-    }
-
-    settings.castTarget = { ...device, code: code.value.trim() }
+    settings.castTarget = target
     open.value = false
     emit('casting', device)
   }

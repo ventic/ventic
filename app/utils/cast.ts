@@ -56,6 +56,12 @@ export interface CastPlay {
 }
 
 /**
+ * What the device playing a cast film says back to the one that sent it, as
+ * `Watching` in cast.rs deserialises it: which film, and how far into it.
+ */
+export type CastWatching = Pick<CastPlay, 'kind' | 'id' | 'season' | 'episode' | 'position'> & { duration: number }
+
+/**
  * The stream URL to hand the other device.
  *
  * The engine's own address is the loopback one, which on the receiving device
@@ -310,6 +316,48 @@ export async function sendPlay(device: CastDevice, code: string, play: CastPlay)
   }
 }
 
+/**
+ * Serve `src` to the network and tell `target` to play it. Null once it is
+ * playing there — the Cast button, and the next episode the other device asked
+ * for (see `cast` in pages/watch.vue).
+ */
+export async function castFilm(target: CastTarget, src: string, play: Omit<CastPlay, 'url'>): Promise<CastProblem | null> {
+  const base = await shareEngine(true, src, target.code)
+  if (!base)
+    return { message: $t('This device couldn\'t start serving the film to the network.') }
+  return sendPlay(target, target.code, { ...play, url: castUrl(src, base) })
+}
+
+/**
+ * Tell the device a film was cast from how far it has got (`progress`), or ask
+ * it for the next episode (`next`) — see `reply` in cast.rs. `from` is that
+ * device's mirror, and `code` the one this device answers to, which is the code
+ * it was cast with.
+ */
+export async function castBack(from: string, code: string, what: 'progress' | 'next', watching: CastWatching): Promise<CastProblem | null> {
+  // A timer that is cleared, not `AbortSignal.timeout`: that one still fires
+  // once the request is done, and plugin-http then drops a body it has already
+  // closed — an unhandled rejection every ten seconds of a film, here.
+  const stop = new AbortController()
+  const timer = setTimeout(() => stop.abort(), 5000)
+  try {
+    const res = await tauriFetch(`${from}/upnp/${what}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ ...watching, code }),
+      connectTimeout: 3000,
+      signal: stop.signal,
+    })
+    return res.ok ? null : { message: $t('The other device refused the film.') }
+  }
+  catch {
+    return { message: $t('Couldn\'t reach that device.') }
+  }
+  finally {
+    clearTimeout(timer)
+  }
+}
+
 /** Take it back: tell the other device to leave the player. */
 export async function sendStop(device: CastDevice, code: string): Promise<CastProblem | null> {
   try {
@@ -376,10 +424,11 @@ export async function castAddress(): Promise<string> {
  *
  * `src` is what is being cast. A file from this disk is the one thing the
  * mirror has to be *told* about: it serves that path and no other, until the
- * next cast or the stop replaces it.
+ * next cast or the stop replaces it. `code` is the one the device it goes to
+ * answers to — what that device says back has to carry it (see `castBack`).
  */
-export async function shareEngine(enable: boolean, src = ''): Promise<string> {
-  return await invoke<string | null>('cast_share', { enable, file: src && isPath(src) ? src : null }) ?? ''
+export async function shareEngine(enable: boolean, src = '', code = ''): Promise<string> {
+  return await invoke<string | null>('cast_share', { enable, file: src && isPath(src) ? src : null, code }) ?? ''
 }
 
 /**

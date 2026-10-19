@@ -32,7 +32,7 @@
 
 use std::net::{IpAddr, SocketAddr, UdpSocket};
 use std::path::PathBuf;
-use std::sync::Mutex;
+use std::sync::{Mutex, OnceLock};
 
 use axum::extract::{Request, State};
 use axum::http::StatusCode;
@@ -85,6 +85,14 @@ static RECEIVER: Mutex<Option<Shutdown>> = Mutex::new(None);
 /// `cast_share` alone, and read by `shared_file` on every request.
 static SHARED_FILE: Mutex<Option<PathBuf>> = Mutex::new(None);
 
+/// The code the device being cast to answers to, which is also the one it has to
+/// send back to be heard (see `reply`). Set by `cast_share` alone, like the file.
+static SHARED_CODE: Mutex<String> = Mutex::new(String::new());
+
+/// The page, for what the device being cast to says back. Set by `cast_share`,
+/// which is the only thing that ever brings the mirror up.
+static PAGE: OnceLock<AppHandle> = OnceLock::new();
+
 /// Stop whichever server that slot holds, and wait for its port to come back.
 ///
 /// The lock is taken and let go inside the first statement: a std mutex must not
@@ -112,8 +120,13 @@ pub async fn set_engine(api: Api) {
 		return;
 	}
 	let file = SHARED_FILE.lock().ok().and_then(|file| file.clone());
+	let code = SHARED_CODE.lock().map(|code| code.clone()).unwrap_or_default();
+	// Always set by then: sharing is only ever started by `cast_share`.
+	let Some(app) = PAGE.get().cloned() else {
+		return;
+	};
 	stop_server(&MIRROR).await;
-	if let Err(e) = cast_share(true, file.map(|path| path.to_string_lossy().into_owned())).await {
+	if let Err(e) = cast_share(app, true, file.map(|path| path.to_string_lossy().into_owned()), Some(code)).await {
 		eprintln!("[ventic] cast mirror did not come back after the engine restarted: {e}");
 	}
 }
@@ -155,6 +168,27 @@ pub struct Play {
 pub struct Stop {
 	#[serde(default)]
 	code: String,
+}
+
+/// What the device being cast to says back about the film it is playing: which
+/// one, and how far in. Both things it says take this shape — see `reply`.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+struct Watching {
+	/// The code that device answers to. Matched, then blanked, as on `Play`.
+	#[serde(default)]
+	code: String,
+	#[serde(default)]
+	kind: String,
+	#[serde(default)]
+	id: String,
+	#[serde(default)]
+	season: u32,
+	#[serde(default)]
+	episode: u32,
+	#[serde(default)]
+	position: f64,
+	#[serde(default)]
+	duration: f64,
 }
 
 /// The form a phone fills in and posts back — see `setup_page`. `kind` says
@@ -243,13 +277,18 @@ pub fn cast_sharing() -> bool {
 /// other thing only an async command can do (see `Shutdown`).
 ///
 /// `file` is a path on this disk, when a film picked off it is what is being
-/// cast — see `shared_file`.
+/// cast — see `shared_file`. `code` is the one the device it is cast to answers
+/// to, and what that device has to send back to be heard — see `reply`.
 #[tauri::command]
-pub async fn cast_share(enable: bool, file: Option<String>) -> Result<Option<String>, String> {
+pub async fn cast_share(app: AppHandle, enable: bool, file: Option<String>, code: Option<String>) -> Result<Option<String>, String> {
+	let _ = PAGE.set(app);
 	// Replaced on every call rather than only ever set, so a torrent cast after a
 	// file takes the file off the network, and so does stopping.
 	if let Ok(mut guard) = SHARED_FILE.lock() {
 		*guard = file.filter(|path| enable && !path.is_empty()).map(PathBuf::from);
+	}
+	if let Ok(mut guard) = SHARED_CODE.lock() {
+		*guard = code.unwrap_or_default();
 	}
 	if !enable {
 		stop_server(&MIRROR).await;
@@ -279,7 +318,13 @@ pub async fn cast_share(enable: bool, file: Option<String>) -> Result<Option<Str
 		// The one door librqbit leaves for routes of our own, and it nests them
 		// under `/upnp` — so the file is at `/upnp/file/…`, a name that means
 		// nothing here and costs nothing either (see `castUrl` in utils/cast.ts).
-		.make_http_api_and_run(listener, Some(Router::new().route("/file/{name}", get(shared_file))));
+		// The device being cast to talks back through the same door.
+		.make_http_api_and_run(listener, Some(
+			Router::new()
+				.route("/file/{name}", get(shared_file))
+				.route("/progress", post(progress))
+				.route("/next", post(next)),
+		));
 
 		tokio::select! {
 			result = server => {
@@ -312,6 +357,40 @@ async fn shared_file(request: Request) -> Response {
 	match ServeFile::new(path).try_call(request).await {
 		Ok(response) => response.into_response(),
 		Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response(),
+	}
+}
+
+/// How far into the film the device being cast to has got. This device's library
+/// is the one the next episode is picked from, so it has to know what was
+/// watched over there — not only what was handed over.
+async fn progress(Json(watching): Json<Watching>) -> StatusCode {
+	reply("cast://progress", watching)
+}
+
+/// The other device's Next button. The episode it names is fetched here, the
+/// way one picked on this screen would be, and cast to it: the screen with the
+/// remote in front of it is not the one with the film on its disk.
+async fn next(Json(watching): Json<Watching>) -> StatusCode {
+	reply("cast://next", watching)
+}
+
+/// What the device being cast to says back, checked against the code that
+/// device answers to and handed to the page without it. The mirror is open to
+/// the whole network and these are the only routes on it that act rather than
+/// read — `next` starts a download — so an empty code is the one way past, as
+/// on the receiver.
+fn reply(event: &str, mut watching: Watching) -> StatusCode {
+	let Ok(code) = SHARED_CODE.lock().map(|code| code.clone()) else {
+		return StatusCode::INTERNAL_SERVER_ERROR;
+	};
+	if !code.is_empty() && watching.code != code {
+		return StatusCode::FORBIDDEN;
+	}
+	watching.code = String::new();
+
+	match PAGE.get().map(|app| app.emit(event, watching)) {
+		Some(Ok(())) => StatusCode::OK,
+		_ => StatusCode::INTERNAL_SERVER_ERROR,
 	}
 }
 

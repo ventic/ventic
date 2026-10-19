@@ -17,7 +17,7 @@ import './i18n-stub'
 /** The store's own intervals, in the order it sets them up — the first is the poll. */
 const intervals: Array<() => Promise<void>> = []
 const visibility = vue.ref('visible')
-const settings = vue.reactive({ playMode: 'auto', downloadDir: '', sources: [], quality: '', wifiOnly: false, keepWatched: true, bufferAhead: 5, bufferBehind: 2, upLimit: 0, downLimit: 0 })
+const settings = vue.reactive({ playMode: 'auto', downloadDir: '', sources: [], activeSources: [], quality: '', wifiOnly: false, keepWatched: true, bufferAhead: 5, bufferBehind: 2, upLimit: 0, downLimit: 0 })
 
 Object.assign(globalThis, vue, torrents, {
   defineStore,
