@@ -281,6 +281,11 @@ class VenticPlayer(private val activity: MainActivity) {
           .forceDisableMediaCodecAsynchronousQueueing(),
       )
       .setMediaSourceFactory(DefaultMediaSourceFactory(activity, extractors))
+      // Headphones pulled out mid-film pause it, rather than carrying on out
+      // of the phone's speaker — what every player on a phone does. Only that
+      // broadcast: audio focus is the other half of the habit, and is left off
+      // because with it on, a box that refuses the request never plays at all.
+      .setHandleAudioBecomingNoisy(true)
       .build()
 
     p.audioSessionId = session
