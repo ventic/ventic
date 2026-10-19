@@ -1,10 +1,12 @@
 <script lang="ts" setup>
+import type { Chapter } from '~/utils/chapters'
 import type { PlayerEngine } from '~/utils/htmlvideo'
 import type { KeyAction } from '~/utils/keys'
 import type { Subtitle, SubtitleFile, SubtitleLanguage } from '~/utils/subtitles'
 import type { Media } from '~/utils/tmdb'
 import {
   mdiAlertCircleOutline,
+  mdiAspectRatio,
   mdiAutoFix,
   mdiCancel,
   mdiCheck,
@@ -23,6 +25,7 @@ import {
   mdiReload,
   mdiRestore,
   mdiRewind10,
+  mdiSkipForward,
   mdiSkipNext,
   mdiSubtitles,
   mdiSubtitlesOutline,
@@ -1153,6 +1156,106 @@ useIntervalFn(() => {
 }, TICK * 1000)
 
 // ---------------------------------------------------------------------------
+// The sound against the picture. mpv's `audio-delay`, which a fresh mpv starts
+// at zero — so it is this file's, like the subtitle delay. Neither ExoPlayer
+// nor a <video> can hold the sound back, so the panel only offers it to mpv.
+// ---------------------------------------------------------------------------
+const audioDelay = ref(0)
+const audioDelayText = computed(() => `${audioDelay.value > 0 ? '+' : ''}${audioDelay.value.toFixed(2).replace(/0$/, '')}s`)
+
+function setAudioDelay(v: number) {
+  audioDelay.value = Math.round(Math.max(-10, Math.min(10, v)) * 100) / 100
+  ipc(['set_property', 'audio-delay', audioDelay.value])
+  osd($t('Audio delay {delay}', { delay: audioDelayText.value }))
+}
+
+/** The stepper's model: a step is a nudge, so the OSD says where it landed. */
+const audioDelayStep = computed({ get: () => audioDelay.value, set: setAudioDelay })
+
+// ---------------------------------------------------------------------------
+// Fitted, or cropped to fill — mpv's `panscan`, which the other two backends
+// answer with their own (`object-fit`, ExoPlayer's resize mode). A setting
+// rather than a toggle per film: it is the shape of the screen that wants it.
+// ---------------------------------------------------------------------------
+function applyFill() {
+  ipc(['set_property', 'panscan', settings.fill ? 1 : 0])
+}
+
+function toggleFill() {
+  settings.fill = !settings.fill
+  applyFill()
+  osd(settings.fill ? $t('Zoomed to fill') : $t('Fitted to the screen'))
+}
+
+// ---------------------------------------------------------------------------
+// Chapters, and the parts of them nobody sits through twice. Only mpv reads
+// chapters (see utils/chapters.ts), so elsewhere the list stays empty and none
+// of this ever shows.
+// ---------------------------------------------------------------------------
+const chapters = ref<Chapter[]>([])
+
+/**
+ * The clock in whole seconds, which is all a chapter boundary needs. `position`
+ * moves every frame, and the skip button reading it directly would re-render
+ * this whole component at the frame rate for as long as it was up.
+ */
+const second = computed(() => Math.floor(position.value))
+/** A number, so it only wakes anything up when the chapter actually changes. */
+const chapterIndex = computed(() => chapterAt(chapters.value, second.value, duration.value)?.index ?? -1)
+
+const skipTarget = computed(() => {
+  const c = chapterAt(chapters.value, chapters.value[chapterIndex.value]?.time ?? -1, duration.value)
+  const kind = c && skippable(c.title)
+  if (!c || !kind)
+    return null
+  // Credits with nothing after them are the end of the episode, and what is
+  // wanted then is the next one rather than the last few seconds of this.
+  if (kind === 'credits' && c.last && props.next)
+    return { label: props.next.label, to: props.next.to, end: c.end }
+  return { label: kind === 'intro' ? $t('Skip intro') : $t('Skip credits'), to: '', end: c.end }
+})
+
+/** Gone for the chapter's last few seconds: there is nothing left to skip by then. */
+const skip = computed(() => skipTarget.value && skipTarget.value.end - second.value > 3 ? skipTarget.value : null)
+
+function skipPart() {
+  const target = skip.value
+  if (!target)
+    return
+  // `replace`, as the ended screen's link does: skipping the credits into the
+  // next episode is carrying on, not a page Back should return to.
+  if (target.to)
+    navigateTo(target.to, { replace: true })
+  else
+    seekTo(target.end)
+}
+
+/**
+ * Next, or back: from more than a few seconds into a chapter, back restarts it,
+ * which is what every player's previous-track has always done.
+ */
+function toChapter(by: 1 | -1) {
+  const list = chapters.value
+  const here = chapterAt(list, position.value, duration.value)
+  const i = here?.index ?? -1
+  const target = by > 0
+    ? list[i + 1]
+    : here && position.value - here.time > 3 ? list[i] : list[i - 1] ?? list[i]
+  if (!target)
+    return
+  seekTo(target.time)
+  osd(target.title || $t('Chapter {number}', { number: list.indexOf(target) + 1 }))
+}
+
+/** The seek bar's bubble: the time, and the chapter it is in where it has a name. */
+function seekLabel(v: number) {
+  const name = chapterAt(chapters.value, v, duration.value)?.title
+  return name ? `${fmt(v)} · ${name}` : fmt(v)
+}
+
+const chapterMarks = computed(() => chapters.value.map(c => c.time).filter(t => t > 0))
+
+// ---------------------------------------------------------------------------
 // Lifecycle
 // ---------------------------------------------------------------------------
 async function startPlayer() {
@@ -1233,6 +1336,8 @@ async function startPlayer() {
     aid.value = 'no'
     activeUrl.value = ''
     subText.value = ''
+    chapters.value = []
+    audioDelay.value = 0 // a fresh mpv starts in step
     forgetLayout() // a fresh mpv carries no filters either
     resetSync() // a fresh mpv starts at zero and knows nothing of this file
     surface.reset() // the next frame pushes geometry and shape for the new window
@@ -1406,6 +1511,8 @@ async function poll() {
     loaded = true
     applySubtitleStyle()
     applyAudio()
+    applyFill()
+    readProps(['chapter-list']).then(c => (chapters.value = readChapters(c?.['chapter-list'])))
     await refreshTracks()
     applyPreferredSub()
     const saved = props.startAt || (props.media ? library.resumeAt(props.media, props.season, props.episode) : 0)
@@ -1703,6 +1810,11 @@ const ACTIONS: Record<KeyAction, () => void> = {
   subDelayBack: () => nudgeDelay(-0.1),
   subDelayForward: () => nudgeDelay(0.1),
   subDelayReset: () => nudgeDelay(-subDelay.value),
+  audioDelayBack: () => native && setAudioDelay(audioDelay.value - 0.05),
+  audioDelayForward: () => native && setAudioDelay(audioDelay.value + 0.05),
+  prevChapter: () => toChapter(-1),
+  nextChapter: () => toChapter(1),
+  fill: toggleFill,
   slower: () => setSpeed(speedStep(-1)),
   faster: () => setSpeed(speedStep(1)),
   start: () => seekTo(0),
@@ -2216,6 +2328,23 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
       </template>
     </div>
 
+    <!-- Skip the intro or the credits. Up whether or not the chrome is — that
+         is the whole point of it — so it is a cutout of its own, and it rides
+         above the bar while the bar is there. Not under an open panel, which
+         holds the same corner. -->
+    <button
+      v-if="skip && started && !centre && !menu"
+      data-cut
+      class="absolute right-4 flex items-center gap-2 border rounded-lg px-4 py-2.5 text-label-large"
+      :class="SURFACE"
+      :style="{ bottom: `${ui && !styling ? barHeight + 16 : 24}px` }"
+      @click="skipPart"
+      @pointerenter="hovering = true"
+      @pointerleave="hovering = false"
+    >
+      <v-icon :icon="mdiSkipForward" size="20" /> {{ skip.label }}
+    </button>
+
     <transition
       :enter-active-class="SLIDE"
       :leave-active-class="SLIDE"
@@ -2343,6 +2472,24 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
               <span class="text-label-large opacity-70">{{ $t('Boost') }}</span>
               <settings-stepper v-model="boost" :min="0" :max="MAX_DIALOGUE" :format="() => boostText" />
             </div>
+            <!-- mpv's alone, and this file's alone: a fresh one starts in step. -->
+            <template v-if="native">
+              <p :class="MENU_GROUP">
+                {{ $t('Sync') }}
+              </p>
+              <div :class="STEP_ROW">
+                <span class="text-label-large opacity-70">{{ $t('Delay') }}</span>
+                <settings-stepper
+                  v-model="audioDelayStep"
+                  :min="-10"
+                  :max="10"
+                  :step="0.05"
+                  :format="() => audioDelayText"
+                  :less="$t('Earlier (Ctrl+-)')"
+                  :more="$t('Later (Ctrl++)')"
+                />
+              </div>
+            </template>
             <!-- Only while this film has an entry of its own: it is both the
                  way back and the only sign that there is anything to go back
                  from. -->
@@ -2615,10 +2762,11 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
             :model-value="clock"
             :max="duration || 1"
             :buffered="cacheEnd"
-            :format="fmt"
+            :format="seekLabel"
             :thumb="thumb"
             :approx="approx"
             :step="10"
+            :marks="chapterMarks"
             :disabled="!started || !duration"
             @update:model-value="position = $event"
             @scrub="scrubbing = $event"
@@ -2705,6 +2853,15 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
               @click="openMenu('subs')"
             >
               <v-icon :icon="subsOn ? mdiSubtitles : mdiSubtitlesOutline" size="22" />
+            </button>
+            <button
+              v-tooltip:top="settings.fill ? $t('Fit to the screen (w)') : $t('Zoom to fill (w)')"
+              :class="[ICO, settings.fill && '!text-primary !opacity-100']"
+              :aria-pressed="settings.fill"
+              :disabled="!started"
+              @click="toggleFill"
+            >
+              <v-icon :icon="mdiAspectRatio" size="22" />
             </button>
             <!-- A television has no window to be one of many, and the player is
                  already the whole screen there: the button can only ever put the

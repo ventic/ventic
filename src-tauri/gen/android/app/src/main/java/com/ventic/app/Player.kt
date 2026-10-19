@@ -401,6 +401,13 @@ class VenticPlayer(private val activity: MainActivity) {
         p.volume = if (muted) 0f else vol / 100f
       }
       "speed" -> p.setPlaybackSpeed(num(value, 1.0).toFloat().coerceAtLeast(0.1f))
+      // mpv's crop-to-fill, as the view's own resize mode: anything above 0
+      // fills the screen and crops what doesn't fit, 0 fits it inside.
+      "panscan" -> view?.resizeMode = if (num(value, 0.0) > 0) {
+        AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+      } else {
+        AspectRatioFrameLayout.RESIZE_MODE_FIT
+      }
       "aid" -> select(value, C.TRACK_TYPE_AUDIO)
       "sid" -> select(value, C.TRACK_TYPE_TEXT)
       // Neither of these is an mpv property: mpv is sent a filter chain built

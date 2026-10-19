@@ -190,6 +190,14 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   dylib's real `minos` at bundle time and fails the build on a drift. Don't
   unpin that runner; pinning it *older* is a Homebrew question, since it bottles
   only the three most recent macOS.
+- **Chapters are mpv's alone.** The seek bar's marks, the chapter name in its
+  bubble, PageUp/PageDown and the Skip intro / Skip credits button all read
+  mpv's `chapter-list` (`app/utils/chapters.ts` decides which names are
+  skippable). media3 exposes no Matroska chapters and `<video>` has none, so the
+  shim answers no `chapter-list` and all of it stays off Android and the
+  browser by having nothing to show. Audio delay is mpv's alone for the same
+  kind of reason, and the panel offers it only `native`; crop-to-fill is the
+  one that reaches all three (`panscan`, `object-fit`, ExoPlayer's resize mode).
 - **The volume levelling is one setting and two implementations**, because
   there is no filter graph on Android. `app/utils/audio.ts` owns both: mpv is
   handed a `lavfi` chain over the `af` command (dynaudnorm for the levelling,
