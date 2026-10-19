@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { mdiDeleteOutline, mdiInformationOutline, mdiPlus, mdiPowerPlugOutline, mdiTelevisionPlay } from '@mdi/js'
+import { mdiDeleteOutline, mdiInformationOutline, mdiPencilOutline, mdiPlus, mdiPowerPlugOutline, mdiTelevisionPlay } from '@mdi/js'
 import { invoke } from '@tauri-apps/api/core'
 
 /**
@@ -12,9 +12,13 @@ const settings = useSettingsStore()
 const url = ref('')
 const error = ref('')
 
-/** A new array rather than a push: localStorage and the search watcher see it. */
-function append(value: string) {
-  settings.sources = [...settings.sources, value]
+/** What is wrong with `value` as a source, or '' — `current` being the one it replaces. */
+function problem(value: string, current = '') {
+  if (!value)
+    return $t('That doesn\'t look like a URL. Paste an addon link, or one starting with https://')
+  if (value !== current && settings.sources.includes(value))
+    return $t('That source is already in the list.')
+  return ''
 }
 
 function add() {
@@ -24,22 +28,73 @@ function add() {
   // Takes whatever the user copied — a stremio:// link, a manifest URL, a bare
   // origin — and reduces it to the base the search appends to.
   const value = normalizeSource(url.value)
-  if (!value) {
-    error.value = $t('That doesn\'t look like a URL. Paste an addon link, or one starting with https://')
+  error.value = problem(value)
+  if (error.value)
     return
-  }
-  if (settings.sources.includes(value)) {
-    error.value = $t('That source is already in the list.')
-    return
-  }
 
-  append(value)
+  // New arrays rather than a push: localStorage and the search watcher see them.
+  // Adding is also switching on — a sync can leave a removed source's "off"
+  // behind, and it would otherwise come back already off.
+  settings.sources = [...settings.sources, value]
+  settings.disabledSources = settings.disabledSources.filter(s => s !== value)
   url.value = ''
-  error.value = ''
 }
 
 function remove(value: string) {
   settings.sources = settings.sources.filter(s => s !== value)
+  settings.disabledSources = settings.disabledSources.filter(s => s !== value)
+}
+
+const off = computed(() => new Set(settings.disabledSources))
+
+function setEnabled(value: string, on: boolean | null) {
+  const rest = settings.disabledSources.filter(s => s !== value)
+  settings.disabledSources = on ? rest : [...rest, value]
+}
+
+/** The host is what tells sources apart at a glance; a configured addon's path is a blob. */
+function hostOf(value: string) {
+  try {
+    return new URL(value).host
+  }
+  catch {
+    return value
+  }
+}
+
+/**
+ * Editing changes a source in place rather than removing and re-adding it,
+ * because the list is an order — earlier sources win a duplicate — and a
+ * configured addon's settings live in its URL, so this is where they change.
+ */
+const editing = ref('')
+const draft = ref('')
+const editError = ref('')
+let opener: HTMLElement | null = null
+
+function edit(value: string) {
+  editing.value = value
+  draft.value = value
+  editError.value = ''
+  // Back on the row's pencil afterwards, not at the top of the page.
+  opener = document.activeElement instanceof HTMLElement ? document.activeElement : null
+}
+
+function refocus() {
+  if (opener?.isConnected)
+    opener.focus({ preventScroll: true })
+  opener = null
+}
+
+function save() {
+  const value = normalizeSource(draft.value)
+  editError.value = problem(value, editing.value)
+  if (editError.value)
+    return
+  const swap = (s: string) => s === editing.value ? value : s
+  settings.sources = settings.sources.map(swap)
+  settings.disabledSources = settings.disabledSources.map(swap)
+  editing.value = ''
 }
 
 // --- Live TV ------------------------------------------------------------------
@@ -167,12 +222,37 @@ async function toggleStremio(on: boolean | null) {
       </v-alert>
 
       <v-list v-if="settings.sources.length" bg-color="transparent" class="rounded-lg bg-surface-container/40">
-        <v-list-item v-for="value in settings.sources" :key="value" :title="value">
+        <v-list-item v-for="value in settings.sources" :key="value">
+          <!-- Dimmed as well as switched: the switch alone is a small thing to
+               read across a room. -->
+          <template #title>
+            <span :class="{ 'opacity-50': off.has(value) }">{{ hostOf(value) }}</span>
+          </template>
+          <template #subtitle>
+            <!-- break-all: a configured URL is one long word, which otherwise
+                 wraps at its first hyphen and leaves the clamped line empty. -->
+            <span class="break-all" :class="{ 'opacity-50': off.has(value) }">{{ off.has(value) ? $t('Off — not searched') : value }}</span>
+          </template>
           <template #append>
-            <v-btn icon size="small" variant="text" color="on-surface" @click="remove(value)">
-              <v-icon :icon="mdiDeleteOutline" size="20" />
-              <v-tooltip activator="parent" :text="$t('Remove this source')" />
-            </v-btn>
+            <div class="flex items-center gap-1">
+              <v-switch
+                :model-value="!off.has(value)"
+                :aria-label="$t('Search this source')"
+                color="primary"
+                density="compact"
+                hide-details
+                class="mr-2"
+                @update:model-value="setEnabled(value, $event)"
+              />
+              <v-btn icon size="small" variant="text" color="on-surface" @click="edit(value)">
+                <v-icon :icon="mdiPencilOutline" size="20" />
+                <v-tooltip activator="parent" :text="$t('Edit this source')" />
+              </v-btn>
+              <v-btn icon size="small" variant="text" color="on-surface" @click="remove(value)">
+                <v-icon :icon="mdiDeleteOutline" size="20" />
+                <v-tooltip activator="parent" :text="$t('Remove this source')" />
+              </v-btn>
+            </div>
           </template>
         </v-list-item>
       </v-list>
@@ -204,6 +284,44 @@ async function toggleStremio(on: boolean | null) {
         </v-btn>
       </div>
     </settings-section>
+
+    <v-dialog :model-value="!!editing" max-width="640" @update:model-value="editing = ''" @after-leave="refocus">
+      <v-card v-if="editing" rounded="xl" :title="$t('Edit source')">
+        <v-card-text class="flex flex-col gap-3">
+          <tv-field :label="$t('Source URL')">
+            <!-- A textarea that grows, because a configured addon's URL is a
+                 few hundred characters and a one-line field shows a slice of
+                 it. Enter still saves: a URL has no line breaks to type. -->
+            <v-textarea
+              v-model="draft"
+              :label="$t('Source URL')"
+              variant="outlined"
+              rows="1"
+              auto-grow
+              autocapitalize="off"
+              autocorrect="off"
+              spellcheck="false"
+              class="font-mono"
+              :error-messages="editError"
+              @keydown.enter.prevent="save"
+              @update:model-value="editError = ''"
+            />
+          </tv-field>
+          <p class="text-body-small opacity-70">
+            {{ $t('An addon you configured on its own page keeps those settings in this address. Configure it again there and paste the new link here — it keeps its place in the list.') }}
+          </p>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="editing = ''">
+            {{ $t('Cancel') }}
+          </v-btn>
+          <v-btn variant="tonal" color="primary" @click="save">
+            {{ $t('Save') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <settings-section
       :title="$t('Preferred quality')"

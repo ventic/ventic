@@ -43,7 +43,7 @@ const query = ref('')
 const sort = ref<'seeders' | 'size'>('seeders')
 
 /** Nothing to search until the user has added somewhere to search. */
-const configured = computed(() => settings.sources.length > 0)
+const configured = computed(() => settings.activeSources.length > 0)
 
 async function load() {
   if (!configured.value) {
@@ -188,7 +188,9 @@ async function download(t: Release) {
           <div v-if="!configured" class="flex flex-col items-center gap-3 py-10 text-center">
             <v-icon :icon="mdiPowerPlugOutline" size="36" class="opacity-40" />
             <span class="max-w-md text-body-medium opacity-70">
-              {{ $t('Ventic has no sources configured, so there is nowhere to search. You can still play a magnet or a torrent file you open yourself.') }}
+              {{ settings.sources.length
+                ? $t('Every source is switched off, so there is nowhere to search. Switch one back on in source settings.')
+                : $t('Ventic has no sources configured, so there is nowhere to search. You can still play a magnet or a torrent file you open yourself.') }}
             </span>
             <v-btn variant="tonal" size="small" :to="localePath('/settings/sources')">
               {{ $t('Open source settings') }}

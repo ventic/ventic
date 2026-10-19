@@ -139,7 +139,7 @@ export function groupOf(key: string): GroupKey | null {
     return null
   if (LIBRARY.has(name))
     return 'library'
-  if (name === 'sources')
+  if (name === 'sources' || name === 'disabledSources')
     return 'sources'
   return 'preferences'
 }

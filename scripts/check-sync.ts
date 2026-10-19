@@ -37,6 +37,8 @@ assert.equal(groupOf('ventic.progress'), 'library')
 assert.equal(groupOf('ventic.favourites'), 'library')
 assert.equal(groupOf('ventic.deleted'), 'library')
 assert.equal(groupOf('ventic.sources'), 'sources')
+// Switching one off is part of the list, not a preference that ships unsynced.
+assert.equal(groupOf('ventic.disabledSources'), 'sources')
 // Anything unclassified is a preference, so a setting added tomorrow syncs the
 // day it is written rather than the day someone remembers this table.
 assert.equal(groupOf('ventic.subStyle'), 'preferences')

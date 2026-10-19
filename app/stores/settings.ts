@@ -120,6 +120,14 @@ export const useSettingsStore = defineStore('settings', () => {
   const sources = useLocalStorage<string[]>('ventic.sources', [])
 
   /**
+   * Sources kept in the list but not searched. A list beside `sources` rather
+   * than a flag inside it, because an older build — or one restoring a backup —
+   * reads `ventic.sources` as plain strings and would search a mangled one.
+   */
+  const disabledSources = useLocalStorage<string[]>('ventic.disabledSources', [])
+  const activeSources = computed(() => sources.value.filter(s => !disabledSources.value.includes(s)))
+
+  /**
    * Quality to try first, '' for whatever streams best. A preference and not a
    * filter — see `setQuality` in utils/torrents, which is where it is enforced.
    */
@@ -309,5 +317,5 @@ export const useSettingsStore = defineStore('settings', () => {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, closeToTray, castReceive, castName, castAsk, castCode, castTarget, downloadDir, playMode, keepWatched, bufferAhead, bufferBehind, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, audioTrack, keys, resetSubs }
+  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, disabledSources, activeSources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, closeToTray, castReceive, castName, castAsk, castCode, castTarget, downloadDir, playMode, keepWatched, bufferAhead, bufferBehind, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, audioTrack, keys, resetSubs }
 })

@@ -29,7 +29,7 @@ function edit() {
   // Android raises the keyboard only for a focus that follows a real press, so
   // this has to stay within the click that asked for it — a `nextTick` is, a
   // press on the field a moment later is not.
-  nextTick(() => box.value?.querySelector('input')?.focus())
+  nextTick(() => box.value?.querySelector<HTMLElement>('input, textarea')?.focus())
 }
 
 /**
