@@ -696,6 +696,16 @@ pub fn run() {
 		"CORS_ALLOW_REGEXP",
 		r"^(https?://localhost(:\d+)?|https?://127\.0\.0\.1(:\d+)?|tauri://localhost|https?://tauri\.localhost)$"
 	);
+	// WebKitGTK 2.54's new Skia compositor flickers CSS transitions that fade —
+	// a dialog's scrim vanished for a frame as it finished opening, card hovers
+	// flashed — and 2.52 never did: https://bugs.webkit.org/show_bug.cgi?id=327524,
+	// fixed on WebKit main but not in 2.54.x. "0" is the one value that puts 2.54
+	// back on the compositor 2.52 used, GPU and all; older releases never read
+	// it, and a value the user set wins. Drop it once a fixed release is what
+	// distributions ship.
+	if cfg!(target_os = "linux") && std::env::var_os("WEBKIT_USE_SKIA_FOR_COMPOSITION").is_none() {
+		std::env::set_var("WEBKIT_USE_SKIA_FOR_COMPOSITION", "0");
+	}
 	player::init();
 
 	// librqbit needs a full-featured multi-threaded tokio runtime (DHT, uTP,
