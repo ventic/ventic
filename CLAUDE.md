@@ -114,6 +114,17 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   `bun run check:player` holds the command name across the three files that have
   to agree on it — nothing else does, and the failure is a film that plays
   perfectly and a screen that blanks twenty minutes in.
+- **The desktop's media keys are `media_session`, and only Linux answers yet.**
+  `src-tauri/src/media.rs` publishes the film on screen as an MPRIS player
+  (`org.mpris.MediaPlayer2.ventic`) and hands what `playerctl`, a panel widget
+  or a keyboard's play key asks for back to the page as `media://command`,
+  which `MpvPlayer.vue` answers with its own buttons' functions. `None` takes
+  it off the bus — by name, before the socket goes, or a widget offers to
+  pause a closed film. Windows (SMTC), macOS (`MPNowPlayingInfoCenter`) and
+  Android (`MediaSession`) are each a `platform` module that doesn't exist
+  yet; the page needs nothing new for them. The `Media*` keys a remote sends
+  are answered by the player's own key handler. `cargo test --lib media` runs
+  the MPRIS half on the real session bus; `check:player` holds the names.
 - The torrent engine hashes pieces with aws-lc, which assembles its x86_64 fast
   paths with **NASM** — a tool Linux has packaged and Windows does not, so a
   Windows build dies in `aws-lc-sys`'s build script long before any of our code.

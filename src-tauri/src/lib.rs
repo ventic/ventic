@@ -32,6 +32,10 @@ mod cast;
 /// only — the other two already have their own answer (see the module).
 mod awake;
 
+/// The film playing, published to the desktop's media keys and widgets. Linux
+/// (MPRIS) only for now; a no-op elsewhere — see the module.
+mod media;
+
 /// Streaming a film through a buffer instead of downloading it whole.
 mod buffer;
 
@@ -781,6 +785,7 @@ pub fn run() {
 			cast::cast_receive,
 			cast::cast_firewall_hint,
 			awake::keep_awake,
+			media::media_session,
 			buffer::stream_buffer,
 			buffer::stream_folder,
 			vpn::engine_interfaces,

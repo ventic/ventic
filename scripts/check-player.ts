@@ -445,4 +445,18 @@ assert.match(mpv, /const second = computed\(\(\) => Math\.floor\(position\.value
 // Crop-to-fill reaches ExoPlayer as the view's resize mode.
 assert.match(kotlin, /"panscan" -> view\?\.resizeMode = if/, 'Player.kt answers panscan')
 
+// --- The desktop's media controls ----------------------------------------------
+// One command and one event between three files, and nothing compiles the
+// agreement: a misspelling is a play key that does nothing, on a desktop the
+// developer may not even have.
+const media = await Bun.file('src-tauri/src/media.rs').text()
+assert.match(lib, /media::media_session/, 'the command is registered')
+assert.match(media, /pub fn media_session\(/, 'under the name it is registered by')
+assert.match(mpv, /invoke\('media_session'/, 'and the player calls it by that name')
+assert.match(media, /emit\("media:\/\/command"/, 'what the desktop asks for is emitted…')
+assert.match(mpv, /listen<MediaCommand>\('media:\/\/command'/, '…and listened for under the same name')
+assert.match(mpv, /invoke\('media_session', \{ now: null \}\)/, 'and leaving the player takes it off the bus')
+for (const action of ['play', 'pause', 'toggle', 'stop', 'next', 'seek', 'to'])
+  assert.match(mpv, new RegExp(`'${action}'`), `the player answers ${action}`)
+
 console.log('player: ok')

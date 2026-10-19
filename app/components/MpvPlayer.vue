@@ -1256,6 +1256,71 @@ function seekLabel(v: number) {
 const chapterMarks = computed(() => chapters.value.map(c => c.time).filter(t => t > 0))
 
 // ---------------------------------------------------------------------------
+// The desktop's own media controls — the play key, a headset's button, the
+// widget in a panel (src-tauri/src/media.rs). What is on screen goes out; what
+// they ask for comes back and is answered by the functions the bar's buttons
+// call. MPRIS on Linux, and a no-op the platforms with no module yet.
+// ---------------------------------------------------------------------------
+/** Everything but the clock, which is pushed on its own beat below. */
+const nowPlaying = computed(() => started.value
+  ? {
+      title: props.media?.title || props.title || '',
+      subtitle: props.season && props.episode ? `S${props.season} E${props.episode}` : props.year ?? '',
+      art: posterUrl(props.media?.poster, 'w342') ?? '',
+      playing: !paused.value,
+      can_next: !!props.next,
+    }
+  : null)
+
+function publish() {
+  const now = nowPlaying.value
+  invoke('media_session', { now: now && { ...now, position: position.value, duration: duration.value } }).catch(() => {})
+}
+
+watch(nowPlaying, publish, { deep: true })
+// The widget runs its clock on from the last word; this keeps it honest
+// across a stall it could not see.
+useIntervalFn(() => started.value && !paused.value && publish(), 5000)
+
+interface MediaCommand { action: 'play' | 'pause' | 'toggle' | 'stop' | 'next' | 'seek' | 'to', by?: number, at?: number }
+
+function nextEpisode() {
+  if (props.next)
+    navigateTo(props.next.to, { replace: true })
+}
+
+function onMediaCommand(c: MediaCommand) {
+  noteActivity()
+  if (!started.value)
+    return
+  if (c.action === 'toggle' || (c.action === 'play' && paused.value) || (c.action === 'pause' && !paused.value))
+    togglePlay()
+  else if (c.action === 'stop')
+    emit('exit')
+  else if (c.action === 'next')
+    nextEpisode()
+  else if (c.action === 'seek')
+    seekBy(c.by ?? 0)
+  else if (c.action === 'to')
+    seekTo(c.at ?? 0)
+}
+
+/**
+ * The same buttons on a keyboard or a remote, where the desktop hasn't taken
+ * them first — a television's play/pause and its rewind and fast-forward
+ * arrive here as keys, and nothing else in the app would answer them.
+ */
+const MEDIA_KEYS: Record<string, () => void> = {
+  MediaPlayPause: () => onMediaCommand({ action: 'toggle' }),
+  MediaPlay: () => onMediaCommand({ action: 'play' }),
+  MediaPause: () => onMediaCommand({ action: 'pause' }),
+  MediaStop: () => onMediaCommand({ action: 'stop' }),
+  MediaTrackNext: () => onMediaCommand({ action: 'next' }),
+  MediaFastForward: () => onMediaCommand({ action: 'seek', by: 10 }),
+  MediaRewind: () => onMediaCommand({ action: 'seek', by: -10 }),
+}
+
+// ---------------------------------------------------------------------------
 // Lifecycle
 // ---------------------------------------------------------------------------
 async function startPlayer() {
@@ -1539,6 +1604,8 @@ function togglePlay() {
 function seekTo(t: number) {
   position.value = Math.max(0, Math.min(duration.value || t, t))
   ipc(['set_property', 'time-pos', position.value])
+  // A widget's progress bar only hears of a jump when it is told.
+  publish()
 }
 
 function seekBy(delta: number) {
@@ -1849,6 +1916,14 @@ function onKey(e: KeyboardEvent) {
   if (!started.value)
     return
 
+  // Whatever has focus: these keys mean one thing only.
+  const media = MEDIA_KEYS[e.key]
+  if (media) {
+    e.preventDefault()
+    media()
+    return
+  }
+
   // Remote control. Once a control has focus, the keys it would use are its
   // own: the browser clicks it on Enter or space, and the d-pad plugin does the
   // moving. The letter shortcuts below still work either way.
@@ -1997,6 +2072,21 @@ function onNativeWheel(notches: number) {
     nudgeVolume(notches * 5)
 }
 
+let offMedia: (() => void) | null = null
+
+async function listenToMediaControls() {
+  try {
+    const off = await listen<MediaCommand>('media://command', e => onMediaCommand(e.payload))
+    if (mounted)
+      offMedia = off
+    else
+      off()
+  }
+  catch {
+    // Not running under Tauri — no desktop to have media controls.
+  }
+}
+
 async function listenToNativeMouse() {
   // Nothing in front of the page, so the picture's own pointer events already
   // arrive in the DOM — see `tapVideo`.
@@ -2049,6 +2139,7 @@ onMounted(() => {
     surface.readScale()
   rafId = requestAnimationFrame(frame)
   listenToNativeMouse()
+  listenToMediaControls()
   if (props.fullscreen)
     setWindowFullscreen(true)
   startPlayer()
@@ -2059,6 +2150,7 @@ onBeforeUnmount(() => {
   document.documentElement.classList.remove('ventic-video')
   mounted = false
   nativeMouse.forEach(off => off())
+  offMedia?.()
   stopPoll()
   saveProgress()
   // The frame cache gives its blobs back on its own (`onScopeDispose`).
@@ -2067,6 +2159,8 @@ onBeforeUnmount(() => {
   // The watcher above dies with the component, so the last thing it asked for
   // has to be given back by hand — otherwise the screen never sleeps again.
   invoke('keep_awake', { on: false }).catch(() => {})
+  // Off the bus, so no widget offers to pause a film that has gone.
+  invoke('media_session', { now: null }).catch(() => {})
   if (native)
     invoke('player_stop').catch(() => {})
   else
