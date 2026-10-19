@@ -432,6 +432,7 @@ export default {
   "Profiles": "Profile",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Fortschritt, Gesehen-Markierungen, Favoriten und die Merkliste, nur auf diesem Gerät gespeichert. Wer sie hier löscht, löscht sie endgültig – unter Konto gibt es eine Sicherungsdatei, falls du vorher eine möchtest.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR-Code, scannen, koppeln, Handy als Tastatur, am Handy tippen, Einrichtung, Fernbedienung, Setup",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Bewertung",
   "Reading the files…": "Dateien werden gelesen…",
   "Recently added": "Zuletzt hinzugefügt",

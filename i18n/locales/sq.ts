@@ -432,6 +432,7 @@ export default {
   "Profiles": "Profilet",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Progresi, shenjat e shikimit, të preferuarat dhe lista për shikim ruhen vetëm në këtë pajisje. Pastrimi i tyre këtu i fshin përgjithmonë — te Llogaria ka një skedar kopjeje rezervë nëse do fillimisht një të tillë.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "kod QR, skano, çiftëzim, tastiera e telefonit, shkruaj në telefon, konfigurim fillestar, telekomandë, rregullim",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Vlerësimi",
   "Reading the files…": "Po lexohen skedarët…",
   "Recently added": "Shtuar së fundmi",

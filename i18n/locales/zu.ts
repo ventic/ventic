@@ -432,6 +432,7 @@ export default {
   "Profiles": "Amaphrofayela",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Inqubekelaphambili, izimpawu zokubukiwe, izintandokazi nohlu lokubuka, kugcinwa kule divayisi kuphela. Uma ukusula lapha kuyaphela unomphela — ku-Akhawunti kunefayela lesipele uma ufuna elilodwa kuqala.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "ikhodi ye-QR, skena, ukubhanqa, ikhibhodi yefoni, thayipha efonini, ukusetha kokuqala, irimothi, isilungiselelo",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Isilinganiso",
   "Reading the files…": "Ifunda amafayela…",
   "Recently added": "Kwengezwe muva nje",

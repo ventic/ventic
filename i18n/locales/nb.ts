@@ -432,6 +432,7 @@ export default {
   "Profiles": "Profiler",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Framdrift, sett-markeringer, favoritter og ønskelisten lagres bare på denne enheten. Tømmer du dem her, er de borte for godt — under Konto finnes en sikkerhetskopifil hvis du vil ha en først.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR-kode, skann, paring, telefontastatur, skriv på telefonen, oppsett, fjernkontroll, innstilling",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Vurdering",
   "Reading the files…": "Leser filene…",
   "Recently added": "Nylig lagt til",

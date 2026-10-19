@@ -5,7 +5,7 @@ import type { KeyStore } from '../app/utils/backup'
 import type { Media } from '../app/utils/tmdb'
 import assert from 'node:assert'
 import { applyBackup, backupSummary, makeBackup, readBackup } from '../app/utils/backup'
-import { arrange, continuing, finished, fraction, kindOf, nextEpisode, parseKey, placeholder, playedTitles, progressKey, remainingText, resumable, showEntries, showIndex, slim, UNKNOWN_TITLE, watchBar, watchedInSeason } from '../app/utils/library'
+import { arrange, continuing, finished, fraction, kindOf, nextEpisode, parseKey, placeholder, playedTitles, progressKey, randomEpisode, remainingText, resumable, showEntries, showIndex, slim, UNKNOWN_TITLE, watchBar, watchedInSeason } from '../app/utils/library'
 import { mediaLink } from '../app/utils/tmdb'
 
 // `mediaLink` runs its path through Nuxt's auto-imported `localePath`, which
@@ -105,6 +105,29 @@ assert.deepEqual(
   nextEpisode(seasons, { season: 9, episode: 1, watched: true }),
   null,
 )
+
+// --- A random episode -------------------------------------------------------
+
+{
+  const never = () => false
+  // The roll is the caller's, so each end of the range can be asked for.
+  assert.deepEqual(randomEpisode(seasons, never, null, () => 0), { season: 1, episode: 1 })
+  assert.deepEqual(randomEpisode(seasons, never, null, () => 0.9999), { season: 3, episode: 13 })
+  // Uniform over episodes: S1's 7 of the 33 take the bottom 21% of the roll.
+  assert.deepEqual(randomEpisode(seasons, never, null, () => 0.22), { season: 2, episode: 1 })
+
+  // Unseen first: with everything but S2E5 watched, that is the only answer.
+  const onlyOne = (s: number, e: number) => !(s === 2 && e === 5)
+  for (const r of [0, 0.5, 0.9999])
+    assert.deepEqual(randomEpisode(seasons, onlyOne, null, () => r), { season: 2, episode: 5 })
+  // And once every one has been seen, any of them again rather than nothing.
+  assert.ok(randomEpisode(seasons, () => true, null, () => 0.5))
+
+  // Never past the last aired: S3 is announced at 13 but only 4 are out.
+  const aired = { season: 3, episode: 4 }
+  assert.deepEqual(randomEpisode(seasons, never, aired, () => 0.9999), { season: 3, episode: 4 })
+  assert.equal(randomEpisode([], never, null), null)
+}
 
 // --- The rows built out of all that -------------------------------------------
 

@@ -432,6 +432,7 @@ export default {
   "Profiles": "Профили",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Напредак, ознаке одгледаног, омиљени наслови и листа за гледање, чувају се само на овом уређају. Ако их овде обришете, обрисани су заувек — у одељку Налог постоји резервна копија ако желите прво да је направите.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR код, скенирај, упари, телефон као тастатура, куцање на телефону, подешавање, даљински",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Оцена",
   "Reading the files…": "Читање датотека…",
   "Recently added": "Недавно додато",

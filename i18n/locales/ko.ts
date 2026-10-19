@@ -432,6 +432,7 @@ export default {
   "Profiles": "프로필",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "진행 상황, 시청 표시, 즐겨찾기, 볼 목록은 이 기기에만 저장됩니다. 여기서 지우면 영구히 사라집니다 — 먼저 백업을 원한다면 계정에 백업 파일이 있습니다.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR 코드, 스캔, 페어링, 휴대폰 키보드, 휴대폰으로 입력, 초기 설정, 리모컨, 설정",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "평점",
   "Reading the files…": "파일 읽는 중…",
   "Recently added": "최근 추가됨",

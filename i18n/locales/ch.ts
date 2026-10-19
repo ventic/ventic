@@ -432,6 +432,7 @@ export default {
   "Profiles": "Profile siha",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "I progreso, i marka egga', i favorite yan i watchlist ma adahi gi este na device ha'. Yanggen un na'gasgas guini, para todu i tiempo — guaha backup fail gi Kuenta yanggen malago' hao uno fine'nana.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR code, scan, pair, keyboard telifon, tuge' gi telifon, fine'nana na setup, remote, setting",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Rating",
   "Reading the files…": "Matataitai i fail siha…",
   "Recently added": "Ma na'hålom på'go",

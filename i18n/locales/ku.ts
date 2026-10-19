@@ -432,6 +432,7 @@ export default {
   "Profiles": "Profîl",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Pêşketin, nîşanên temaşekirî, bijare û lîsteya temaşeyê tenê li ser vê amûrê tên parastin. Paqijkirina wan li vir wan her û her paqij dike — heke tu pêşî yekê bixwazî, li Hesab pelê kopiya ewlehiyê heye.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "koda QR, şeh kirin, cotkirin, klavyeya telefonê, li ser telefonê nivîsandin, sazkirina destpêkê, kumande, mîheng",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Nirxandin",
   "Reading the files…": "Pel tên xwendin…",
   "Recently added": "Vê dawiyê hatine zêdekirin",

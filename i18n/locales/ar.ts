@@ -432,6 +432,7 @@ export default {
   "Profiles": "الملفات الشخصية",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "التقدّم وعلامات المشاهدة والمفضلة وقائمة المشاهدة، محفوظة على هذا الجهاز وحده. مسحها هنا يمسحها إلى الأبد — وفي الحساب ملف نسخة احتياطية إن أردت واحدة أولًا.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "رمز QR، مسح، اقتران، لوحة مفاتيح الهاتف، الكتابة على الهاتف، الإعداد الأول، جهاز التحكم، ضبط",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "التقييم",
   "Reading the files…": "قراءة الملفات…",
   "Recently added": "أُضيف حديثًا",

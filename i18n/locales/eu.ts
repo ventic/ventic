@@ -432,6 +432,7 @@ export default {
   "Profiles": "Profilak",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Aurrerapena, ikusi-markak, gogokoak eta ikusteko zerrenda gailu honetan bakarrik gordetzen dira. Hemen garbitzeak betiko garbitzen ditu: Kontua atalean babeskopia-fitxategi bat dago, lehenago bat nahi baduzu.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR kodea, eskaneatu, parekatu, telefonoko teklatua, idatzi telefonoan, hasierako konfigurazioa, urrutiko agintea, ezarpena",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Balorazioa",
   "Reading the files…": "Fitxategiak irakurtzen…",
   "Recently added": "Duela gutxi gehituak",

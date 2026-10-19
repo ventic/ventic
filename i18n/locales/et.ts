@@ -432,6 +432,7 @@ export default {
   "Profiles": "Profiilid",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Edenemine, vaatamismärgid, lemmikud ja vaatamisnimekiri hoitakse ainult selles seadmes. Nende tühjendamine siin kustutab need lõplikult — Konto all on varukoopiafail, kui tahad enne ühe teha.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR-kood, skannimine, sidumine, telefoni klaviatuur, kirjuta telefonis, seadistamine, pult, häälestus",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Hinnang",
   "Reading the files…": "Failide lugemine…",
   "Recently added": "Hiljuti lisatud",

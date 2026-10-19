@@ -432,6 +432,7 @@ export default {
   "Profiles": "ప్రొఫైల్‌లు",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "పురోగతి, చూసిన గుర్తులు, ఇష్టమైనవి, చూడాల్సిన జాబితా — ఇవన్నీ ఈ పరికరంలో మాత్రమే ఉంచబడతాయి. వాటిని ఇక్కడ తుడిచేస్తే అవి శాశ్వతంగా పోతాయి — ముందుగా ఒకటి కావాలంటే ఖాతా విభాగంలో బ్యాకప్ ఫైల్ ఉంది.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR కోడ్, స్కాన్, జత చేయడం, ఫోన్ కీబోర్డ్, ఫోన్‌లో టైప్ చేయడం, తొలి సెటప్, రిమోట్, అమరిక",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "రేటింగ్",
   "Reading the files…": "ఫైళ్లను చదువుతోంది…",
   "Recently added": "ఇటీవల జోడించినవి",

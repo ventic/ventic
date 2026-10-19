@@ -432,6 +432,7 @@ export default {
   "Profiles": "சுயவிவரங்கள்",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "முன்னேற்றம், பார்த்த குறிகள், பிடித்தவை, பார்வைப் பட்டியல் ஆகியவை இந்தச் சாதனத்தில் மட்டுமே வைக்கப்படுகின்றன. இங்கே அவற்றை அழித்தால் அவை நிரந்தரமாகப் போய்விடும் — முதலில் ஒன்று வேண்டுமெனில், கணக்கு பகுதியில் காப்புப் பிரதிக் கோப்பு உள்ளது.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR குறியீடு, ஸ்கேன், இணைத்தல், தொலைபேசி விசைப்பலகை, தொலைபேசியில் தட்டச்சு, தொடக்க அமைப்பு, ரிமோட், அமைவு",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "மதிப்பீடு",
   "Reading the files…": "கோப்புகளைப் படிக்கிறது…",
   "Recently added": "சமீபத்தில் சேர்க்கப்பட்டவை",

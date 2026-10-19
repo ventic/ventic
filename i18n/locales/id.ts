@@ -432,6 +432,7 @@ export default {
   "Profiles": "Profil",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Kemajuan, tanda tertonton, favorit, dan daftar tonton hanya disimpan di perangkat ini. Membersihkannya di sini menghapusnya selamanya — di Akun ada berkas cadangan jika kamu ingin satu lebih dulu.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "kode QR, pindai, sandingkan, papan ketik ponsel, mengetik di ponsel, penyiapan awal, remote, pengaturan",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Penilaian",
   "Reading the files…": "Membaca berkas…",
   "Recently added": "Baru ditambahkan",

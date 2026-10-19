@@ -432,6 +432,7 @@ export default {
   "Profiles": "פרופילים",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "ההתקדמות, סימוני הצפייה, המועדפים ורשימת הצפייה נשמרים במכשיר הזה בלבד. ניקוי שלהם כאן מוחק אותם לתמיד — בחשבון יש קובץ גיבוי אם אתה רוצה אחד קודם.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "קוד QR, סריקה, התאמה, מקלדת הטלפון, הקלדה בטלפון, הגדרה ראשונית, שלט, הגדרות",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "דירוג",
   "Reading the files…": "קורא את הקבצים…",
   "Recently added": "נוספו לאחרונה",

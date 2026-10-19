@@ -432,6 +432,7 @@ export default {
   "Profiles": "Profielen",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Voortgang, kijkmarkeringen, favorieten en de kijklijst worden alleen op dit apparaat bewaard. Ze hier wissen wist ze voorgoed — bij Account staat een back-upbestand als je er eerst een wilt.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR-code, scannen, koppelen, telefoon als toetsenbord, typen op telefoon, instellen, afstandsbediening",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Beoordeling",
   "Reading the files…": "Bestanden lezen…",
   "Recently added": "Onlangs toegevoegd",

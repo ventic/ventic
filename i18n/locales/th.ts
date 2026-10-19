@@ -432,6 +432,7 @@ export default {
   "Profiles": "โปรไฟล์",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "ความคืบหน้า เครื่องหมายดูแล้ว รายการโปรด และรายการที่จะดู เก็บไว้บนอุปกรณ์นี้เท่านั้น ถ้าล้างที่นี่ก็หายไปถาวร — ถ้าอยากสำรองไว้ก่อน ไปที่หัวข้อบัญชีเพื่อสร้างไฟล์สำรอง",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "คิวอาร์โค้ด, สแกน, จับคู่, แป้นพิมพ์โทรศัพท์, พิมพ์บนโทรศัพท์, ตั้งค่าครั้งแรก, รีโมต, การตั้งค่า",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "คะแนน",
   "Reading the files…": "กำลังอ่านไฟล์…",
   "Recently added": "เพิ่มล่าสุด",

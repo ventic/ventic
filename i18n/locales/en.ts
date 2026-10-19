@@ -432,6 +432,7 @@ export default {
   "Profiles": "Profiles",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup",
+  "Random episode": "Random episode",
   "Rating": "Rating",
   "Reading the files…": "Reading the files…",
   "Recently added": "Recently added",

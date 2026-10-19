@@ -432,6 +432,7 @@ export default {
   "Profiles": "ಪ್ರೊಫೈಲ್‌ಗಳು",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "ಪ್ರಗತಿ, ನೋಡಿದ ಗುರುತುಗಳು, ಮೆಚ್ಚಿನವು ಮತ್ತು ವೀಕ್ಷಣಾ ಪಟ್ಟಿ ಈ ಸಾಧನದಲ್ಲಷ್ಟೇ ಇರುತ್ತವೆ. ಇಲ್ಲಿ ಅವನ್ನು ಅಳಿಸಿದರೆ ಶಾಶ್ವತವಾಗಿ ಅಳಿಯುತ್ತವೆ — ಮೊದಲು ಒಂದು ಬ್ಯಾಕಪ್ ಬೇಕಿದ್ದರೆ ಖಾತೆಯಲ್ಲಿ ಬ್ಯಾಕಪ್ ಫೈಲ್ ಇದೆ.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR ಕೋಡ್, ಸ್ಕ್ಯಾನ್, ಜೋಡಿಸುವಿಕೆ, ಫೋನ್ ಕೀಬೋರ್ಡ್, ಫೋನ್‌ನಲ್ಲಿ ಟೈಪ್, ಆರಂಭಿಕ ಸಿದ್ಧತೆ, ರಿಮೋಟ್, ಸಂಯೋಜನೆ",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "ರೇಟಿಂಗ್",
   "Reading the files…": "ಫೈಲ್‌ಗಳನ್ನು ಓದಲಾಗುತ್ತಿದೆ…",
   "Recently added": "ಇತ್ತೀಚೆಗೆ ಸೇರಿಸಿದವು",

@@ -432,6 +432,7 @@ export default {
   "Profiles": "Proffiliau",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Cynnydd, marciau gwylio, ffefrynnau a'r rhestr wylio, a gedwir ar y ddyfais hon yn unig. Mae eu clirio yma'n eu clirio am byth — mae ffeil copi wrth gefn yn Cyfrif os ydych am un yn gyntaf.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "cod QR, sganio, paru, bysellfwrdd ffôn, teipio ar y ffôn, sefydlu, teclyn rheoli, gosod",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Sgôr",
   "Reading the files…": "Yn darllen y ffeiliau…",
   "Recently added": "Ychwanegwyd yn ddiweddar",

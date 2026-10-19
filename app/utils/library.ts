@@ -106,6 +106,35 @@ export function nextEpisode(
 }
 
 /**
+ * Any episode of a show, for "play something" — one this profile hasn't seen
+ * while there is one, and anything once every episode has been. Uniform over
+ * episodes rather than seasons, or a show's one long season would come up as
+ * often as each of its short ones. `lastAired` caps it: TMDB counts episodes it
+ * has only announced, and a random pick of one of those plays nothing.
+ */
+export function randomEpisode(
+  seasons: { number: number, episodes: number }[],
+  seen: (season: number, episode: number) => boolean,
+  lastAired?: EpisodeRef | null,
+  roll = Math.random,
+): EpisodeRef | null {
+  const aired = (season: number, episode: number) => !lastAired
+    || season < lastAired.season
+    || (season === lastAired.season && episode <= lastAired.episode)
+
+  const all: EpisodeRef[] = []
+  for (const s of seasons) {
+    for (let episode = 1; episode <= s.episodes; episode++) {
+      if (aired(s.number, episode))
+        all.push({ season: s.number, episode })
+    }
+  }
+  const fresh = all.filter(e => !seen(e.season, e.episode))
+  const pool = fresh.length ? fresh : all
+  return pool[Math.floor(roll() * pool.length)] ?? null
+}
+
+/**
  * Most recently played first. Marking a run of episodes at once stamps every one
  * of them in the same millisecond, so the latest episode has to win that tie:
  * otherwise "watched up to E5" would have the show resuming at E1.

@@ -432,6 +432,7 @@ export default {
   "Profiles": "Պրոֆիլներ",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Առաջընթացը, դիտված նշումները, ընտրյալները և դիտելու ցանկը պահվում են միայն այս սարքում։ Դրանք այստեղ մաքրելը մաքրում է ընդմիշտ — «Հաշիվ» բաժնում կա պահուստային ֆայլ, եթե նախ մեկը ցանկանում եք։",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR կոդ, սկանավորում, զուգակցում, հեռախոսի ստեղնաշար, մուտքագրում հեռախոսով, սկզբնական կարգավորում, հեռակառավարիչ, կարգավորում",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Գնահատական",
   "Reading the files…": "Ֆայլերը կարդացվում են…",
   "Recently added": "Վերջերս ավելացված",

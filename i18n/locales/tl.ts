@@ -432,6 +432,7 @@ export default {
   "Profiles": "Mga profile",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Progreso, mga markang napanood, mga paborito at ang watchlist, iniingatan lang sa device na ito. Kapag ni-clear mo sila rito, tuluyan na silang mawawala — may backup file sa Account kung gusto mo munang kumuha ng isa.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR code, i-scan, ipares, keyboard ng telepono, mag-type sa telepono, paunang setup, remote, setting",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Rating",
   "Reading the files…": "Binabasa ang mga file…",
   "Recently added": "Kamakailang idinagdag",

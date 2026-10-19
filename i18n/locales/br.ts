@@ -432,6 +432,7 @@ export default {
   "Profiles": "Aeladoù",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Araokadur, merkoù sellet, pennrolloù hag ar roll sellet, miret war an trevnad-mañ hepken. O skarzhañ amañ o skarzh da vat — ur restr gwaredenn a zo e Kont ma fell deoc'h unan a-raok.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "kod QR, skannañ, koublañ, klavier pellgomzer, skrivañ war ar pellgomzer, staliañ, pellurzhier, kefluniañ",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Notenn",
   "Reading the files…": "O lenn ar restroù…",
   "Recently added": "Ouzhpennet nevez zo",

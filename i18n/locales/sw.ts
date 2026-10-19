@@ -432,6 +432,7 @@ export default {
   "Profiles": "Wasifu",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Maendeleo, alama za kutazamwa, vipendwa na orodha ya kutazama, huhifadhiwa kwenye kifaa hiki pekee. Ukivifuta hapa vinakwenda kabisa — Akaunti ina faili ya nakala rudufu ikiwa unataka kuchukua moja kwanza.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "msimbo wa QR, changanua, oanisha, kibodi ya simu, andika kwenye simu, usanidi wa kwanza, rimoti, mpangilio",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Ukadiriaji",
   "Reading the files…": "Inasoma faili…",
   "Recently added": "Zilizoongezwa hivi karibuni",

@@ -432,6 +432,7 @@ export default {
   "Profiles": "Profiller",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "İlerleme, izlendi işaretleri, favoriler ve izleme listesi yalnızca bu cihazda tutulur. Bunları burada temizlerseniz temelli gider — önce bir yedek almak isterseniz Hesap bölümünde yedek dosyası var.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR kodu, tarama, eşleştirme, telefon klavyesi, telefonda yazma, ilk kurulum, kumanda, ayar",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Puan",
   "Reading the files…": "Dosyalar okunuyor…",
   "Recently added": "Son eklenenler",

@@ -347,6 +347,8 @@ export interface MediaDetail extends Media {
   companies: string[]
   seasons: Season[]
   episodeCount: number
+  /** The newest episode that has aired; TMDB's season counts include announced ones. */
+  lastAired: { season: number, episode: number } | null
   budget: number
   revenue: number
 }
@@ -376,7 +378,7 @@ interface RawDetail extends TmdbItem {
   seasons?: RawSeason[]
   production_companies?: { name: string }[]
   networks?: { name: string }[]
-  last_episode_to_air?: { runtime?: number } | null
+  last_episode_to_air?: { runtime?: number, season_number?: number, episode_number?: number } | null
   credits?: { cast: RawCredit[], crew: RawCredit[] }
   videos?: { results: RawVideo[] }
   images?: { logos: RawImage[] }
@@ -474,6 +476,9 @@ function toDetail(raw: RawDetail, type: MediaType): MediaDetail {
         overview: s.overview ?? '',
       })),
     episodeCount: raw.number_of_episodes ?? 0,
+    lastAired: raw.last_episode_to_air?.season_number && raw.last_episode_to_air.episode_number
+      ? { season: raw.last_episode_to_air.season_number, episode: raw.last_episode_to_air.episode_number }
+      : null,
     budget: raw.budget ?? 0,
     revenue: raw.revenue ?? 0,
   }

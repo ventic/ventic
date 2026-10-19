@@ -432,6 +432,7 @@ export default {
   "Profiles": "Профилдер",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Жүрүш, көрүлдү белгилери, тандалмалар жана көрүү тизмеси бул түзмөктө гана сакталат. Аларды бул жерде тазалоо түбөлүккө тазалайт — адегенде көчүрмө керек болсо, «Каттоо эсеби» бөлүмүндө камдык көчүрмө файлы бар.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR коду, скандоо, жупташтыруу, телефондун баскычтобу, телефондо терүү, алгачкы жөндөө, пульт, параметр",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Рейтинг",
   "Reading the files…": "Файлдар окулууда…",
   "Recently added": "Жакында кошулган",

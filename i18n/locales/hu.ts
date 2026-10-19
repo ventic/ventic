@@ -432,6 +432,7 @@ export default {
   "Profiles": "Profilok",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "A folyamat, a megnézve jelölések, a kedvencek és a megnézendők listája csak ezen az eszközön marad. Ha itt törlöd, végleg törlöd — a Fiók alatt van biztonsági mentés fájl, ha előbb szeretnél egyet.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR-kód, beolvasás, párosítás, telefon billentyűzete, gépelés telefonon, kezdeti beállítás, távirányító, beállítás",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Értékelés",
   "Reading the files…": "A fájlok olvasása…",
   "Recently added": "Nemrég hozzáadva",

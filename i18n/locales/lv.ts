@@ -432,6 +432,7 @@ export default {
   "Profiles": "Profili",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Progress, skatīšanās atzīmes, izlase un skatīšanās saraksts tiek glabāti tikai šajā ierīcē. Notīrot tos šeit, tie pazūd uz visiem laikiem — sadaļā Konts ir dublējuma fails, ja vispirms vēlaties vienu.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR kods, skenēt, savienot pārī, telefona tastatūra, rakstīt telefonā, sākuma iestatīšana, tālvadības pults, uzstādīšana",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Vērtējums",
   "Reading the files…": "Lasa failus…",
   "Recently added": "Nesen pievienots",

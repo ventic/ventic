@@ -432,6 +432,7 @@ export default {
   "Profiles": "Pròifilean",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Cumar an t-adhartas, na comharran coimhid, na h-annsachdan agus an liosta chòimhid air an uidheam seo a-mhàin. Ma dh'fhalamhaicheas tu an-seo iad, falamhaichear gu bràth iad — tha faidhle lethbhreac-glèidhidh fo Cunntas ma tha thu ag iarraidh fear an toiseach.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "còd QR, sganadh, paidhreachadh, meur-chlàr fòn, sgrìobh air a' fhòn, suidheachadh, inneal-smachd, rèiteachadh",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Rangachadh",
   "Reading the files…": "A' leughadh nam faidhlichean…",
   "Recently added": "Air an cur ris o chionn ghoirid",

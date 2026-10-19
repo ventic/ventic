@@ -432,6 +432,7 @@ export default {
   "Profiles": "نمایه‌ها",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "پیشرفت، نشان‌های تماشا، علاقه‌مندی‌ها و فهرست تماشا فقط روی این دستگاه نگهداری می‌شوند. پاک کردنشان اینجا برای همیشه پاکشان می‌کند — اگر اول نسخهٔ پشتیبانی می‌خواهید، در بخش حساب یک فایل پشتیبان هست.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "کد QR، اسکن، جفت‌سازی، صفحه‌کلید تلفن، تایپ روی تلفن، راه‌اندازی اولیه، کنترل از راه دور، تنظیم",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "امتیاز",
   "Reading the files…": "در حال خواندن فایل‌ها…",
   "Recently added": "به‌تازگی افزوده‌شده",

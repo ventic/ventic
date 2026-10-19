@@ -432,6 +432,7 @@ export default {
   "Profiles": "Profily",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Priebeh, značky pozretia, obľúbené a zoznam na pozretie sa uchovávajú len v tomto zariadení. Vymazať ich tu znamená vymazať ich navždy — v Účte je záložný súbor, ak si najprv chcete nejaký spraviť.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR kód, skenovať, spárovať, telefón ako klávesnica, písanie na telefóne, nastavenie, diaľkové ovládanie",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Hodnotenie",
   "Reading the files…": "Čítajú sa súbory…",
   "Recently added": "Nedávno pridané",

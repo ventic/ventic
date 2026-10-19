@@ -432,6 +432,7 @@ export default {
   "Profiles": "Профили",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Прогресс, отметки о просмотре, избранное и список просмотра хранятся только на этом устройстве. Очистка здесь удаляет их навсегда — в разделе «Аккаунт» есть файл резервной копии, если сначала хотите её сделать.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR-код, сканировать, сопряжение, клавиатура телефона, набор на телефоне, первоначальная настройка, пульт, настройка",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Оценка",
   "Reading the files…": "Чтение файлов…",
   "Recently added": "Недавно добавленные",

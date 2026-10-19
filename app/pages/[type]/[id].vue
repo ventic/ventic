@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { MediaType } from '~/utils/tmdb'
-import { mdiAlertCircleOutline, mdiBookmark, mdiBookmarkOutline, mdiEye, mdiEyeOutline, mdiHeart, mdiHeartOutline, mdiOpenInNew, mdiPlay, mdiStar, mdiYoutube } from '@mdi/js'
+import { mdiAlertCircleOutline, mdiBookmark, mdiBookmarkOutline, mdiEye, mdiEyeOutline, mdiHeart, mdiHeartOutline, mdiOpenInNew, mdiPlay, mdiShuffleVariant, mdiStar, mdiYoutube } from '@mdi/js'
 
 // Keeps /foo/123 out of here; anything else 404s instead of asking TMDB.
 definePageMeta({
@@ -130,6 +130,22 @@ const started = computed(() => {
   return p && !p.watched && resumable(p.position, p.duration) ? p : null
 })
 
+// Rolled on the press, not on render: a link that changed under the cursor
+// every time the page re-rendered would be a different episode from the one
+// the hover said.
+function playRandom() {
+  const m = media.value
+  if (!m)
+    return
+  const pick = randomEpisode(
+    m.seasons,
+    (season, episode) => !!library.episodeProgress(id.value, season, episode)?.watched,
+    m.lastAired,
+  )
+  if (pick)
+    navigateTo(watchLink('tv', id.value, pick.season, pick.episode))
+}
+
 const playLabel = computed(() => [
   started.value ? $t('Resume') : $t('Play'),
   targetText.value,
@@ -245,6 +261,17 @@ const playLabel = computed(() => [
                 @click="trailer = true"
               >
                 {{ $t('Trailer') }}
+              </v-btn>
+              <!-- One the profile hasn't seen while there is one. A sitcom is
+                   watched this way as often as in order. -->
+              <v-btn
+                v-if="target && media.seasons.length"
+                :prepend-icon="mdiShuffleVariant"
+                :size="mobile ? 'default' : 'large'"
+                variant="tonal"
+                @click="playRandom"
+              >
+                {{ $t('Random episode') }}
               </v-btn>
               <!-- Beside the other ways to get this playing, rather than in
                    Settings: it is a fact about this title, not a preference. -->

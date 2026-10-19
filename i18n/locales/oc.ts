@@ -432,6 +432,7 @@ export default {
   "Profiles": "Perfils",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "La progression, las marcas de vist, los favorits e la lista de visionatge son gardats sonque sus aqueste aparelh. Los escafar aicí los escafa per totjorn — dins Compte i a un fichièr de salvament se ne volètz un d'abòrd.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "còdi QR, escanar, aparelhar, clavièr del telefòn, escriure sul telefòn, mesa en plaça, telecomanda, configuracion",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Nòta",
   "Reading the files…": "Lectura dels fichièrs…",
   "Recently added": "Ajustats recentament",

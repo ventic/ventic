@@ -432,6 +432,7 @@ export default {
   "Profiles": "Profiliai",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Eiga, žiūrėta žymės, mėgstami ir žiūrėjimo sąrašas laikomi tik šiame įrenginyje. Išvalius juos čia, jie dingsta visam laikui — skiltyje Paskyra yra atsarginės kopijos failas, jei pirma norite vieno.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR kodas, nuskaityti, suporuoti, telefono klaviatūra, rašyti telefonu, pradinis nustatymas, nuotolinio valdymo pultas, sąranka",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Įvertinimas",
   "Reading the files…": "Skaitomi failai…",
   "Recently added": "Neseniai pridėti",

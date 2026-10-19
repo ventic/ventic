@@ -432,6 +432,7 @@ export default {
   "Profiles": "Profiluri",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Progresul, marcajele de vizionare, favoritele și lista de vizionat se păstrează doar pe acest dispozitiv. Golirea lor aici le șterge definitiv — la Cont există un fișier de copie de rezervă, dacă vrei mai întâi unul.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "cod QR, scanare, împerechere, tastatura telefonului, scrie pe telefon, configurare inițială, telecomandă, setare",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Notă",
   "Reading the files…": "Se citesc fișierele…",
   "Recently added": "Adăugate recent",

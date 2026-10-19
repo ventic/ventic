@@ -432,6 +432,7 @@ export default {
   "Profiles": "个人资料",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "进度、已看标记、收藏和待看列表只保存在本设备上。在此清除即永久删除——如果想先留一份，可到“账户”中生成备份文件。",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "二维码, 扫码, 配对, 手机键盘, 用手机输入, 初次设置, 遥控器, 设置",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "评分",
   "Reading the files…": "正在读取文件…",
   "Recently added": "最近添加",

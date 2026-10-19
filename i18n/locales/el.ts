@@ -432,6 +432,7 @@ export default {
   "Profiles": "Προφίλ",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Η πρόοδος, οι σημάνσεις παρακολούθησης, τα αγαπημένα και η λίστα παρακολούθησης φυλάσσονται μόνο σε αυτή τη συσκευή. Η εκκαθάρισή τους εδώ τα σβήνει οριστικά — στον Λογαριασμό υπάρχει αρχείο αντιγράφου ασφαλείας αν θέλετε ένα πρώτα.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "κωδικός QR, σάρωση, σύζευξη, πληκτρολόγιο τηλεφώνου, πληκτρολόγηση στο τηλέφωνο, αρχική ρύθμιση, τηλεχειριστήριο, εγκατάσταση",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Βαθμολογία",
   "Reading the files…": "Ανάγνωση των αρχείων…",
   "Recently added": "Προστέθηκαν πρόσφατα",

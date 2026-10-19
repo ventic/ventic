@@ -432,6 +432,7 @@ export default {
   "Profiles": "Профілі",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Прагрэс, адзнакі прагляду, абранае і спіс прагляду захоўваюцца толькі на гэтай прыладзе. Ачыстка тут выдаляе іх назаўжды — ва Уліковым запісе ёсць файл рэзервовай копіі, калі спачатку хочаце яе зрабіць.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR-код, сканаваць, спалучыць, клавіятура тэлефона, набор на тэлефоне, першапачатковая наладка, пульт, налада",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Ацэнка",
   "Reading the files…": "Чытанне файлаў…",
   "Recently added": "Нядаўна дададзена",

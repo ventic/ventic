@@ -432,6 +432,7 @@ export default {
   "Profiles": "პროფილები",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "პროგრესი, ნანახის ნიშნები, რჩეულები და სანახავი სია მხოლოდ ამ მოწყობილობაზე ინახება. აქ მათი გასუფთავება სამუდამოდ შლის — „ანგარიშში“ არის სარეზერვო ფაილი, თუ ჯერ ერთი გინდათ.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR კოდი, სკანირება, დაწყვილება, ტელეფონის კლავიატურა, ტელეფონზე აკრეფა, საწყისი მორგება, პულტი, პარამეტრი",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "შეფასება",
   "Reading the files…": "ფაილების კითხვა…",
   "Recently added": "ახლახან დამატებული",

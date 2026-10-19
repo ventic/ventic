@@ -432,6 +432,7 @@ export default {
   "Profiles": "Astaamo",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Horumarka, calaamadaha daawashada, kuwa la jecel yahay iyo liiska daawashada waxaa lagu hayaa qalabkan keliya. Halkan ka nadiifintoodu waa mid weligeed ah — Akoonka waxaa ku jira fayl kayd ah haddii aad horta mid rabto.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "koodhka QR, iskaan, isku xir, kiiboodhka taleefanka, ku qor taleefanka, dejinta hore, fogaan-hage, goobin",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Qiimeyn",
   "Reading the files…": "Faylasha waa la akhrinayaa…",
   "Recently added": "Dhawaan la daray",

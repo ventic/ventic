@@ -432,6 +432,7 @@ export default {
   "Profiles": "පැතිකඩ",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "ප්‍රගතිය, නැරඹූ ලකුණු, ප්‍රියතම සහ නැරඹීමේ ලැයිස්තුව මෙම උපාංගයේ පමණක් තබා ගැනේ. මෙහි ඒවා හිස් කිරීම සදහටම මකා දමයි — මුලින්ම උපස්ථයක් අවශ්‍ය නම් ගිණුම යටතේ උපස්ථ ගොනුවක් ඇත.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR කේතය, පරිලෝකනය, යුගල කිරීම, දුරකථන යතුරුපුවරුව, දුරකථනයෙන් ටයිප් කිරීම, මුල් සැකසුම, දුරස්ථ පාලකය, සැකසීම",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "ශ්‍රේණිගත කිරීම",
   "Reading the files…": "ගොනු කියවමින්…",
   "Recently added": "මෑතකදී එකතු කළ",

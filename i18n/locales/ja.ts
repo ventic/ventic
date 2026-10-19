@@ -432,6 +432,7 @@ export default {
   "Profiles": "プロフィール",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "進捗・視聴済みマーク・お気に入り・ウォッチリストはこの端末にのみ保存されます。ここで消すと完全に消えます。先にバックアップが欲しい場合はアカウントにバックアップファイルがあります。",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR コード, スキャン, ペア設定, スマートフォンのキーボード, スマートフォンで入力, 初期設定, リモコン, セットアップ",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "評価",
   "Reading the files…": "ファイルを読み込み中…",
   "Recently added": "最近追加",

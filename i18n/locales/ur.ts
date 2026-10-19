@@ -432,6 +432,7 @@ export default {
   "Profiles": "پروفائلز",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "پیش رفت، دیکھے جانے کے نشان، پسندیدہ اور دیکھنے کی فہرست صرف اسی ڈیوائس پر رکھی جاتی ہیں۔ انہیں یہاں صاف کرنے سے وہ ہمیشہ کے لیے ختم ہو جاتی ہیں — اگر پہلے بیک اپ چاہیے تو اکاؤنٹ میں بیک اپ فائل موجود ہے۔",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "QR کوڈ، سکین، جوڑا بنانا، فون کا کی بورڈ، فون پر لکھنا، ابتدائی ترتیب، ریموٹ، سیٹ اپ",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "درجہ بندی",
   "Reading the files…": "فائلیں پڑھی جا رہی ہیں…",
   "Recently added": "حال ہی میں شامل کیے گئے",

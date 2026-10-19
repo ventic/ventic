@@ -432,6 +432,7 @@ export default {
   "Profiles": "Hồ sơ",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Tiến độ, dấu đã xem, mục yêu thích và danh sách xem chỉ được giữ trên thiết bị này. Xóa ở đây là mất hẳn — mục Tài khoản có tệp sao lưu nếu bạn muốn lưu lại trước.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "mã QR, quét, ghép nối, bàn phím điện thoại, gõ trên điện thoại, thiết lập ban đầu, điều khiển từ xa, cài đặt",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Điểm đánh giá",
   "Reading the files…": "Đang đọc các tệp…",
   "Recently added": "Mới thêm gần đây",

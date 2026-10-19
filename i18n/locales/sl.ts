@@ -432,6 +432,7 @@ export default {
   "Profiles": "Profili",
   "Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.": "Napredek, oznake ogledov, priljubljeni in seznam za ogled se hranijo samo na tej napravi. Če jih tu počistiš, so izbrisani za vedno — pod Račun je datoteka varnostne kopije, če jo želiš najprej narediti.",
   "QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup": "koda QR, skeniraj, seznani, telefon kot tipkovnica, tipkanje na telefonu, nastavitev, daljinec",
+  "Random episode": "TODO_TRANSLATION: Random episode",
   "Rating": "Ocena",
   "Reading the files…": "Branje datotek…",
   "Recently added": "Nedavno dodano",
