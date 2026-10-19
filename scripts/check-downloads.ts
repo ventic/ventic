@@ -11,6 +11,7 @@ import type { Started } from '../app/utils/torrents'
 import assert from 'node:assert'
 import { createPinia, defineStore, setActivePinia } from 'pinia'
 import * as vue from 'vue'
+import * as library from '../app/utils/library'
 import * as torrents from '../app/utils/torrents'
 import './i18n-stub'
 
@@ -20,7 +21,7 @@ const visibility = vue.ref('visible')
 const settings = vue.reactive({ playMode: 'auto', downloadDir: '', sources: [], activeSources: [], quality: '', wifiOnly: false, keepWatched: true, fetchNext: true, bufferAhead: 5, bufferBehind: 2, upLimit: 0, downLimit: 0 })
 let metered: boolean | null = null
 
-Object.assign(globalThis, vue, torrents, {
+Object.assign(globalThis, vue, library, torrents, {
   defineStore,
   useLocalStorage: (_key: string, init: unknown) => vue.ref(init),
   useIntervalFn: (fn: () => Promise<void>) => intervals.push(fn),
@@ -259,5 +260,16 @@ assert.equal(await nextUp(), true, 'and fetched once Wi-Fi is back')
 assert.ok(engine.has(7))
 settings.wifiOnly = false
 await downloads.release()
+
+// --- A whole season ------------------------------------------------------------
+
+// No sources here, so every episode fails its search — which is the case worth
+// holding: each is counted, none stops the rest, and the job ends.
+await holding()
+const asked = downloads.fetchSeason(9, 2, [1, 2, 3], { imdbId: 'tt0000009' })
+await downloads.fetchSeason(9, 2, [1, 2, 3], { imdbId: 'tt0000009' })
+assert.equal(downloads.seasons['9:2']?.running, true, 'a second press while it runs starts nothing')
+await asked
+assert.deepEqual(downloads.seasons['9:2'], { done: 0, failed: 3, total: 3, running: false }, 'every episode tried, each failure counted')
 
 console.log('downloads: ok')

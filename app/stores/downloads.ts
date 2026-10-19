@@ -540,6 +540,34 @@ export const useDownloadsStore = defineStore('downloads', () => {
     return true
   }
 
+  /**
+   * Seasons being fetched an episode at a time, by `showId:season`. Here and not
+   * on the page, so leaving the page leaves the rest coming — and coming back
+   * finds the button saying how far it got rather than offering to start again.
+   */
+  const seasons = ref<Record<string, { done: number, failed: number, total: number, running: boolean }>>({})
+
+  /**
+   * Download every episode of a season, through `start` with `keep` exactly as
+   * the Download button does each one. One after another: each is a search of
+   * every source, and a season's worth at once is a burst no addon thanks you
+   * for. A pack the sources offer for the first is adopted for the rest
+   * (`heldByName` in `startTorrent`), so a season that comes as one torrent is
+   * one torrent here too.
+   */
+  async function fetchSeason(showId: string | number, season: number, episodes: number[], options: Pick<Parameters<typeof startTorrent>[0], 'imdbId' | 'named'>) {
+    const job = `${showId}:${season}`
+    if (seasons.value[job]?.running)
+      return
+    seasons.value[job] = { done: 0, failed: 0, total: episodes.length, running: true }
+    const state = seasons.value[job]
+    for (const episode of episodes) {
+      await start(progressKey('tv', showId, season, episode), { ...options, season, episode }, true)
+        .then(() => state.done++, () => state.failed++)
+    }
+    state.running = false
+  }
+
   const filter = ref<FilterKey>('all')
   const query = ref('')
 
@@ -659,6 +687,8 @@ export const useDownloadsStore = defineStore('downloads', () => {
     buffer,
     release,
     prefetch,
+    seasons,
+    fetchSeason,
     metered,
     cachedFor,
     unpick,
