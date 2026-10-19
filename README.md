@@ -233,11 +233,12 @@ expired or lapsed. The Live TV channels are a made-up demo playlist.</sub>
 
 | Room | What you get |
 | --- | --- |
-| **Home** | Continue watching, Trending today, Popular movies and shows, Top rated, In cinemas |
-| **Movies** / **TV** / **Anime** | Browse rows with grid or list layout, remembered per session |
+| **Home** | Continue watching, New episodes of the shows you follow, Trending today, Popular movies and shows, Top rated, In cinemas |
+| **Movies** / **TV** / **Anime** | Browse rows with grid or list layout, remembered per session — and an eye toggle that hides what you've already seen |
 | **Search** | One box across TMDB; results carry straight through to a source search |
 | **Favourites** / **Watchlist** / **History** | The three local lists |
-| **Detail** | Backdrop, synopsis, cast, trailer, seasons and episodes with per-episode state |
+| **Calendar** | New and upcoming episodes of every show in your lists or watched lately — out this week, today, tomorrow, later — with a New badge on their cards and, on the desktop, an opt-in notice on air day |
+| **Detail** | Backdrop, synopsis, cast, trailer, seasons and episodes with per-episode state, an episode-ratings heatmap of the whole show, a random-episode button, and Download season |
 | **People** | An actor's or director's page, with their films and shows to browse on from |
 | **Live TV** | Channels from an M3U playlist or an Xtream login, filtered by category and searchable, favourites first |
 | **Downloads** | The engine's UI — add, pick files, pause, seed, limit, evict |
@@ -261,6 +262,9 @@ One component, one set of controls, three backends underneath.
 | **Volume levelling** | Quiet dialogue up, loud scenes down, in four steps — plus a dialogue boost that raises the centre channel of a 5.1 mix and nothing else. Set a default under Settings, or change the film you're watching from the player's Audio panel, which remembers that title alone |
 | **Auto-sync** | A file cut for another release is slid onto the audio's silence map (desktop only — it needs ffmpeg, which Windows bundles) |
 | **Resume** | Progress recorded as it plays, per episode, and picked back up from the card or the detail page |
+| **Chapters** | Marked on the seek bar and named in its bubble, walked with PageUp/PageDown, and a **Skip intro** / **Skip credits** button for chapters named like one (desktop — mpv reads chapters, ExoPlayer doesn't). In an episode's last minute, the next one is a button away everywhere, and OK presses it |
+| **Picture and sound** | Zoom to fill for ultrawide screens and letterboxed films, on every backend; audio delay for a release whose sound is out of step (mpv) |
+| **Media keys** | A keyboard's play key, a headset's button and the desktop's media widget drive the player (MPRIS on Linux), and a remote's play/pause, rewind and fast-forward work in the player |
 | **Casting** | Hand the film to another Ventic on the same network — it streams from the device that already has it, resuming where you were, so nothing is downloaded twice. Devices are found by sweeping the subnet; acting on a cast needs the pairing code the receiving device shows. LAN only, off until switched on under Settings → Network, and no account or server anywhere in it |
 | **Fullscreen** | Held for as long as the player is mounted; Android goes landscape and immersive |
 
@@ -323,6 +327,7 @@ The engine runs inside the app process, which has consequences worth knowing.
 | **Wi-Fi only** | Pauses background torrents on a metered connection and restarts exactly the ones it paused — never one you paused, never the film being watched |
 | **Streaming** | A film the device can't keep plays through a buffer instead: the engine fetches a window around the picture and forgets what has played. *Automatic* (Settings → Storage) does that for whatever doesn't fit the budget, and for everything on a drive as small as a TV box's; *Stream only* keeps nothing |
 | **Playback first** | While a film is still arriving, everything else waits; the moment its last byte lands the rest resume, so the next episode is coming down before this one ends |
+| **Next episode** | Most of the way through an episode, the next one starts downloading — once this one is on the disk, never under a stream, never on mobile data with Wi-Fi only set — and plays from the disk when you get to it. A whole season is one button on its page |
 | **VPN kill switch** | Settings → Network ties the engine to the VPN's interface, so when the tunnel drops there is no route out at all — nothing polls for a leak. Linux and macOS; Android has its own *Block connections without VPN* |
 | **Android** | A foreground service keeps the process alive while something is downloading; without it, "the user opened another app" means "the download stopped" |
 
@@ -903,6 +908,10 @@ bun run check:boot              # the two screens a failed or slow start puts up
 bun run check:perf
 bun run check:android-downloads
 bun run check:updates           # version ordering, and the GitHub release shape
+bun run check:downloads         # playback holding the downlink, next-episode prefetch, whole seasons
+bun run check:calendar          # who is followed, air-day arithmetic, what counts as new
+bun run check:ratings           # the episode heatmap's scale
+bun run check                   # every check:* at once, types last
 ```
 
 `check:torrents` also takes `--live <source-url> <imdb-id>` to search a real source, skipped by

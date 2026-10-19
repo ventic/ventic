@@ -38,7 +38,7 @@ player, Discord presence.
 
 One at a time, in this order. Each item names where it starts and what proves it works.
 
-### 1. [ ] Auto-download the next episode / the rest of the season
+### 1. [x] Auto-download the next episode / the rest of the season
 
 - **Why:** Stremio "download next episode" +23, "preload/buffer/download" +36; Nuvio "pre-fetch
   next episode", "download full season" +8. Neither has an engine that can do it; Ventic does.
@@ -51,6 +51,10 @@ One at a time, in this order. Each item names where it starts and what proves it
 - **Platforms:** all with the engine.
 - **Done when:** `check:torrents` covers "queues next, skips when stream-only / over budget /
   last episode".
+- **Done:** `prefetch` in the downloads store (past 80%, once the episode on screen is on the disk;
+  never under a stream, in stream-only mode, on a drive under `MIN_LIBRARY` or on mobile data with
+  Wi-Fi only), switchable under Settings → Storage; `fetchSeason` behind a Download season button.
+  `check:downloads` drives both through the real store rather than `check:torrents`.
 
 ### 2. [x] Phone as the keyboard for the TV
 
@@ -70,7 +74,7 @@ One at a time, in this order. Each item names where it starts and what proves it
   thing that keeps any of it. `ui.pendingSource` became `ui.pending`, a `CastSetup` with a
   `kind`, so the `ventic://` link and the phone ask the same question.
 
-### 3. [ ] Local profiles
+### 3. [x] Local profiles
 
 - **Why:** Nuvio's are free but need an account; Stremio's are paid. A shared living-room TV
   needs them.
@@ -82,7 +86,7 @@ One at a time, in this order. Each item names where it starts and what proves it
 - **Done when:** `check:library` and `check:sync` cover two profiles never seeing each
   other's progress and merging independently.
 
-### 4. [ ] Skip intro / credits
+### 4. [x] Skip intro / credits
 
 - **Why:** paid in Stremio; Nuvio uses IntroDB, AniSkip, anime-skip.
 - **What:** desktop: mpv `chapter-list` titles (Intro, Opening, OP, Credits, Ending, ED) →
@@ -92,8 +96,11 @@ One at a time, in this order. Each item names where it starts and what proves it
   side (media3 exposes no MKV chapters, so Android gets the AniSkip route only).
 - **Shares** chapter reading with #14.
 - **Done when:** `check:player` covers chapter-title matching and the AniSkip response parse.
+- **Done:** chapter titles only (`app/utils/chapters.ts`), plus a Next button in an episode's last
+  minute for files with none — which is every file on Android. AniSkip is still open: it is keyed
+  by MAL id, which TMDB doesn't carry.
 
-### 5. [ ] Episode calendar + new-episode badge
+### 5. [x] Episode calendar + new-episode badge
 
 - **Why:** Stremio has a calendar, and "calendar on Android TV" is +44; Nuvio has release
   notifications.
@@ -104,7 +111,7 @@ One at a time, in this order. Each item names where it starts and what proves it
 - **Platforms:** all.
 - **Done when:** a `check:*` covers which shows are included and the air-date bucketing.
 
-### 6. [ ] Media keys / system media controls
+### 6. [ ] Media keys / system media controls (Linux done)
 
 - **Why:** Stremio +38; Nuvio desktop asks for MPRIS and media keys.
 - **What:** Linux MPRIS (`zbus` is already a dependency — follow `awake.rs`), Windows SMTC,
@@ -113,6 +120,9 @@ One at a time, in this order. Each item names where it starts and what proves it
 - **Starts at:** `src-tauri/src/awake.rs` as the pattern (one command, three platform bodies,
   a no-op where not needed); `MpvPlayer.vue` calls it; `Player.kt` for Android.
 - **Done when:** `check:player` holds the command name across the files that must agree.
+- **Linux done:** `src-tauri/src/media.rs` (MPRIS, `cargo test --lib media`), and the player answers
+  the `Media*` keys itself, which is what a remote's transport buttons send. Windows SMTC, macOS
+  `MPNowPlayingInfoCenter` and Android `MediaSession` are each a `platform` module still to write.
 
 ### 7. [ ] SOCKS5 proxy for the engine
 
@@ -124,6 +134,10 @@ One at a time, in this order. Each item names where it starts and what proves it
 - **Credential in the URL** → the key goes in `backup.ts`'s `SECRET` set.
 - **Done when:** a `cargo test --lib` in the style of the VPN one: no byte reaches a seeder
   except through the proxy.
+- **Careful (2026-10-20):** librqbit's proxy covers outgoing TCP to peers and HTTP trackers only.
+  UDP trackers, the DHT and the listen port (UPnP) would still use the real address, so an honest
+  setting has to switch all three off while a proxy is set — and the UDP trackers need a line in
+  the vendored patch, since the session has no option to drop them.
 
 ### 8. [ ] Auto frame rate on Android TV
 
@@ -135,38 +149,38 @@ One at a time, in this order. Each item names where it starts and what proves it
 - **Platforms:** Android only. Test on the TPM191E.
 - **Done when:** `check:player` holds the setting across the bridge.
 
-### 9. [ ] Random episode button
+### 9. [x] Random episode button
 
 - **Why:** Nuvio's single most-upvoted request (+34).
 - **What:** on a show's page, play a random episode (optionally unwatched only).
 - **Starts at:** `app/pages/[type]/[id].vue`, `nextEpisode()`'s neighbour in `utils/library.ts`.
 
-### 10. [ ] Hide watched
+### 10. [x] Hide watched
 
 - **Why:** Stremio +25.
 - **What:** a toggle on the browse bar that drops watched titles from lists.
 - **Starts at:** `app/components/MediaBrowser.vue`, `OptionsBar.vue`.
 
-### 11. [ ] Crop / zoom to fill
+### 11. [x] Crop / zoom to fill
 
 - **Why:** Stremio +24 (ultrawide films with black bars).
 - **What:** a player toggle: mpv `panscan`; ExoPlayer `RESIZE_MODE_ZOOM`.
 - **Starts at:** `MpvPlayer.vue`, `htmlvideo.ts` (`READ` needs the property), `Player.kt`.
 
-### 12. [ ] Audio delay
+### 12. [x] Audio delay (desktop)
 
 - **Why:** Stremio +23; Ventic has subtitle delay only.
 - **What:** mpv `audio-delay`; ExoPlayer needs a delaying audio sink or processor.
 - **Starts at:** `MpvPlayer.vue` next to `sub-delay`, `app/utils/keys.ts`.
 
-### 13. [ ] Episode ratings heatmap
+### 13. [x] Episode ratings heatmap
 
 - **Why:** Nuvio +26.
 - **What:** a season × episode grid coloured by TMDB `vote_average` on the show page.
 - **Starts at:** `app/utils/tmdb.ts` seasons, `app/pages/[type]/[id].vue`. Must be d-pad
   reachable or purely decorative.
 
-### 14. [ ] Chapter marks on the seek bar
+### 14. [x] Chapter marks on the seek bar
 
 - **Why:** Stremio +18.
 - **What:** ticks from mpv `chapter-list` on `PlayerSlider.vue`; chapter next/prev keys.
