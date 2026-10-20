@@ -231,6 +231,12 @@ export const useDownloadsStore = defineStore('downloads', () => {
       prefer: (key && picked.value[key]) || undefined,
       ...options,
     })
+    // Kept means on the disk, and a link a source resolved itself (a debrid
+    // addon's) never touches the engine: the Download button said "In
+    // downloads" over an empty page, and a season counted every episode done.
+    // A file of the user's own is already kept.
+    if (keep && started.url && !localFor(key))
+      throw new Error($t('Your sources offer this only as a link to play, so there is nothing to download.'))
     // A direct link leaves nothing on the disk to come back to, so there is no
     // offline copy to file — and filing an empty hash would shadow a real one.
     if (key && started.hash) {

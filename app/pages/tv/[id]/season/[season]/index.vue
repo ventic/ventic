@@ -110,7 +110,7 @@ function downloadSeason() {
                 </template>
               </v-btn>
               <span v-if="job?.failed" class="text-body-small opacity-70">
-                {{ $t('{count} couldn\'t be found in your sources.', { count: job.failed }) }}
+                {{ $t('{count} couldn\'t be downloaded.', { count: job.failed }) }}
               </span>
             </div>
 

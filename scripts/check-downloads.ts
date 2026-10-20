@@ -41,6 +41,9 @@ const engine = new Map<number, Fake>()
 
 globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
   const url = String(input)
+  // A debrid source: every episode is a link it has resolved itself.
+  if (url.startsWith('https://debrid.example/stream/'))
+    return Response.json({ streams: [{ name: 'Debrid\n1080p', title: 'Show.S02E01.1080p.WEB-DL\n💾 2 GB', url: 'https://debrid.example/ep.mkv' }] })
   // An add, as `startTorrent` makes one: `hash7` becomes torrent 7.
   if (init?.method === 'POST' && /\/torrents\?overwrite/.test(url)) {
     const id = Number(String(init.body).match(/btih:hash(\d+)/)?.[1])
@@ -271,5 +274,15 @@ await downloads.fetchSeason(9, 2, [1, 2, 3], { imdbId: 'tt0000009' })
 assert.equal(downloads.seasons['9:2']?.running, true, 'a second press while it runs starts nothing')
 await asked
 assert.deepEqual(downloads.seasons['9:2'], { done: 0, failed: 3, total: 3, running: false }, 'every episode tried, each failure counted')
+
+// A source that only hands out links has nothing for the engine to keep. Counted
+// done, the button said "In downloads" over an empty page.
+torrents.setSources(['https://debrid.example'])
+await assert.rejects(downloads.start('tv:9:3:1', { imdbId: 'tt0000009', season: 3, episode: 1 }, true), /only as a link/, 'Download refuses a link')
+await downloads.fetchSeason(9, 3, [1, 2], { imdbId: 'tt0000009' })
+assert.deepEqual(downloads.seasons['9:3'], { done: 0, failed: 2, total: 2, running: false }, 'and a season of links is two failures, not two downloads')
+const linked = await downloads.start('tv:9:3:1', { imdbId: 'tt0000009', season: 3, episode: 1 })
+assert.equal(linked.url, 'https://debrid.example/ep.mkv', 'while Play still plays the link')
+torrents.setSources([])
 
 console.log('downloads: ok')
