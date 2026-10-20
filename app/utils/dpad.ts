@@ -4,7 +4,7 @@ export type Dir = 'up' | 'down' | 'left' | 'right'
 export interface Box { left: number, top: number, right: number, bottom: number }
 
 /**
- * How far apart two boxes are on one axis, counting any overlap as level.
+ * How much two boxes share on one axis — negative is how far apart they are.
  *
  * Centres would be the obvious measure and are the wrong one: a 361px poster
  * and a 44px nav link sitting side by side are 160px apart by centre even when
@@ -12,10 +12,10 @@ export interface Box { left: number, top: number, right: number, bottom: number 
  * short dropdown well above both. What "off to the side" should mean is that
  * the boxes don't face each other at all.
  */
-function apart(a: Box, b: Box, axis: 'x' | 'y') {
+function overlap(a: Box, b: Box, axis: 'x' | 'y') {
   const [aMin, aMax] = axis === 'x' ? [a.left, a.right] : [a.top, a.bottom]
   const [bMin, bMax] = axis === 'x' ? [b.left, b.right] : [b.top, b.bottom]
-  return Math.max(0, Math.max(aMin, bMin) - Math.min(aMax, bMax))
+  return Math.min(aMax, bMax) - Math.max(aMin, bMin)
 }
 
 /**
@@ -23,29 +23,38 @@ function apart(a: Box, b: Box, axis: 'x' | 'y') {
  * anything off to the side penalised so a grid walks straight down its column
  * instead of drifting diagonally. Returns -1 when nothing lies in that
  * direction.
+ *
+ * `real` is the same boxes before `clipped` pulled them on screen, and settles
+ * a tie. Everything scrolled clean out of sight one way collapses onto the same
+ * edge and scores the same, and a tie used to go to the first in the DOM —
+ * going up, the farthest row: on Home, up from Popular movies landed on the
+ * hero and skipped the three rows between. Where they really are is the answer.
  */
-export function pickDirection(from: Box, boxes: Box[], dir: Dir): number {
+export function pickDirection(from: Box, boxes: Box[], dir: Dir, real: Box[] = boxes): number {
   const horizontal = dir === 'left' || dir === 'right'
   let best = -1
   let bestScore = Number.POSITIVE_INFINITY
   /** Whether the leader is one of the boxes squarely in this row or column. */
   let bestInLine = false
 
+  // Distance between the two edges facing each other. A pixel of overlap is
+  // normal between neighbours; more than that and it isn't "that way" at all.
+  const facing = (box: Box) => dir === 'right'
+    ? box.left - from.right
+    : dir === 'left'
+      ? from.left - box.right
+      : dir === 'down'
+        ? box.top - from.bottom
+        : from.top - box.bottom
+
   boxes.forEach((box, i) => {
-    // Distance between the two edges facing each other. A pixel of overlap is
-    // normal between neighbours; more than that and it isn't "that way" at all.
-    const gap = dir === 'right'
-      ? box.left - from.right
-      : dir === 'left'
-        ? from.left - box.right
-        : dir === 'down'
-          ? box.top - from.bottom
-          : from.top - box.bottom
+    const gap = facing(box)
 
     if (gap < -2)
       return
 
-    const off = apart(from, box, horizontal ? 'y' : 'x')
+    const shared = overlap(from, box, horizontal ? 'y' : 'x')
+    const off = Math.max(0, -shared)
 
     // Facing us at all — the boxes overlap on the other axis — is what "on this
     // row" means, and one of those wins over anything that isn't however much
@@ -55,9 +64,15 @@ export function pickDirection(from: Box, boxes: Box[], dir: Dir): number {
     // into the posters and Downloads and Settings could only be reached the long
     // way round. Among boxes of the same standing the distance decides, drift
     // still costing double so a grid walks straight down its column.
-    const inLine = off === 0
+    //
+    // Sharing more than an edge, though. Everything below the fold collapses
+    // onto the bottom edge (`clipped`), and a row of cards cut off by that edge
+    // touches it too: right along Seasons jumped into the ratings grid under
+    // the fold, whose collapsed cell sat 4px nearer than the next season.
+    const inLine = shared > 0
     const score = Math.max(gap, 0) + off * 2
-    if (inLine === bestInLine ? score < bestScore : inLine) {
+    const tie = score === bestScore && facing(real[i]!) < facing(real[best]!)
+    if (inLine === bestInLine ? score < bestScore || tie : inLine) {
       bestInLine = inLine
       bestScore = score
       best = i

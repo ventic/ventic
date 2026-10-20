@@ -155,6 +155,31 @@ assert.deepStrictEqual(
   'a box whose edges live on its prototype survives clipping',
 )
 
+// Two rows scrolled clean off the top collapse onto the same edge and score the
+// same. Up has to take the nearer one: given to the first in the DOM, up from
+// Popular movies on Home skipped three rows and landed on the hero.
+const rowAbove = box(260, -300, 170, 299)
+const twoAbove = box(260, -700, 170, 299)
+const topCard = box(260, 71, 170, 299)
+assert.strictEqual(
+  pickDirection(topCard, [twoAbove, rowAbove].map(b => clipped(b, [region, view])), 'up', [twoAbove, rowAbove]),
+  1,
+  'up takes the nearer of two rows scrolled out of sight, not the first in the DOM',
+)
+
+// A row cut off by the bottom edge touches that edge, and so does everything
+// collapsed onto it from below the fold. Touching isn't facing: right along
+// Seasons on a show page jumped into the ratings grid under the fold, whose
+// cell sat 4px nearer than the next season card.
+const cutCard = clipped(box(446, 400, 170, 323), [region, view])
+const nextSeason = clipped(box(632, 400, 170, 323), [region, view])
+const cellBelow = clipped(box(620, 1100, 44, 36), [region, view])
+assert.strictEqual(
+  pickDirection(cutCard, [cellBelow, nextSeason], 'right'),
+  1,
+  'right along a row cut off by the fold stays on the row',
+)
+
 // Nothing to clip against leaves a box alone, and a box already inside stays put.
 assert.deepStrictEqual(clipped(onRow, []), onRow, 'no clips, no change')
 assert.deepStrictEqual(clipped(box(300, 200, 184, 321), [row, view]), box(300, 200, 184, 321), 'a visible box is unchanged')
@@ -194,6 +219,12 @@ assert.ok(
   !/\.scrollIntoView\(/.test(plugin),
   'the destination is worked out here, not asked of a page mid-animation',
 )
+
+// A switch is measured by its whole row; the plugin has to keep saying so, or
+// down off one skips whatever sits beside its label.
+assert.match(plugin, /closest\('\.v-selection-control'\)/, 'a switch is measured with its label')
+// And the sidebar is beside the page, never below it.
+assert.match(plugin, /beside && el\.closest\(DRAWER\)/, 'up and down from the page never land in the sidebar')
 
 // And the movement is a frame loop easing toward that target, because the
 // platform's cannot be retargeted: a `scrollTo` with a smooth behaviour cancels

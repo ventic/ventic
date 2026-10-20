@@ -37,6 +37,9 @@ const ACTIONABLE = 'a[href], button, input, select, textarea'
  */
 const MODAL = '.v-overlay--active:not(.v-tooltip)'
 
+/** A sidebar — the app's, or a section list like Settings' — which sits beside the page. */
+const DRAWER = '.v-navigation-drawer'
+
 export default defineNuxtPlugin(() => {
   const router = useRouter()
   const html = document.documentElement
@@ -247,7 +250,13 @@ export default defineNuxtPlugin(() => {
    */
   function settled(el: HTMLElement, memo: Map<Element, Clips>) {
     const c = clips(el, memo)
-    return { box: shift(el.getBoundingClientRect(), c.dx, c.dy), boxes: c.boxes }
+    // A switch or a checkbox is its whole row, label and all. Its focus lands
+    // on a 33px input at the row's start, and measured by that alone only what
+    // sat directly under the sliver counted as below it: down off "Download the
+    // next episode" skipped the two steppers beside its label for a button
+    // further down that happened to line up with the input.
+    const shape = el.closest('.v-selection-control') ?? el
+    return { box: shift(shape.getBoundingClientRect(), c.dx, c.dy), boxes: c.boxes }
   }
 
   /** One edge of the scroll-padding. `auto`, and a percentage, read as none. */
@@ -354,7 +363,13 @@ export default defineNuxtPlugin(() => {
 
     // Descendants stay in play (a card's own Play button is a real target);
     // ancestors don't, since their box encloses ours in every direction.
-    const list = all.filter(el => el !== from && !el.contains(from))
+    // Nor does the sidebar, for up or down from outside it: it is beside the
+    // page, so only left reaches it. A short page otherwise ended in it — down
+    // off the calendar's one row landed on the drawer's Calendar link, the
+    // nearest thing lower on the screen.
+    const vertical = dir === 'up' || dir === 'down'
+    const beside = vertical && !from.closest(DRAWER)
+    const list = all.filter(el => el !== from && !el.contains(from) && !(beside && el.closest(DRAWER)))
     // Measured as the page will be once it has settled, never as it is
     // mid-animation: while a scroll runs, every row below the fold is clipped
     // onto the same edge and only document order tells them apart — so a
@@ -365,7 +380,8 @@ export default defineNuxtPlugin(() => {
       const { box, boxes } = settled(el, memo)
       return clipped(box, boxes)
     }
-    const at = pickDirection(seen(from), list.map(seen), dir)
+    const measured = list.map(el => settled(el, memo))
+    const at = pickDirection(seen(from), measured.map(m => clipped(m.box, m.boxes)), dir, measured.map(m => m.box))
     if (at < 0)
       return false
 
