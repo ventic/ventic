@@ -180,6 +180,16 @@ assert.strictEqual(
   'right along a row cut off by the fold stays on the row',
 )
 
+// Real boxes that only meet at an edge still face each other: down off the
+// release picker's Search again lands on the sort field beside it, which ends
+// at the pixel the button starts, rather than skipping the release to Close.
+const searchAgain = box(1084, 247, 40, 40)
+assert.strictEqual(
+  pickDirection(searchAgain, [box(964, 304, 120, 24), box(1028, 357, 40, 40), box(1082, 441, 50, 28)], 'down'),
+  0,
+  'boxes meeting edge to edge are still in line',
+)
+
 // Nothing to clip against leaves a box alone, and a box already inside stays put.
 assert.deepStrictEqual(clipped(onRow, []), onRow, 'no clips, no change')
 assert.deepStrictEqual(clipped(box(300, 200, 184, 321), [row, view]), box(300, 200, 184, 321), 'a visible box is unchanged')

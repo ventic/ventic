@@ -65,11 +65,14 @@ export function pickDirection(from: Box, boxes: Box[], dir: Dir, real: Box[] = b
     // way round. Among boxes of the same standing the distance decides, drift
     // still costing double so a grid walks straight down its column.
     //
-    // Sharing more than an edge, though. Everything below the fold collapses
-    // onto the bottom edge (`clipped`), and a row of cards cut off by that edge
-    // touches it too: right along Seasons jumped into the ratings grid under
-    // the fold, whose collapsed cell sat 4px nearer than the next season.
-    const inLine = shared > 0
+    // Not a box with no height left, though. Everything below the fold
+    // collapses onto the bottom edge (`clipped`), and a row of cards cut off by
+    // that edge touches it too: right along Seasons jumped into the ratings
+    // grid under the fold, whose collapsed cell sat 4px nearer than the next
+    // season. Two real boxes meeting edge to edge still face each other — the
+    // release picker's sort field ends exactly where Search again begins.
+    const extent = (b: Box) => horizontal ? b.bottom - b.top : b.right - b.left
+    const inLine = shared > 0 || (shared === 0 && extent(box) > 0 && extent(from) > 0)
     const score = Math.max(gap, 0) + off * 2
     const tie = score === bestScore && facing(real[i]!) < facing(real[best]!)
     if (inLine === bestInLine ? score < bestScore || tie : inLine) {
