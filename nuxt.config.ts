@@ -183,6 +183,9 @@ export default defineNuxtConfig({
       // Vuetify auto-imports a `useLayout` that collides with Nuxt's built-in
       // one, and warns about it on every dev boot. We only ever use these two.
       importComposables: ['useDisplay', 'useTheme'],
+      // `v-tooltip` is plugins/tooltip.client.ts, which mounts Vuetify's only
+      // when something comes to read it — see there for what it cost a TV.
+      ignoreDirectives: ['Tooltip'],
     },
     vuetifyOptions: vuetifyConfig,
   },

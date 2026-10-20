@@ -53,6 +53,7 @@ function markEarlier() {
 <template>
   <!-- stop/prevent: in an episode row this sits inside the link to the episode. -->
   <v-btn
+    v-tooltip="watched ? $t('Mark unwatched') : $t('Mark watched')"
     v-bind="$attrs"
     icon
     variant="text"
@@ -61,7 +62,6 @@ function markEarlier() {
     @click.stop.prevent="toggle"
   >
     <v-icon :icon="watched ? mdiEye : mdiEyeOutline" :color="watched ? 'primary' : undefined" />
-    <v-tooltip activator="parent" :text="watched ? $t('Mark unwatched') : $t('Mark watched')" />
   </v-btn>
 
   <v-dialog v-model="asking" max-width="420">

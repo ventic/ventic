@@ -237,26 +237,23 @@ async function download(t: Release) {
                    at all" — the second has to outrank the first, since a bloated
                    release is usually also the oversized one. -->
               <span
+                v-tooltip="tooBig(t)
+                  ? $t('Over the {limit} single-file limit of the drive downloads go to, so it streams instead of downloading — reformat the drive in Settings → Storage to keep releases this big', { limit: bytesText(downloads.fileLimit) })
+                  : isBloated(t) ? $t('Bigger than this quality needs — may not keep up while streaming') : false"
                 class="shrink-0 text-body-small sm:w-20 sm:text-right"
                 :class="tooBig(t) ? 'text-error' : isBloated(t) ? 'text-warning' : 'opacity-70'"
               >
                 {{ t.size || bytesText(t.bytes) }}
-                <v-tooltip
-                  v-if="tooBig(t)"
-                  activator="parent"
-                  :text="$t('Over the {limit} single-file limit of the drive downloads go to, so it streams instead of downloading — reformat the drive in Settings → Storage to keep releases this big', { limit: bytesText(downloads.fileLimit) })"
-                />
-                <v-tooltip v-else-if="isBloated(t)" activator="parent" :text="$t('Bigger than this quality needs — may not keep up while streaming')" />
               </span>
 
               <!-- A link has no swarm, so this column says what it is instead. -->
               <span
+                v-tooltip="t.url ? $t('The source fetched this already — it plays at once and keeps nothing on this device') : false"
                 class="flex shrink-0 items-center gap-1 text-body-small sm:w-16 sm:justify-end"
                 :class="t.url ? 'text-primary' : 'opacity-70'"
               >
                 <template v-if="t.url">
                   <v-icon :icon="mdiFlashOutline" size="13" />{{ $t('Direct') }}
-                  <v-tooltip activator="parent" :text="$t('The source fetched this already — it plays at once and keeps nothing on this device')" />
                 </template>
                 <template v-else>
                   <v-icon :icon="mdiAccountGroup" size="13" />{{ t.seeders ?? '?' }}
@@ -270,6 +267,7 @@ async function download(t: Release) {
                      device's own storage, where the drive's limit doesn't reach.
                      Only Download is out. -->
                 <v-btn
+                  v-tooltip="tooBig(t) ? $t('Play this source — streamed, as it is too big to keep') : $t('Play this source')"
                   icon
                   size="small"
                   variant="text"
@@ -277,11 +275,11 @@ async function download(t: Release) {
                   :to="playLink(t)"
                 >
                   <v-icon :icon="mdiPlay" size="20" />
-                  <v-tooltip activator="parent" :text="tooBig(t) ? $t('Play this source — streamed, as it is too big to keep') : $t('Play this source')" />
                 </v-btn>
                 <!-- Nothing to hand the engine for a link, and nothing it could
                      keep — the file lives on the source's server, not in a swarm. -->
                 <v-btn
+                  v-tooltip="tooBig(t) ? $t('Too big for the download drive') : added.includes(releaseKey(t)) ? $t('In downloads') : $t('Download')"
                   icon
                   size="small"
                   variant="text"
@@ -291,10 +289,6 @@ async function download(t: Release) {
                   @click="download(t)"
                 >
                   <v-icon :icon="added.includes(releaseKey(t)) ? mdiCheck : mdiDownload" size="20" />
-                  <v-tooltip
-                    activator="parent"
-                    :text="tooBig(t) ? $t('Too big for the download drive') : added.includes(releaseKey(t)) ? $t('In downloads') : $t('Download')"
-                  />
                 </v-btn>
               </div>
             </div>
