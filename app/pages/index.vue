@@ -75,6 +75,14 @@ const lastPlayed = computed(() => library.history.find(m => m.title !== UNKNOWN_
 
 // Enough room for a poster row so v-lazy doesn't collapse before it mounts.
 const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
+
+/**
+ * Each row mounts a row's height before it scrolls in. Mounted only once on
+ * screen, the next row did not exist when a remote pressed down to it: the
+ * press could only scroll the placeholder up, and a second press was needed
+ * to land on it — a dead press per row, all the way down Home.
+ */
+const ahead = computed(() => ({ rootMargin: `0px 0px ${rowHeight.value}px 0px` }))
 </script>
 
 <template>
@@ -228,7 +236,7 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
         />
       </scroll-row>
 
-      <v-lazy v-if="lastPlayed" :min-height="rowHeight" transition="fade-transition">
+      <v-lazy v-if="lastPlayed" :min-height="rowHeight" :options="ahead" transition="fade-transition">
         <media-slider
           :key="`${lastPlayed.type}-${lastPlayed.id}`"
           :title="$t('Because you watched {title}', { title: lastPlayed.title })"
@@ -241,6 +249,7 @@ const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
         v-for="row in rows"
         :key="row.title"
         :min-height="rowHeight"
+        :options="ahead"
         transition="fade-transition"
       >
         <media-slider :title="row.title" :request="row.request" />
