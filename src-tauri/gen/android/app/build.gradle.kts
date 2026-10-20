@@ -126,6 +126,10 @@ dependencies {
     // this module is on the classpath — without it every channel fails as an
     // unreadable progressive stream.
     implementation("androidx.media3:media3-exoplayer-hls:1.8.0")
+    // The system's own media controls: a Bluetooth headset's play button and
+    // the Assistant's "pause" go to a media session, never to a window — see
+    // `session` in Player.kt.
+    implementation("androidx.media3:media3-session:1.8.0")
     // Software audio decoding, for when the device's own decoder says yes and
     // then dies — see `retryInSoftware` in Player.kt for why that is not
     // hypothetical. Google does not publish this module to Maven (it links

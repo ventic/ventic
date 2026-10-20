@@ -121,8 +121,11 @@ One at a time, in this order. Each item names where it starts and what proves it
   a no-op where not needed); `MpvPlayer.vue` calls it; `Player.kt` for Android.
 - **Done when:** `check:player` holds the command name across the files that must agree.
 - **Linux done:** `src-tauri/src/media.rs` (MPRIS, `cargo test --lib media`), and the player answers
-  the `Media*` keys itself, which is what a remote's transport buttons send. Windows SMTC, macOS
-  `MPNowPlayingInfoCenter` and Android `MediaSession` are each a `platform` module still to write.
+  the `Media*` keys itself, which is what a remote's transport buttons send. Windows SMTC and macOS
+  `MPNowPlayingInfoCenter` are each a `platform` module still to write.
+- **Android done (2026-10-20):** `MainActivity` hands window keys to the page while the player is up
+  (a phone's WebView never did), and a media3 `MediaSession` in `Player.kt` takes Bluetooth and
+  Assistant commands. No notification or lock-screen controls — that needs a `MediaSessionService`.
 
 ### 7. [ ] SOCKS5 proxy for the engine
 

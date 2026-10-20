@@ -120,14 +120,17 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   or a keyboard's play key asks for back to the page as `media://command`,
   which `MpvPlayer.vue` answers with its own buttons' functions. `None` takes
   it off the bus — by name, before the socket goes, or a widget offers to
-  pause a closed film. Windows (SMTC), macOS (`MPNowPlayingInfoCenter`) and
-  Android (`MediaSession`) are each a `platform` module that doesn't exist
-  yet; the page needs nothing new for them. The `Media*` keys a remote sends
-  are answered by the player's own key handler — on Android handed over by
-  `MainActivity` while the player holds them (`holdMediaKeys`), because a
-  phone's WebView never passes them to the page and the key then went to
-  whichever app played last. `cargo test --lib media` runs
-  the MPRIS half on the real session bus; `check:player` holds the names.
+  pause a closed film. Windows (SMTC) and macOS (`MPNowPlayingInfoCenter`)
+  are each a `platform` module that doesn't exist yet; the page needs nothing
+  new for them. Android is two halves and neither is `media.rs`. Keys that
+  come through the window — a remote's, a wired headset's — are handed to the
+  page by `MainActivity` while the player holds them (`holdMediaKeys`), as the
+  `Media*` keydowns the player's own key handler answers: a phone's WebView
+  never passes them on, and the key then went to whichever app played last.
+  What never comes through a window — a Bluetooth headset, the Assistant's
+  "pause" — goes to a media session, which is a media3 `MediaSession` on the
+  ExoPlayer in `Player.kt`, up only while a film is. `cargo test --lib media`
+  runs the MPRIS half on the real session bus; `check:player` holds the names.
 - The torrent engine hashes pieces with aws-lc, which assembles its x86_64 fast
   paths with **NASM** — a tool Linux has packaged and Windows does not, so a
   Windows build dies in `aws-lc-sys`'s build script long before any of our code.

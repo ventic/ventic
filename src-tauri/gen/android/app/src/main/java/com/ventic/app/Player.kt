@@ -27,6 +27,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy
 import androidx.media3.extractor.DefaultExtractorsFactory
+import androidx.media3.session.MediaSession
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import org.json.JSONArray
@@ -63,6 +64,19 @@ class VenticPlayer(private val activity: MainActivity) {
 
   private var player: ExoPlayer? = null
   private var view: PlayerView? = null
+
+  /**
+   * The film on screen, as Android's media controls see it. A Bluetooth
+   * headset's play button and the Assistant's "pause" are sent to a media
+   * session, never to a window, so without one they went to whichever app had
+   * played last — measured on a Pixel, a press meant to pause the film went to
+   * YouTube. Keys that do come through the window (a remote, a wired headset)
+   * are MainActivity's, which hands them to the page; this is the rest. It
+   * drives ExoPlayer directly, and the page reads the pause back off the same
+   * player. Only while a film is on: it goes with `stop`, so the next app to
+   * play gets the buttons back.
+   */
+  private var mediaSession: MediaSession? = null
 
   /** Where a `track-list` id points. Main thread only, rebuilt with the snapshot. */
   private class Slot(val group: Tracks.Group, val index: Int, val type: Int)
@@ -141,6 +155,7 @@ class VenticPlayer(private val activity: MainActivity) {
     softwareAudio = false
     onMain {
       val p = ensure()
+      if (mediaSession == null) mediaSession = MediaSession.Builder(activity, p).build()
       view?.visibility = View.VISIBLE
       open(p, url)
       p.prepare()
@@ -155,6 +170,8 @@ class VenticPlayer(private val activity: MainActivity) {
     running = false
     onMain {
       main.removeCallbacks(tick)
+      mediaSession?.release()
+      mediaSession = null
       player?.stop()
       player?.clearMediaItems()
       // A SurfaceView left attached keeps its hole punched through the page,
@@ -221,6 +238,8 @@ class VenticPlayer(private val activity: MainActivity) {
       runCatching { equalizer?.release() }
       loudness = null
       equalizer = null
+      mediaSession?.release()
+      mediaSession = null
       player?.release()
       player = null
       view = null
@@ -382,6 +401,7 @@ class VenticPlayer(private val activity: MainActivity) {
       old?.release()
 
       val p = ensure()
+      mediaSession?.player = p
       p.volume = if (muted) 0f else vol / 100f
       open(p, opened)
       p.prepare()

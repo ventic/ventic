@@ -476,4 +476,10 @@ assert.ok(handed.length >= 7, 'MainActivity names the keys it hands over')
 for (const key of new Set(handed))
   assert.match(mpv, new RegExp(`\\b${key}: \\(\\) =>`), `the player answers ${key}`)
 
+// And what never comes through a window — a Bluetooth headset's buttons, the
+// Assistant's "pause" — goes to a media session, or to the last app that played.
+assert.match(kotlin, /MediaSession\.Builder\(activity, p\)/, 'a film on screen is a media session')
+assert.match(kotlin, /fun stop\(\) \{[\s\S]*?mediaSession\?\.release\(\)/, 'which goes with the film, so the next app to play gets the buttons back')
+assert.match(kotlin, /mediaSession\?\.player = p/, 'and follows the player the software retry swaps in')
+
 console.log('player: ok')
