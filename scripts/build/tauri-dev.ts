@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -27,6 +27,18 @@ async function findAvailablePort(startPort: number): Promise<number> {
   throw new Error(`No available port found in range ${startPort}-${startPort + 99}`)
 }
 
+/** The port of a live `nuxt dev` for this project, read off the lock it holds. */
+function runningDevServer(): number | undefined {
+  try {
+    const lock = JSON.parse(readFileSync('.nuxt/nuxt.lock', 'utf8'))
+    if (lock.command !== 'dev' || !lock.port)
+      return
+    process.kill(lock.pid, 0)
+    return lock.port
+  }
+  catch {}
+}
+
 async function main(): Promise<void> {
   // A Windows build declares mpv.exe as a resource, and a missing resource
   // fails the dev build the same way it fails a release one.
@@ -41,16 +53,23 @@ async function main(): Promise<void> {
     process.exit(1)
   }
 
-  const port = await findAvailablePort(DEFAULT_PORT)
+  // Nuxt refuses a second dev server on one project (`.nuxt/nuxt.lock`) — both
+  // would write `.nuxt` — so beside `tauri:dev:tv` the desktop shares the one
+  // already up. Same frontend, and both get its hot reload. `localhost` rather
+  // than the lock's own URL, because the origin is what keys localStorage.
+  const running = runningDevServer()
+  const port = running ?? await findAvailablePort(DEFAULT_PORT)
 
-  if (port !== DEFAULT_PORT) {
+  if (running)
+    console.log(`Using the Nuxt dev server already running on port ${port}`)
+  else if (port !== DEFAULT_PORT)
     console.log(`Port ${DEFAULT_PORT} is busy, using port ${port}`)
-  }
 
   const tauriConfig = JSON.stringify({
     build: {
       devUrl: `http://localhost:${port}`,
-      beforeDevCommand: `bun run dev --port ${port}`,
+      // tauri reads an empty command as none.
+      beforeDevCommand: running ? '' : `bun run dev --port ${port}`,
     },
   })
 
