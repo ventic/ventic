@@ -63,6 +63,37 @@ function label(season: number, e: EpisodeRating) {
   return [`S${season} E${e.number}`, e.name].filter(Boolean).join(' · ')
 }
 
+// The cells are plain links, not `nuxt-link`s with a tooltip each. Both are a
+// component per cell — Vuetify's tooltip directive mounts a whole overlay for
+// every element it is on, shown or not — and The Simpsons is 800 cells: the
+// grid took six seconds to appear on the test TV, nearly all of it mounting
+// those, and a television hides the tooltips anyway. So one click handler
+// routes for all of them, and one line names the cell in hand.
+function open(e: MouseEvent) {
+  const a = (e.target as Element).closest('a')
+  if (!a || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)
+    return
+  e.preventDefault()
+  navigateTo(a.getAttribute('href')!)
+}
+
+/**
+ * The episode under the pointer or the remote, by name — which the number in
+ * the cell is not, and which a remote had no other way to learn. Written to the
+ * element rather than through a ref: a ref read in this template re-renders all
+ * 800 cells on every press of the d-pad.
+ */
+const caption = ref<HTMLElement | null>(null)
+
+function name(e: Event) {
+  const cell = (e.target as Element).closest<HTMLElement>('[data-cell]')
+  if (!cell || !caption.value)
+    return
+  const [season, episode] = cell.dataset.cell!.split(':').map(Number)
+  const ep = rows.value.find(s => s.number === season)?.episodes.find(x => x.number === episode)
+  caption.value.textContent = ep ? label(season!, ep) : ''
+}
+
 const legend = computed(() => `linear-gradient(to right, ${mix(0)}, ${mix(0.5)}, ${mix(1)})`)
 </script>
 
@@ -72,6 +103,7 @@ const legend = computed(() => `linear-gradient(to right, ${mix(0)}, ${mix(0.5)},
       <h2 class="text-title-large">
         {{ $t('Episode ratings') }}
       </h2>
+      <span ref="caption" class="min-w-0 truncate text-body-medium opacity-80" aria-hidden="true" />
       <v-spacer />
       <!-- ltr in every language: a gradient's direction is physical, and a
            scale with its numbers mirrored round it reads backwards. -->
@@ -83,7 +115,7 @@ const legend = computed(() => `linear-gradient(to right, ${mix(0)}, ${mix(0.5)},
     </div>
 
     <div class="overflow-x-auto scroll-px-4 overscroll-x-contain md:scroll-px-6 no-scrollbar">
-      <div class="w-max flex flex-col gap-0.5 px-4 pt-2 md:px-6">
+      <div class="w-max flex flex-col gap-0.5 px-4 pt-2 md:px-6" @click="open" @focusin="name" @pointerover="name">
         <div v-if="rows.length" class="flex gap-0.5 text-label-small opacity-50" aria-hidden="true">
           <span class="w-9 shrink-0" />
           <span v-for="n in widest" :key="n" class="w-11 shrink-0 text-center">{{ n }}</span>
@@ -91,11 +123,11 @@ const legend = computed(() => `linear-gradient(to right, ${mix(0)}, ${mix(0.5)},
 
         <div v-for="season in rows" :key="season.number" class="flex items-center gap-0.5">
           <span class="w-9 shrink-0 text-label-large opacity-60">S{{ season.number }}</span>
-          <nuxt-link
+          <a
             v-for="e in season.episodes"
             :key="e.number"
-            v-tooltip:top="label(season.number, e)"
-            :to="episodeLink(showId, season.number, e.number)"
+            :href="episodeLink(showId, season.number, e.number)"
+            :data-cell="`${season.number}:${e.number}`"
             :aria-label="`${label(season.number, e)}${e.votes ? ` · ${e.rating.toFixed(1)}` : ''}`"
             class="relative grid h-9 w-11 shrink-0 place-items-center rounded text-label-large tabular-nums outline-none transition-[filter] hover:brightness-115 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-on-surface"
             :class="e.votes ? '' : 'border border-outline-variant opacity-50'"
@@ -107,7 +139,7 @@ const legend = computed(() => `linear-gradient(to right, ${mix(0)}, ${mix(0.5)},
               v-if="library.episodeProgress(showId, season.number, e.number)?.watched"
               class="absolute right-1 top-1 size-1.5 rounded-full bg-current"
             />
-          </nuxt-link>
+          </a>
         </div>
       </div>
     </div>
