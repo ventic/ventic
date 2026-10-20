@@ -22,7 +22,16 @@ onUnmounted(() => ui.release(mine))
 const others = computed(() => show.value?.seasons.filter(s => s.number !== number.value) ?? [])
 
 const downloads = useDownloadsStore()
+const settings = useSettingsStore()
 const { mobile } = useDisplay()
+const tv = isTv() === true
+
+/**
+ * A whole season only where this device keeps films at all — the line
+ * `prefetch` holds to. On a TV box's own 2 GB each episode fits when it is
+ * asked for, and evicts the one before it as it lands.
+ */
+const keeps = computed(() => settings.playMode !== 'stream' && downloads.room.drive >= MIN_LIBRARY)
 
 /** What is out: an episode with no date, or one dated after today, has nothing to find. */
 const aired = computed(() => season.value?.episodes
@@ -51,7 +60,10 @@ function downloadSeason() {
 
     <template v-else>
       <section class="px-4 pb-8 pt-4 md:px-6">
-        <v-btn :prepend-icon="mdiArrowLeft" variant="text" size="small" class="mb-3 -ml-2" :to="localePath(`/tv/${id}`)">
+        <!-- Not a stop for a remote, which has BACK for it: sat above the
+             poster, the episode list was all that lay below it, so down from
+             here skipped Download season and the other seasons. -->
+        <v-btn :prepend-icon="mdiArrowLeft" variant="text" size="small" class="mb-3 -ml-2" :tabindex="tv ? -1 : undefined" :to="localePath(`/tv/${id}`)">
           {{ show?.title ?? $t('Back to show') }}
         </v-btn>
 
@@ -80,7 +92,7 @@ function downloadSeason() {
             <!-- Every episode that is out, as the Download button fetches one:
                  kept whole whatever the storage setting says, and filed under
                  each episode so Play finds it. -->
-            <div v-if="aired.length > 1 && show?.imdbId" class="flex flex-wrap items-center gap-3">
+            <div v-if="(keeps || job) && aired.length > 1 && show?.imdbId" class="flex flex-wrap items-center gap-3">
               <v-btn
                 :prepend-icon="job && !job.running ? mdiCheck : mdiDownloadMultiple"
                 :loading="job?.running"
