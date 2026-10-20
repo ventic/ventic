@@ -446,7 +446,7 @@ function wordmark(hint: any) {
       new URL('../src-tauri/gen/android/app/src/main/java/com/ventic/app/MainActivity.kt', import.meta.url),
       'utf8',
     ),
-    /webView\.post \{ webView\.setBackgroundColor\(Color\.TRANSPARENT\) \}/,
+    /webView\.post \{\s*webView\.setBackgroundColor\(Color\.TRANSPARENT\)/,
     'the Android webview is made transparent after wry applies backgroundColor, not before',
   )
 }

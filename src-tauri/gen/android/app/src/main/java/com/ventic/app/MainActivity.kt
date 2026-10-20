@@ -178,7 +178,16 @@ class MainActivity : TauriActivity() {
     // subtitles and a clock, and the picture is never seen. The post runs after
     // wry's whole create block. The window keeps its own ventic_ground behind
     // the page, which is what the desktop asks `backgroundColor` for anyway.
-    webView.post { webView.setBackgroundColor(Color.TRANSPARENT) }
+    //
+    // Focus goes in the same post. Nothing gives the webview focus at launch,
+    // so the remote's first press was spent by Android moving it there and
+    // never reached the page — measured on the set: no keydown for the first
+    // DOWN after a cold start, `document.hasFocus()` false until it, and the
+    // second press the first to move anything. Every launch began with one.
+    webView.post {
+      webView.setBackgroundColor(Color.TRANSPARENT)
+      webView.requestFocus()
+    }
 
     // A TV reports a 960dp-wide display (1080p at density 2), so the page lays
     // itself out as if on a small laptop and every card, control and line of

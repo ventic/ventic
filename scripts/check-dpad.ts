@@ -351,6 +351,10 @@ assert.ok(plugin.includes(`addPluginListener('app', 'back-button'`), 'the page l
 assert.ok(activity.includes('fun leave()') && activity.includes('@JavascriptInterface'), 'and MainActivity exposes leave() on the bridge for the root case')
 assert.ok(readFileSync(new URL('../app/utils/platform.ts', import.meta.url), 'utf8').includes('leave?.()'), 'through platform.ts')
 
+// Nothing gives the webview focus at launch, and the remote's first press was
+// spent by Android moving it there: no keydown reached the page, every launch.
+assert.ok(activity.includes('webView.requestFocus()'), 'MainActivity hands the webview focus as it starts')
+
 // BACK arrives by two different mechanisms and the app must not care which:
 // below API 33 as a KeyEvent, and from API 33 (declared) or 35 (whether declared
 // or not) through OnBackInvokedDispatcher, where `onKeyDown` is never called at
