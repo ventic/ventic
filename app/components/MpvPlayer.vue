@@ -6,13 +6,13 @@ import type { Subtitle, SubtitleFile, SubtitleLanguage } from '~/utils/subtitles
 import type { Media } from '~/utils/tmdb'
 import {
   mdiAlertCircleOutline,
-  mdiAspectRatio,
   mdiAutoFix,
   mdiCancel,
   mdiCheck,
   mdiChevronDown,
   mdiChevronUp,
   mdiClose,
+  mdiCrop,
   mdiEarHearing,
   mdiExitToApp,
   mdiFastForward10,
@@ -3006,7 +3006,7 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
               :disabled="!started"
               @click="toggleFill"
             >
-              <v-icon :icon="mdiAspectRatio" size="22" />
+              <v-icon :icon="mdiCrop" size="22" />
             </button>
             <!-- A television has no window to be one of many, and the player is
                  already the whole screen there: the button can only ever put the
