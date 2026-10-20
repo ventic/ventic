@@ -2044,7 +2044,24 @@ function toggleChrome() {
   }
   else {
     noteActivity()
+    settle()
   }
+}
+
+/**
+ * The centre transport comes up under the finger that called it. The bars go
+ * up on `pointerdown`, and a touch aims its click only once the tap is over —
+ * at the play button by then sitting under it — so the tap that brought the
+ * controls up paused the film as well. Measured on a phone. Deaf for as long
+ * as a tap lasts, which is also a double tap's window: its second tap falls
+ * through to the picture and is read there.
+ */
+const settling = ref(false)
+const { start: unsettle } = useTimeoutFn(() => (settling.value = false), DOUBLE_TAP_MS + 100, { immediate: false })
+
+function settle() {
+  settling.value = true
+  unsettle()
 }
 
 /**
@@ -2338,6 +2355,7 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
       v-if="!barTransport"
       v-show="ui && started && !centre"
       class="absolute left-1/2 top-1/2 flex items-center gap-3 rounded-full border border-white/9 bg-[#0e0f11]/70 px-3 py-3 -translate-x-1/2 -translate-y-1/2"
+      :class="settling && 'pointer-events-none'"
       @pointerenter="hovering = true"
       @pointerleave="hovering = false"
     >
@@ -2452,15 +2470,19 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
     <!-- Skip the intro or the credits. Up whether or not the chrome is — that
          is the whole point of it — so it is a cutout of its own, and it rides
          above the bar while the bar is there. Not under an open panel, which
-         holds the same corner. -->
+         holds the same corner. Touching it doesn't put the bars up — not on
+         the press, and not as a hover either, which a finger is too at the
+         start of a tap: either lifted it out from under the finger before
+         the tap's click arrived, and on a phone it could not be pressed. -->
     <button
       v-if="skip && started && !centre && !menu"
       data-cut
       class="absolute right-4 flex items-center gap-2 border rounded-lg px-4 py-2.5 text-label-large"
       :class="SURFACE"
       :style="{ bottom: `${ui && !styling ? barHeight + 16 : 24}px` }"
+      @pointerdown.stop
       @click="skipPart"
-      @pointerenter="hovering = true"
+      @pointerenter="hovering = $event.pointerType === 'mouse'"
       @pointerleave="hovering = false"
     >
       <v-icon :icon="mdiSkipForward" size="20" /> {{ skip.label }}
