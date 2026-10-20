@@ -222,7 +222,20 @@ export default defineNuxtConfig({
       },
     },
     optimizeDeps: {
-      include: ['@mdi/js'],
+      include: [
+        '@material/material-color-utilities',
+        '@mdi/js',
+        '@tauri-apps/api/app',
+        '@tauri-apps/api/core',
+        '@tauri-apps/api/event',
+        '@tauri-apps/api/webviewWindow',
+        '@tauri-apps/plugin-deep-link',
+        '@tauri-apps/plugin-http',
+        '@tauri-apps/plugin-notification',
+        '@tauri-apps/plugin-os',
+        '@tauri-apps/plugin-process',
+        '@tauri-apps/plugin-updater',
+      ],
     },
   },
 

@@ -335,26 +335,18 @@ export async function castFilm(target: CastTarget, src: string, play: Omit<CastP
  * it was cast with.
  */
 export async function castBack(from: string, code: string, what: 'progress' | 'next', watching: CastWatching): Promise<CastProblem | null> {
-  // A timer that is cleared, not `AbortSignal.timeout`: that one still fires
-  // once the request is done, and plugin-http then drops a body it has already
-  // closed — an unhandled rejection every ten seconds of a film, here.
-  const stop = new AbortController()
-  const timer = setTimeout(() => stop.abort(), 5000)
   try {
     const res = await tauriFetch(`${from}/upnp/${what}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ ...watching, code }),
       connectTimeout: 3000,
-      signal: stop.signal,
+      signal: AbortSignal.timeout(5000),
     })
     return res.ok ? null : { message: $t('The other device refused the film.') }
   }
   catch {
     return { message: $t('Couldn\'t reach that device.') }
-  }
-  finally {
-    clearTimeout(timer)
   }
 }
 

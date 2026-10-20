@@ -475,5 +475,13 @@ assert.match(listener, /useLibraryStore\(\)\.record\(/, 'reported progress is re
 assert.match(listener, /&cast=1`\)/, 'Next opens the episode in cast mode')
 assert.match(watch, /route\.query\.cast \? settings\.castTarget : null[\s\S]{0,120}castFilm\(target, stream,/, 'and cast mode hands it to the device that asked')
 
+// An `AbortSignal.timeout` outlives the request it bounds, and plugin-http's
+// abort listener then cancels a request or body that is already gone — an
+// unhandled "resource id is invalid" ten seconds into every cast. Patched in
+// `patches/`; this fails when an upgrade leaves the patch behind.
+const http = readFileSync(new URL(import.meta.resolve('@tauri-apps/plugin-http')), 'utf8')
+assert.match(http, /fetch_cancel', \{ rid \}\)\.catch\(/, 'plugin-http swallows a late abort')
+assert.match(http, /fetch_cancel_body', \{ rid: responseRid \}\)\.catch\(/, 'and a late drop of the body')
+
 console.log('cast: ok')
 process.exit(0)

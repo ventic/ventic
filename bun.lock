@@ -54,6 +54,9 @@
     "unrs-resolver",
     "@parcel/watcher",
   ],
+  "patchedDependencies": {
+    "@tauri-apps/plugin-http@2.5.9": "patches/@tauri-apps%2Fplugin-http@2.5.9.patch",
+  },
   "overrides": {
     "typescript": "npm:typescript@~5.9.3",
   },
