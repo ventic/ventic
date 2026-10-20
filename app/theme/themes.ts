@@ -65,9 +65,26 @@ export function build(p: Preset): ThemeDefinition {
   return { ...base, colors: { ...base.colors, ...ramp(p.surface, p.dark), ...p.colors } }
 }
 
-export const themes = Object.fromEntries(
-  Object.entries(PRESETS).map(([name, preset]) => [name, build(preset)]),
-) as Record<ThemeName, ThemeDefinition>
+/**
+ * Every entry of the table as a Vuetify theme, each built the first time it is
+ * read. Vuetify's own copy is made at build time (vuetify.config.ts, which the
+ * module serialises), so at run time only the theme being applied is wanted —
+ * and building all of them as this module loaded was 0.65 s of every launch on
+ * the test TV, the colour science in `scheme` being what costs. The theme grid,
+ * which draws every one, builds them as it opens.
+ */
+export const themes = {} as Record<ThemeName, ThemeDefinition>
+for (const name of Object.keys(PRESETS) as ThemeName[]) {
+  Object.defineProperty(themes, name, {
+    enumerable: true,
+    configurable: true,
+    get() {
+      const theme = build(PRESETS[name])
+      Object.defineProperty(themes, name, { value: theme, enumerable: true })
+      return theme
+    },
+  })
+}
 
 /**
  * The colour every layer under the app paints while it has nothing to paint
