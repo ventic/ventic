@@ -178,7 +178,16 @@ class MainActivity : TauriActivity() {
     // subtitles and a clock, and the picture is never seen. The post runs after
     // wry's whole create block. The window keeps its own ventic_ground behind
     // the page, which is what the desktop asks `backgroundColor` for anyway.
-    webView.post { webView.setBackgroundColor(Color.TRANSPARENT) }
+    //
+    // Focus goes in the same post. Nothing gives the webview focus at launch,
+    // so the remote's first press was spent by Android moving it there and
+    // never reached the page — measured on the set: no keydown for the first
+    // DOWN after a cold start, `document.hasFocus()` false until it, and the
+    // second press the first to move anything. Every launch began with one.
+    webView.post {
+      webView.setBackgroundColor(Color.TRANSPARENT)
+      webView.requestFocus()
+    }
 
     // A TV reports a 960dp-wide display (1080p at density 2), so the page lays
     // itself out as if on a small laptop and every card, control and line of
@@ -285,6 +294,12 @@ class MainActivity : TauriActivity() {
   }
 
   inner class Screen {
+    /** The player is up (or gone) — see `dispatchKeyEvent`, and `holdMediaKeys` in platform.ts. */
+    @JavascriptInterface
+    fun mediaKeys(on: Boolean) {
+      holdingMedia = on
+    }
+
     /**
      * Does the network we are on charge for bytes? True for mobile data and for
      * a metered Wi-Fi hotspot, which is the distinction a data cap actually
@@ -679,7 +694,43 @@ class MainActivity : TauriActivity() {
   private var pressed: KeyEvent? = null
   private var holding = false
 
+  /**
+   * The media keys — a remote's play/pause, rewind and fast-forward, a
+   * headset's button — handed to the page while a film is on screen, as the
+   * keydowns the player answers (`MEDIA_KEYS` in MpvPlayer.vue).
+   *
+   * The TV's WebView passed them on by itself; a phone's does not, measured on
+   * a Pixel: the page saw nothing, the key fell through, and Android gave it to
+   * the last app that had played anything — a press meant to pause the film
+   * went to YouTube instead. So they are taken here on both, and both get each
+   * press exactly once. Only while the player says it is up: the rest of the
+   * time play/pause belongs to whichever app the user means it for. Set from
+   * the JavaBridge thread, hence volatile.
+   */
+  @Volatile private var holdingMedia = false
+
+  private val mediaKeyNames = mapOf(
+    KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE to "MediaPlayPause",
+    KeyEvent.KEYCODE_HEADSETHOOK to "MediaPlayPause",
+    KeyEvent.KEYCODE_MEDIA_PLAY to "MediaPlay",
+    KeyEvent.KEYCODE_MEDIA_PAUSE to "MediaPause",
+    KeyEvent.KEYCODE_MEDIA_STOP to "MediaStop",
+    KeyEvent.KEYCODE_MEDIA_NEXT to "MediaTrackNext",
+    KeyEvent.KEYCODE_MEDIA_FAST_FORWARD to "MediaFastForward",
+    KeyEvent.KEYCODE_MEDIA_REWIND to "MediaRewind",
+  )
+
   override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+    val media = mediaKeyNames[event.keyCode]
+    if (media != null && holdingMedia) {
+      // Held, a seek key goes on seeking; anything else is one press.
+      val seek = event.keyCode == KeyEvent.KEYCODE_MEDIA_FAST_FORWARD || event.keyCode == KeyEvent.KEYCODE_MEDIA_REWIND
+      if (event.action == KeyEvent.ACTION_DOWN && (event.repeatCount == 0 || seek)) {
+        web?.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', { key: '$media' }))", null)
+      }
+      return true
+    }
+
     if (event.keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
       if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
         pressed = KeyEvent(event)

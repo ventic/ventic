@@ -34,8 +34,14 @@ export const KEY_ACTIONS = [
   { value: 'subDelayBack', key: 'z', title: () => $t('Subtitles 0.1 s earlier') },
   { value: 'subDelayForward', key: 'Z', title: () => $t('Subtitles 0.1 s later') },
   { value: 'subDelayReset', key: 'Ctrl+z', title: () => $t('Reset subtitle offset') },
+  // mpv's too. Positive delays the sound, so "later" is the + key.
+  { value: 'audioDelayBack', key: 'Ctrl+-', title: () => $t('Audio 0.05 s earlier') },
+  { value: 'audioDelayForward', key: 'Ctrl++', title: () => $t('Audio 0.05 s later') },
   { value: 'slower', key: '[', title: () => $t('Slower') },
   { value: 'faster', key: ']', title: () => $t('Faster') },
+  { value: 'prevChapter', key: 'PageUp', title: () => $t('Previous chapter') },
+  { value: 'nextChapter', key: 'PageDown', title: () => $t('Next chapter') },
+  { value: 'fill', key: 'w', title: () => $t('Zoom to fill / fit') },
   { value: 'start', key: 'Home', title: () => $t('Jump to the start') },
   { value: 'end', key: 'End', title: () => $t('Jump to the end') },
 ] as const

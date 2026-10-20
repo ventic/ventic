@@ -231,6 +231,12 @@ export const useDownloadsStore = defineStore('downloads', () => {
       prefer: (key && picked.value[key]) || undefined,
       ...options,
     })
+    // Kept means on the disk, and a link a source resolved itself (a debrid
+    // addon's) never touches the engine: the Download button said "In
+    // downloads" over an empty page, and a season counted every episode done.
+    // A file of the user's own is already kept.
+    if (keep && started.url && !localFor(key))
+      throw new Error($t('Your sources offer this only as a link to play, so there is nothing to download.'))
     // A direct link leaves nothing on the disk to come back to, so there is no
     // offline copy to file — and filing an empty hash would shadow a real one.
     if (key && started.hash) {
@@ -507,6 +513,67 @@ export const useDownloadsStore = defineStore('downloads', () => {
     await refresh()
   }
 
+  /**
+   * The next episode, coming down behind the one on screen so it plays off the
+   * disk when this one ends. Through `start` with `keep`, like the Download
+   * button, so the copy is filed under the episode and Next needs no search.
+   *
+   * Only once the film playing is on the disk itself: before that the new
+   * torrent would be competing for the pipe `focus` cleared for it. And only
+   * where a whole episode is something this device keeps — not under a stream,
+   * not with everything set to stream or on a drive too small to keep films,
+   * not on a network only-on-Wi-Fi is holding back. One already here, or one
+   * the user attached from their own disk, needs nothing.
+   *
+   * True once there is nothing more to do — fetched, failed, or never going
+   * to — so the caller stops asking; false while the answer may still change.
+   */
+  async function prefetch(key: string, options: Parameters<typeof startTorrent>[0]) {
+    const p = playing.value
+    const own = p && torrents.value.find(t => t.id === p.id)
+    if (!settings.fetchNext || !key || !p || !own || p.id === windowed || isStream(own.output_folder ?? ''))
+      return true
+    if (settings.playMode === 'stream' || room.value.drive < MIN_LIBRARY || cachedFor(key) || localFor(key))
+      return true
+    if (!onDisk(p) || (settings.wifiOnly && metered.value))
+      return false
+    const started = await start(key, options, true).catch(() => null)
+    // The next file of the pack on screen: a download now as well as the film,
+    // so leaving the player must not pause it the way it pauses what only the
+    // play started (`planRelease`).
+    if (started && started.id === playing.value?.id)
+      playing.value = { ...playing.value, running: true }
+    return true
+  }
+
+  /**
+   * Seasons being fetched an episode at a time, by `showId:season`. Here and not
+   * on the page, so leaving the page leaves the rest coming — and coming back
+   * finds the button saying how far it got rather than offering to start again.
+   */
+  const seasons = ref<Record<string, { done: number, failed: number, total: number, running: boolean }>>({})
+
+  /**
+   * Download every episode of a season, through `start` with `keep` exactly as
+   * the Download button does each one. One after another: each is a search of
+   * every source, and a season's worth at once is a burst no addon thanks you
+   * for. A pack the sources offer for the first is adopted for the rest
+   * (`heldByName` in `startTorrent`), so a season that comes as one torrent is
+   * one torrent here too.
+   */
+  async function fetchSeason(showId: string | number, season: number, episodes: number[], options: Pick<Parameters<typeof startTorrent>[0], 'imdbId' | 'named'>) {
+    const job = `${showId}:${season}`
+    if (seasons.value[job]?.running)
+      return
+    seasons.value[job] = { done: 0, failed: 0, total: episodes.length, running: true }
+    const state = seasons.value[job]
+    for (const episode of episodes) {
+      await start(progressKey('tv', showId, season, episode), { ...options, season, episode }, true)
+        .then(() => state.done++, () => state.failed++)
+    }
+    state.running = false
+  }
+
   const filter = ref<FilterKey>('all')
   const query = ref('')
 
@@ -625,6 +692,9 @@ export const useDownloadsStore = defineStore('downloads', () => {
     focus,
     buffer,
     release,
+    prefetch,
+    seasons,
+    fetchSeason,
     metered,
     cachedFor,
     unpick,

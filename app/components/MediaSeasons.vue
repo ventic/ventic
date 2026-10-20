@@ -90,9 +90,8 @@ function markEarlier() {
             ? $t('{seen}/{total} watched', { seen: seen(season), total: season.episodes })
             : $t('{count} episodes', { count: season.episodes }) }}
         </span>
-        <v-btn icon size="small" variant="text" color="on-surface" @click.stop.prevent="toggle(season)">
+        <v-btn v-tooltip="done(season) ? $t('Mark season unwatched') : $t('Mark season watched')" icon size="small" variant="text" color="on-surface" @click.stop.prevent="toggle(season)">
           <v-icon :icon="done(season) ? mdiEye : mdiEyeOutline" size="20" :color="done(season) ? 'primary' : undefined" />
-          <v-tooltip activator="parent" :text="done(season) ? $t('Mark season unwatched') : $t('Mark season watched')" />
         </v-btn>
       </div>
     </nuxt-link>

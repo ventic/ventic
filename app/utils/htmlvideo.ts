@@ -253,6 +253,10 @@ export function videoEngine(video: HTMLVideoElement): PlayerEngine {
       case 'sid':
         ext.sid = ext.owns(value) ? value : 'no'
         break
+      // mpv's crop-to-fill: 0 fits the picture inside the box, 1 fills it.
+      case 'panscan':
+        video.style.objectFit = Number(value) > 0 ? 'cover' : 'contain'
+        break
       // sub-delay and the sub-* look are applied where the cues are drawn, and
       // `aid` has nothing to select between. Levelling and the dialogue boost
       // (`audio-normalize`, `dialogue-boost`) would want a WebAudio graph in

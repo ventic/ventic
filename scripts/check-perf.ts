@@ -145,6 +145,21 @@ assert.doesNotMatch(
 // mounts — both arrows came up disabled and stayed there until it was dragged.
 assert.match(row, /useResizeObserver\(\[scroller, track\], measure\)/, 'the arrows must re-measure as cards arrive')
 
+// --- Tooltips: a component each, quadratic in a row, invisible on a TV ---
+//
+// Vuetify's `v-tooltip` mounts a VTooltip per element at mount and on every
+// re-render, walking its component's tree each time. Measured on the set: ~1 s
+// of a film's page opening (47 tooltips, two per cast card) and 6 s of an
+// 800-cell ratings grid. Ours mounts the real one only when a mouse or keyboard
+// focus arrives, and never on a television — which needs the module to stop
+// importing Vuetify's straight into every template.
+const nuxtConfig = read('nuxt.config.ts')
+const tooltip = read('app/plugins/tooltip.client.ts')
+assert.match(nuxtConfig, /ignoreDirectives: \['Tooltip'\]/, 'templates must resolve v-tooltip at runtime, or the plugin is never asked')
+assert.match(tooltip, /directive\('tooltip'/, 'the plugin registers v-tooltip')
+assert.match(tooltip, /if \(tv\)\s+return/, 'a television never mounts one')
+assert.match(tooltip, /pointerType !== 'mouse'/, 'nor does a finger')
+
 // --- Wiring: a setting nothing reads is a setting that does nothing ---
 
 assert.match(settings, /reduceEffects = useLocalStorage\('ventic\.reduceEffects'/, 'the setting is stored')

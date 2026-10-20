@@ -31,9 +31,19 @@ function measure() {
   overflows.value = max > 1
   atStart.value = el.scrollLeft < 1
   atEnd.value = el.scrollLeft > max - 1
+  // Within a few cards of the end of a row that pages — or a row too short to
+  // scroll at all — ask for the next page. Here rather than `useInfiniteScroll`,
+  // whose `useScroll` measures on mount with a getComputedStyle, a layout forced
+  // while the page around it is still being built: one per row, and on the test
+  // TV most of a second of a long show's page. Distance from the start either
+  // way, since a right-to-left row scrolls into negative numbers.
+  if (props.canLoad && Math.abs(el.scrollLeft) > max - 600)
+    emit('end')
 }
 
 useResizeObserver([scroller, track], measure)
+// A page that has just landed may leave the row as short as it was.
+watch(() => props.canLoad, measure, { flush: 'post' })
 
 /**
  * A row that is moving belongs to nobody's pointer. Cards passing under a
@@ -53,12 +63,6 @@ useEventListener(scroller, 'scroll', () => {
   gliding.value = true
   settle()
 }, { passive: true })
-
-useInfiniteScroll(scroller, () => emit('end'), {
-  distance: 600,
-  direction: 'right',
-  canLoadMore: () => props.canLoad === true,
-})
 
 // Paging by a fraction of the width leaves a sliver of a poster at each edge and
 // the next press compounds it. Whole cards land where the row started: the step

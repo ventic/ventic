@@ -16,6 +16,8 @@ const props = withDefaults(defineProps<{
   disabled?: boolean
   /** How far one arrow-key press moves it — seconds for seek, percent for volume. */
   step?: number
+  /** Where to break the rail — chapter starts, on the seek bar. */
+  marks?: number[]
 }>(), { max: 100, buffered: 0 })
 
 const emit = defineEmits<{
@@ -126,6 +128,14 @@ function onKey(e: KeyboardEvent) {
     >
       <div class="absolute inset-y-0 left-0 bg-white/35" :style="{ width: pct(buffered) }" />
       <div class="absolute inset-y-0 left-0 bg-primary" :style="{ width: pct(modelValue) }" />
+      <!-- A gap in the rail rather than a tick on it: it reads at 3px tall,
+           where a tick would be a dot, and it reads over the fill as well. -->
+      <div
+        v-for="m in marks"
+        :key="m"
+        class="absolute inset-y-0 w-0.5 bg-black/70 -translate-x-1/2"
+        :style="{ left: pct(m) }"
+      />
     </div>
 
     <!-- Sized to match VSlider's thumbSize in vuetify.config.ts. Its travel is

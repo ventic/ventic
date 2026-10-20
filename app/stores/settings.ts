@@ -250,6 +250,13 @@ export const useSettingsStore = defineStore('settings', () => {
    * deletes it as the player closes on it. Nothing streamed is kept either way.
    */
   const keepWatched = useLocalStorage('ventic.keepWatched', true)
+  /**
+   * The next episode comes down while this one plays — see `prefetch` in the
+   * downloads store, which holds every reason it might not.
+   */
+  const fetchNext = useLocalStorage('ventic.fetchNext', true)
+  /** A desktop notice on the day an episode of a followed show comes out — see the calendar store. */
+  const airNotify = useLocalStorage(scoped('ventic.airNotify'), false)
 
   /**
    * Minutes of a streamed film kept on disk ahead of the picture and behind it
@@ -309,6 +316,14 @@ export const useSettingsStore = defineStore('settings', () => {
    */
   const audioTrack = useLocalStorage<Record<string, AudioChoice>>(scoped('ventic.audioTrack'), {})
 
+  // --- Picture ---
+  /**
+   * Crop the picture to fill the screen rather than fit inside it — what an
+   * ultrawide monitor wants for a 16:9 film and a 16:9 set for a 2.39:1 one.
+   * Not per profile: it is a fact about the screen, like `uiScale`.
+   */
+  const fill = useLocalStorage('ventic.fill', false)
+
   // --- Keyboard ---
   /** The player shortcuts the user moved, by action — see utils/keys.ts. */
   const keys = useLocalStorage<KeyOverrides>(scoped('ventic.keys'), {})
@@ -317,5 +332,5 @@ export const useSettingsStore = defineStore('settings', () => {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, disabledSources, activeSources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, closeToTray, castReceive, castName, castAsk, castCode, castTarget, downloadDir, playMode, keepWatched, bufferAhead, bufferBehind, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, audioTrack, keys, resetSubs }
+  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, disabledSources, activeSources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, closeToTray, castReceive, castName, castAsk, castCode, castTarget, downloadDir, playMode, keepWatched, fetchNext, airNotify, bufferAhead, bufferBehind, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, audioTrack, fill, keys, resetSubs }
 })

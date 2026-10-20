@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { MediaType } from '~/utils/tmdb'
-import { mdiAlertCircleOutline, mdiBookmark, mdiBookmarkOutline, mdiEye, mdiEyeOutline, mdiHeart, mdiHeartOutline, mdiOpenInNew, mdiPlay, mdiStar, mdiYoutube } from '@mdi/js'
+import { mdiAlertCircleOutline, mdiBookmark, mdiBookmarkOutline, mdiEye, mdiEyeOutline, mdiHeart, mdiHeartOutline, mdiOpenInNew, mdiPlay, mdiShuffleVariant, mdiStar, mdiYoutube } from '@mdi/js'
 
 // Keeps /foo/123 out of here; anything else 404s instead of asking TMDB.
 definePageMeta({
@@ -16,6 +16,7 @@ const type = computed(() => route.params.type as MediaType)
 const id = computed(() => String(route.params.id))
 
 const { data: media, status, error } = useMediaDetail(type, id)
+const { data: collection } = useCollection(() => media.value?.collection?.id)
 
 // This page's art is the app backdrop, for exactly as long as the page is up.
 let mine = 0
@@ -129,6 +130,22 @@ const started = computed(() => {
     : library.cardProgress(media.value))
   return p && !p.watched && resumable(p.position, p.duration) ? p : null
 })
+
+// Rolled on the press, not on render: a link that changed under the cursor
+// every time the page re-rendered would be a different episode from the one
+// the hover said.
+function playRandom() {
+  const m = media.value
+  if (!m)
+    return
+  const pick = randomEpisode(
+    m.seasons,
+    (season, episode) => !!library.episodeProgress(id.value, season, episode)?.watched,
+    m.lastAired,
+  )
+  if (pick)
+    navigateTo(watchLink('tv', id.value, pick.season, pick.episode))
+}
 
 const playLabel = computed(() => [
   started.value ? $t('Resume') : $t('Play'),
@@ -246,6 +263,17 @@ const playLabel = computed(() => [
               >
                 {{ $t('Trailer') }}
               </v-btn>
+              <!-- One the profile hasn't seen while there is one. A sitcom is
+                   watched this way as often as in order. -->
+              <v-btn
+                v-if="target && media.seasons.length"
+                :prepend-icon="mdiShuffleVariant"
+                :size="mobile ? 'default' : 'large'"
+                variant="tonal"
+                @click="playRandom"
+              >
+                {{ $t('Random episode') }}
+              </v-btn>
               <!-- Beside the other ways to get this playing, rather than in
                    Settings: it is a fact about this title, not a preference. -->
               <local-file-button
@@ -302,7 +330,31 @@ const playLabel = computed(() => [
           :show="media"
         />
 
+        <!-- The rest of the series, before the cast: which one comes next is
+             the question a film's page is asked most after "is it any good". -->
+        <scroll-row v-if="collection && collection.parts.length > 1" :title="collection.name">
+          <media-card
+            v-for="part in collection.parts"
+            :key="part.id"
+            :media="part"
+            :detail="ui.isDetailed"
+            class="shrink-0"
+            :style="{ width: ui.rowCard }"
+          />
+        </scroll-row>
+
         <cast-row v-if="media?.cast.length" :title="$t('Cast')" :people="media.cast" />
+
+        <!-- Below the cast rather than beside the seasons: it is a grid of
+             links a remote walks a row at a time, so on the way to the
+             recommendations it costs one press per season, and nothing else
+             on the page should have to be reached through it. -->
+        <episode-ratings
+          v-if="type === 'tv' && media?.seasons.length"
+          :key="`ratings-${id}`"
+          :show-id="id"
+          :seasons="media.seasons"
+        />
 
         <media-slider
           v-if="status !== 'pending'"

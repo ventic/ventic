@@ -30,16 +30,24 @@ const steps = computed<Steps>(() => props.values
 const down = computed(() => stepTo(model.value, -1, steps.value))
 const up = computed(() => stepTo(model.value, 1, steps.value))
 const label = computed(() => props.format?.(model.value) ?? String(model.value))
+
+/**
+ * A button at the end of the range looks disabled and isn't. A disabled one
+ * can't hold focus, so stepping down to the limit dropped a remote's focus to
+ * the page under it — and a row whose Less was out left only More, off to the
+ * side, which down then walked past. Pressed there, it steps to where it is.
+ */
+const spent = (to: number) => to === model.value ? { 'class': 'v-btn--disabled', 'aria-disabled': 'true' } : {}
 </script>
 
 <template>
   <div class="flex items-center gap-2">
-    <v-btn v-tooltip:top="props.less ?? false" icon size="small" variant="tonal" :disabled="down === model" :aria-label="props.less ?? $t('Less')" @click="model = down">
+    <v-btn v-tooltip:top="props.less ?? false" icon size="small" variant="tonal" v-bind="spent(down)" :aria-label="props.less ?? $t('Less')" @click="model = down">
       <v-icon :icon="mdiMinus" size="20" />
     </v-btn>
     <!-- A fixed width, so the buttons stay put as "8" becomes "10". -->
     <span class="min-w-24 text-center text-body-medium tabular-nums" aria-live="polite">{{ label }}</span>
-    <v-btn v-tooltip:top="props.more ?? false" icon size="small" variant="tonal" :disabled="up === model" :aria-label="props.more ?? $t('More')" @click="model = up">
+    <v-btn v-tooltip:top="props.more ?? false" icon size="small" variant="tonal" v-bind="spent(up)" :aria-label="props.more ?? $t('More')" @click="model = up">
       <v-icon :icon="mdiPlus" size="20" />
     </v-btn>
   </div>

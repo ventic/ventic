@@ -92,6 +92,8 @@ const roomy = computed(() => width.value ? width.value >= (props.needs ?? 740) :
       />
     </div>
 
+    <slot name="view" />
+
     <v-btn-toggle
       v-model="ui.layout"
       mandatory

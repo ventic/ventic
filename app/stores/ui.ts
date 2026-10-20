@@ -54,6 +54,8 @@ export const useUiStore = defineStore('ui', () => {
   const castWidth = useLocalStorage(scoped('ventic.castWidth'), 140)
   /** Desktop: collapsed icon-only sidebar. */
   const rail = useLocalStorage(scoped('ventic.rail'), false)
+  /** The browse pages leave out what this profile has already seen. */
+  const hideWatched = useLocalStorage(scoped('ventic.hideWatched'), false)
   /** Mobile: the section drawers (transfers, settings) are overlays, so they need an open/closed state. */
   const drawer = ref(false)
 
@@ -228,5 +230,5 @@ export const useUiStore = defineStore('ui', () => {
   // Sweeping the cursor across a grid would otherwise queue a crossfade per card.
   const preview = useDebounceFn(hover, 120)
 
-  return { layout, cardWidth, castWidth, gridColumns, rowCard, posterSize, profileSize, rail, drawer, menuFor, pending, pairing, blur, tint, backdropMode, backdropImage, backdropFollowsHover, artOverCustom, shownArt, selected, art, backdrop, isGrid, isDetailed, select, ambient, release, hover, preview }
+  return { layout, hideWatched, cardWidth, castWidth, gridColumns, rowCard, posterSize, profileSize, rail, drawer, menuFor, pending, pairing, blur, tint, backdropMode, backdropImage, backdropFollowsHover, artOverCustom, shownArt, selected, art, backdrop, isGrid, isDetailed, select, ambient, release, hover, preview }
 })

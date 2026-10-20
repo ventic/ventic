@@ -114,6 +114,23 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   `bun run check:player` holds the command name across the three files that have
   to agree on it — nothing else does, and the failure is a film that plays
   perfectly and a screen that blanks twenty minutes in.
+- **The desktop's media keys are `media_session`, and only Linux answers yet.**
+  `src-tauri/src/media.rs` publishes the film on screen as an MPRIS player
+  (`org.mpris.MediaPlayer2.ventic`) and hands what `playerctl`, a panel widget
+  or a keyboard's play key asks for back to the page as `media://command`,
+  which `MpvPlayer.vue` answers with its own buttons' functions. `None` takes
+  it off the bus — by name, before the socket goes, or a widget offers to
+  pause a closed film. Windows (SMTC) and macOS (`MPNowPlayingInfoCenter`)
+  are each a `platform` module that doesn't exist yet; the page needs nothing
+  new for them. Android is two halves and neither is `media.rs`. Keys that
+  come through the window — a remote's, a wired headset's — are handed to the
+  page by `MainActivity` while the player holds them (`holdMediaKeys`), as the
+  `Media*` keydowns the player's own key handler answers: a phone's WebView
+  never passes them on, and the key then went to whichever app played last.
+  What never comes through a window — a Bluetooth headset, the Assistant's
+  "pause" — goes to a media session, which is a media3 `MediaSession` on the
+  ExoPlayer in `Player.kt`, up only while a film is. `cargo test --lib media`
+  runs the MPRIS half on the real session bus; `check:player` holds the names.
 - The torrent engine hashes pieces with aws-lc, which assembles its x86_64 fast
   paths with **NASM** — a tool Linux has packaged and Windows does not, so a
   Windows build dies in `aws-lc-sys`'s build script long before any of our code.
@@ -190,6 +207,14 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   dylib's real `minos` at bundle time and fails the build on a drift. Don't
   unpin that runner; pinning it *older* is a Homebrew question, since it bottles
   only the three most recent macOS.
+- **Chapters are mpv's alone.** The seek bar's marks, the chapter name in its
+  bubble, PageUp/PageDown and the Skip intro / Skip credits button all read
+  mpv's `chapter-list` (`app/utils/chapters.ts` decides which names are
+  skippable). media3 exposes no Matroska chapters and `<video>` has none, so the
+  shim answers no `chapter-list` and all of it stays off Android and the
+  browser by having nothing to show. Audio delay is mpv's alone for the same
+  kind of reason, and the panel offers it only `native`; crop-to-fill is the
+  one that reaches all three (`panscan`, `object-fit`, ExoPlayer's resize mode).
 - **The volume levelling is one setting and two implementations**, because
   there is no filter graph on Android. `app/utils/audio.ts` owns both: mpv is
   handed a `lavfi` chain over the `af` command (dynaudnorm for the levelling,
@@ -274,7 +299,7 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   `check:perf`, `check:android-downloads`, `check:updates`, `check:supporters`,
   `check:audio`, `check:people`, `check:cast`, `check:iptv`, `check:i18n`,
   `check:macos`, `check:signing`, `check:play-notes`, `check:steps`,
-  `check:settings-search`, `check:downloads`, `check:profiles`).
+  `check:settings-search`, `check:downloads`, `check:profiles`, `check:ratings`, `check:calendar`).
   Add to those rather than pulling in a test framework. `bun run check` runs
   every one of them — it reads the names out of package.json rather than holding
   a list, so a check added today is in that sweep today. `bun run check:types` is

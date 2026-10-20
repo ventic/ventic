@@ -286,6 +286,16 @@ async function openFolder() {
             ? $t('A film watched to the end stays on the drive, seeding, until its space is needed for another.')
             : $t('A film is deleted as the player closes on it, once you have watched it to the end. One stopped half-way is kept, to carry on from.') }}
         </p>
+        <v-switch
+          v-model="settings.fetchNext"
+          color="primary"
+          density="comfortable"
+          hide-details
+          :label="$t('Download the next episode while you watch')"
+        />
+        <p class="text-body-medium opacity-70">
+          {{ $t('Most of the way through an episode, the next one starts downloading — once this one is on the device, so it never slows what is playing — and plays from the disk when you get to it.') }}
+        </p>
       </template>
     </settings-section>
 

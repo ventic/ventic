@@ -1,4 +1,5 @@
 import assert from 'node:assert'
+import { chapterAt, readChapters, skippable } from '../app/utils/chapters'
 import { deviceCodecs, exoEngine, hasNativePlayer, hasVideoOverlay, videoEngine } from '../app/utils/htmlvideo'
 import { nearestFrame, walkOrder } from '../app/utils/thumbs'
 // Self-check for the <video> player backend: `bun scripts/check-player.ts`.
@@ -23,6 +24,7 @@ function fakeVideo() {
     readyState: 4,
     error: null as { code: number } | null,
     src: '',
+    style: { objectFit: '' },
     buffered: { length: 1, start: () => 0, end: () => 90 },
     play() {
       this.paused = false
@@ -120,6 +122,12 @@ player.command(['set_property', 'speed', 1.5])
 assert.equal(video.playbackRate, 1.5)
 player.command(['set_property', 'mute', true])
 assert.equal(video.muted, true)
+
+// Crop-to-fill is mpv's `panscan`, and the element's own `object-fit`.
+player.command(['set_property', 'panscan', 1])
+assert.equal(video.style.objectFit, 'cover')
+player.command(['set_property', 'panscan', 0])
+assert.equal(video.style.objectFit, 'contain')
 
 // Unknown commands are ignored rather than thrown: `keybind` has no window to
 // bind on and `show-text` is drawn by the page.
@@ -400,5 +408,78 @@ assert.ok(probe, 'waitForStream is still the pre-flight before a stream is opene
 assert.match(probe, /tauriFetch/, 'a remote link is probed through Rust, where CORS does not apply')
 assert.doesNotMatch(probe, /\bfetch\(url/, 'and never with the webview\'s own fetch')
 assert.match(mpv, /import \{ fetch as tauriFetch \} from '@tauri-apps\/plugin-http'/, 'which is where that comes from')
+
+// --- Chapters ------------------------------------------------------------------
+// Only mpv reads them; the shim has no `chapter-list`, which is what keeps the
+// skip button and the marks off Android and the browser.
+assert.deepEqual(player.props(['chapter-list']), {})
+assert.deepEqual(readChapters(undefined), [])
+
+// What releases actually call these parts. Anime numbers its openings, a TV rip
+// says Intro and Recap, and plenty number every chapter in front of its name.
+for (const name of ['Intro', 'Opening', 'OP', 'OP1', 'Opening 2', 'Opening Credits', 'Recap', 'Previously on Lost', '01. Opening', '02 - Intro'])
+  assert.equal(skippable(name), 'intro', name)
+for (const name of ['Ending', 'ED', 'ED2', 'End Credits', 'Credits', 'Closing Credits', 'Outro', '05. Ending'])
+  assert.equal(skippable(name), 'credits', name)
+// A scene is not a title sequence, and a generic name is never a guess.
+for (const name of ['Opening Night', 'Chapter 3', 'Part A', 'The Credit Card', 'Prologue', '', 'Preview'])
+  assert.equal(skippable(name), null, name)
+
+const list = readChapters([
+  { title: 'Ending', time: 1300 },
+  { title: 'Prologue', time: 0 },
+  { title: 'Opening', time: 95.5 },
+  { title: 'Part A', time: 185 },
+  { time: 'nope' },
+])
+assert.deepEqual(list.map(c => c.time), [0, 95.5, 185, 1300], 'sorted, and an entry with no time is no chapter')
+assert.deepEqual(chapterAt(list, 120, 1420), { title: 'Opening', time: 95.5, index: 1, end: 185, last: false })
+assert.equal(chapterAt(list, 1400, 1420)?.end, 1420, 'the last one runs to the end of the file')
+assert.equal(chapterAt(list, 1400, 1420)?.last, true, 'which is what makes credits there "next episode"')
+assert.equal(chapterAt([{ title: 'Late', time: 30 }], 10, 100), null, 'before the first chapter there is none')
+
+// The player reads them once the file is open and never off a hidden bar.
+assert.match(mpv, /readChapters\(c\?\.\['chapter-list'\]\)/, 'the list comes from mpv\'s own property')
+assert.match(mpv, /const second = computed\(\(\) => Math\.floor\(position\.value\)\)/, 'and the skip button follows whole seconds, not the frame clock')
+
+// Crop-to-fill reaches ExoPlayer as the view's resize mode.
+assert.match(kotlin, /"panscan" -> view\?\.resizeMode = if/, 'Player.kt answers panscan')
+
+// --- The desktop's media controls ----------------------------------------------
+// One command and one event between three files, and nothing compiles the
+// agreement: a misspelling is a play key that does nothing, on a desktop the
+// developer may not even have.
+const media = await Bun.file('src-tauri/src/media.rs').text()
+assert.match(lib, /media::media_session/, 'the command is registered')
+assert.match(media, /pub (?:async )?fn media_session\(/, 'under the name it is registered by')
+assert.match(mpv, /invoke\('media_session'/, 'and the player calls it by that name')
+assert.match(media, /emit\("media:\/\/command"/, 'what the desktop asks for is emitted…')
+assert.match(mpv, /listen<MediaCommand>\('media:\/\/command'/, '…and listened for under the same name')
+assert.match(mpv, /invoke\('media_session', \{ now: null \}\)/, 'and leaving the player takes it off the bus')
+for (const action of ['play', 'pause', 'toggle', 'stop', 'next', 'seek', 'to'])
+  assert.match(mpv, new RegExp(`'${action}'`), `the player answers ${action}`)
+
+// --- Android's media keys --------------------------------------------------------
+// A phone's WebView never gives the page a media key, so MainActivity takes them
+// while the player says it is up and dispatches them as keydowns. Four names
+// across Kotlin, platform.ts and the player, and each key it sends has to be
+// one the player answers — otherwise a headset's button does nothing, or goes
+// to whatever app played last.
+const activity = await Bun.file('src-tauri/gen/android/app/src/main/java/com/ventic/app/MainActivity.kt').text()
+const platformTs = await Bun.file('app/utils/platform.ts').text()
+assert.match(activity, /@JavascriptInterface\s+fun mediaKeys\(on: Boolean\)/, 'the bridge answers mediaKeys')
+assert.match(platformTs, /bridge\(\)\?\.mediaKeys\?\.\(on\)/, 'platform.ts calls it by that name')
+assert.match(mpv, /holdMediaKeys\(true\)/, 'the player holds the keys while it is up')
+assert.match(mpv, /holdMediaKeys\(false\)/, 'and gives them back on the way out')
+const handed = [...activity.matchAll(/KeyEvent\.KEYCODE_\w+ to "(\w+)"/g)].map(m => m[1]!)
+assert.ok(handed.length >= 7, 'MainActivity names the keys it hands over')
+for (const key of new Set(handed))
+  assert.match(mpv, new RegExp(`\\b${key}: \\(\\) =>`), `the player answers ${key}`)
+
+// And what never comes through a window — a Bluetooth headset's buttons, the
+// Assistant's "pause" — goes to a media session, or to the last app that played.
+assert.match(kotlin, /MediaSession\.Builder\(activity, p\)/, 'a film on screen is a media session')
+assert.match(kotlin, /fun stop\(\) \{[\s\S]*?mediaSession\?\.release\(\)/, 'which goes with the film, so the next app to play gets the buttons back')
+assert.match(kotlin, /mediaSession\?\.player = p/, 'and follows the player the software retry swaps in')
 
 console.log('player: ok')

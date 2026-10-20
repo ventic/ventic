@@ -1,10 +1,12 @@
 <script lang="ts" setup>
+import type { Chapter } from '~/utils/chapters'
 import type { PlayerEngine } from '~/utils/htmlvideo'
 import type { KeyAction } from '~/utils/keys'
 import type { Subtitle, SubtitleFile, SubtitleLanguage } from '~/utils/subtitles'
 import type { Media } from '~/utils/tmdb'
 import {
   mdiAlertCircleOutline,
+  mdiAspectRatio,
   mdiAutoFix,
   mdiCancel,
   mdiCheck,
@@ -23,6 +25,7 @@ import {
   mdiReload,
   mdiRestore,
   mdiRewind10,
+  mdiSkipForward,
   mdiSkipNext,
   mdiSubtitles,
   mdiSubtitlesOutline,
@@ -1153,6 +1156,180 @@ useIntervalFn(() => {
 }, TICK * 1000)
 
 // ---------------------------------------------------------------------------
+// The sound against the picture. mpv's `audio-delay`, which a fresh mpv starts
+// at zero — so it is this file's, like the subtitle delay. Neither ExoPlayer
+// nor a <video> can hold the sound back, so the panel only offers it to mpv.
+// ---------------------------------------------------------------------------
+const audioDelay = ref(0)
+const audioDelayText = computed(() => `${audioDelay.value > 0 ? '+' : ''}${audioDelay.value.toFixed(2).replace(/0$/, '')}s`)
+
+function setAudioDelay(v: number) {
+  audioDelay.value = Math.round(Math.max(-10, Math.min(10, v)) * 100) / 100
+  ipc(['set_property', 'audio-delay', audioDelay.value])
+  osd($t('Audio delay {delay}', { delay: audioDelayText.value }))
+}
+
+/** The stepper's model: a step is a nudge, so the OSD says where it landed. */
+const audioDelayStep = computed({ get: () => audioDelay.value, set: setAudioDelay })
+
+// ---------------------------------------------------------------------------
+// Fitted, or cropped to fill — mpv's `panscan`, which the other two backends
+// answer with their own (`object-fit`, ExoPlayer's resize mode). A setting
+// rather than a toggle per film: it is the shape of the screen that wants it.
+// ---------------------------------------------------------------------------
+function applyFill() {
+  ipc(['set_property', 'panscan', settings.fill ? 1 : 0])
+}
+
+function toggleFill() {
+  settings.fill = !settings.fill
+  applyFill()
+  osd(settings.fill ? $t('Zoomed to fill') : $t('Fitted to the screen'))
+}
+
+// ---------------------------------------------------------------------------
+// Chapters, and the parts of them nobody sits through twice. Only mpv reads
+// chapters (see utils/chapters.ts), so elsewhere the list stays empty and none
+// of this ever shows.
+// ---------------------------------------------------------------------------
+const chapters = ref<Chapter[]>([])
+
+/**
+ * The clock in whole seconds, which is all a chapter boundary needs. `position`
+ * moves every frame, and the skip button reading it directly would re-render
+ * this whole component at the frame rate for as long as it was up.
+ */
+const second = computed(() => Math.floor(position.value))
+/** A number, so it only wakes anything up when the chapter actually changes. */
+const chapterIndex = computed(() => chapterAt(chapters.value, second.value, duration.value)?.index ?? -1)
+
+const skipTarget = computed(() => {
+  const c = chapterAt(chapters.value, chapters.value[chapterIndex.value]?.time ?? -1, duration.value)
+  const kind = c && skippable(c.title)
+  if (!c || !kind)
+    return null
+  // Credits with nothing after them are the end of the episode, and what is
+  // wanted then is the next one rather than the last few seconds of this.
+  if (kind === 'credits' && c.last && props.next)
+    return { label: props.next.label, to: props.next.to, end: c.end }
+  return { label: kind === 'intro' ? $t('Skip intro') : $t('Skip credits'), to: '', end: c.end }
+})
+
+/**
+ * The last minute of an episode, for a file that names no credits — which is
+ * every file on a television, where nothing reads chapters. What is left by
+ * then is credits often enough, and the next episode is what is wanted.
+ */
+const upNext = computed(() => props.next && duration.value > 600 ? { label: props.next.label, to: props.next.to, end: duration.value } : null)
+const lastMinute = computed(() => !!upNext.value && duration.value - second.value <= 60)
+
+/** Gone for the chapter's last few seconds: there is nothing left to skip by then. */
+const skip = computed(() => (skipTarget.value && skipTarget.value.end - second.value > 3 ? skipTarget.value : null)
+  ?? (lastMinute.value ? upNext.value : null))
+
+function skipPart() {
+  const target = skip.value
+  if (!target)
+    return
+  // `replace`, as the ended screen's link does: skipping the credits into the
+  // next episode is carrying on, not a page Back should return to.
+  if (target.to)
+    navigateTo(target.to, { replace: true })
+  else
+    seekTo(target.end)
+}
+
+/**
+ * Next, or back: from more than a few seconds into a chapter, back restarts it,
+ * which is what every player's previous-track has always done.
+ */
+function toChapter(by: 1 | -1) {
+  const list = chapters.value
+  const here = chapterAt(list, position.value, duration.value)
+  const i = here?.index ?? -1
+  const target = by > 0
+    ? list[i + 1]
+    : here && position.value - here.time > 3 ? list[i] : list[i - 1] ?? list[i]
+  if (!target)
+    return
+  seekTo(target.time)
+  osd(target.title || $t('Chapter {number}', { number: list.indexOf(target) + 1 }))
+}
+
+/** The seek bar's bubble: the time, and the chapter it is in where it has a name. */
+function seekLabel(v: number) {
+  const name = chapterAt(chapters.value, v, duration.value)?.title
+  return name ? `${fmt(v)} · ${name}` : fmt(v)
+}
+
+const chapterMarks = computed(() => chapters.value.map(c => c.time).filter(t => t > 0))
+
+// ---------------------------------------------------------------------------
+// The desktop's own media controls — the play key, a headset's button, the
+// widget in a panel (src-tauri/src/media.rs). What is on screen goes out; what
+// they ask for comes back and is answered by the functions the bar's buttons
+// call. MPRIS on Linux, and a no-op the platforms with no module yet.
+// ---------------------------------------------------------------------------
+/** Everything but the clock, which is pushed on its own beat below. */
+const nowPlaying = computed(() => started.value
+  ? {
+      title: props.media?.title || props.title || '',
+      subtitle: props.season && props.episode ? `S${props.season} E${props.episode}` : props.year ?? '',
+      art: posterUrl(props.media?.poster, 'w342') ?? '',
+      playing: !paused.value,
+      can_next: !!props.next,
+    }
+  : null)
+
+function publish() {
+  const now = nowPlaying.value
+  invoke('media_session', { now: now && { ...now, position: position.value, duration: duration.value } }).catch(() => {})
+}
+
+watch(nowPlaying, publish, { deep: true })
+// The widget runs its clock on from the last word; this keeps it honest
+// across a stall it could not see.
+useIntervalFn(() => started.value && !paused.value && publish(), 5000)
+
+interface MediaCommand { action: 'play' | 'pause' | 'toggle' | 'stop' | 'next' | 'seek' | 'to', by?: number, at?: number }
+
+function nextEpisode() {
+  if (props.next)
+    navigateTo(props.next.to, { replace: true })
+}
+
+function onMediaCommand(c: MediaCommand) {
+  noteActivity()
+  if (!started.value)
+    return
+  if (c.action === 'toggle' || (c.action === 'play' && paused.value) || (c.action === 'pause' && !paused.value))
+    togglePlay()
+  else if (c.action === 'stop')
+    emit('exit')
+  else if (c.action === 'next')
+    nextEpisode()
+  else if (c.action === 'seek')
+    seekBy(c.by ?? 0)
+  else if (c.action === 'to')
+    seekTo(c.at ?? 0)
+}
+
+/**
+ * The same buttons on a keyboard or a remote, where the desktop hasn't taken
+ * them first — a television's play/pause and its rewind and fast-forward
+ * arrive here as keys, and nothing else in the app would answer them.
+ */
+const MEDIA_KEYS: Record<string, () => void> = {
+  MediaPlayPause: () => onMediaCommand({ action: 'toggle' }),
+  MediaPlay: () => onMediaCommand({ action: 'play' }),
+  MediaPause: () => onMediaCommand({ action: 'pause' }),
+  MediaStop: () => onMediaCommand({ action: 'stop' }),
+  MediaTrackNext: () => onMediaCommand({ action: 'next' }),
+  MediaFastForward: () => onMediaCommand({ action: 'seek', by: 10 }),
+  MediaRewind: () => onMediaCommand({ action: 'seek', by: -10 }),
+}
+
+// ---------------------------------------------------------------------------
 // Lifecycle
 // ---------------------------------------------------------------------------
 async function startPlayer() {
@@ -1233,6 +1410,8 @@ async function startPlayer() {
     aid.value = 'no'
     activeUrl.value = ''
     subText.value = ''
+    chapters.value = []
+    audioDelay.value = 0 // a fresh mpv starts in step
     forgetLayout() // a fresh mpv carries no filters either
     resetSync() // a fresh mpv starts at zero and knows nothing of this file
     surface.reset() // the next frame pushes geometry and shape for the new window
@@ -1247,6 +1426,16 @@ async function startPlayer() {
       ipc(['keybind', 'MBTN_LEFT', 'cycle pause'])
       ipc(['keybind', 'WHEEL_UP', 'add volume 5'])
       ipc(['keybind', 'WHEEL_DOWN', 'add volume -5'])
+      // Windows' own media controls are mpv's there (`media-controls`, on by
+      // default for mpv.exe), and arrive as these keys — which bind to nothing
+      // under --no-input-default-bindings. Linux answers them through
+      // media.rs instead, and never sends them here. Unverified on Windows.
+      for (const key of ['PLAYPAUSE', 'PLAY', 'PAUSE'])
+        ipc(['keybind', key, 'cycle pause'])
+      ipc(['keybind', 'PLAYONLY', 'set pause no'])
+      ipc(['keybind', 'PAUSEONLY', 'set pause yes'])
+      ipc(['keybind', 'FORWARD', 'seek 10'])
+      ipc(['keybind', 'REWIND', 'seek -10'])
     }
 
     startPoll()
@@ -1406,6 +1595,8 @@ async function poll() {
     loaded = true
     applySubtitleStyle()
     applyAudio()
+    applyFill()
+    readProps(['chapter-list']).then(c => (chapters.value = readChapters(c?.['chapter-list'])))
     await refreshTracks()
     applyPreferredSub()
     const saved = props.startAt || (props.media ? library.resumeAt(props.media, props.season, props.episode) : 0)
@@ -1432,6 +1623,8 @@ function togglePlay() {
 function seekTo(t: number) {
   position.value = Math.max(0, Math.min(duration.value || t, t))
   ipc(['set_property', 'time-pos', position.value])
+  // A widget's progress bar only hears of a jump when it is told.
+  publish()
 }
 
 function seekBy(delta: number) {
@@ -1703,6 +1896,11 @@ const ACTIONS: Record<KeyAction, () => void> = {
   subDelayBack: () => nudgeDelay(-0.1),
   subDelayForward: () => nudgeDelay(0.1),
   subDelayReset: () => nudgeDelay(-subDelay.value),
+  audioDelayBack: () => native && setAudioDelay(audioDelay.value - 0.05),
+  audioDelayForward: () => native && setAudioDelay(audioDelay.value + 0.05),
+  prevChapter: () => toChapter(-1),
+  nextChapter: () => toChapter(1),
+  fill: toggleFill,
   slower: () => setSpeed(speedStep(-1)),
   faster: () => setSpeed(speedStep(1)),
   start: () => seekTo(0),
@@ -1733,9 +1931,19 @@ function onKey(e: KeyboardEvent) {
     return
   }
 
+  // Read before `noteActivity` puts the chrome up.
+  const bare = !ui.value
   noteActivity()
   if (!started.value)
     return
+
+  // Whatever has focus: these keys mean one thing only.
+  const media = MEDIA_KEYS[e.key]
+  if (media) {
+    e.preventDefault()
+    media()
+    return
+  }
 
   // Remote control. Once a control has focus, the keys it would use are its
   // own: the browser clicks it on Enter or space, and the d-pad plugin does the
@@ -1763,6 +1971,12 @@ function onKey(e: KeyboardEvent) {
     ? () => seekTo(duration.value * (Number(e.key) / 10))
     : null
   const action = keyed.value[chord(e)]
+  // With a skip offered over the bare picture, OK presses it — the button a
+  // television would have focused, and the one thing on screen to press.
+  if (action === 'controls' && bare && skip.value) {
+    e.preventDefault()
+    return skipPart()
+  }
   const run = action ? ACTIONS[action] : digit
   if (!run)
     return
@@ -1830,7 +2044,24 @@ function toggleChrome() {
   }
   else {
     noteActivity()
+    settle()
   }
+}
+
+/**
+ * The centre transport comes up under the finger that called it. The bars go
+ * up on `pointerdown`, and a touch aims its click only once the tap is over —
+ * at the play button by then sitting under it — so the tap that brought the
+ * controls up paused the film as well. Measured on a phone. Deaf for as long
+ * as a tap lasts, which is also a double tap's window: its second tap falls
+ * through to the picture and is read there.
+ */
+const settling = ref(false)
+const { start: unsettle } = useTimeoutFn(() => (settling.value = false), DOUBLE_TAP_MS + 100, { immediate: false })
+
+function settle() {
+  settling.value = true
+  unsettle()
 }
 
 /**
@@ -1885,6 +2116,21 @@ function onNativeWheel(notches: number) {
     nudgeVolume(notches * 5)
 }
 
+let offMedia: (() => void) | null = null
+
+async function listenToMediaControls() {
+  try {
+    const off = await listen<MediaCommand>('media://command', e => onMediaCommand(e.payload))
+    if (mounted)
+      offMedia = off
+    else
+      off()
+  }
+  catch {
+    // Not running under Tauri — no desktop to have media controls.
+  }
+}
+
 async function listenToNativeMouse() {
   // Nothing in front of the page, so the picture's own pointer events already
   // arrive in the DOM — see `tapVideo`.
@@ -1937,6 +2183,8 @@ onMounted(() => {
     surface.readScale()
   rafId = requestAnimationFrame(frame)
   listenToNativeMouse()
+  listenToMediaControls()
+  holdMediaKeys(true) // Android's: see MainActivity, which hands them to `MEDIA_KEYS`
   if (props.fullscreen)
     setWindowFullscreen(true)
   startPlayer()
@@ -1947,6 +2195,8 @@ onBeforeUnmount(() => {
   document.documentElement.classList.remove('ventic-video')
   mounted = false
   nativeMouse.forEach(off => off())
+  offMedia?.()
+  holdMediaKeys(false)
   stopPoll()
   saveProgress()
   // The frame cache gives its blobs back on its own (`onScopeDispose`).
@@ -1955,6 +2205,8 @@ onBeforeUnmount(() => {
   // The watcher above dies with the component, so the last thing it asked for
   // has to be given back by hand — otherwise the screen never sleeps again.
   invoke('keep_awake', { on: false }).catch(() => {})
+  // Off the bus, so no widget offers to pause a film that has gone.
+  invoke('media_session', { now: null }).catch(() => {})
   if (native)
     invoke('player_stop').catch(() => {})
   else
@@ -2105,6 +2357,7 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
       v-if="!barTransport"
       v-show="ui && started && !centre"
       class="absolute left-1/2 top-1/2 flex items-center gap-3 rounded-full border border-white/9 bg-[#0e0f11]/70 px-3 py-3 -translate-x-1/2 -translate-y-1/2"
+      :class="settling && 'pointer-events-none'"
       @pointerenter="hovering = true"
       @pointerleave="hovering = false"
     >
@@ -2215,6 +2468,27 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
         <span>{{ $t('Buffering') }}<template v-if="status"> · {{ status }}</template></span>
       </template>
     </div>
+
+    <!-- Skip the intro or the credits. Up whether or not the chrome is — that
+         is the whole point of it — so it is a cutout of its own, and it rides
+         above the bar while the bar is there. Not under an open panel, which
+         holds the same corner. Touching it doesn't put the bars up — not on
+         the press, and not as a hover either, which a finger is too at the
+         start of a tap: either lifted it out from under the finger before
+         the tap's click arrived, and on a phone it could not be pressed. -->
+    <button
+      v-if="skip && started && !centre && !menu"
+      data-cut
+      class="absolute right-4 flex items-center gap-2 border rounded-lg px-4 py-2.5 text-label-large"
+      :class="SURFACE"
+      :style="{ bottom: `${ui && !styling ? barHeight + 16 : 24}px` }"
+      @pointerdown.stop
+      @click="skipPart"
+      @pointerenter="hovering = $event.pointerType === 'mouse'"
+      @pointerleave="hovering = false"
+    >
+      <v-icon :icon="mdiSkipForward" size="20" /> {{ skip.label }}
+    </button>
 
     <transition
       :enter-active-class="SLIDE"
@@ -2343,6 +2617,24 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
               <span class="text-label-large opacity-70">{{ $t('Boost') }}</span>
               <settings-stepper v-model="boost" :min="0" :max="MAX_DIALOGUE" :format="() => boostText" />
             </div>
+            <!-- mpv's alone, and this file's alone: a fresh one starts in step. -->
+            <template v-if="native">
+              <p :class="MENU_GROUP">
+                {{ $t('Sync') }}
+              </p>
+              <div :class="STEP_ROW">
+                <span class="text-label-large opacity-70">{{ $t('Delay') }}</span>
+                <settings-stepper
+                  v-model="audioDelayStep"
+                  :min="-10"
+                  :max="10"
+                  :step="0.05"
+                  :format="() => audioDelayText"
+                  :less="$t('Earlier (Ctrl+-)')"
+                  :more="$t('Later (Ctrl++)')"
+                />
+              </div>
+            </template>
             <!-- Only while this film has an entry of its own: it is both the
                  way back and the only sign that there is anything to go back
                  from. -->
@@ -2615,10 +2907,11 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
             :model-value="clock"
             :max="duration || 1"
             :buffered="cacheEnd"
-            :format="fmt"
+            :format="seekLabel"
             :thumb="thumb"
             :approx="approx"
             :step="10"
+            :marks="chapterMarks"
             :disabled="!started || !duration"
             @update:model-value="position = $event"
             @scrub="scrubbing = $event"
@@ -2705,6 +2998,15 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
               @click="openMenu('subs')"
             >
               <v-icon :icon="subsOn ? mdiSubtitles : mdiSubtitlesOutline" size="22" />
+            </button>
+            <button
+              v-tooltip:top="settings.fill ? $t('Fit to the screen (w)') : $t('Zoom to fill (w)')"
+              :class="[ICO, settings.fill && '!text-primary !opacity-100']"
+              :aria-pressed="settings.fill"
+              :disabled="!started"
+              @click="toggleFill"
+            >
+              <v-icon :icon="mdiAspectRatio" size="22" />
             </button>
             <!-- A television has no window to be one of many, and the player is
                  already the whole screen there: the button can only ever put the
