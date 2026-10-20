@@ -123,7 +123,10 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   pause a closed film. Windows (SMTC), macOS (`MPNowPlayingInfoCenter`) and
   Android (`MediaSession`) are each a `platform` module that doesn't exist
   yet; the page needs nothing new for them. The `Media*` keys a remote sends
-  are answered by the player's own key handler. `cargo test --lib media` runs
+  are answered by the player's own key handler — on Android handed over by
+  `MainActivity` while the player holds them (`holdMediaKeys`), because a
+  phone's WebView never passes them to the page and the key then went to
+  whichever app played last. `cargo test --lib media` runs
   the MPRIS half on the real session bus; `check:player` holds the names.
 - The torrent engine hashes pieces with aws-lc, which assembles its x86_64 fast
   paths with **NASM** — a tool Linux has packaged and Windows does not, so a

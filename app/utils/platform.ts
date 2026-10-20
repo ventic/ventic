@@ -170,6 +170,17 @@ export function backgroundApp() {
   bridge()?.leave?.()
 }
 
+/**
+ * The player is up, or gone: MainActivity takes the media keys — a remote's
+ * play/pause, a headset's button — for the page while it is, and leaves them
+ * to whatever app owns them otherwise. A phone's WebView never hands them to
+ * the page at all, so without this they went to the last app that played
+ * something, which could start it under the film. A no-op off Android.
+ */
+export function holdMediaKeys(on: boolean) {
+  bridge()?.mediaKeys?.(on)
+}
+
 /** MainActivity's `Screen`, present only inside the Android app. */
 function bridge() {
   return (globalThis as {
@@ -183,6 +194,7 @@ function bridge() {
       installer?: () => string
       openStore?: () => boolean
       leave?: () => void
+      mediaKeys?: (on: boolean) => void
     }
   }).VenticScreen
 }

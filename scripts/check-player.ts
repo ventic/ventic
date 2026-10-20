@@ -459,4 +459,21 @@ assert.match(mpv, /invoke\('media_session', \{ now: null \}\)/, 'and leaving the
 for (const action of ['play', 'pause', 'toggle', 'stop', 'next', 'seek', 'to'])
   assert.match(mpv, new RegExp(`'${action}'`), `the player answers ${action}`)
 
+// --- Android's media keys --------------------------------------------------------
+// A phone's WebView never gives the page a media key, so MainActivity takes them
+// while the player says it is up and dispatches them as keydowns. Four names
+// across Kotlin, platform.ts and the player, and each key it sends has to be
+// one the player answers — otherwise a headset's button does nothing, or goes
+// to whatever app played last.
+const activity = await Bun.file('src-tauri/gen/android/app/src/main/java/com/ventic/app/MainActivity.kt').text()
+const platformTs = await Bun.file('app/utils/platform.ts').text()
+assert.match(activity, /@JavascriptInterface\s+fun mediaKeys\(on: Boolean\)/, 'the bridge answers mediaKeys')
+assert.match(platformTs, /bridge\(\)\?\.mediaKeys\?\.\(on\)/, 'platform.ts calls it by that name')
+assert.match(mpv, /holdMediaKeys\(true\)/, 'the player holds the keys while it is up')
+assert.match(mpv, /holdMediaKeys\(false\)/, 'and gives them back on the way out')
+const handed = [...activity.matchAll(/KeyEvent\.KEYCODE_\w+ to "(\w+)"/g)].map(m => m[1]!)
+assert.ok(handed.length >= 7, 'MainActivity names the keys it hands over')
+for (const key of new Set(handed))
+  assert.match(mpv, new RegExp(`\\b${key}: \\(\\) =>`), `the player answers ${key}`)
+
 console.log('player: ok')

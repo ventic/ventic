@@ -2184,6 +2184,7 @@ onMounted(() => {
   rafId = requestAnimationFrame(frame)
   listenToNativeMouse()
   listenToMediaControls()
+  holdMediaKeys(true) // Android's: see MainActivity, which hands them to `MEDIA_KEYS`
   if (props.fullscreen)
     setWindowFullscreen(true)
   startPlayer()
@@ -2195,6 +2196,7 @@ onBeforeUnmount(() => {
   mounted = false
   nativeMouse.forEach(off => off())
   offMedia?.()
+  holdMediaKeys(false)
   stopPoll()
   saveProgress()
   // The frame cache gives its blobs back on its own (`onScopeDispose`).
