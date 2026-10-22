@@ -84,7 +84,6 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@unocss/nuxt',
     'vuetify-nuxt-module',
-    '@nuxt/fonts',
     '@nuxt/eslint',
     '@pinia/nuxt',
     '@nuxtjs/i18n',
@@ -130,6 +129,8 @@ export default defineNuxtConfig({
     // resolves families over the network at build time, and a Flathub build has
     // none — it emitted no @font-face at all there, silently, while working
     // here. A dependency is vendored into the offline build like any other.
+    // The module itself is gone too: it had nothing left to resolve, and from
+    // 1.0 a family it fails to fetch fails the build.
     '@fontsource-variable/roboto',
     '@/assets/css/layers.css',
   ],
@@ -221,6 +222,12 @@ export default defineNuxtConfig({
         ignored: ['**/src-tauri/**'],
       },
     },
+    // Every package the app imports, not just the ones a cold start reaches.
+    // Vite only discovers a dependency when a module importing it is first
+    // served, and then reloads the page to re-bundle — so one missing here is a
+    // dev webview that reloads itself the first time a lazy page (the file
+    // picker's, Settings → Account's, the phone's QR code) is opened, and Vite
+    // only ever names the ones that visit happened to trip over.
     optimizeDeps: {
       include: [
         '@material/material-color-utilities',
@@ -228,13 +235,19 @@ export default defineNuxtConfig({
         '@tauri-apps/api/app',
         '@tauri-apps/api/core',
         '@tauri-apps/api/event',
+        '@tauri-apps/api/path',
         '@tauri-apps/api/webviewWindow',
         '@tauri-apps/plugin-deep-link',
+        '@tauri-apps/plugin-dialog',
+        '@tauri-apps/plugin-fs',
         '@tauri-apps/plugin-http',
         '@tauri-apps/plugin-notification',
         '@tauri-apps/plugin-os',
         '@tauri-apps/plugin-process',
+        '@tauri-apps/plugin-shell',
+        '@tauri-apps/plugin-store',
         '@tauri-apps/plugin-updater',
+        'uqr',
       ],
     },
   },
@@ -260,9 +273,18 @@ export default defineNuxtConfig({
      * server — so point the *client* at the loopback address `adb reverse`
      * maps instead, after the CLI has had its say. `clientPort` is needed
      * because `tauri.localhost` has no port for Vite to reuse.
+     *
+     * Never a wildcard, though. `.env.example` sets `0.0.0.0` so the desktop
+     * server listens on every interface, and that is an address to *bind*, not
+     * one to dial: Linux quietly routes it to loopback, Windows refuses it
+     * outright, so on Windows the socket never opened and the desktop app had
+     * no hot reload at all. With no host the client dials the page's own
+     * origin, which is right for the desktop webview and for a browser on the
+     * LAN alike. Android dev passes `--host 127.0.0.1`, which the CLI exports
+     * over whatever `.env` says.
      */
     'vite:configResolved': config => {
-      if (host && config.server?.ws)
+      if (host && !['0.0.0.0', '::'].includes(host) && config.server?.ws)
         Object.assign(config.server.ws, { host, clientPort: 3000 })
     },
   },

@@ -206,10 +206,8 @@ function apply() {
           density="comfortable"
           hide-details
           :label="group.title()"
+          :description="group.hint()"
         />
-        <p class="text-body-small max-w-prose opacity-70">
-          {{ group.hint() }}
-        </p>
       </div>
 
       <p class="text-body-small max-w-prose opacity-70">

@@ -170,10 +170,8 @@ const spectrum = `linear-gradient(to right, ${Array.from({ length: 13 }, (_, i) 
           density="comfortable"
           hide-details
           :label="$t('Take it from my own picture too')"
+          :description="$t('Off, your own background is left out of it: the theme keeps its own colours while the picture is up, and only moves when a title\'s artwork covers it.')"
         />
-        <p class="text-body-medium opacity-70">
-          {{ $t('Off, your own background is left out of it: the theme keeps its own colours while the picture is up, and only moves when a title\'s artwork covers it.') }}
-        </p>
       </template>
     </settings-section>
   </div>
@@ -181,13 +179,19 @@ const spectrum = `linear-gradient(to right, ${Array.from({ length: 13 }, (_, i) 
 
 <style scoped>
 /* The whole point of this slider is the colours it can reach, so the track is
-   the spectrum itself rather than a filled bar. */
-.spectrum :deep(.v-slider-track__background) {
-  background: var(--spectrum);
+   the spectrum itself rather than a filled bar. The pill variant splits the
+   track into pieces either side of the handle and lines one image up across
+   all of them (VColorPicker's hue slider is the same trick), so the gradient
+   goes on every piece — as `background-image`, because the shorthand would
+   reset the size and offset that line them up. The stop dot is for a track
+   that ends somewhere; this one wraps round to where it began. */
+.spectrum :deep(:is(.v-slider-track__background, .v-slider-track__fill)) {
+  background-color: transparent;
+  background-image: var(--spectrum);
   opacity: 1;
 }
 
-.spectrum :deep(.v-slider-track__fill) {
+.spectrum :deep(.v-slider-track__stop) {
   display: none;
 }
 </style>

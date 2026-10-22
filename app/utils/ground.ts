@@ -1,4 +1,4 @@
-import { isTauri } from '@tauri-apps/api/core'
+import { invoke, isTauri } from '@tauri-apps/api/core'
 
 /**
  * Where the last painted background colour is left for the next launch.
@@ -60,4 +60,9 @@ export function rememberGround(colour: unknown) {
     .catch(() => {
       // No window layer to colour (Android), or a webview that won't take one.
     })
+
+  // And the title bar, the one layer above the page rather than under it —
+  // Windows 11's alone; everywhere else the command does nothing (see
+  // src-tauri/src/titlebar.rs).
+  invoke('window_caption', { colour }).catch(() => {})
 }

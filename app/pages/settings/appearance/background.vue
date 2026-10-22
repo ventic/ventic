@@ -93,10 +93,8 @@ async function choose(event: Event) {
           density="comfortable"
           hide-details
           :label="$t('Let artwork take over on a title')"
+          :description="$t('On, your picture is what the app rests on and the artwork covers it while you\'re on a film or show. Off, the picture stays put and nothing ever covers it.')"
         />
-        <p class="text-body-medium opacity-70">
-          {{ $t('On, your picture is what the app rests on and the artwork covers it while you\'re on a film or show. Off, the picture stays put and nothing ever covers it.') }}
-        </p>
       </template>
 
       <template v-if="ui.backdropMode === 'art' || (ui.backdropMode === 'custom' && ui.artOverCustom)">
@@ -106,10 +104,8 @@ async function choose(event: Event) {
           density="comfortable"
           hide-details
           :label="$t('Change as you browse')"
+          :description="$t('On, the background follows whichever card you\'re pointing at or have selected. Off, it only changes when you actually open something — steadier on a long list, where sweeping across a row otherwise repaints the whole window card by card.')"
         />
-        <p class="text-body-medium opacity-70">
-          {{ $t('On, the background follows whichever card you\'re pointing at or have selected. Off, it only changes when you actually open something — steadier on a long list, where sweeping across a row otherwise repaints the whole window card by card.') }}
-        </p>
       </template>
     </settings-section>
 

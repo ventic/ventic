@@ -42,9 +42,17 @@ mod buffer;
 /// Binding the engine to a VPN's interface, so torrents stop when it drops.
 mod vpn;
 
+/// The Windows title bar, painted the colour the app is.
+mod titlebar;
+
 /// mpv's IPC socket, shared by the two backends that have one.
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 mod player_socket;
+
+/// The holes cut in mpv's window for the controls, shared by the two backends
+/// whose picture paints over the page.
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+mod player_cutout;
 
 /// The NSOpenGLView libmpv renders into, which is macOS's answer to embedding.
 #[cfg(target_os = "macos")]
@@ -789,7 +797,8 @@ pub fn run() {
 			buffer::stream_buffer,
 			buffer::stream_folder,
 			vpn::engine_interfaces,
-			vpn::set_engine_interface
+			vpn::set_engine_interface,
+			titlebar::window_caption
 		])
 		.setup(|app| {
 			// The installers write the scheme association (registry keys on

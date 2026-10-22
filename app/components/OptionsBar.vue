@@ -22,7 +22,7 @@ const props = defineProps<{
    * numbers are small and the guesses are not.
    *
    * A number rather than a breakpoint because the window is not the row: a
-   * permanent sidebar takes 236px off it, a collapsed rail 56 — so one window
+   * permanent sidebar takes 236px off it, a collapsed rail 80 — so one window
    * is two very different amounts of space. At md this bar is 676px wide and
    * was being asked to hold 692px of browse controls.
    */

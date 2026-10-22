@@ -34,18 +34,52 @@ const library = computed(() => [
 </script>
 
 <template>
+  <!-- 80px collapsed: MD3's navigation rail, which names every stop under its
+       icon. A bare column of icons leaned on tooltips to say which page was
+       which, and a television hides every tooltip (layers.css) — so on the set
+       the collapsed sidebar was eight unlabelled pictures. -->
   <v-navigation-drawer
     :rail="ui.rail"
+    :rail-width="80"
     :width="236"
     permanent
     class="panel border-none"
   >
-    <nuxt-link :to="localePath('/')" class="flex items-center gap-3 px-4 py-5">
+    <nuxt-link :to="localePath('/')" class="flex items-center gap-3 py-5" :class="ui.rail ? 'justify-center' : 'px-4'">
       <img src="/logo.svg" alt="Ventic" class="size-26px shrink-0">
       <span v-if="!ui.rail" class="text-title-large whitespace-nowrap font-bold">Ventic</span>
     </nuxt-link>
 
-    <v-list nav density="comfortable" class="px-2">
+    <!-- The rail. Plain links rather than list items: a list item's title is
+         one line beside its icon, and this is a label under one. The pill is
+         MD3's active indicator, and hover and focus both light it, because a
+         remote never hovers. -->
+    <nav v-if="ui.rail" class="flex flex-col items-center gap-1 px-1.5">
+      <template v-for="(group, i) in [links, library]" :key="i">
+        <v-divider v-if="i" class="my-2 w-8 flex-none opacity-40" />
+        <nuxt-link v-for="link in group" :key="link.to" v-slot="{ href, navigate, isActive }" :to="link.to" custom>
+          <a
+            :href="href ?? undefined"
+            class="group w-full flex flex-col items-center gap-1 rounded-xl py-1.5"
+            :aria-current="isActive ? 'page' : undefined"
+            @click="navigate"
+          >
+            <span
+              class="h-8 w-14 flex items-center justify-center rounded-full transition-colors duration-200"
+              :class="isActive ? 'bg-primary/18 text-primary' : 'group-hover:bg-on-surface/8 group-focus-visible:bg-on-surface/8'"
+            >
+              <v-icon :icon="link.icon" size="22" />
+            </span>
+            <span
+              class="max-w-full truncate px-0.5 text-label-medium"
+              :class="isActive ? 'font-bold' : 'opacity-75 group-hover:opacity-100'"
+            >{{ link.title }}</span>
+          </a>
+        </nuxt-link>
+      </template>
+    </nav>
+
+    <v-list v-else nav density="comfortable" class="px-2">
       <v-list-item
         v-for="link in links"
         :key="link.to"
@@ -54,12 +88,7 @@ const library = computed(() => [
         :title="link.title"
         color="primary"
         rounded="lg"
-      >
-        <!-- Collapsed to icons, the label is the only thing naming the page.
-             `end` rather than `right` so it stays outside the drawer in the
-             four right-to-left languages too. -->
-        <v-tooltip v-if="ui.rail" activator="parent" location="end" :text="link.title" />
-      </v-list-item>
+      />
 
       <v-divider class="mx-2 my-3 opacity-40" />
 
@@ -71,9 +100,7 @@ const library = computed(() => [
         :title="link.title"
         color="primary"
         rounded="lg"
-      >
-        <v-tooltip v-if="ui.rail" activator="parent" location="end" :text="link.title" />
-      </v-list-item>
+      />
     </v-list>
   </v-navigation-drawer>
 </template>

@@ -508,4 +508,22 @@ function wordmark(hint: any) {
   assert.match(lib, /fn show_window/, 'which is the same one a second launch takes')
 }
 
+// The title bar is the ground's last layer, and the one above the page: Windows
+// paints it in the system's light or dark unless told the app's colour. It is a
+// command name in two files nothing compiles together — a rename is a seam
+// across the top of every window and no error — and the `async` is not style.
+// A plain command runs on the main thread inside the IPC call the webview is
+// waiting on, and `set_theme` re-themes that webview: the app froze the first
+// time a theme went from dark to light.
+{
+  const ground = readFileSync(new URL('../app/utils/ground.ts', import.meta.url), 'utf8')
+  const lib = readFileSync(new URL('../src-tauri/src/lib.rs', import.meta.url), 'utf8')
+  const titlebar = readFileSync(new URL('../src-tauri/src/titlebar.rs', import.meta.url), 'utf8')
+
+  assert.match(ground, /invoke\('window_caption', \{ colour \}\)/, 'every ground colour goes to the title bar too')
+  assert.match(lib, /titlebar::window_caption/, 'lib.rs hands that command to the frontend')
+  assert.match(titlebar, /pub async fn window_caption\(/, 'and it runs off the main thread, or a light theme freezes the app')
+  assert.ok(!/DWMWA_USE_IMMERSIVE_DARK_MODE/.test(titlebar), 'the dark flag is tauri\'s to set — set behind its back, tao sets it back, for ever')
+}
+
 console.log('boot diagnostics ok')

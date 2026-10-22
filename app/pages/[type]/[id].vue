@@ -217,7 +217,9 @@ const playLabel = computed(() => [
                 <dt class="w-20 shrink-0 opacity-50">
                   {{ row.label }}
                 </dt>
-                <dd class="truncate opacity-85">
+                <!-- Two lines before it gives up: a film written by three
+                     people truncated to the first and a half. -->
+                <dd class="line-clamp-2 min-w-0 opacity-85">
                   {{ row.value }}
                 </dd>
               </div>
@@ -274,22 +276,23 @@ const playLabel = computed(() => [
               >
                 {{ $t('Random episode') }}
               </v-btn>
-              <!-- Beside the other ways to get this playing, rather than in
-                   Settings: it is a fact about this title, not a preference. -->
-              <local-file-button
-                v-if="type === 'movie' || target"
-                :id="id"
-                :type="type"
-                :season="target?.season"
-                :episode="target?.episode"
-                :size="mobile ? 'default' : 'large'"
-              />
-              <!-- One element, so the three can never be split across two
-                   lines — a lone heart under the row was what wrapping did.
+              <!-- One element, so the icons can never be split across two
+                   lines — a lone heart under the row was what wrapping did, and
+                   the file picker left outside it was a lone folder on a TV.
                    Below sm they take a line of their own; from there on the
                    auto margin pins them to the end of whichever line they land
                    on, which is what the spacer here used to do. -->
               <div class="flex w-full items-center gap-1 sm:ms-auto sm:w-auto">
+                <!-- Beside the other ways to get this playing, rather than in
+                     Settings: it is a fact about this title, not a preference. -->
+                <local-file-button
+                  v-if="type === 'movie' || target"
+                  :id="id"
+                  :type="type"
+                  :season="target?.season"
+                  :episode="target?.episode"
+                  :size="mobile ? 'default' : 'large'"
+                />
                 <!-- Whole-title mark. For a show that's a manual override — the
                      app can't know every episode has been seen without a season
                      fetch, and the per-episode ticks already say it. -->

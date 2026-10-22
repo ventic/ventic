@@ -7,6 +7,7 @@
 import assert from 'node:assert'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { stepTo } from '../app/utils/steps'
 
 // --- A range -----------------------------------------------------------------
@@ -44,7 +45,9 @@ function* vues(dir: string): Generator<string> {
   }
 }
 
-const root = new URL('../app/pages/settings', import.meta.url).pathname
+// fileURLToPath, not `.pathname`, which keeps a leading slash before the drive
+// letter — `/C:/…` — and reads no directory at all on Windows.
+const root = fileURLToPath(new URL('../app/pages/settings', import.meta.url))
 for (const path of vues(root)) {
   const src = readFileSync(path, 'utf8')
   const sliders = src.match(/<v-slider[\s\S]*?>/g) ?? []
@@ -77,7 +80,7 @@ for (const grid of [300, 363, 400, 720, 1200]) {
 // One definition, or the refactor that copied it into three pages happens again.
 const ui = readFileSync(new URL('../app/stores/ui.ts', import.meta.url), 'utf8')
 assert.match(ui, /minmax\(min\(\$\{cardWidth\.value\}px, 50% - 8px\), 1fr\)/, 'the ui store owns the grid rule this checks')
-const appRoot = new URL('../app', import.meta.url).pathname
+const appRoot = fileURLToPath(new URL('../app', import.meta.url))
 for (const path of [...vues(join(appRoot, 'pages')), ...vues(join(appRoot, 'components'))]) {
   assert.doesNotMatch(
     readFileSync(path, 'utf8'),

@@ -53,19 +53,36 @@ export default {
     VChip: {
       variant: 'tonal',
     },
+    // MD3's switch: an outlined track with a small thumb that grows into the
+    // filled one when it is on. The 2014 one this replaces drew "off" as a dark
+    // grey bar on a dark page, which across a room read as nothing at all.
+    VSwitch: {
+      inset: 'material',
+      color: 'primary',
+    },
+    // MD3's slider (Vuetify 4.3): a thick track, an upright handle with a gap
+    // either side, a stop dot at the end. No `trackSize`/`thumbSize` here —
+    // set inline, either one beats the sizes the variant brings.
     VSlider: {
       color: 'primary',
       density: 'compact',
       hideDetails: true,
-      trackSize: 3,
-      thumbSize: 14,
+      variant: 'pill',
     },
+    // MD3's progress (4.3), as the md3 blueprint sets it: the bar and what is
+    // left of the track drawn apart with a gap between them, rounded ends, and
+    // a stop dot where a linear one finishes.
     VProgressCircular: {
       color: 'primary',
       indeterminate: true,
+      rounded: true,
+      variant: 'split',
     },
     VProgressLinear: {
       rounded: true,
+      roundedBar: true,
+      stopIndicator: true,
+      variant: 'split',
       height: '12',
       color: 'primary',
     },

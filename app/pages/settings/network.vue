@@ -189,10 +189,8 @@ async function bindTo(name: string | null) {
         density="comfortable"
         hide-details
         :label="$t('Only download on Wi-Fi')"
+        :description="$t('Downloads pause on mobile data or a metered hotspot, and start again on Wi-Fi. A film you pressed play on keeps streaming either way — that is data you asked for. On Wi-Fi again with the app closed, downloads resume the next time you open it.')"
       />
-      <p class="text-body-medium opacity-70">
-        {{ $t('Downloads pause on mobile data or a metered hotspot, and start again on Wi-Fi. A film you pressed play on keeps streaming either way — that is data you asked for. On Wi-Fi again with the app closed, downloads resume the next time you open it.') }}
-      </p>
       <p class="text-body-medium">
         {{ downloads.metered
           ? $t('This connection is metered right now.')
@@ -212,10 +210,8 @@ async function bindTo(name: string | null) {
         density="comfortable"
         hide-details
         :label="$t('Keep downloading in the background when the window is closed')"
+        :description="$t('The window is hidden instead of the app quitting, and downloads carry on. Open it again from the tray icon — or by launching Ventic, which brings the window back rather than starting a second copy. Quit from the tray icon when you actually want it to stop.')"
       />
-      <p class="text-body-medium opacity-70">
-        {{ $t('The window is hidden instead of the app quitting, and downloads carry on. Open it again from the tray icon — or by launching Ventic, which brings the window back rather than starting a second copy. Quit from the tray icon when you actually want it to stop.') }}
-      </p>
     </settings-section>
 
     <settings-section

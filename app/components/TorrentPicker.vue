@@ -180,7 +180,7 @@ async function download(t: Release) {
             ]"
             density="compact"
             hide-details
-            class="w-40 shrink-0 grow-0"
+            class="w-52 shrink-0 grow-0"
           />
         </div>
 

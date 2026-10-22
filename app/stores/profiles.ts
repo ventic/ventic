@@ -200,7 +200,7 @@ export const useProfilesStore = defineStore('profiles', () => {
   /** Today's watching. Kept on this device only — see NEVER in utils/sync. */
   const usage = useLocalStorage<Usage>(scoped('ventic.watchTime'), { day: '', seconds: 0, extra: 0 }, { mergeDefaults: true })
   // Midnight has to lift a lock nobody touches.
-  const now = useNow({ interval: 30_000 })
+  const now = useNow({ scheduler: tick => useIntervalFn(tick, 30_000) })
   /** Seconds left today; Infinity with no limit. */
   const left = computed(() => secondsLeft(usage.value, current.value.kids?.minutes ?? 0, now.value.getTime()))
   const timeUp = computed(() => left.value <= 0)

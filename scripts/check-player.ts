@@ -291,6 +291,18 @@ const mpv = await Bun.file('app/components/MpvPlayer.vue').text()
 const surface = await Bun.file('app/composables/useNativeSurface.ts').text()
 assert.match(surface, /const CUT = '\[data-cut\], \.v-overlay--active > \.v-overlay__content'/, 'and the tracker still looks for both')
 assert.ok(!surface.includes('rootEl.value?.querySelectorAll'), 'scoped to the player, a teleported overlay is never found')
+// A hole is cut as round as the control it is for, or each corner of a rounded
+// panel is a notch of black page against the film. The radius is a field the
+// page sends and serde reads by name — `#[serde(default)]` turns a rename into
+// square corners with no error anywhere — and both backends that cut holes
+// have to cut them from the one shape (`cargo test --lib player_cutout`).
+assert.match(surface, /radius: Math\.round\(/, 'the page sends each hole\'s radius')
+const cutoutRs = await Bun.file('src-tauri/src/player_cutout.rs').text()
+assert.match(cutoutRs, /pub radius: u32/, 'and the Rust side reads it under that name')
+for (const backend of ['player.rs', 'player_windows.rs']) {
+  const src = await Bun.file(`src-tauri/src/${backend}`).text()
+  assert.match(src, /flat_map\(Cutout::strips\)/, `${backend} cuts the rounded shape, not the bare rectangle`)
+}
 // The player has to be the only thing driving that surface, and to drive it
 // through the one place the arithmetic lives: `player_start` places the window
 // and the frame loop keeps it there, and a second copy of the scale maths in

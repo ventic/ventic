@@ -44,9 +44,15 @@ function play() {
           {{ episode.rating.toFixed(1) }}
         </span>
       </div>
-      <div class="flex gap-2 pt-0.5 text-body-small opacity-50">
+      <!-- The dot is an item of its own, so the gap either side of it is the
+           same — inside the runtime's span it sat 8px from the date and a
+           space from the runtime. -->
+      <div class="flex gap-1.5 pt-0.5 text-body-small opacity-50">
         <span>{{ dateText(episode.air) }}</span>
-        <span v-if="episode.runtime">· {{ runtimeText(episode.runtime) }}</span>
+        <template v-if="episode.runtime">
+          <span aria-hidden="true">·</span>
+          <span>{{ runtimeText(episode.runtime) }}</span>
+        </template>
       </div>
       <p class="line-clamp-2 pt-1 text-body-small opacity-70">
         {{ episode.overview || $t('No overview.') }}

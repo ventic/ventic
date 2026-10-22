@@ -426,9 +426,16 @@ const library = useLibraryStore()
 const subLang = toRef(settings, 'subLang')
 
 const { height: boxHeight } = useElementSize(boxEl)
+/**
+ * The border box, for both of the two below: what has to be cleared is
+ * everything that is drawn, and VueUse measures the content box unless told —
+ * which left out the bar's padding and its border, 21px, and sat the panel
+ * eleven pixels *inside* the bar rather than ten above it.
+ */
+const BORDER_BOX = { box: 'border-box' } as const
 /** The track/speed panel, measured because the subtitles have to clear it. */
 const menuEl = ref<HTMLElement | null>(null)
-const { height: menuHeight } = useElementSize(menuEl)
+const { height: menuHeight } = useElementSize(menuEl, undefined, BORDER_BOX)
 /**
  * The bottom bar, measured: the panel sits a little above it and the subtitles
  * lift over it. Its last visible height is kept, because the bar is `v-show`n
@@ -436,10 +443,10 @@ const { height: menuHeight } = useElementSize(menuEl)
  * frame before the bar had gone was a jump, not a lift.
  */
 const footerEl = ref<HTMLElement | null>(null)
-const { height: footerHeight } = useElementSize(footerEl)
+const { height: footerHeight } = useElementSize(footerEl, undefined, BORDER_BOX)
 const barHeight = ref(0)
 watch(footerHeight, h => h && (barHeight.value = h))
-const menuBottom = computed(() => barHeight.value + 10)
+const menuBottom = computed(() => barHeight.value + 12)
 /** Is the chrome up? Declared here because `subPos` measures against it. */
 const ui = ref(true)
 
@@ -2496,8 +2503,8 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
       enter-from-class="translate-y-[115%]"
       leave-to-class="translate-y-[115%]"
     >
-      <!-- bottom: the bottom bar (h-24) plus a 10px gap. Bound rather than a
-           class because `subPos` measures the subtitles against it.
+      <!-- bottom: the bottom bar plus a 12px gap. Bound rather than a class
+           because `subPos` measures the subtitles against it.
 
            On a television it runs the whole height of the frame instead of
            being a popup in the corner: the subtitle menu is far taller than

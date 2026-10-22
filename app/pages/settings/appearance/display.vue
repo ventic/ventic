@@ -54,10 +54,8 @@ const scale = computed({
         density="comfortable"
         hide-details
         :label="$t('Improve performance')"
+        :description="$t('Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.')"
       />
-      <p class="text-body-medium opacity-70">
-        {{ $t('Turns off the effects that cost the most to draw: the background art, the frosted glass behind the sidebar and menus, and the fades and slides that play as things appear or take focus. Everything stays where it was — it stops moving and sits on solid colour instead, which is also easier to read from across a room. Loading spinners keep turning.') }}
-      </p>
       <p class="text-body-medium opacity-70">
         {{ $t('It tells most while moving around with a remote, which is where the fades stack up: on the television this was measured on, that went from 3 frames a second to 23. It starts on there, and off everywhere else.') }}
       </p>
@@ -67,7 +65,7 @@ const scale = computed({
       <v-expansion-panel :title="$t('Advanced')">
         <v-expansion-panel-text>
           <p class="text-body-small pb-3 opacity-70">
-            <i18n-t keypath="CSS applied on top of the whole app, saved as you type. It is loaded outside every cascade layer, so a plain selector already beats the app's own styles — no {important} needed. Vuetify's palette is available as {variable} and friends." tag="span">
+            <i18n-t keypath="CSS applied on top of the whole app, saved as you type. It is loaded outside every cascade layer, so a plain selector already beats the app's own styles — no {important} needed. Vuetify's palette is available as {variable} and friends." tag="span" scope="global">
               <template #important>
                 <code>!important</code>
               </template>

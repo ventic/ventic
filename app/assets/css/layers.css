@@ -151,6 +151,77 @@
     padding-bottom: var(--safe-bottom);
   }
 
+  /* Collapsed to a rail, the sidebar stops being a surface and is a column of
+     icons on the page itself — which is what MD3's navigation rail is, and what
+     makes "give me more room" look like more room rather than a narrower dark
+     strip. The colour fades over the width's own 200ms rather than snapping.
+     Three classes so it outranks `reduce-effects` below: a clear rail has no
+     blur to save, and a solid one on a plain background is just a stripe. */
+  .v-navigation-drawer.panel {
+    transition-property: box-shadow, transform, visibility, width, height, left, right, top, bottom, background-color;
+  }
+
+  .v-navigation-drawer.v-navigation-drawer--rail.panel {
+    background-color: transparent !important;
+    backdrop-filter: none;
+  }
+
+  /* The switch's off state, in MD3's own roles. Vuetify's `inset="material"`
+     (the default, vuetify.config.ts) paints the unselected track in
+     on-surface-variant mixed with grey — right on a light page, and a bright
+     pink-grey slab on a dark one, louder than the switch beside it that is
+     actually on. The spec's roles are the same in both: the track is the
+     highest container, the outline and the small thumb are `outline`. */
+  .v-switch--inset-material .v-selection-control:not(.v-selection-control--dirty) .v-switch__track {
+    border-color: rgb(var(--v-theme-outline));
+    background-color: rgb(var(--v-theme-surface-container-highest));
+  }
+
+  .v-switch--inset-material .v-selection-control:not(.v-selection-control--dirty, .v-selection-control--disabled) .v-switch__thumb {
+    background-color: rgb(var(--v-theme-outline));
+  }
+
+  /* A switch's or a checkbox's label is a sentence in this app ("Keep
+     downloading in the background when the window is closed"), and Vuetify
+     sets every label on one line with an ellipsis — so on a phone, or in a
+     language that runs longer than English, the end of the sentence was simply
+     gone. Wrapped, it is a two-line row. */
+  .v-selection-control .v-label {
+    white-space: normal;
+    text-overflow: clip;
+  }
+
+  /* The sidebars' items, for the same reason in other languages: Settings'
+     sidebar is 228px, and "Use your phone" is "Воспользуйтесь телефоном" in
+     Russian. Two lines before an ellipsis rather than one. */
+  .v-navigation-drawer .v-list-item-title {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  /* Vuetify 4's inset tabs (Settings → Appearance) in the app's own segmented
+     style — settings-segment's, and the player's subtitle tabs': a quiet
+     container with the chosen one filled in the accent. Vuetify's own is a grey
+     pill in an outlined box, which made it the one control of its kind that
+     looked like neither of the other two. The d-pad's ring goes outside the
+     tab, as the player's does: inset, it is the accent drawn on the accent. */
+  .v-tabs--inset {
+    --v-tabs-inset-radius: 8px;
+    --v-tabs-slider-background: rgb(var(--v-theme-primary));
+    background: color-mix(in srgb, rgb(var(--v-theme-surface-container-low)) 60%, transparent);
+    box-shadow: none;
+  }
+
+  .v-tabs--inset .v-tab--selected {
+    color: rgb(var(--v-theme-on-primary));
+  }
+
+  html.dpad .v-tabs--inset .v-tab:focus {
+    outline-offset: 2px;
+  }
+
   /* v-main hard-codes a solid background that would hide the backdrop art. */
   .v-application,
   .v-application__wrap,

@@ -41,13 +41,17 @@ onActivated(() => scroller.value?.scrollTo({ top: at }))
 // Placeholders only while the first page is in flight — later pages append below
 // the existing ones, where the spinner already lives.
 const loadingFirstPage = computed(() => props.pending && !props.items.length)
+
+/** Settled on nothing at all, which is the `empty` slot's to explain. */
+const empty = computed(() => !props.items.length && !props.pending && !props.error)
 </script>
 
 <template>
   <!-- pt-1: the scroller clips at its own edge, and the top row's highlight
        needs somewhere to sit. scroll-py: keeps the row the d-pad just moved to
-       clear of the top and bottom edges. -->
-  <div ref="scroller" data-dpad-start class="h-full scroll-py-6 overflow-y-auto px-4 pb-10 pt-1 md:px-6">
+       clear of the top and bottom edges. A column, so an empty list can centre
+       its explanation in the space the grid would have had. -->
+  <div ref="scroller" data-dpad-start class="h-full flex flex-col scroll-py-6 overflow-y-auto px-4 pb-10 pt-1 md:px-6">
     <div v-if="ui.isGrid" class="grid gap-x-4 gap-y-5" :style="{ gridTemplateColumns: ui.gridColumns }">
       <media-card
         v-for="media in items"
@@ -75,7 +79,7 @@ const loadingFirstPage = computed(() => props.pending && !props.items.length)
       />
     </div>
 
-    <div class="flex flex-col items-center justify-center gap-2 py-8">
+    <div class="flex flex-col items-center justify-center gap-2 py-8" :class="empty && 'flex-1'">
       <v-progress-circular v-if="pending && items.length" />
 
       <template v-else-if="error">
@@ -86,10 +90,10 @@ const loadingFirstPage = computed(() => props.pending && !props.items.length)
         </v-btn>
       </template>
 
-      <template v-else-if="!items.length && !pending">
+      <slot v-else-if="empty" name="empty">
         <v-icon :icon="mdiMovieOpenOutline" size="40" class="opacity-30" />
         <span class="text-body-medium opacity-70">{{ $t('Nothing here.') }}</span>
-      </template>
+      </slot>
 
       <span v-else-if="done" class="text-body-small opacity-45">{{ $t('That\'s everything.') }}</span>
     </div>

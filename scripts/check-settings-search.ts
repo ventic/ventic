@@ -8,7 +8,7 @@
 // Japanese or Russian landing is only true of the words those files hold.
 import assert from 'node:assert'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { foldForSearch, PLATFORM_SECTIONS, searchSettings, settingsDocs, settingsEntries } from '../app/utils/settings-search'
 
@@ -22,7 +22,9 @@ function walk(dir: string) {
     if (statSync(path).isDirectory())
       walk(path)
     else if (name.endsWith('.vue'))
-      files[`..${path.slice(APP.length)}`] = readFileSync(path, 'utf8')
+      // Forward slashes whatever the OS: the glob's keys are URLs, and a
+      // Windows path matched none of the routes they are compared against.
+      files[`..${path.slice(APP.length).replaceAll(sep, '/')}`] = readFileSync(path, 'utf8')
   }
 }
 walk(join(APP, 'pages/settings'))

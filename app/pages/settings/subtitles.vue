@@ -106,10 +106,8 @@ const SAMPLE = computed(() => $t('It was the fall that killed him.\nNot the drop
         color="primary"
         hide-details
         density="compact"
+        :description="$t('Drops “(electricity buzzing)” and “MAN:” from subtitles written for the hard of hearing.')"
       />
-      <p class="text-body-medium opacity-70">
-        {{ $t('Drops “(electricity buzzing)” and “MAN:” from subtitles written for the hard of hearing.') }}
-      </p>
     </settings-section>
 
     <settings-section

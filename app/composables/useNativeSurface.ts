@@ -12,6 +12,26 @@ import { invoke } from '@tauri-apps/api/core'
 
 interface Rect { x: number, y: number, width: number, height: number }
 
+/** A hole, rounded like the control it is for — see src-tauri/src/player_cutout.rs. */
+interface Cut extends Rect { radius: number }
+
+/**
+ * How round an overlay's corners are, in CSS px.
+ *
+ * Read off the element, or off its first child when it has none of its own: a
+ * Vuetify dialog's `.v-overlay__content` is a square wrapper, and the rounded
+ * card is inside it. A percentage is of the box, and `rounded-full` arrives as
+ * an enormous length — both are a pill, which the Rust side clamps to.
+ */
+function radiusOf(el: Element, r: DOMRect): number {
+  const read = (e: Element | null) => {
+    const value = e ? getComputedStyle(e).borderTopLeftRadius : ''
+    const n = Number.parseFloat(value) || 0
+    return value.endsWith('%') ? n / 100 * Math.min(r.width, r.height) : n
+  }
+  return read(el) || read(el.firstElementChild)
+}
+
 /**
  * What has to show through mpv's window. `[data-cut]` is the player's own bars;
  * the second half is every Vuetify overlay — a tooltip, and the cast dialog the
@@ -66,8 +86,8 @@ export function useNativeSurface(boxEl: Ref<HTMLElement | null>, overlay: boolea
   }
 
   /** Every overlay's rectangle, clipped to the video box and in physical pixels. */
-  function cutouts(box: DOMRect, dpr: number): Rect[] {
-    const out: Rect[] = []
+  function cutouts(box: DOMRect, dpr: number): Cut[] {
+    const out: Cut[] = []
     // A closed tooltip is `display: none` and measures 0x0, which the clip drops.
     for (const el of document.querySelectorAll<HTMLElement>(CUT)) {
       const r = el.getBoundingClientRect()
@@ -82,6 +102,9 @@ export function useNativeSurface(boxEl: Ref<HTMLElement | null>, overlay: boolea
         y: Math.round((top - box.top) * dpr),
         width: Math.round((right - left) * dpr),
         height: Math.round((bottom - top) * dpr),
+        // Capped well short of u32 for the wire; anything past half the box is
+        // a pill either way.
+        radius: Math.round(Math.min(radiusOf(el, r), 1e5) * dpr),
       })
     }
     return out

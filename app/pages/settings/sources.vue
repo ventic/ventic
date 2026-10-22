@@ -173,7 +173,9 @@ onMounted(async () => {
   catch {}
 })
 
-async function toggleStremio(on: boolean | null) {
+// `unknown` because that is what a switch emits since Vuetify 4.3 — whatever its
+// `true-value` is; this one has none, so it is a boolean in practice.
+async function toggleStremio(on: unknown) {
   stremioBusy.value = true
   try {
     await (on ? useTauriDeepLinkRegister('stremio') : useTauriDeepLinkUnregister('stremio'))
@@ -207,8 +209,12 @@ async function toggleStremio(on: boolean | null) {
           <v-icon :icon="mdiInformationOutline" />
         </template>
         <!-- i18n-t rather than $t: the sentence has markup inside it, and the
-             two <code> spans are literal syntax a translator must not touch. -->
-        <i18n-t keypath="Ventic speaks the {protocol}. Any Stremio addon URL works here — paste the {link} link or the {manifest} address and it'll be trimmed to what's needed." tag="span">
+             two <code> spans are literal syntax a translator must not touch.
+             `scope="global"` because there is no other: left to look for a
+             component's own catalog, it warns on every render that it found
+             none. -->
+
+        <i18n-t keypath="Ventic speaks the {protocol}. Any Stremio addon URL works here — paste the {link} link or the {manifest} address and it'll be trimmed to what's needed." tag="span" scope="global">
           <template #protocol>
             <strong>{{ $t('Stremio addon protocol') }}</strong>
           </template>
@@ -467,14 +473,15 @@ async function toggleStremio(on: boolean | null) {
         hide-details
         :label="$t('Also handle stremio:// links')"
         @update:model-value="toggleStremio"
-      />
-      <p class="text-body-small opacity-70">
-        <i18n-t keypath="Addon pages publish {link} install links. Turning this on points them at Ventic. Leave it off if you also use Stremio — only one app can own the scheme, and this would take it." tag="span">
-          <template #link>
-            <code>stremio://</code>
-          </template>
-        </i18n-t>
-      </p>
+      >
+        <template #description>
+          <i18n-t keypath="Addon pages publish {link} install links. Turning this on points them at Ventic. Leave it off if you also use Stremio — only one app can own the scheme, and this would take it." tag="span" scope="global">
+            <template #link>
+              <code>stremio://</code>
+            </template>
+          </i18n-t>
+        </template>
+      </v-switch>
     </settings-section>
 
     <settings-section
@@ -483,7 +490,7 @@ async function toggleStremio(on: boolean | null) {
       :keywords="$t('protocol, API, developer, specification')"
     >
       <p class="text-body-small opacity-70">
-        <i18n-t keypath="Ventic asks a source for {movie}, or {series}, and expects a {streams} array back. Add several and their results are merged, with duplicates dropped and earlier sources preferred." tag="span">
+        <i18n-t keypath="Ventic asks a source for {movie}, or {series}, and expects a {streams} array back. Add several and their results are merged, with duplicates dropped and earlier sources preferred." tag="span" scope="global">
           <template #movie>
             <code>/stream/movie/&lt;imdb-id&gt;.json</code>
           </template>

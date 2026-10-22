@@ -21,6 +21,7 @@ use std::sync::Mutex;
 
 use raw_window_handle::{HasWindowHandle, RawWindowHandle};
 
+use crate::player_cutout::Cutout;
 use crate::player_socket;
 
 // ----------------------------------------------------------------------------
@@ -56,16 +57,6 @@ type ShapeRegionFn = unsafe extern "C" fn(
 	x11_dl::xlib::Region,
 	libc::c_int,
 );
-
-/// A rectangle of the video window the frontend wants punched out, in physical
-/// pixels relative to the video box's top-left.
-#[derive(serde::Deserialize, Clone, Copy)]
-pub struct Cutout {
-	x: i32,
-	y: i32,
-	width: u32,
-	height: u32,
-}
 
 fn shape_fn() -> Option<ShapeRegionFn> {
 	static SHAPE: std::sync::OnceLock<Option<usize>> = std::sync::OnceLock::new();
@@ -138,6 +129,7 @@ impl Embed {
 	}
 
 	/// The window, minus every cutout, in a single request — see the note above.
+	/// Each hole is the strips its rounded corners come to (player_cutout.rs).
 	/// Re-applied on every geometry change: a shape is stored in window
 	/// coordinates and does not grow when the window is resized.
 	fn set_shape(&self, w: u32, h: u32, cutouts: &[Cutout]) {
@@ -158,8 +150,8 @@ impl Embed {
 			let holes = (self.xlib.XCreateRegion)();
 			let mut full = rect(0, 0, w.max(1), h.max(1));
 			(self.xlib.XUnionRectWithRegion)(&mut full, region, region);
-			for c in cutouts.iter().filter(|c| c.width > 0 && c.height > 0) {
-				let mut r = rect(c.x, c.y, c.width, c.height);
+			for (x, y, sw, sh) in cutouts.iter().flat_map(Cutout::strips) {
+				let mut r = rect(x, y, sw, sh);
 				(self.xlib.XUnionRectWithRegion)(&mut r, holes, holes);
 			}
 			(self.xlib.XSubtractRegion)(region, holes, region);

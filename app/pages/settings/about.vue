@@ -119,7 +119,8 @@ function open(url: string) {
     </settings-section>
 
     <settings-section :title="$t('Built on')" :keywords="$t('credits, open source, libraries, licences, licenses, acknowledgements, third party')">
-      <v-list bg-color="transparent" class="rounded-lg bg-surface-container/40">
+      <!-- Two lines: on a phone what each component is for ran past one. -->
+      <v-list lines="two" bg-color="transparent" class="rounded-lg bg-surface-container/40">
         <v-list-item
           v-for="item in credits"
           :key="item.title"

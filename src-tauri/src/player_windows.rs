@@ -57,15 +57,7 @@ use windows_sys::Win32::UI::WindowsAndMessaging::{
 	WS_VISIBLE,
 };
 
-/// A rectangle of the video window the frontend wants punched out, in physical
-/// pixels relative to the video box's top-left.
-#[derive(serde::Deserialize, Clone, Copy)]
-pub struct Cutout {
-	x: i32,
-	y: i32,
-	width: u32,
-	height: u32,
-}
+use crate::player_cutout::Cutout;
 
 /// Null-terminated UTF-16: every Win32 call here takes a wide string.
 fn wide(s: &str) -> Vec<u16> {
@@ -278,10 +270,11 @@ impl Embed {
 		}
 	}
 
-	/// Cut each overlay rectangle out of the window. The holes let the page
-	/// underneath show through — clicks included, since a window region bounds
-	/// hit testing as well as painting. Re-applied on every geometry change: a
-	/// region is in window coordinates and does not grow when the window does.
+	/// Cut each overlay out of the window, rounded corners and all (see
+	/// player_cutout.rs). The holes let the page underneath show through —
+	/// clicks included, since a window region bounds hit testing as well as
+	/// painting. Re-applied on every geometry change: a region is in window
+	/// coordinates and does not grow when the window does.
 	fn set_shape(&self, w: u32, h: u32, cutouts: &[Cutout]) {
 		unsafe {
 			// No overlays: back to a plain rectangle, and no region to keep.
@@ -290,9 +283,8 @@ impl Embed {
 				return;
 			}
 			let region = CreateRectRgn(0, 0, w.max(1) as i32, h.max(1) as i32);
-			for c in cutouts.iter().filter(|c| c.width > 0 && c.height > 0) {
-				let hole =
-					CreateRectRgn(c.x, c.y, c.x + c.width as i32, c.y + c.height as i32);
+			for (x, y, sw, sh) in cutouts.iter().flat_map(Cutout::strips) {
+				let hole = CreateRectRgn(x, y, x + sw as i32, y + sh as i32);
 				CombineRgn(region, region, hole, RGN_DIFF);
 				DeleteObject(hole);
 			}

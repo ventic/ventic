@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { LibraryKind, LibrarySort } from '~/utils/library'
 import type { Media } from '~/utils/tmdb'
-import { mdiChevronDown, mdiSortVariant } from '@mdi/js'
+import { mdiChevronDown, mdiFilterOffOutline, mdiSortVariant } from '@mdi/js'
 import { LIBRARY_LISTS } from '~/stores/ui'
 
 /**
@@ -11,12 +11,14 @@ import { LIBRARY_LISTS } from '~/stores/ui'
  * fire here.
  *
  * `recent` names the list's own order, which is the default sort and differs per
- * page — added, or last played.
+ * page — added, or last played. `empty` is what the list says before it has
+ * anything in it: how it fills, which is the one thing an empty page can teach.
  */
 const props = defineProps<{
   title: string
   items: Media[]
   recent: string
+  empty: { icon: string, title: string, text: string }
 }>()
 
 const { lgAndUp, mobile } = useDisplay()
@@ -160,7 +162,25 @@ const active = computed(() =>
     </options-bar>
 
     <div class="min-h-0 flex-1">
-      <media-layout :items="shown" :pending="false" done />
+      <media-layout :items="shown" :pending="false" done>
+        <!-- Two different nothings: a list with nothing in it yet, and a
+             filter that has narrowed a full one down to none. -->
+        <template #empty>
+          <div v-if="!items.length" class="max-w-md flex flex-col items-center gap-3 text-center">
+            <v-icon :icon="empty.icon" size="48" class="opacity-30" />
+            <h2 class="text-title-large">
+              {{ empty.title }}
+            </h2>
+            <p class="text-body-medium opacity-70">
+              {{ empty.text }}
+            </p>
+          </div>
+          <template v-else>
+            <v-icon :icon="mdiFilterOffOutline" size="40" class="opacity-30" />
+            <span class="text-body-medium opacity-70">{{ $t('Nothing matches.') }}</span>
+          </template>
+        </template>
+      </media-layout>
     </div>
   </div>
 </template>

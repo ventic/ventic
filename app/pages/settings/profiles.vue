@@ -155,10 +155,7 @@ async function changePin() {
           <settings-swatches v-model="editing.colour" :colours="COLOURS" />
 
           <div>
-            <v-switch v-model="kids" color="primary" density="comfortable" hide-details :label="$t('Parental controls')" />
-            <p class="text-body-small opacity-70">
-              {{ $t('For a child: titles up to an age rating, an optional daily limit, and the PIN to leave.') }}
-            </p>
+            <v-switch v-model="kids" color="primary" density="comfortable" hide-details :label="$t('Parental controls')" :description="$t('For a child: titles up to an age rating, an optional daily limit, and the PIN to leave.')" />
           </div>
 
           <template v-if="editing.kids">
@@ -177,10 +174,7 @@ async function changePin() {
           </template>
 
           <div v-else>
-            <v-switch v-model="editing.nsfw" color="primary" density="comfortable" hide-details :label="$t('Show NSFW anime')" />
-            <p class="text-body-small opacity-70">
-              {{ $t('Erotic anime that TMDB doesn\'t mark as adult, in the Anime and TV Shows lists. Search finds it either way.') }}
-            </p>
+            <v-switch v-model="editing.nsfw" color="primary" density="comfortable" hide-details :label="$t('Show NSFW anime')" :description="$t('Erotic anime that TMDB doesn\'t mark as adult, in the Anime and TV Shows lists. Search finds it either way.')" />
           </div>
 
           <v-alert v-if="confirming" type="warning" variant="tonal" density="compact" :text="$t('Its watch history, lists and settings go with it, on every screen that syncs.')" />
