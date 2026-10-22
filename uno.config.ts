@@ -151,6 +151,7 @@ export default defineConfig({
     'rounded',
     'rounded-lg',
     'rounded-xl',
+    'rounded-full',
     ...['primary', 'success', 'warning', 'info', 'error'].flatMap(c => [`bg-${c}`, `text-${c}`]),
   ],
 })

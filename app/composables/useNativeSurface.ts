@@ -20,8 +20,10 @@ interface Cut extends Rect { radius: number }
  *
  * Read off the element, or off its first child when it has none of its own: a
  * Vuetify dialog's `.v-overlay__content` is a square wrapper, and the rounded
- * card is inside it. A percentage is of the box, and `rounded-full` arrives as
- * an enormous length — both are a pill, which the Rust side clamps to.
+ * card is inside it. Only there: a square bar of our own is square, and the
+ * player's header, whose first child is the pill-shaped back button, was cut as
+ * a pill. A percentage is of the box, and `rounded-full` arrives as an
+ * enormous length — both are a pill, which the Rust side clamps to.
  */
 function radiusOf(el: Element, r: DOMRect): number {
   const read = (e: Element | null) => {
@@ -29,7 +31,7 @@ function radiusOf(el: Element, r: DOMRect): number {
     const n = Number.parseFloat(value) || 0
     return value.endsWith('%') ? n / 100 * Math.min(r.width, r.height) : n
   }
-  return read(el) || read(el.firstElementChild)
+  return read(el) || (el.classList.contains('v-overlay__content') ? read(el.firstElementChild) : 0)
 }
 
 /**

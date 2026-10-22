@@ -99,7 +99,7 @@ const roomy = computed(() => width.value ? width.value >= (props.needs ?? 740) :
       mandatory
       variant="text"
       color="primary"
-      class="h-[42px] shrink-0 rounded-lg bg-surface-container/50"
+      class="h-[42px] shrink-0 rounded-full bg-surface-container/50"
     >
       <v-btn v-for="option in LAYOUTS" :key="option.value" :value="option.value" size="42" icon>
         <v-icon :icon="option.icon" size="24" />

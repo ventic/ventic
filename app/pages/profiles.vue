@@ -70,6 +70,7 @@ async function more(minutes: number) {
               stacked
               height="auto"
               width="168"
+              rounded="xl"
               class="py-4"
               :aria-current="profiles.chosen && p.id === profiles.current.id"
               @click="profiles.enter(p, to)"

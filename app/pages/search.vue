@@ -42,7 +42,7 @@ const { items, pending, error, done, loadMore } = useMediaFeed(request)
           density="compact"
           variant="text"
           color="primary"
-          class="shrink-0 rounded-lg bg-surface-container/50"
+          class="shrink-0 rounded-full bg-surface-container/50"
         >
           <v-btn v-for="option in scopes" :key="option.value" :value="option.value" size="small">
             {{ option.title }}

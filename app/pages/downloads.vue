@@ -75,7 +75,7 @@ const STATUS_LOOK: Record<StatusKey, { icon: string, class: string }> = {
 }
 
 /** A row's icon buttons — plain, for the reason the row is. */
-const ACT = 'grid size-10 shrink-0 place-items-center border-0 rounded-lg bg-transparent text-on-surface opacity-75 transition-colors hover:bg-surface-container-high hover:opacity-100 focus-visible:bg-surface-container-high focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30'
+const ACT = 'grid size-10 shrink-0 place-items-center border-0 rounded-full bg-transparent text-on-surface opacity-75 transition-colors hover:bg-surface-container-high hover:opacity-100 focus-visible:bg-surface-container-high focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30'
 
 /**
  * The player takes it from the engine by hash, so nothing is re-downloaded.

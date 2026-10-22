@@ -27,7 +27,7 @@ const downloads = useDownloadsStore()
 const files = ref<EngineFile[]>([])
 const canReveal = canOpenFolder()
 
-const ACT = 'grid size-8 shrink-0 place-items-center border-0 rounded-lg bg-transparent text-on-surface opacity-70 transition-colors hover:bg-surface-container-high hover:opacity-100 focus-visible:bg-surface-container-high focus-visible:opacity-100'
+const ACT = 'grid size-8 shrink-0 place-items-center border-0 rounded-full bg-transparent text-on-surface opacity-70 transition-colors hover:bg-surface-container-high hover:opacity-100 focus-visible:bg-surface-container-high focus-visible:opacity-100'
 
 async function load() {
   files.value = (await torrentDetails(props.torrent.id))?.files ?? []

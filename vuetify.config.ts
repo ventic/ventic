@@ -22,7 +22,9 @@ export default {
     VBtn: {
       color: 'primary',
       class: 'normal-case',
-      rounded: 'lg',
+      // MD3's full corner. `full`, not Vuetify's own `pill`: Vuetify's utility
+      // CSS isn't loaded, so the class has to be one UnoCSS knows (see the safelist).
+      rounded: 'full',
       /**
        * A loading button builds its own VProgressCircular and passes it no
        * colour, which is Vuetify asking it to inherit — but an unqualified

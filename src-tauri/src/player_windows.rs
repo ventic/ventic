@@ -48,9 +48,9 @@ use windows_sys::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows_sys::Win32::System::Pipes::WaitNamedPipeW;
 use windows_sys::Win32::System::Threading::CREATE_NO_WINDOW;
 use windows_sys::Win32::UI::WindowsAndMessaging::{
-	CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW, GetCursorPos, GetMessageW,
-	GetWindow, IsChild, LoadCursorW, PostMessageW, PostQuitMessage, RegisterClassExW, SetWindowPos,
-	ShowWindow, TranslateMessage, WindowFromPoint, GW_CHILD, HWND_TOP, IDC_ARROW, MSG,
+	CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW, GetCursorPos, GetForegroundWindow,
+	GetMessageW, GetWindow, IsChild, LoadCursorW, PostMessageW, PostQuitMessage, RegisterClassExW,
+	SetWindowPos, ShowWindow, TranslateMessage, WindowFromPoint, GW_CHILD, HWND_TOP, IDC_ARROW, MSG,
 	SWP_ASYNCWINDOWPOS, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, SW_HIDE,
 	SW_SHOWNOACTIVATE, WM_CLOSE, WM_DESTROY, WM_LBUTTONDOWN, WM_MOUSEACTIVATE, WM_MOUSEWHEEL,
 	WM_SETFOCUS, WNDCLASSEXW, WS_CHILD, WS_CLIPCHILDREN, WS_CLIPSIBLINGS, WS_EX_NOPARENTNOTIFY,
@@ -115,10 +115,13 @@ unsafe extern "system" fn wnd_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM)
 			focus_page();
 			0
 		}
-		// Sent ahead of the click, and only while the app is in the background.
-		// HIWORD(lParam) is the mouse message that is about to follow.
+		// Sent ahead of the click. HIWORD(lParam) is the mouse message that is
+		// about to follow. A *child* window gets this on every click, not only
+		// while the app is in the background — a child is never the active
+		// window — so the app being in front is asked separately, or no click
+		// on the picture would ever pause. wParam is our top-level window.
 		WM_MOUSEACTIVATE => {
-			if ((lp >> 16) & 0xffff) as u32 == WM_LBUTTONDOWN {
+			if ((lp >> 16) & 0xffff) as u32 == WM_LBUTTONDOWN && GetForegroundWindow() != wp as HWND {
 				REACTIVATING.store(true, Ordering::Relaxed);
 			}
 			DefWindowProcW(hwnd, msg, wp, lp)

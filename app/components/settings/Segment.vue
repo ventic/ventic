@@ -23,14 +23,14 @@ const model = defineModel<T>({ required: true })
 
 <template>
   <div
-    class="flex gap-1 rounded-xl bg-surface-container-low/60 p-1"
+    class="flex gap-1 rounded-full bg-surface-container-low/60 p-1"
     :class="inline ? 'self-start' : 'w-full'"
   >
     <button
       v-for="option in options"
       :key="option.value"
       type="button"
-      class="flex items-center justify-center gap-2 border-none rounded-lg px-4 py-2 text-label-large transition-colors duration-120"
+      class="flex items-center justify-center gap-2 border-none rounded-full px-4 py-2 text-label-large transition-colors duration-120"
       :class="[
         inline ? '' : 'flex-1',
         model === option.value

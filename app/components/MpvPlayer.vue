@@ -194,7 +194,7 @@ const big = computed(() => touch.value || tv)
 const SURFACE = computed(() => overlay ? 'bg-[#0e0f11] border-white/9' : 'bg-[#0e0f11]/85 border-white/9')
 
 /** Square icon button in the bars and the menu head. */
-const ICO = computed(() => `inline-flex items-center justify-center border-0 bg-transparent text-white opacity-86 transition-colors transition-opacity duration-120 hover:bg-white/12 hover:opacity-100 disabled:pointer-events-none disabled:opacity-30 rounded-lg ${big.value ? 'h-11 min-w-11' : 'h-9.5 min-w-9.5'}`)
+const ICO = computed(() => `inline-flex items-center justify-center border-0 bg-transparent text-white opacity-86 transition-colors transition-opacity duration-120 hover:bg-white/12 hover:opacity-100 disabled:pointer-events-none disabled:opacity-30 rounded-full ${big.value ? 'h-11 min-w-11' : 'h-9.5 min-w-9.5'}`)
 
 /**
  * The transport, dead centre. Play is where a remote lands and where a thumb
@@ -209,7 +209,7 @@ const PLAY_BTN = computed(() => `${ROUND} ${big.value ? 'h-17 w-17' : 'h-16 w-16
 const BAR_PLAY = computed(() => `${ROUND} ${big.value ? 'h-13 w-13' : 'h-11 w-11'}`)
 
 /** Filled button in the centre notice. */
-const BTN = 'inline-flex items-center gap-1.5 border-0 rounded-lg bg-white/12 px-3.5 py-1.75 text-label-large transition-colors duration-120 hover:bg-white/20'
+const BTN = 'inline-flex items-center gap-1.5 border-0 rounded-full bg-white/12 px-3.5 py-1.75 text-label-large transition-colors duration-120 hover:bg-white/20'
 
 /** One choice inside the speed / audio / subtitle menu. */
 const MENU_ROW = computed(() => `flex w-full items-center justify-between gap-2.5 border-0 bg-transparent rounded-lg text-left text-label-large transition-colors duration-100 hover:bg-white/9 ${big.value ? 'px-3 py-3' : 'px-2.5 py-2'}`)
@@ -2486,7 +2486,7 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration) }
     <button
       v-if="skip && started && !centre && !menu"
       data-cut
-      class="absolute right-4 flex items-center gap-2 border rounded-lg px-4 py-2.5 text-label-large"
+      class="absolute right-4 flex items-center gap-2 border rounded-full px-4 py-2.5 text-label-large"
       :class="SURFACE"
       :style="{ bottom: `${ui && !styling ? barHeight + 16 : 24}px` }"
       @pointerdown.stop
