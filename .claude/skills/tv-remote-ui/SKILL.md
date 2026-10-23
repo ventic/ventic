@@ -186,7 +186,11 @@ Run `bun run check:dpad` after touching the geometry.
   `android.software.leanback` and `android.hardware.touchscreen` as
   `required="false"` (one APK for phones and TVs), the `LEANBACK_LAUNCHER`
   category, and `android:banner` — a TV launcher shows a blank tile without one
-  (`res/drawable-xhdpi/tv_banner.png`, 320×180).
+  (`res/drawable-xhdpi/tv_banner.png`, 320×180). Play's TV review is a person
+  looking at that tile, and it rejects one without the app's name in it (TV-BN)
+  or one that doesn't fill its frame — 0.8.0's was a small round logo on grey,
+  and failed both. It is a render of `src-tauri/icons/tv-banner.svg`, which is
+  also the listing's 1280×720 banner; edit that, never the PNG.
 - `gen/android` is committed, so edits there survive; regenerating the project
   will clobber them, so re-apply the BACK callback and the
   `handleBackNavigation = false` beside it, the **OK forward and hold**

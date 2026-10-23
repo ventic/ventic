@@ -12,7 +12,7 @@
     "preinstall": "npx only-allow bun",
     "postinstall": "nuxt prepare",
     "lint": "eslint . --fix",
-    "logo": "tauri icon public/logo.svg && cp src-tauri/icons/icon.png public/logo.png",
+    "logo": "tauri icon src-tauri/icons/icon.json && cp src-tauri/icons/icon.png public/logo.png",
     "i18n": "bun scripts/i18n.ts",
     "i18n:locales": "bun scripts/i18n-locales.ts",
     "check": "bun scripts/check.ts",

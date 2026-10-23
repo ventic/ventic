@@ -660,6 +660,19 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   declared under *App content → Foreground service permissions*, with a video
   of a download continuing off screen. That one is `DownloadService`'s and
   stays.
+- **Play's TV review looks at the launcher art, and the art is generated.** 0.8.0
+  came back "No full-size app banner and/or icon": a banner without the app's
+  name in it fails TV-BN, and one that doesn't fill its frame — or a store icon
+  with transparent corners for Play's background to show through — reads as
+  not full-size. So the banner (`res/drawable-xhdpi/tv_banner.png`, and the
+  listing's 1280×720 `docs/media/play/tv-banner.png`) is a render of
+  `src-tauri/icons/tv-banner.svg`, the listing's 512px `docs/media/play/icon.png`
+  one of `play-icon.svg`, all opaque. `bun run logo` reads
+  `src-tauri/icons/icon.json` rather than the logo itself because handed the
+  logo, tauri stretches the whole round thing across the adaptive icon's 108dp
+  layer over white and every launcher mask crops the V; the manifest gives it
+  `android-foreground.svg` (the mark inside the safe zone) and `#333` behind
+  it. A new logo is those three SVGs too, not only `public/logo.svg`.
 - **Two bundles are rewritten after they are signed, and the manifest has to be
   told.** `scripts/build/linux/appimage.ts` strips libwayland and repacks the
   AppImage, and SignPath returns the Windows installers with a certificate
