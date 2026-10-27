@@ -289,7 +289,7 @@ async function add() {
             @click="toggleOpen(t)"
             @contextmenu.prevent="openMenu(t, $event)"
           >
-            <div v-tooltip:top="t.name ?? t.info_hash" class="truncate text-body-medium">
+            <div class="truncate text-body-medium">
               {{ t.name ?? t.info_hash }}
             </div>
             <div class="mt-1.5 h-1 overflow-hidden rounded-full bg-on-surface/12">

@@ -88,6 +88,8 @@ const roomy = computed(() => width.value ? width.value >= (props.needs ?? 740) :
         :min="110"
         :max="300"
         :step="10"
+        :track-size="8"
+        :thumb-size="24"
         :prepend-icon="mdiImageSizeSelectSmall"
       />
     </div>
