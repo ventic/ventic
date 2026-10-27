@@ -1674,13 +1674,18 @@ const IDLE_MS = isTv() ? 6500 : 2800
 const hovering = ref(false)
 /**
  * Is there a pointer that can hover at all? A television answers `hover: none`,
- * and it means it — but the webview still fires `pointerenter` at whatever turns
- * up under its idea of where a pointer last was, which is the middle of the
- * screen, which is where the transport is. One phantom enter with no leave
+ * and it means it — but its webview can still come to hold a pointer position,
+ * and then fires `pointerenter` and `pointerleave` at whatever comes and goes
+ * under it, for as long as the page lives. One phantom enter with no leave
  * behind it, and `hovering` stayed true for the rest of the film: the bars never
  * went away once, on the one device where covering the picture matters most.
+ * Watched rather than counted it was no better. Parked over the bottom bar, the
+ * bar sliding away was a leave, the leave woke the chrome, and the bar was back
+ * up before it had finished going — every 6.5 s, in every film, until the app
+ * was restarted. So it is `hovered` that both holds the chrome and wakes it.
  */
 const hoverable = useMediaQuery('(hover: hover)')
+const hovered = computed(() => hovering.value && hoverable.value)
 /** A control in the chrome holds keyboard focus — someone is driving with a remote. */
 const focused = ref(false)
 /**
@@ -1770,12 +1775,13 @@ function noteActivity() {
   // Keep them up while paused, stopped, hovered, or reading a menu — hiding only
   // makes sense mid-playback. Focus does *not* keep them up: on a TV every press
   // leaves something focused, which pinned the bars over the film for good.
-  if (started.value && !paused.value && !menu.value && !(hovering.value && hoverable.value))
+  if (started.value && !paused.value && !menu.value && !hovered.value)
     startHide()
 }
 
-// Not `focused`: the blur `hideChrome` does would fire this straight back.
-watch([started, paused, menu, hovering], noteActivity)
+// Not `focused`: the blur `hideChrome` does would fire this straight back. Not
+// `hovering` either, for the same reason on a television — see `hoverable`.
+watch([started, paused, menu, hovered], noteActivity)
 
 // The bar appearing is the only notice anyone gives that a scrub may be coming.
 // `duration` is in there because it lands a beat after playback starts, and a

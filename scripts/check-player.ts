@@ -343,6 +343,12 @@ assert.match(mpv, /invoke\('player_cursor', \{ visible: show \}\)/, 'the player 
 assert.match(mpv, /function hideChrome\(\) \{\n\s+ui\.value = false\n\s+showPointer\(false\)/, 'the chrome going away takes it with it')
 assert.match(mpv, /function noteActivity\(\) \{\n\s+ui\.value = true\n\s+showPointer\(true\)/, 'and coming back brings it back')
 assert.match(lib, /player::player_cursor/, 'lib.rs hands it to the frontend')
+// A television's webview can hold a pointer position, and fires a leave at the
+// bar sliding out from under it. Woken by raw `hovering`, the bar came straight
+// back up every 6.5 s for the rest of the session, in every film.
+assert.match(mpv, /const hovered = computed\(\(\) => hovering\.value && hoverable\.value\)/, 'where nothing can hover, nothing hovers')
+assert.match(mpv, /watch\(\[started, paused, menu, hovered\], noteActivity\)/, 'and only hover that counts wakes the chrome')
+assert.match(mpv, /!hovered\.value\)\n\s+startHide\(\)/, 'and the same hover is what holds it up')
 for (const backend of ['player.rs', 'player_windows.rs', 'player_macos.rs', 'player_unsupported.rs']) {
   const src = await Bun.file(`src-tauri/src/${backend}`).text()
   assert.match(src, /pub fn player_cursor\(/, `${backend} answers to it — a backend without it does not compile`)
