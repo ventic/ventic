@@ -2561,7 +2561,7 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration), 
         <div
           v-if="menu === 'subs'"
           role="tablist"
-          class="mx-1.5 mt-1.5 flex shrink-0 gap-1 rounded-lg bg-white/6 p-1"
+          class="mx-1.5 mt-1.5 flex shrink-0 gap-1 rounded-full bg-white/6 p-1"
           @keydown="onTabKey"
         >
           <button
@@ -2570,7 +2570,7 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration), 
             role="tab"
             :aria-selected="subTab === t.value"
             :tabindex="subTab === t.value ? 0 : -1"
-            class="min-w-0 flex-1 border-0 rounded-md px-2 text-label-large leading-tight transition-colors duration-120 focus:!outline-offset-2"
+            class="min-w-0 flex-1 border-0 rounded-full px-2 text-label-large leading-tight transition-colors duration-120 focus:!outline-offset-2"
             :class="[
               big ? 'py-2.5' : 'py-1.5',
               subTab === t.value ? 'bg-primary text-on-primary font-medium' : 'bg-transparent text-white/70 hover:bg-white/9 hover:text-white',
