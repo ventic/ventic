@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "U-{device} akakwazanga ukufinyelela le divayisi — udonga lomlilo lapha luvimba imbobo {port}.",
   "{device} didn't answer. Stop the film there yourself.": "U-{device} akaphendulanga. Misa ifilimu lapho ngokwakho.",
   "{device} didn't stop. Stop the film there yourself.": "U-{device} akamanga. Misa ifilimu lapho ngokwakho.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "U-{device} akanayo idikhoda yevidiyo ye-{codec} yale filimu, ngakho bekuzodlala umsindo kuphela esikrinini esimnyama. Ireliza le-1080p x264 lidlala noma kuphi.",
   "{done} of {total}": "{done} kokungu-{total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "I-{drive} ifomethwe nge-FAT32, engakwazi ukuthwala ifayela elilodwa elidlula i-{limit}. Amareliza amakhulu asakazwa esitoreji sedivayisi uqobo esikhundleni sokulandwa — konke okuncane kulandwa njengokujwayelekile.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "I-{drive} ifakiwe, kodwa akukho okungabhalwa kuyo — le divayisi ayilisekeli ifomethi idrayivu ekuyo. Ukuyifometha lapha kuyakulungisa lokho, futhi kususe konke okukuyo.",

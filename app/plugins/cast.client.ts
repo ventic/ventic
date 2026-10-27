@@ -73,7 +73,9 @@ export default defineNuxtPlugin(() => {
     applied = wanted
 
     try {
-      await receiveCasts(on, settings.castName, code)
+      // What this device has no decoder for never changes while it runs, so it
+      // is not part of `wanted`.
+      await receiveCasts(on, settings.castName, code, cannotDecode(deviceCodecs()))
     }
     catch (e) {
       // A port already taken is the realistic failure, and the switch being on

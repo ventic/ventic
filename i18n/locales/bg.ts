@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} не можа да достигне това устройство — тукашна защитна стена блокира порт {port}.",
   "{device} didn't answer. Stop the film there yourself.": "{device} не отговори. Спрете филма там сами.",
   "{device} didn't stop. Stop the film there yourself.": "{device} не спря. Спрете филма там сами.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "{device} няма декодер за видеото {codec} на този филм, така че то би се възпроизвело като звук върху черен екран. Издание 1080p x264 се възпроизвежда навсякъде.",
   "{done} of {total}": "{done} от {total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} е форматиран като FAT32, който не може да побере файл над {limit}. По-големите издания се пускат поточно от собствената памет на устройството вместо да се изтеглят — всичко по-малко се изтегля нормално.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} е включен, но на него не може да се записва — това устройство не поддържа формата, в който е дискът. Форматирането му тук решава това и изтрива всичко на диска.",

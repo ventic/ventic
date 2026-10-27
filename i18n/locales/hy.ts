@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device}-ը չկարողացավ հասնել այս սարքին — այստեղի ցանցային պատնեշը փակում է {port} պորտը։",
   "{device} didn't answer. Stop the film there yourself.": "{device}-ը չպատասխանեց։ Ֆիլմն այնտեղ ինքներդ դադարեցրեք։",
   "{device} didn't stop. Stop the film there yourself.": "{device}-ը չդադարեց։ Ֆիլմն այնտեղ ինքներդ դադարեցրեք։",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "{device}-ը չունի ապակոդավորիչ այս ֆիլմի {codec} տեսանյութի համար, ուստի այն կհնչեր որպես ձայն սև էկրանի վրա։ 1080p x264 թողարկումը նվագարկվում է ամենուր։",
   "{done} of {total}": "{done}/{total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive}-ը ձևաչափված է FAT32-ով, որը չի կարող պահել {limit}-ից մեծ ֆայլ։ Ավելի մեծ թողարկումները նվագարկվում են հոսքով սարքի սեփական պահոցից՝ ներբեռնվելու փոխարեն — ավելի փոքր ամեն ինչ ներբեռնվում է սովորականի պես։",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive}-ը միացված է, բայց դրա վրա ոչինչ չի կարող գրվել — այս սարքը չի աջակցում այն ձևաչափին, որով սկավառակն է։ Այն այստեղ ձևաչափելը լուծում է դա և ջնջում սկավառակի ամբողջ պարունակությունը։",

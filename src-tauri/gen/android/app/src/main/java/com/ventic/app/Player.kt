@@ -322,6 +322,24 @@ class VenticPlayer(private val activity: MainActivity) {
         if (state == Player.STATE_ENDED) running = false
       }
 
+      // A video codec with no decoder at all raises no error: the track selector
+      // leaves the video renderer out and plays the sound over black, which
+      // looks like a broken TV rather than a release this one can't show.
+      // Measured with an AV1 release on the Philips set: no `video/av01` decoder
+      // of any kind, and software AV1 (dav1d) tops out at 17 of the 24 fps the
+      // film needs, so there is nothing to fall back to either. A track over the
+      // decoder's stated limits still counts: ExoPlayer tries those, and they
+      // often play. Audio can't end up here — FFmpeg is behind every codec.
+      override fun onTracksChanged(tracks: Tracks) {
+        if (!running || tracks.isTypeSupportedOrEmpty(C.TRACK_TYPE_VIDEO, true)) return
+        val f = tracks.groups.first { it.type == C.TRACK_TYPE_VIDEO }.getTrackFormat(0)
+        val codec = if (f.sampleMimeType == MimeTypes.VIDEO_AV1) "AV1" else label(f)
+        running = false
+        failure = "This device has no decoder for this release's $codec video, so it would " +
+          "play as sound over a black screen. A 1080p x264 release plays anywhere."
+        p.stop()
+      }
+
       override fun onCues(cueGroup: CueGroup) {
         cues = cueGroup.cues.mapNotNull { it.text?.toString() }.joinToString("\n").trim()
       }

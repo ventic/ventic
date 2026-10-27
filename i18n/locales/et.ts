@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} ei saanud seda seadet kätte — siinne tulemüür blokeerib pordi {port}.",
   "{device} didn't answer. Stop the film there yourself.": "{device} ei vastanud. Peata film seal ise.",
   "{device} didn't stop. Stop the film there yourself.": "{device} ei peatunud. Peata film seal ise.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "Seadmel {device} pole selle filmi {codec}-video jaoks dekoodrit, nii et see mängiks helina musta ekraani taustal. 1080p x264 väljalase mängib kõikjal.",
   "{done} of {total}": "{done}/{total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} on FAT32-vormingus, mis ei mahuta ühtki faili üle {limit}. Suuremad väljalasked voogedastatakse seadme enda salvestusruumist allalaadimise asemel — kõik väiksem laaditakse alla tavapäraselt.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} on ühendatud, aga sinna ei saa midagi kirjutada — see seade ei toeta vormingut, milles ketas on. Selle vormindamine siin lahendab probleemi ja kustutab kõik, mis kettal on.",

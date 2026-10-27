@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} 无法连接到这台设备 — 这里的防火墙挡住了 {port} 端口。",
   "{device} didn't answer. Stop the film there yourself.": "{device} 没有回应。请自行在那边停止影片。",
   "{device} didn't stop. Stop the film there yourself.": "{device} 没有停止。请自行在那边停止影片。",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "{device} 没有能解码这部影片 {codec} 视频的解码器，所以只会在黑屏上播放声音。1080p x264 的资源在哪里都能播放。",
   "{done} of {total}": "{done} / {total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} 是 FAT32 格式，无法存放超过 {limit} 的单个文件。更大的资源会从设备自身存储串流而不是下载——更小的都照常下载。",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} 已插入，但无法向其写入任何内容——本设备不支持该驱动器当前的格式。在这里格式化即可解决，同时会清空驱动器上的所有内容。",

@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} nespēja sasniegt šo ierīci — šejienes ugunsmūris bloķē portu {port}.",
   "{device} didn't answer. Stop the film there yourself.": "{device} neatbildēja. Apturiet filmu tur pats.",
   "{device} didn't stop. Stop the film there yourself.": "{device} neapstājās. Apturiet filmu tur pats.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "Ierīcei {device} nav dekodera šīs filmas {codec} video, tāpēc tā skanētu kā skaņa virs melna ekrāna. 1080p x264 izdevums atskaņojas jebkur.",
   "{done} of {total}": "{done} no {total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} ir formatēts FAT32, kas nevar saturēt nevienu failu, lielāku par {limit}. Lielāki izdevumi tiek straumēti no ierīces pašas krātuves, nevis lejupielādēti — viss mazākais tiek lejupielādēts kā parasti.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} ir pievienots, bet uz tā neko nevar ierakstīt — šī ierīce neatbalsta formātu, kādā ir disks. Formatējot to šeit, tas tiek atrisināts, un viss diskā tiek izdzēsts.",

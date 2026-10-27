@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} ei tavoittanut tätä laitetta — täällä oleva palomuuri estää portin {port}.",
   "{device} didn't answer. Stop the film there yourself.": "{device} ei vastannut. Pysäytä elokuva siellä itse.",
   "{device} didn't stop. Stop the film there yourself.": "{device} ei pysähtynyt. Pysäytä elokuva siellä itse.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "Laitteella {device} ei ole purkajaa tämän elokuvan {codec}-videolle, joten se toistuisi pelkkänä äänenä mustan ruudun päällä. 1080p x264 -julkaisu toimii kaikkialla.",
   "{done} of {total}": "{done}/{total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} on alustettu FAT32-muotoon, joka ei voi sisältää yli {limit} tiedostoa. Suuremmat julkaisut suoratoistetaan laitteen omasta tallennustilasta lataamisen sijaan — kaikki pienempi ladataan normaalisti.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} on kytketty, mutta sille ei voi kirjoittaa mitään — tämä laite ei tue tiedostojärjestelmää, jossa asema on. Sen alustaminen täällä korjaa asian ja tyhjentää kaiken, mitä asemalla on.",

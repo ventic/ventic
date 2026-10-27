@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "A(z) {device} nem érte el ezt az eszközt — egy itteni tűzfal blokkolja a(z) {port} portot.",
   "{device} didn't answer. Stop the film there yourself.": "A(z) {device} nem válaszolt. Állítsd le ott a filmet magad.",
   "{device} didn't stop. Stop the film there yourself.": "A(z) {device} nem állt le. Állítsd le ott a filmet magad.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "A(z) {device} nem rendelkezik dekódolóval ennek a filmnek a(z) {codec} videójához, így csak a hang szólna egy fekete képernyő fölött. Egy 1080p x264 kiadás mindenhol lejátszható.",
   "{done} of {total}": "{done} / {total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} FAT32-re van formázva, ami nem tud {limit} fölötti fájlt tárolni. A nagyobb kiadások letöltés helyett az eszköz saját tárhelyéről streamelődnek — minden kisebb a szokásos módon töltődik le.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "A(z) {drive} csatlakoztatva van, de semmit sem lehet rá írni — ez az eszköz nem támogatja a meghajtó formátumát. Ha itt formázod, ez megoldódik, és minden törlődik róla.",

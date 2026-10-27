@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} ti siña ha kontåkta este na device — un firewall guini ha bloknea i port {port}.",
   "{device} didn't answer. Stop the film there yourself.": "{device} ti manoppe. Påra i mubi guihi hao maisa.",
   "{device} didn't stop. Stop the film there yourself.": "{device} ti pumåra. Påra i mubi guihi hao maisa.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "Taya' decoder i {device} para i {codec} na video gi este na mubi, pues son ha' para u hugando gi un åttelong na screen. Un 1080p x264 na release hugando gi todu lugåt.",
   "{done} of {total}": "{done} gi {total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "Ma fotmat {drive} FAT32, ni ti siña ha gute' un file ni mås di {limit}. I mås dångkulo na release ma stream ginen i storage-ña i device kontra ma download — todu i mås dikike' ma download komo sisiha.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "Makonekta {drive}, lao taya' siña ma tuge' guihi — este na device ti ha suppota i format i drive. Yanggen un format guini, ma fiho, ya ma na'gasgas todu ni gaige gi drive.",

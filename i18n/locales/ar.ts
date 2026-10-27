@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "تعذّر على {device} الوصول إلى هذا الجهاز — جدار حماية هنا يحجب المنفذ {port}.",
   "{device} didn't answer. Stop the film there yourself.": "لم يستجب {device}. أوقف الفيلم هناك بنفسك.",
   "{device} didn't stop. Stop the film there yourself.": "لم يتوقف {device}. أوقف الفيلم هناك بنفسك.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "لا يملك {device} مفكك ترميز لفيديو {codec} في هذا الفيلم، لذا سيُشغَّل صوتًا فوق شاشة سوداء. إصدار x264 بدقة 1080p يعمل في أي مكان.",
   "{done} of {total}": "{done} من {total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} مهيأ بنظام FAT32 الذي لا يتسع لملف واحد يزيد على {limit}. الإصدارات الأكبر تُبث من ذاكرة الجهاز نفسه بدلًا من تنزيلها — وكل ما هو أصغر يُنزَّل كالمعتاد.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} متصل، لكن لا يمكن الكتابة عليه — فهذا الجهاز لا يدعم الصيغة التي عليها القرص. تهيئته هنا تحل ذلك، وتمحو كل ما عليه.",

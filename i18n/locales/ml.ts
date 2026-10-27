@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} ന് ഈ ഉപകരണത്തിൽ എത്താനായില്ല — ഇവിടത്തെ ഒരു ഫയർവാൾ {port} പോർട്ട് തടയുന്നു.",
   "{device} didn't answer. Stop the film there yourself.": "{device} പ്രതികരിച്ചില്ല. സിനിമ അവിടെ നിങ്ങൾ തന്നെ നിർത്തുക.",
   "{device} didn't stop. Stop the film there yourself.": "{device} നിന്നില്ല. സിനിമ അവിടെ നിങ്ങൾ തന്നെ നിർത്തുക.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "ഈ സിനിമയുടെ {codec} വീഡിയോയ്ക്കുള്ള ഡീകോഡർ {device}-ൽ ഇല്ല, അതിനാൽ കറുത്ത സ്ക്രീനിൽ ശബ്ദം മാത്രമേ പ്ലേ ആകൂ. 1080p x264 റിലീസ് എവിടെയും പ്ലേ ആകും.",
   "{done} of {total}": "{total} ൽ {done}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} FAT32-ൽ ഫോർമാറ്റ് ചെയ്തതാണ്, അതിന് {limit}-ൽ കൂടുതലുള്ള ഒറ്റ ഫയൽ സൂക്ഷിക്കാനാവില്ല. വലിയ റിലീസുകൾ ഡൗൺലോഡിനു പകരം ഉപകരണത്തിന്റെ സ്വന്തം സംഭരണത്തിൽ നിന്ന് സ്ട്രീം ചെയ്യും — അതിലും ചെറുതെല്ലാം സാധാരണ പോലെ ഡൗൺലോഡ് ചെയ്യും.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} കുത്തിവച്ചിട്ടുണ്ട്, പക്ഷേ അതിലേക്ക് ഒന്നും എഴുതാനാവില്ല — ഈ ഉപകരണം ഡ്രൈവിന്റെ ഫോർമാറ്റിനെ പിന്തുണയ്ക്കുന്നില്ല. ഇവിടെ ഫോർമാറ്റ് ചെയ്താൽ അത് ശരിയാകും, ഡ്രൈവിലുള്ളതെല്ലാം മായും.",

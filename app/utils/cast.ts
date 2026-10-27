@@ -53,6 +53,31 @@ export interface CastPlay {
   title: string
   /** Seconds to resume at — where this device had got to. */
   position: number
+  /**
+   * The film's video codec as the sending player names it (mpv's `av1`), or
+   * empty where it couldn't tell — which is never refused. See `cannotDecode`.
+   */
+  video?: string
+}
+
+/**
+ * The video codecs this device has no decoder for, by mpv's names for them —
+ * what a sender reads off its own player, and what `play` in cast.rs refuses
+ * while the sender is still on screen to say so. Played anyway, the film was
+ * sound over a black screen on a television across the room.
+ *
+ * `decoders` is `deviceCodecs()`: only Android can be missing one, since mpv
+ * brings its own, and null — everywhere else — refuses nothing. A codec not
+ * named here is never refused either, because not knowing must not be what
+ * stops a film.
+ *
+ * ponytail: the two a release realistically arrives in and a device
+ * realistically lacks — AV1 on an older TV, HEVC on a cheap phone. Another is
+ * a row: mpv's name, and the type MediaCodec lists it under.
+ */
+export function cannotDecode(decoders: Set<string> | null): string[] {
+  const TYPES: Record<string, string> = { av1: 'video/av01', hevc: 'video/hevc' }
+  return decoders ? Object.keys(TYPES).filter(name => !decoders.has(TYPES[name]!)) : []
 }
 
 /**
@@ -309,6 +334,12 @@ export async function sendPlay(device: CastDevice, code: string, play: CastPlay)
           }
         : { message: $t('{device} couldn\'t open that link. It may have expired, or that device may have no connection of its own.', { device: device.name }) }
     }
+
+    // It has no decoder for the picture (see `cannotDecode`), which is worth
+    // knowing here, where another release can still be picked, rather than as
+    // sound over black on the other screen.
+    if (res.status === 415)
+      return { message: $t('{device} has no decoder for this film\'s {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.', { device: device.name, codec: play.video?.toUpperCase() }) }
     return res.ok ? null : { message: $t('The other device refused the film.') }
   }
   catch {
@@ -437,7 +468,10 @@ export async function sharingEngine(): Promise<boolean> {
   return await invoke<boolean>('cast_sharing').catch(() => false)
 }
 
-/** Start or stop answering play commands from other devices. */
-export async function receiveCasts(enable: boolean, name: string, code: string): Promise<void> {
-  await invoke('cast_receive', { enable, name, code })
+/**
+ * Start or stop answering play commands from other devices. `cannot` is what
+ * this device turns away — see `cannotDecode`.
+ */
+export async function receiveCasts(enable: boolean, name: string, code: string, cannot: string[]): Promise<void> {
+  await invoke('cast_receive', { enable, name, code, cannot })
 }

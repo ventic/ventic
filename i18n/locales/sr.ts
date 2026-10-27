@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} није могао да допре до овог уређаја — овдашњи заштитни зид блокира порт {port}.",
   "{device} didn't answer. Stop the film there yourself.": "{device} није одговорио. Заустави филм тамо сам.",
   "{device} didn't stop. Stop the film there yourself.": "{device} се није зауставио. Заустави филм тамо сам.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "{device} нема декодер за {codec} видео овог филма, па би се чуо само звук преко црног екрана. Издање 1080p x264 ради свуда.",
   "{done} of {total}": "{done} од {total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} је форматиран као FAT32, који не може да прими ниједну датотеку већу од {limit}. Већа издања се стримују из сопствене меморије уређаја уместо да се преузимају — све мање се преузима нормално.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} је прикључен, али на њега ништа не може да се упише — овај уређај не подржава формат у коме је диск. Форматирање овде то решава и брише све што је на диску.",

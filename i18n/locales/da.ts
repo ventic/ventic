@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} kunne ikke nå denne enhed — en firewall her blokerer port {port}.",
   "{device} didn't answer. Stop the film there yourself.": "{device} svarede ikke. Stop filmen der selv.",
   "{device} didn't stop. Stop the film there yourself.": "{device} stoppede ikke. Stop filmen der selv.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "{device} har ingen afkoder til denne films {codec}-video, så den ville blive afspillet som lyd over en sort skærm. En 1080p x264-udgivelse kan afspilles overalt.",
   "{done} of {total}": "{done} af {total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} er formateret som FAT32, der ikke kan rumme en enkelt fil over {limit}. Større udgivelser streames fra enhedens eget lager i stedet for at blive hentet — alt mindre hentes som normalt.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} er sat i, men der kan ikke skrives noget til det — denne enhed understøtter ikke det format, drevet er i. At formatere det her løser det og sletter alt, hvad der er på drevet.",

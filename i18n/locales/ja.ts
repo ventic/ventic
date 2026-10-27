@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} からこの端末に接続できませんでした。こちらのファイアウォールがポート {port} を塞いでいます。",
   "{device} didn't answer. Stop the film there yourself.": "{device} が応答しませんでした。そちらで映画を自分で停止してください。",
   "{device} didn't stop. Stop the film there yourself.": "{device} が停止しませんでした。そちらで映画を自分で停止してください。",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "{device} にはこの映画の {codec} 映像を再生するデコーダーがないため、黒い画面に音声だけが流れることになります。1080p x264 のリリースならどこでも再生できます。",
   "{done} of {total}": "{done} / {total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} は FAT32 でフォーマットされており、{limit} を超えるファイルを保存できません。それより大きいリリースはダウンロードせず、端末自体のストレージからストリーミング再生します。それより小さいものは通常どおりダウンロードされます。",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} は接続されていますが、書き込めません。この端末はこのドライブの形式に対応していません。ここでフォーマットすれば解決しますが、ドライブ上のデータはすべて消えます。",

@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} не смог связаться с этим устройством — здешний брандмауэр блокирует порт {port}.",
   "{device} didn't answer. Stop the film there yourself.": "{device} не ответил. Остановите фильм там сами.",
   "{device} didn't stop. Stop the film there yourself.": "{device} не остановился. Остановите фильм там сами.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "На {device} нет декодера для видео {codec} этого фильма, поэтому был бы слышен только звук на чёрном экране. Релиз 1080p x264 воспроизводится где угодно.",
   "{done} of {total}": "{done} из {total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} отформатирован в FAT32 и не может хранить файл больше {limit}. Более крупные релизы воспроизводятся потоком из собственной памяти устройства вместо скачивания — всё, что меньше, скачивается как обычно.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} подключён, но на него ничего нельзя записать — это устройство не поддерживает формат, в котором находится диск. Форматирование здесь это исправит и сотрёт всё, что на диске.",

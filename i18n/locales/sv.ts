@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} kunde inte nå den här enheten — en brandvägg här blockerar port {port}.",
   "{device} didn't answer. Stop the film there yourself.": "{device} svarade inte. Stoppa filmen där själv.",
   "{device} didn't stop. Stop the film there yourself.": "{device} stoppade inte. Stoppa filmen där själv.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "{device} har ingen avkodare för den här filmens {codec}-video, så den skulle spelas som ljud över en svart skärm. En 1080p x264-utgåva spelas överallt.",
   "{done} of {total}": "{done} av {total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} är formaterad som FAT32 och kan inte rymma en enskild fil över {limit}. Större utgåvor strömmas från enhetens egen lagring i stället för att laddas ner — allt mindre laddas ner som vanligt.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} är inkopplad, men ingenting kan skrivas till den — den här enheten stöder inte formatet disken är i. Att formatera den här löser det, och raderar allt som finns på disken.",

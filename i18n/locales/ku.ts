@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} nekarî bigihîje vê amûrê — dîwarekî agir ê li vir portê {port} digire.",
   "{device} didn't answer. Stop the film there yourself.": "{device} bersiv neda. Fîlmî li wir bi xwe rawestîne.",
   "{device} didn't stop. Stop the film there yourself.": "{device} rawestiya. Fîlmî li wir bi xwe rawestîne.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "{device} ji bo vîdyoya {codec} ya vê fîlmê veşifrekerek tune, ji ber vê yekê ew ê tenê wekî deng li ser ekraneke reş bilîze. Berdanek 1080p x264 li her derê dilîze.",
   "{done} of {total}": "{done} ji {total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} bi FAT32 hatiye formatkirin, ku nikare pelekê yekane ji {limit} mezintir bigire. Berdanên mezintir li şûna daxistinê ji bîrgeha amûrê bi xwe bi streamê tên lîstin — her tiştê biçûktir wekî asayî tê daxistin.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} girêdayî ye, lê tiştek nayê nivîsandin ser — ev amûr formata dîskê piştgirî nake. Formatkirina wê li vir vê çareser dike û her tiştê li ser dîskê jê dibe.",

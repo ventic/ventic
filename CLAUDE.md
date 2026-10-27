@@ -471,6 +471,11 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   to open for that desktop to *receive* a cast. That hint is Linux's alone:
   Windows and macOS put a dialog up at bind time, and Android has no firewall to
   be caught by — which is also why casting only ever fails in one direction.
+  A picture the receiver can't decode is turned away the same way, with **415**:
+  the receiving page hands `cast_receive` the codecs Android has no decoder for
+  (`cannotDecode`, by mpv's names), the sender sends the one its own mpv is
+  decoding, and an empty or unknown codec is never refused. Let through, an AV1
+  release played on the test TV as sound over black.
   Stopping is its own route (`POST /ventic/stop`, `cast://stop`) rather than a
   flag on a play: the mirror goes down a moment after Stop is pressed, so a
   receiver that never heard it plays on until the buffer runs dry and then

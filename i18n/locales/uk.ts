@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} не зміг зв'язатися з цим пристроєм — тутешній брандмауер блокує порт {port}.",
   "{device} didn't answer. Stop the film there yourself.": "{device} не відповів. Зупиніть фільм там самі.",
   "{device} didn't stop. Stop the film there yourself.": "{device} не зупинився. Зупиніть фільм там самі.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "{device} не має декодера для відео {codec} цього фільму, тож лунав би лише звук на чорному екрані. Реліз 1080p x264 відтворюється будь-де.",
   "{done} of {total}": "{done} з {total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} відформатовано у FAT32, тож він не може вмістити жоден файл понад {limit}. Більші релізи відтворюються потоком із власної пам'яті пристрою замість завантаження — усе менше завантажується як завжди.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} під'єднано, але записати на нього нічого не можна — цей пристрій не підтримує формат, у якому диск. Форматування тут це виправить і зітре все, що є на диску.",

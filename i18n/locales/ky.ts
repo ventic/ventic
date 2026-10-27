@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} бул түзмөккө жете алган жок — бул жердеги желе аралык коргонуч {port} портун бөгөп жатат.",
   "{device} didn't answer. Stop the film there yourself.": "{device} жооп берген жок. Кинону ошол жерде өзүңүз токтотуңуз.",
   "{device} didn't stop. Stop the film there yourself.": "{device} токтогон жок. Кинону ошол жерде өзүңүз токтотуңуз.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "{device} түзмөгүндө бул тасманын {codec} видеосу үчүн чечмелегич жок, ошондуктан ал кара экранда үн гана болуп ойномок. 1080p x264 чыгарылымы бардык жерде ойнойт.",
   "{done} of {total}": "{total} ичинен {done}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} FAT32 форматында, ал {limit} ашкан бир файлды батыра албайт. Чоңураак чыгарылымдар жүктөлбөй, түзмөктүн өз сактагычынан агым менен көрсөтүлөт — андан кичинеси кадимкидей жүктөлөт.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} сайылган, бирок ага эч нерсе жазууга болбойт — бул түзмөк дисктин форматын колдобойт. Аны бул жерде форматтоо муну оңдойт жана дисктегинин баарын өчүрөт.",

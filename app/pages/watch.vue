@@ -271,6 +271,9 @@ function castPlay() {
     episode: episode.value,
     title: title.value?.title ?? String(route.query.title ?? ''),
     position: player.value?.position ?? 0,
+    // So a device with no decoder for the picture says so here, not as sound
+    // over black there — see `cannotDecode` in utils/cast.
+    video: player.value?.videoCodec ?? '',
   }
 }
 

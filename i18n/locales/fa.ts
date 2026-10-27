@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} نتوانست به این دستگاه برسد — دیوارهٔ آتشی اینجا درگاه {port} را بسته است.",
   "{device} didn't answer. Stop the film there yourself.": "{device} پاسخ نداد. فیلم را همان‌جا خودتان متوقف کنید.",
   "{device} didn't stop. Stop the film there yourself.": "{device} متوقف نشد. فیلم را همان‌جا خودتان متوقف کنید.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "{device} رمزگشایی برای ویدیوی {codec} این فیلم ندارد، پس فقط صدا روی صفحهٔ سیاه پخش می‌شد. یک نسخهٔ 1080p x264 همه‌جا پخش می‌شود.",
   "{done} of {total}": "{done} از {total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} با FAT32 قالب‌بندی شده که نمی‌تواند هیچ فایلی بزرگ‌تر از {limit} را نگه دارد. نسخه‌های بزرگ‌تر به‌جای دانلود از فضای خود دستگاه جریانی پخش می‌شوند — هر چیز کوچک‌تر به‌طور عادی دانلود می‌شود.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} وصل است، اما چیزی روی آن نوشته نمی‌شود — این دستگاه قالبی را که درایو با آن است پشتیبانی نمی‌کند. قالب‌بندی آن در اینجا این را درست می‌کند، و هر چه روی درایو هست پاک می‌شود.",

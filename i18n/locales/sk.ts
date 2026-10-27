@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} nedokázal kontaktovať toto zariadenie — tunajší firewall blokuje port {port}.",
   "{device} didn't answer. Stop the film there yourself.": "{device} neodpovedal. Zastav film tam sám.",
   "{device} didn't stop. Stop the film there yourself.": "{device} sa nezastavil. Zastav film tam sám.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "{device} nemá dekodér pre video {codec} tohto filmu, takže by hral len zvuk nad čiernou obrazovkou. Vydanie 1080p x264 sa prehrá všade.",
   "{done} of {total}": "{done} z {total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} je naformátovaný na FAT32, ktorý nedokáže uložiť jeden súbor väčší ako {limit}. Väčšie vydania sa namiesto sťahovania streamujú z vlastného úložiska zariadenia — všetko menšie sa sťahuje normálne.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} je pripojený, ale nedá sa naň nič zapísať — toto zariadenie nepodporuje formát, v ktorom disk je. Naformátovať ho tu to napraví a zmaže všetko, čo na ňom je.",

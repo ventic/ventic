@@ -8,7 +8,7 @@
 import assert from 'node:assert'
 import { readFileSync } from 'node:fs'
 import process from 'node:process'
-import { CAST_PORT, castRoute, castUrl, MIRROR_PORT, mirrored, mirrorParts, newCode, setupUrl, setupValue, subnet } from '../app/utils/cast'
+import { cannotDecode, CAST_PORT, castRoute, castUrl, MIRROR_PORT, mirrored, mirrorParts, newCode, setupUrl, setupValue, subnet } from '../app/utils/cast'
 import { ENGINE } from '../app/utils/torrents'
 import './i18n-stub'
 
@@ -275,6 +275,26 @@ assert.ok(
   rust.indexOf('reachable(&command.url)') < rust.indexOf('state.app.emit'),
   'and refuse it before emitting, or the player starts anyway and the answer is moot',
 )
+
+// A film the receiving device has no decoder for is refused the same way: let
+// through, an AV1 release played on the Philips set as sound over black, and
+// the person who could have picked another release was at the other screen.
+// The TV lists HEVC but no AV1; mpv decodes anything, and says so with null.
+assert.deepEqual(cannotDecode(new Set(['video/avc', 'video/hevc', 'audio/opus'])), ['av1'], 'a TV without AV1 turns AV1 away and nothing else')
+assert.deepEqual(cannotDecode(new Set(['video/avc', 'video/av01', 'video/hevc'])), [], 'a device with both refuses neither')
+assert.deepEqual(cannotDecode(null), [], 'and where mpv plays, nothing is refused')
+assert.ok(!cannotDecode(new Set()).includes(''), 'an unknown codec travels as empty, and empty is never refused')
+assert.ok(
+  /if state\.cannot\.contains\(&command\.video\) \{\s*return StatusCode::UNSUPPORTED_MEDIA_TYPE/.test(rust)
+  && rust.indexOf('state.cannot.contains') < rust.indexOf('state.app.emit'),
+  'the receiver refuses a film it cannot decode before the page is sent anywhere',
+)
+// Three seams no compiler sees: the argument's name across TS and Rust, the page
+// handing over what Android lacks, and the sender saying what it is sending.
+assert.ok(/pub async fn cast_receive\([^)]*cannot: Vec<String>/.test(rust) && read('app/utils/cast.ts').includes('invoke(\'cast_receive\', { enable, name, code, cannot })'), 'cast_receive is handed the codecs to refuse')
+assert.ok(listener.includes('cannotDecode(deviceCodecs())'), 'which the receiving page works out from the device\'s own decoder list')
+assert.ok(/function castPlay\(\)[\s\S]{0,700}video: player\.value\?\.videoCodec/.test(watch), 'and the sender names the codec its own player is decoding')
+assert.ok(read('app/utils/cast.ts').includes('res.status === 415'), 'and turns the refusal into words on its own screen')
 
 // Which of the two answers the sender gives depends on whose film it is: only a
 // URL this device is serving can be blocked by this device's own firewall.

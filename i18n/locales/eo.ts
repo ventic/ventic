@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} ne povis atingi ĉi tiun aparaton — fajroŝirmilo ĉi tie blokas pordon {port}.",
   "{device} didn't answer. Stop the film there yourself.": "{device} ne respondis. Haltigu la filmon tie mem.",
   "{device} didn't stop. Stop the film there yourself.": "{device} ne haltis. Haltigu la filmon tie mem.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "{device} ne havas dekodilon por la {codec}-video de ĉi tiu filmo, do ĝi ludiĝus kiel sono super nigra ekrano. Eldono 1080p x264 ludiĝas ĉie.",
   "{done} of {total}": "{done} el {total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} estas formatita kiel FAT32, kiu ne povas teni unuopan dosieron pli grandan ol {limit}. Pli grandaj eldonoj fluas el la propra memoro de la aparato anstataŭ elŝutiĝi — ĉio pli malgranda elŝutiĝas normale.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} estas enŝovita, sed nenio skribeblas sur ĝin — ĉi tiu aparato ne subtenas la formaton, en kiu la disko estas. Formati ĝin ĉi tie riparas tion, kaj forviŝas ĉion, kio estas sur la disko.",

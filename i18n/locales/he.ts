@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} לא הצליח להגיע למכשיר הזה — חומת אש כאן חוסמת את פורט {port}.",
   "{device} didn't answer. Stop the film there yourself.": "{device} לא ענה. עצור את הסרט שם בעצמך.",
   "{device} didn't stop. Stop the film there yourself.": "{device} לא נעצר. עצור את הסרט שם בעצמך.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "ל-{device} אין מפענח לווידאו {codec} של הסרט הזה, ולכן רק הצליל היה מתנגן על מסך שחור. מהדורת 1080p x264 מתנגנת בכל מקום.",
   "{done} of {total}": "{done} מתוך {total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} מאותחל כ‑FAT32, שאינו יכול להכיל קובץ בודד מעל {limit}. מהדורות גדולות יותר מוזרמות מהאחסון של המכשיר עצמו במקום לרדת — כל מה שקטן יותר יורד כרגיל.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} מחובר, אך לא ניתן לכתוב אליו דבר — המכשיר הזה אינו תומך בפורמט שבו הכונן נמצא. אתחול שלו כאן פותר את זה, ומוחק את כל מה שעל הכונן.",

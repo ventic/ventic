@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} ติดต่ออุปกรณ์เครื่องนี้ไม่ได้ — ไฟร์วอลล์ที่นี่กำลังปิดกั้นพอร์ต {port}",
   "{device} didn't answer. Stop the film there yourself.": "{device} ไม่ตอบกลับ หยุดหนังที่เครื่องนั้นด้วยตัวเอง",
   "{device} didn't stop. Stop the film there yourself.": "{device} ไม่หยุด หยุดหนังที่เครื่องนั้นด้วยตัวเอง",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "{device} ไม่มีตัวถอดรหัสสำหรับวิดีโอ {codec} ของหนังเรื่องนี้ จึงจะเล่นได้แค่เสียงบนจอดำ รีลีส 1080p x264 เล่นได้ทุกที่",
   "{done} of {total}": "{done}/{total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} ฟอร์แมตเป็น FAT32 ซึ่งเก็บไฟล์เดียวที่ใหญ่กว่า {limit} ไม่ได้ รีลีสที่ใหญ่กว่าจะสตรีมจากที่เก็บข้อมูลของอุปกรณ์เองแทนการดาวน์โหลด — ส่วนที่เล็กกว่าจะดาวน์โหลดตามปกติ",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} เสียบอยู่ แต่เขียนอะไรลงไปไม่ได้ — อุปกรณ์นี้ไม่รองรับรูปแบบที่ไดรฟ์ใช้อยู่ การฟอร์แมตที่นี่จะแก้ปัญหานั้น และจะลบทุกอย่างบนไดรฟ์ด้วย",

@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} bu cihaza ulaşamadı — buradaki bir güvenlik duvarı {port} portunu engelliyor.",
   "{device} didn't answer. Stop the film there yourself.": "{device} yanıt vermedi. Filmi orada kendiniz durdurun.",
   "{device} didn't stop. Stop the film there yourself.": "{device} durmadı. Filmi orada kendiniz durdurun.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "{device} bu filmin {codec} videosu için bir çözücüye sahip değil, bu yüzden siyah bir ekran üzerinde yalnızca ses oynatılırdı. 1080p x264 bir sürüm her yerde oynar.",
   "{done} of {total}": "{done}/{total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} FAT32 ile biçimlendirilmiş ve {limit} üzerindeki tek bir dosyayı tutamaz. Daha büyük sürümler indirilmek yerine cihazın kendi depolamasından akışla oynatılır — daha küçük olan her şey normal şekilde indirilir.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} takılı, ancak üzerine hiçbir şey yazılamıyor — bu cihaz sürücünün biçimini desteklemiyor. Burada biçimlendirmek bunu düzeltir ve sürücüdeki her şeyi siler.",

@@ -360,7 +360,7 @@ function osd(text: string, ms = 1200) {
 // engine's own stream endpoint serves the release's subtitle files the same way
 // it serves the video.
 // ---------------------------------------------------------------------------
-interface Track { id: number, type: string, lang?: string, title?: string, external?: boolean }
+interface Track { id: number, type: string, lang?: string, title?: string, external?: boolean, codec?: string, selected?: boolean }
 
 const tracks = ref<Track[]>([])
 const sid = ref<number | 'no'>('no')
@@ -1519,8 +1519,9 @@ async function poll() {
 
     // A picture with no sound is a codec the device lacks, and it looks exactly
     // like a muted TV until something says so. See `silent` in htmlvideo.ts —
-    // only the `<video>` path can be caught out this way, since ExoPlayer says
-    // outright when it has no decoder.
+    // only the `<video>` path can be caught out this way: ExoPlayer has FFmpeg
+    // behind every audio codec, and Player.kt fails a video track nothing on
+    // the device decodes rather than playing its sound over black.
     if (!native && !exo && !silentSaid && position.value > 5) {
       silentSaid = !!(await readProps<{ silent: boolean }>(['silent']))?.silent
       if (silentSaid) {
@@ -2245,6 +2246,14 @@ const clock = computed<number>(held => ui.value ? position.value : held ?? posit
 const remaining = computed(() => duration.value ? `-${fmt((duration.value - clock.value) / speed.value)}` : '')
 
 /**
+ * The codec of the picture on screen, by mpv's name for it — so a cast can be
+ * turned away by a device with no decoder for it (see `cannotDecode` in
+ * utils/cast) instead of playing there as sound over black. Only mpv lists its
+ * video track; elsewhere this is '' and the other device is simply not asked.
+ */
+const videoCodec = computed(() => tracks.value.find(t => t.type === 'video' && t.selected)?.codec ?? '')
+
+/**
  * `position` is for the one caller that can't wait for the library: casting
  * (see pages/watch.vue). The stored resume point is written on a pause and on
  * the way out, and `resumeAt` discards anything under a minute besides — both
@@ -2254,7 +2263,7 @@ const remaining = computed(() => duration.value ? `-${fmt((duration.value - cloc
  * One call, because a second `defineExpose` replaces this one rather than
  * adding to it.
  */
-defineExpose({ osd, position: readonly(position), duration: readonly(duration) })
+defineExpose({ osd, position: readonly(position), duration: readonly(duration), videoCodec })
 </script>
 
 <template>

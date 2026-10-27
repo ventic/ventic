@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} không liên lạc được với thiết bị này — tường lửa ở đây đang chặn cổng {port}.",
   "{device} didn't answer. Stop the film there yourself.": "{device} không phản hồi. Hãy tự dừng phim ở đó.",
   "{device} didn't stop. Stop the film there yourself.": "{device} không dừng. Hãy tự dừng phim ở đó.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "{device} không có bộ giải mã cho video {codec} của phim này, nên sẽ chỉ phát tiếng trên màn hình đen. Bản phát hành 1080p x264 phát được ở mọi nơi.",
   "{done} of {total}": "{done}/{total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} được định dạng FAT32, không thể chứa tệp nào lớn hơn {limit}. Các bản phát hành lớn hơn được phát trực tuyến từ bộ nhớ của chính thiết bị thay vì tải xuống — mọi thứ nhỏ hơn vẫn tải xuống bình thường.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} đã được cắm vào, nhưng không ghi được gì lên đó — thiết bị này không hỗ trợ định dạng hiện tại của ổ đĩa. Định dạng lại tại đây sẽ khắc phục điều đó, và xóa sạch mọi thứ trên ổ đĩa.",

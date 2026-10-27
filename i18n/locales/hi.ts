@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} इस डिवाइस तक नहीं पहुँच सका — यहाँ की फ़ायरवॉल पोर्ट {port} को रोक रही है।",
   "{device} didn't answer. Stop the film there yourself.": "{device} ने जवाब नहीं दिया। फ़िल्म वहीं खुद रोक दें।",
   "{device} didn't stop. Stop the film there yourself.": "{device} रुका नहीं। फ़िल्म वहीं खुद रोक दें।",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "{device} में इस फ़िल्म के {codec} वीडियो के लिए कोई डिकोडर नहीं है, इसलिए यह काली स्क्रीन पर सिर्फ़ आवाज़ के रूप में चलेगी। 1080p x264 रिलीज़ हर जगह चलती है।",
   "{done} of {total}": "{total} में से {done}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} FAT32 में फ़ॉर्मेट है, जो {limit} से बड़ी कोई एक फ़ाइल नहीं रख सकता। बड़ी रिलीज़ डाउनलोड होने के बजाय डिवाइस के अपने संग्रहण से स्ट्रीम होती हैं — इससे छोटी हर चीज़ सामान्य रूप से डाउनलोड होती है।",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} लगा हुआ है, लेकिन उस पर कुछ लिखा नहीं जा सकता — यह डिवाइस उस प्रारूप का समर्थन नहीं करता जिसमें ड्राइव है। यहाँ इसे फ़ॉर्मेट करने से यह ठीक हो जाएगा, और ड्राइव पर जो कुछ है वह मिट जाएगा।",

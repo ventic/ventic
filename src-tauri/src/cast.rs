@@ -160,6 +160,10 @@ pub struct Play {
 	/// Seconds to resume at — where the sending device had got to.
 	#[serde(default)]
 	position: f64,
+	/// The film's video codec as the sending player names it (mpv's `av1`), or
+	/// empty where it couldn't tell. Checked against `Receiving::cannot`.
+	#[serde(default)]
+	video: String,
 }
 
 /// A stop command. Carries the code and nothing else — there is only one thing
@@ -226,6 +230,10 @@ struct Receiving {
 	app: AppHandle,
 	name: String,
 	code: String,
+	/// Video codecs this device has no decoder for, by mpv's names — the page
+	/// works them out (`cannotDecode` in utils/cast.ts), because only it can ask
+	/// Android. Empty wherever mpv is the player: it decodes anything.
+	cannot: Vec<String>,
 }
 
 /// This device's address on the network it would reach the world over.
@@ -399,20 +407,27 @@ fn reply(event: &str, mut watching: Watching) -> StatusCode {
 /// means this device answers to anything on its own network, which the settings
 /// screen makes somebody ask for and never falls into on its own (see
 /// `castAsk`). It is the LAN either way: nothing here is reachable from outside
-/// it, and the mirror it guards is read-only.
+/// it, and the mirror it guards is read-only. `cannot` is the codecs a film is
+/// turned away for — see `play`.
 ///
 /// `async` for the reason `cast_share` is, plus one of its own: the settings it
 /// captures are the name and the code, so changing either restarts the listener
 /// — which means this rebinds its port far more often than the mirror does, and
 /// has to wait for the last one to let go of it first (see `Shutdown`).
 #[tauri::command]
-pub async fn cast_receive(app: AppHandle, enable: bool, name: String, code: String) -> Result<(), String> {
+pub async fn cast_receive(
+	app: AppHandle,
+	enable: bool,
+	name: String,
+	code: String,
+	cannot: Vec<String>,
+) -> Result<(), String> {
 	stop_server(&RECEIVER).await;
 	if !enable {
 		return Ok(());
 	}
 
-	let state = Receiving { app, name, code };
+	let state = Receiving { app, name, code, cannot };
 	let addr = SocketAddr::from(([0, 0, 0, 0], RECEIVER_PORT));
 	// Bound out here rather than inside the task so a port already taken is an
 	// error the page can act on, not a line in a log nobody reads.
@@ -495,6 +510,13 @@ async fn play(State(state): State<Receiving>, Json(mut command): Json<Play>) -> 
 		return StatusCode::FORBIDDEN;
 	}
 	command.code = String::new();
+
+	// Refuse a film this device has no decoder for, which would otherwise play
+	// as sound over a black screen — measured with an AV1 release on a TV with
+	// no AV1 decoder of any kind. Never an empty `video`: `cannot` names codecs.
+	if state.cannot.contains(&command.video) {
+		return StatusCode::UNSUPPORTED_MEDIA_TYPE;
+	}
 
 	// Refuse a film this device can't fetch, rather than showing a spinner and
 	// then blaming the link. Checked before the page is sent anywhere, so the

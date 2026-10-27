@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} kon nie by hierdie toestel uitkom nie — 'n brandmuur hier blokkeer poort {port}.",
   "{device} didn't answer. Stop the film there yourself.": "{device} het nie geantwoord nie. Stop die fliek daar self.",
   "{device} didn't stop. Stop the film there yourself.": "{device} het nie gestop nie. Stop die fliek daar self.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "{device} het geen dekodeerder vir hierdie fliek se {codec}-video nie, so dit sou as klank oor 'n swart skerm speel. 'n 1080p x264-vrystelling speel oral.",
   "{done} of {total}": "{done} van {total}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} is as FAT32 geformateer, wat nie 'n enkele lêer groter as {limit} kan hou nie. Groter vrystellings stroom uit die toestel se eie berging eerder as om af te laai — alles kleiner laai normaal af.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} is ingeprop, maar niks kan daarheen geskryf word nie — hierdie toestel ondersteun nie die formaat waarin die skyf is nie. Om dit hier te formateer los dit op, en vee alles uit wat op die skyf is.",

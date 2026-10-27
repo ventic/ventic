@@ -822,6 +822,7 @@ export default {
   "{device} couldn't reach this device — a firewall here is blocking port {port}.": "{device} ఈ పరికరాన్ని చేరుకోలేకపోయింది — ఇక్కడి ఫైర్‌వాల్ {port} పోర్ట్‌ను అడ్డుకుంటోంది.",
   "{device} didn't answer. Stop the film there yourself.": "{device} స్పందించలేదు. సినిమాను అక్కడ మీరే ఆపండి.",
   "{device} didn't stop. Stop the film there yourself.": "{device} ఆగలేదు. సినిమాను అక్కడ మీరే ఆపండి.",
+  "{device} has no decoder for this film's {codec} video, so it would play as sound over a black screen. A 1080p x264 release plays anywhere.": "ఈ సినిమా {codec} వీడియో కోసం {device}లో డీకోడర్ లేదు, కాబట్టి నల్లని తెరపై కేవలం శబ్దం మాత్రమే ప్లే అవుతుంది. 1080p x264 విడుదల ఎక్కడైనా ప్లే అవుతుంది.",
   "{done} of {total}": "{total} లో {done}",
   "{drive} is formatted FAT32, which can't hold a single file over {limit}. Bigger releases stream from the device's own storage instead of downloading — everything smaller downloads normally.": "{drive} FAT32లో ఫార్మాట్ అయి ఉంది, అది {limit} కంటే పెద్ద ఒక్క ఫైల్‌ను కూడా పట్టలేదు. పెద్ద విడుదలలు డౌన్‌లోడ్‌కు బదులుగా పరికరం సొంత నిల్వ నుంచి స్ట్రీమ్ అవుతాయి — చిన్నవన్నీ మామూలుగా డౌన్‌లోడ్ అవుతాయి.",
   "{drive} is plugged in, but nothing can be written to it — this device doesn't support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.": "{drive} పెట్టబడింది, కానీ అందులో ఏదీ రాయలేం — డ్రైవ్ ఉన్న ఫార్మాట్‌ను ఈ పరికరం సపోర్ట్ చేయదు. ఇక్కడ దాన్ని ఫార్మాట్ చేస్తే అది సరిపోతుంది, పైగా డ్రైవ్‌లో ఉన్నదంతా తుడిచిపెట్టుకుపోతుంది.",
