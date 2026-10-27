@@ -143,11 +143,10 @@ watch([() => shown.value.length, pending], () => {
       <!-- Beside the layout toggle rather than behind the Filters button: it is
            how the list is shown, and it stays one press away on every width. -->
       <template #view>
-        <div class="h-[42px] shrink-0 overflow-hidden rounded-lg bg-surface-container/50">
+        <div class="h-[42px] shrink-0 overflow-hidden rounded-full bg-surface-container/50">
           <v-btn
             icon
             size="42"
-            rounded="0"
             variant="text"
             :color="ui.hideWatched ? 'primary' : 'on-surface'"
             :aria-pressed="ui.hideWatched"
