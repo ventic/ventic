@@ -28,6 +28,7 @@ const { mobile } = useDisplay()
            itself only insets the top. -->
       <div class="flex h-full flex-col" :class="mobile ? 'pt-[var(--safe-top)]' : 'safe-inset'">
         <app-bar />
+        <offline-banner />
         <!-- data-dpad-start: where a remote picks up focus after a navigation,
              so it lands on the page instead of the toolbar above it. -->
         <div data-dpad-start class="min-h-0 flex-1">

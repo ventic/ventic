@@ -13,7 +13,7 @@
 // password to somebody's drive.
 import assert from 'node:assert'
 import { readFileSync } from 'node:fs'
-import { makeBackup } from '../app/utils/backup'
+import { makeBackup, readBackup } from '../app/utils/backup'
 import './i18n-stub'
 
 const { GROUP_DEFAULTS, SYNC_GROUPS, baseOf, groupOf, mergeKeys, pruneDeleted, target, TOMBSTONE_LIFE } = await import('../app/utils/sync')
@@ -286,6 +286,20 @@ assert.equal(
   undefined,
   'ventic.sync must be in backup.ts\'s SECRET set, or a backup file carries a password',
 )
+
+// The subtitle keys are the exception: the sync carries them, on purpose, to
+// the user's own drive — and still no backup file does, nor the sync password.
+const keyed: Record<string, string> = { 'ventic.subsourceKey': '"ss"', 'ventic.subdlKey': '"dl"', 'ventic.sync': '{"pass":"hunter2"}' }
+const keyStore = { length: 3, key: (i: number) => Object.keys(keyed)[i] ?? null, getItem: (k: string) => keyed[k] ?? null, setItem: () => {} }
+assert.deepEqual(Object.keys(makeBackup(keyStore, 1, true).keys).sort(), ['ventic.subdlKey', 'ventic.subsourceKey'])
+assert.deepEqual(Object.keys(makeBackup(keyStore, 1).keys), [], 'a backup file carries no key')
+const synced = JSON.stringify(makeBackup(keyStore, 1, true))
+assert.equal(readBackup(synced, true).keys['ventic.subsourceKey'], '"ss"', 'what the sync wrote, the sync reads back')
+assert.throws(() => readBackup(synced), /empty/, 'and a restore takes nothing from it')
+assert.equal(groupOf('ventic.subsourceKey'), 'sources')
+assert.equal(groupOf('ventic.subdlKey'), 'sources')
+assert.match(source('app/stores/sync.ts'), /makeBackup\(localStorage, Date\.now\(\), true\)/, 'the sync asks for them')
+assert.match(source('app/utils/sync.ts'), /readBackup\(text, true\)/, 'and takes them in')
 
 // The tombstone names the store writes have to be the localStorage key suffixes
 // the merge looks them up by. Nothing connects the two but this, and getting one

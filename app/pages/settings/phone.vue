@@ -104,7 +104,7 @@ const qr = computed(() => {
         {{ $t('Both devices have to be on the same network. The page is only served while this screen is open, and the code is what stops anyone else on the Wi-Fi from sending anything.') }}
       </p>
       <p class="text-body-small opacity-70">
-        {{ $t('You can send a source, a Live TV playlist, an Xtream login, or the WebDAV folder to sync your library with.') }}
+        {{ $t('You can send a source, a Live TV playlist, an Xtream login, the WebDAV folder to sync your library with, or your SubSource and SubDL keys.') }}
       </p>
     </settings-section>
   </div>

@@ -207,6 +207,36 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   dylib's real `minos` at bundle time and fails the build on a drift. Don't
   unpin that runner; pinning it *older* is a Homebrew question, since it bottles
   only the three most recent macOS.
+- **Subtitles come from four places, and three of them count downloads.** The
+  built-in Stremio addon is free and thin (Philosopher's Stone: nine languages,
+  no English). OpenSubtitles' own API is the whole catalogue on the app's key
+  (`OPENSUBTITLES_API`, from the build like TMDB's) — five downloads a day per
+  household, the counter being `app_<key>_<ip>`; never switch its "under dev"
+  on, which makes it one pool of 100 for every install. SubSource and SubDL are
+  the user's own keys (7200 requests and 50 downloads a day). So in
+  `utils/subtitles.ts` a `metered` file is listed on the provider's word and
+  downloaded only when it is played; the automatic pick takes anything free or
+  already read before one, and of those that cost, the one with most to spare
+  (`SCARCITY`); every file read is kept in IndexedDB (`utils/shelf.ts`) and the
+  chosen one filed under its progress key (`keepSubtitle`), so going back to a
+  film costs nothing. A row that would spend a download says whose and how many
+  are left (`quota`); a free one says Free. SubSource sends no CORS header and
+  OpenSubtitles turns generic agents away, so both go through Rust (`http()`).
+  Don't scrape, and don't build on services that do (Wyzie, the "unofficial"
+  APIs): OpenSubtitles' site is captchas and its terms say no.
+- **Offline is whatever a download fetched while there was a network.**
+  `downloads.start(…, keep)` hands every download to `prepareOffline`
+  (`utils/offline.ts`) as it is added — not as it finishes, because Android
+  freezes the page in the background and the plane has left by then: the
+  title's TMDB pages (which `tmdb()` then keeps and falls back on, for titles
+  `keeps` says are downloads), its poster, backdrop, logo and the episode's
+  still (which every image helper prefers, `images`), and subtitles in the
+  "choose automatically" language. What a spent quota turned away is asked for
+  again by `catchUp` whenever there is a network. With `navigator.onLine` false
+  (`online`), Movies, Shows and Home list what `onDevice` holds and a banner
+  says so; the player puts the kept subtitles on with no search. A cast carries
+  the subtitles on screen the same way (`CastSubtitle`) — the text, not a link,
+  so the television neither searches nor spends a download.
 - **Chapters are mpv's alone.** The seek bar's marks, the chapter name in its
   bubble, PageUp/PageDown and the Skip intro / Skip credits button all read
   mpv's `chapter-list` (`app/utils/chapters.ts` decides which names are
@@ -536,6 +566,10 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   `downloadDir`, `ground`, `castName`) never travels whatever is switched on,
   and credentials never reach `sync.ts` at all because `makeBackup` drops the
   SECRET set first — which is also what stops the sync syncing its own password.
+  The one exception is `SYNCED` in `backup.ts`: the subtitle providers' API keys
+  ride with Sources, because a key typed once on the laptop is the alternative
+  to typing forty characters with a remote. The sync asks for them by name
+  (`makeBackup(…, true)`, `readBackup(…, true)`); a backup file never has them.
   A group a device has switched **off** is neither read nor written: the file
   keeps what another device put there, or a laptop with Preferences off would
   quietly wipe two other screens' settings.

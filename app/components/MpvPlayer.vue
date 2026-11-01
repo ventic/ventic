@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type { CastSubtitle } from '~/utils/cast'
 import type { Chapter } from '~/utils/chapters'
 import type { PlayerEngine } from '~/utils/htmlvideo'
 import type { KeyAction } from '~/utils/keys'
@@ -366,6 +367,14 @@ const tracks = ref<Track[]>([])
 const sid = ref<number | 'no'>('no')
 const aid = ref<number | 'no'>('no')
 const externals = ref<Subtitle[]>([])
+/**
+ * A file a cast arrived with, or the one kept for this film (see
+ * `applyHanded`). Kept apart so the search that fills the menu later lists it
+ * rather than replacing it.
+ */
+const handed = ref<Subtitle[]>([])
+/** What this playback is filed under — `movie:603`, `tv:1396:2:3` — or '' with no title. */
+const playKey = computed(() => props.media ? progressKey(props.media.type, props.media.id, props.season, props.episode) : '')
 const subLoading = ref(false)
 const subError = ref('')
 /** Probed files per language name, filled the first time that language is used. */
@@ -415,6 +424,8 @@ let loaded = false
 // Pushed once the file is open and again on every edit, which is what makes the
 // settings page's preview honest: change the size mid-film and it changes.
 const settings = useSettingsStore()
+// `ui` below is whether the controls are showing; this is the app's.
+const uiStore = useUiStore()
 const library = useLibraryStore()
 
 /**
@@ -648,21 +659,22 @@ async function fetchExternals() {
   try {
     const { title, year, season, episode } = searchBy.value
     const id = props.imdbId || await findImdbId(title, season > 0, year)
-    // OpenSubtitles' own API and SubDL can go by TMDB's id or by the name, so
-    // no IMDb id leaves only the built-in addon out.
+    // OpenSubtitles' own API, SubSource and SubDL can go by TMDB's id or by the
+    // name, so no IMDb id leaves only the built-in addon out.
     const by = {
       subdl: settings.subdlKey,
+      subsource: settings.subsourceKey,
       opensubtitles: useRuntimeConfig().public.OPENSUBTITLES_API,
       lang: subLang.value,
       tmdbId: props.media?.id,
       title,
       year,
     }
-    if (!id && !by.subdl && !by.opensubtitles)
+    if (!id && !by.subdl && !by.subsource && !by.opensubtitles)
       throw new Error($t('Couldn\'t match “{title}” to a title OpenSubtitles knows.', { title }))
     const found = await findSubtitles(id, season, episode, videoName.value, by)
     firstLang.value = langName(subLang.value)
-    externals.value = found
+    externals.value = [...handed.value, ...found]
     subsFetched = true
   }
   catch (e) {
@@ -745,6 +757,8 @@ async function loadFile(file: Subtitle, lang: SubtitleLanguage) {
     const list = variants.value[lang.name]
     if (list)
       variants.value[lang.name] = list.map(f => f.url === read.url ? read : f)
+    // The one to put back next time, with or without a network.
+    keepSubtitle(playKey.value, read)
   })
   // One that wouldn't download (five a day is easy to spend) has nothing to
   // hand over, and its url is a page, or an archive with somebody's key in it.
@@ -842,8 +856,56 @@ function releaseSub(want: string) {
     || r.lang.name.toLowerCase().includes(want.toLowerCase()))
 }
 
+/**
+ * The subtitles a cast arrived with, put on in place of this device's own
+ * choice: the same file at the same timing as the screen it came from, found
+ * without a search and read without a download. Nothing in Settings changes —
+ * the sending screen's language is not this one's preference.
+ */
+async function applyHanded(h: CastSubtitle) {
+  if (h.off)
+    return setSid('no')
+  if (h.file) {
+    const { text, lang, name } = h.file
+    const file: Subtitle = { id: 'handed', url: `handed:${Date.now()}`, lang, name, download: async () => new TextEncoder().encode(text) }
+    handed.value = [file]
+    externals.value = [file, ...externals.value]
+    // No code, so the pick doesn't become this device's own language too.
+    await loadFile(file, { code: '', name: langName(lang), files: [file] })
+  }
+  else if (h.track) {
+    const own = embedded.value.find(t => t.lang === h.track!.lang && (t.title ?? '') === (h.track!.title ?? ''))
+      ?? embedded.value.find(t => t.lang === h.track!.lang)
+    if (own)
+      setSid(own.id)
+  }
+  setDelay(h.delay ?? 0)
+  setSubSpeed(h.speed ?? 1)
+}
+
+/**
+ * What a cast carries of the subtitles on screen — see `CastSubtitle`. A file
+ * goes as its text; one too big to send leaves the choice to the other screen.
+ */
+function castSubtitle(): CastSubtitle | undefined {
+  if (!subsOn.value)
+    return { off: true }
+  const timing = { delay: subDelay.value, speed: subSpeed.value }
+  const file = activeUrl.value ? probed(activeUrl.value) : undefined
+  if (file?.text && file.cues.length)
+    return file.text.length < 1_000_000 ? { file: { lang: file.lang, name: file.name, text: file.text }, ...timing } : undefined
+  const track = embedded.value.find(t => t.id === sid.value)
+  return track ? { track: { lang: track.lang, title: track.title }, ...timing } : undefined
+}
+
 /** Once per playback: honour the chosen language, file first, addon last. */
 async function applyPreferredSub() {
+  // A cast brought its own, for this film and no other.
+  const cast = uiStore.castSubtitle
+  if (cast && cast.url === props.src) {
+    uiStore.castSubtitle = null
+    return applyHanded(cast.subtitle)
+  }
   if (!settings.autoSubs || !subLang.value)
     return
   const want = langName(subLang.value)
@@ -855,6 +917,12 @@ async function applyPreferredSub() {
   const mine = releaseSub(want)
   if (mine)
     return loadFile(mine.file, mine.lang)
+
+  // The file chosen for this film or episode before — at a pick, or with its
+  // download (utils/offline): no search, no download, and no network needed.
+  const kept = playKey.value ? await keptSubtitle(playKey.value) : undefined
+  if (kept && langName(kept.lang) === want)
+    return applyHanded({ file: kept })
 
   await fetchExternals()
   const hit = subLanguages.value.find(l => l.name === want)
@@ -2294,7 +2362,7 @@ const videoCodec = computed(() => tracks.value.find(t => t.type === 'video' && t
  * One call, because a second `defineExpose` replaces this one rather than
  * adding to it.
  */
-defineExpose({ osd, position: readonly(position), duration: readonly(duration), videoCodec })
+defineExpose({ osd, position: readonly(position), duration: readonly(duration), videoCodec, castSubtitle })
 </script>
 
 <template>
@@ -2852,7 +2920,7 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration), 
             </template>
 
             <p :class="MENU_GROUP">
-              {{ settings.subdlKey ? 'OpenSubtitles · SubDL' : 'OpenSubtitles' }}
+              {{ ['OpenSubtitles', settings.subsourceKey && 'SubSource', settings.subdlKey && 'SubDL'].filter(Boolean).join(' · ') }}
             </p>
             <p v-if="subLoading" :class="NOTE">
               {{ $t('Searching…') }}
@@ -2905,11 +2973,18 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration), 
                 >
                   <span class="min-w-0 flex-1">
                     <span class="block truncate opacity-80">{{ fileLabel(f) }}</span>
-                    <span class="block truncate text-label-small opacity-45">{{ fileNote(f) }}</span>
+                    <!-- What a pick costs, before it is made: one that would spend
+                         a download says whose and how many are left, in the
+                         warning colour; one that is free, or saved already, says
+                         Free. -->
+                    <span class="block truncate text-label-small" :class="f.unread ? 'text-warning' : 'opacity-45'">{{ fileNote(f) }}</span>
                     <span v-if="!fits(f)" class="block truncate text-label-small text-error opacity-90">
                       {{ $t('Doesn\'t match this video\'s length') }}
                     </span>
                   </span>
+                  <v-chip v-if="f.cues.length" class="shrink-0" color="success" variant="tonal" size="x-small" label>
+                    {{ $t('Free') }}
+                  </v-chip>
                   <v-icon v-if="activeUrl === f.url" class="shrink-0" :icon="mdiCheck" size="16" />
                 </button>
                 <p v-if="probing === l.name" :class="NOTE">

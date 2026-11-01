@@ -40,7 +40,9 @@
 import type { Steps } from './steps'
 import { getVersion } from '@tauri-apps/api/app'
 import { fetch as tauriFetch } from '@tauri-apps/plugin-http'
+import { reactive } from 'vue'
 import { mirrored } from './cast'
+import { shelve, shelved } from './shelf'
 import { imdbIdByTitle, runtimeText } from './tmdb'
 import { configuredSources, parseRelease } from './torrents'
 
@@ -49,6 +51,7 @@ const SUBDL = 'https://api.subdl.com/api/v1'
 /** Where SubDL's listing points its relative `url`s — archives, not subtitle files. */
 const SUBDL_FILES = 'https://dl.subdl.com'
 const OPENSUBTITLES = 'https://api.opensubtitles.com/api/v1'
+const SUBSOURCE = 'https://api.subsource.net/api/v1'
 /**
  * The metadata addon behind Stremio's search box. It indexes IMDb itself,
  *  which is the whole reason `findImdbId` still needs it.
@@ -351,6 +354,8 @@ async function subtitlesFrom(base: string, path: string): Promise<Subtitle[]> {
 export interface SubtitleSearch {
   /** The user's own SubDL key — SubDL answers nothing without one. */
   subdl?: string
+  /** The user's own SubSource key, likewise. */
+  subsource?: string
   /** The app's OpenSubtitles key, from the build — see `searchOpenSubtitles`. */
   opensubtitles?: string
   /** The language to be sure of, past however many pages the rest come from. */
@@ -379,6 +384,34 @@ async function paged(page: Page, want: string) {
   const [first, mine] = await Promise.all([page(1), want ? page(1, want).catch(() => null) : null])
   const more = Array.from({ length: Math.min(first.pages, PAGES) - 1 }, (_, i) => page(i + 2).catch(() => null))
   return [...mine?.subtitles ?? [], ...first.subtitles, ...(await Promise.all(more)).flatMap(r => r?.subtitles ?? [])]
+}
+
+/**
+ * Downloads left today, by provider, as each last said: SubSource on every
+ * answer, OpenSubtitles on every download, SubDL on its account page at a
+ * search. What a row that would spend one shows (`fileNote`), so picking a
+ * file is never a guess about what it costs.
+ */
+export const quota = reactive<Record<string, number>>({})
+
+/** Rust's fetch where there is one: for a provider that sends no CORS header, or wants a `User-Agent`. */
+function http(): typeof fetch {
+  return '__TAURI_INTERNALS__' in globalThis ? tauriFetch as typeof fetch : fetch
+}
+
+/**
+ * One request, asked again once if a rate limit turned it away (429) — after
+ * the wait it names, in seconds (`retry-after`) or as a time (SubSource's
+ * `x-ratelimit-reset`), and never past a minute.
+ */
+async function patiently(ask: () => Promise<Response>): Promise<Response> {
+  const res = await ask()
+  if (res.status !== 429)
+    return res
+  const reset = Date.parse(res.headers.get('x-ratelimit-reset') ?? '')
+  const wait = Number(res.headers.get('retry-after') ?? (reset ? (reset - Date.now()) / 1000 : 1))
+  await new Promise(resolve => setTimeout(resolve, Math.min(Math.max(wait, 0), 60) * 1000))
+  return ask()
 }
 
 /**
@@ -412,7 +445,21 @@ function fromSubdl(raw: Record<string, unknown>, episode: number): Subtitle | nu
     provider: 'SubDL',
     captions: raw.hi === true || undefined,
     episode: episode || undefined,
+    download: () => subdlFile(url),
   }
+}
+
+/**
+ * One archive off SubDL. The key is in its url, which is how SubDL counts it;
+ * the count itself is only on its account page, so it is taken down by one here.
+ */
+async function subdlFile(url: string) {
+  const res = await fetch(url, { signal: AbortSignal.timeout(20000) })
+  if (!res.ok)
+    throw new Error(`SubDL answered HTTP ${res.status}`)
+  if (quota.SubDL)
+    quota.SubDL--
+  return new Uint8Array(await res.arrayBuffer())
 }
 
 async function subdlPage(params: URLSearchParams, episode: number) {
@@ -461,6 +508,15 @@ async function searchSubdl(s: SubtitleSearch, imdbId: string, season: number, ep
       p.set('languages', languages)
     return subdlPage(p, episode)
   }
+  // What a download costs is on its account page, one call of the 2000.
+  fetch(`${SUBDL}/me?api_key=${encodeURIComponent(s.subdl!)}`, { signal: AbortSignal.timeout(15000) })
+    .then(res => res.json())
+    .then((me: { apiAccount?: { downloads?: { remaining?: number } } }) => {
+      const left = me.apiAccount?.downloads?.remaining
+      if (typeof left === 'number')
+        quota.SubDL = left
+    })
+    .catch(() => {})
   return paged(page, subdlCode(s.lang || globalThis.document?.documentElement.lang || ''))
 }
 
@@ -520,17 +576,12 @@ let agent: Promise<string> | undefined
  * It takes five requests a second from an address and a search is six at once,
  * so the one turned away (429) is asked again when it says to — once.
  */
-async function opensubtitles(path: string, key: string, body?: object, again = false): Promise<Response> {
+async function opensubtitles(path: string, key: string, body?: object): Promise<Response> {
   agent ??= getVersion().then(v => `Ventic v${v}`, () => 'Ventic')
   const headers: Record<string, string> = { 'Api-Key': key, 'Accept': 'application/json', 'User-Agent': await agent }
   if (body)
     headers['Content-Type'] = 'application/json'
-  const get = '__TAURI_INTERNALS__' in globalThis ? tauriFetch : fetch
-  const res = await get(OPENSUBTITLES + path, { method: body ? 'POST' : 'GET', headers, body: body && JSON.stringify(body), signal: AbortSignal.timeout(20000) })
-  if (res.status !== 429 || again)
-    return res
-  await new Promise(resolve => setTimeout(resolve, Number(res.headers.get('retry-after') ?? 1) * 1000))
-  return opensubtitles(path, key, body, true)
+  return patiently(() => http()(OPENSUBTITLES + path, { method: body ? 'POST' : 'GET', headers, body: body && JSON.stringify(body), signal: AbortSignal.timeout(20000) }))
 }
 
 /**
@@ -546,10 +597,12 @@ async function opensubtitles(path: string, key: string, body?: object, again = f
  */
 async function opensubtitlesFile(id: number, key: string) {
   const res = await opensubtitles('/download', key, { file_id: id })
-  const { link, message } = await res.json().catch(() => ({})) as { link?: string, message?: string }
+  const { link, message, remaining } = await res.json().catch(() => ({})) as { link?: string, message?: string, remaining?: number }
+  if (typeof remaining === 'number')
+    quota.OpenSubtitles = Math.max(remaining, 0)
   if (!link)
     throw new Error(message?.replace(/\s*ts=\d+\s*$/, '').replace(/\.(?=[A-Z])/g, '. ').trim() || `OpenSubtitles answered HTTP ${res.status}`)
-  const file = await ('__TAURI_INTERNALS__' in globalThis ? tauriFetch : fetch)(link, { signal: AbortSignal.timeout(20000) })
+  const file = await http()(link, { signal: AbortSignal.timeout(20000) })
   return new Uint8Array(await file.arrayBuffer())
 }
 
@@ -622,15 +675,173 @@ async function searchOpenSubtitles(s: SubtitleSearch, imdbId: string, season: nu
 }
 
 /**
+ * SubSource names a language in English, lower-cased and with underscores —
+ * `slovenian`, `brazilian_portuguese` — which `Intl` reads back for every one
+ * but these: the ones it spells its own way, and one it misspells.
+ */
+const SUBSOURCE_NAMES: Record<string, string> = {
+  farsi_persian: 'fa',
+  brazilian_portuguese: 'pob',
+  chinese_bg_code: 'zh',
+  bengali: 'bn',
+  espranto: 'eo',
+  northen_sami: 'se',
+  gaelic: 'gd',
+  pushto: 'ps',
+}
+
+let englishNames: Map<string, string> | undefined
+
+/** `slovenian` -> `sl`: every two-letter code's English name, read backwards. */
+function fromSubsourceName(name: string) {
+  const n = name.toLowerCase().replace(/ /g, '_')
+  if (SUBSOURCE_NAMES[n])
+    return SUBSOURCE_NAMES[n]
+  if (!englishNames) {
+    const names = new Intl.DisplayNames(['en'], { type: 'language', fallback: 'none' })
+    const letters = 'abcdefghijklmnopqrstuvwxyz'
+    englishNames = new Map([...letters].flatMap(a => [...letters].flatMap(b => {
+      const said = names.of(a + b)
+      return said ? [[said.toLowerCase().replace(/ /g, '_'), a + b] as const] : []
+    })))
+  }
+  return englishNames.get(n) ?? n
+}
+
+/** `sl` (or `slv`, or `pob`) -> the name SubSource files it under. */
+export function subsourceName(code: string) {
+  const c = shortCode(code)
+  const own = Object.keys(SUBSOURCE_NAMES).find(k => SUBSOURCE_NAMES[k] === c)
+  if (own || !c)
+    return own ?? ''
+  try {
+    return new Intl.DisplayNames(['en'], { type: 'language', fallback: 'none' }).of(c)?.toLowerCase().replace(/ /g, '_') ?? ''
+  }
+  catch {
+    return ''
+  }
+}
+
+/** The fields of one result that are read here. */
+interface SubSourceItem {
+  subtitleId?: number
+  language?: string
+  releaseInfo?: string[]
+  hearingImpaired?: boolean
+  foreignParts?: boolean
+  link?: string
+}
+
+/**
+ * One request to SubSource, through Rust: it answers a browser's preflight but
+ * not the request after it. Every answer says how many of the key's 7200 a day
+ * are left, which is the whole of what `quota` needs from it.
+ */
+async function subsource(path: string, key: string) {
+  const res = await patiently(() => http()(`${SUBSOURCE}/${path}`, { headers: { 'X-API-Key': key, 'Accept': 'application/json' }, signal: AbortSignal.timeout(20000) }))
+  const left = res.headers.get('x-ratelimit-remaining-day')
+  if (left)
+    quota.SubSource = Number(left)
+  return res
+}
+
+async function subsourceJson<T>(path: string, key: string): Promise<T> {
+  const res = await subsource(path, key)
+  const data = await res.json().catch(() => ({})) as T & { message?: string }
+  // A refused key is a 401 that says so: "The provided API key is invalid or inactive".
+  if (!res.ok)
+    throw new Error(`SubSource answered HTTP ${res.status}${data.message ? ` — ${data.message}` : ''}`)
+  return data
+}
+
+/** One archive off SubSource — an ordinary request as far as its limit is concerned. */
+async function subsourceFile(id: number, key: string) {
+  const res = await subsource(`subtitles/${id}/download`, key)
+  if (!res.ok)
+    throw new Error(`SubSource answered HTTP ${res.status}`)
+  return new Uint8Array(await res.arrayBuffer())
+}
+
+/**
+ * One result, or null for another episode's or the forced track's. A show is
+ * one entry a season there, and its episode filter is ignored (41 of 41 either
+ * way, measured 2026-11-01), so the release name is what says which episode a
+ * file is for — and one that names none is the season in one archive, which
+ * `unzip` takes ours out of.
+ */
+function fromSubsource(raw: SubSourceItem, key: string, season: number, episode: number): Subtitle | null {
+  const id = raw.subtitleId
+  if (!id || !raw.language || raw.foreignParts)
+    return null
+  const name = raw.releaseInfo?.find(r => r.trim())?.trim()
+  if (episode) {
+    const said = parseRelease(name ?? '')
+    if ((said.episode && said.episode !== episode) || (said.season && said.season !== season))
+      return null
+  }
+  return {
+    id: `subsource:${id}`,
+    url: raw.link ? `https://subsource.net${raw.link}` : `${SUBSOURCE}/subtitles/${id}`,
+    lang: fromSubsourceName(raw.language),
+    name,
+    metered: true,
+    provider: 'SubSource',
+    captions: raw.hearingImpaired === true || undefined,
+    episode: episode || undefined,
+    download: () => subsourceFile(id, key),
+  }
+}
+
+/**
+ * SubSource, with the user's key — Subscene's catalogue, and the one keyed
+ * provider whose limit is a rate rather than a ration: 7200 requests a key a
+ * day, a download being one of them. That is what an offline season leans on.
+ *
+ * Two steps: its own id for the title (a show's is one a season), by IMDb id or
+ * else by name and year, and then the files.
+ */
+async function searchSubSource(s: SubtitleSearch, imdbId: string, season: number, episode: number): Promise<Subtitle[]> {
+  const key = s.subsource!
+  const find = new URLSearchParams(imdbId ? { searchType: 'imdb', imdb: imdbId } : { searchType: 'text', q: (s.title ?? '').toLowerCase() })
+  if (season)
+    find.set('season', String(season))
+  const { data: titles = [] } = await subsourceJson<{ data?: { movieId?: number, releaseYear?: number, season?: number | null }[] }>(`movies/search?${find}`, key)
+  // A name search answers with everything that shares the words.
+  const hit = titles.find(t => (!season || t.season === season) && (imdbId || !s.year || String(t.releaseYear) === s.year))
+  if (!hit?.movieId)
+    return []
+
+  const page: Page = async (n, language = '') => {
+    const p = new URLSearchParams({ movieId: String(hit.movieId), limit: '100', page: String(n) })
+    if (language)
+      p.set('language', language)
+    const { data = [], pagination } = await subsourceJson<{ data?: SubSourceItem[], pagination?: { pages?: number } }>(`subtitles?${p}`, key)
+    return { subtitles: data.flatMap(r => fromSubsource(r, key, season, episode) ?? []), pages: pagination?.pages ?? 1 }
+  }
+  return paged(page, subsourceName(s.lang || globalThis.document?.documentElement.lang || ''))
+}
+
+/** Does SubSource take this key? null when it couldn't be asked. Costs one of the 7200. */
+export async function subsourceKeyWorks(key: string): Promise<boolean | null> {
+  try {
+    const res = await subsource('movies/search?searchType=imdb&imdb=tt0241527', key)
+    return res.ok || (res.status === 401 || res.status === 403 ? false : null)
+  }
+  catch {
+    return null
+  }
+}
+
+/**
  * Every subtitle for a movie, or for one episode of a show.
  *
  * The built-in addon is asked, and so is every source the user configured: one
  * addon base answers `/stream/` and `/subtitles/` off the same URL, so a source
  * that also does subtitles is already in the list and costs one request. Most
  * don't and 404, which is why a failure is only fatal when they all fail — the
- * same rule `findReleases` searches under. OpenSubtitles' own API and SubDL are
- * two more when there is a key for them, and the only ones asked when there is
- * no IMDb id at all.
+ * same rule `findReleases` searches under. OpenSubtitles' own API, SubSource and
+ * SubDL are three more when there is a key for them, and the only ones asked
+ * when there is no IMDb id at all.
  *
  * `filename` is Stremio's own extra and is what a provider matches a *cut* by
  * rather than just a title. The built-in addon ignores it (it matches on the
@@ -648,6 +859,8 @@ export async function findSubtitles(imdbId: string, season = 0, episode = 0, fil
   const asks = bases.map(b => subtitlesFrom(b, path))
   if (by.opensubtitles)
     asks.push(searchOpenSubtitles(by, imdbId, series ? season : 0, series ? episode : 0))
+  if (by.subsource)
+    asks.push(searchSubSource(by, imdbId, series ? season : 0, series ? episode : 0))
   if (by.subdl)
     asks.push(searchSubdl(by, imdbId, series ? season : 0, series ? episode : 0))
   const results = await Promise.allSettled(asks)
@@ -792,7 +1005,7 @@ export interface SubtitleFile extends Subtitle {
   cues: Cue[]
   /** Hearing-impaired: every noise spelled out in brackets. */
   captions: boolean
-  /** The file as text, kept for a metered one — it is what mpv gets (`mpvSource`). */
+  /** The file as text: what mpv gets for a metered one (`mpvSource`), and what a cast hands over. */
   text?: string
   /** Listed on the provider's word alone: it costs a download to read, so it is read when played. */
   unread?: boolean
@@ -827,35 +1040,34 @@ function already(s: Subtitle) {
   return f?.episode === s.episode ? f : undefined
 }
 
-let shelf: Promise<IDBDatabase> | undefined
-
 /**
- * Metered files, kept between launches: reopening a film, or going back to an
- * episode, must not spend a second download on subtitles it already had.
- * IndexedDB rather than localStorage — a film's file is ~100 KB, localStorage is
- * a few MB for the whole app, and every `ventic.` key goes into backups and the
- * sync. Where there is none (the check scripts) or it fails, nothing is kept.
- *
- * ponytail: never pruned. ~100 KB a title, so a thousand is 100 MB — drop the
- * oldest when a TV box's few GB make that matter.
+ * A metered file read on any launch — see utils/shelf. Reopening a film, or
+ * going back to an episode, must not spend a second download on subtitles it
+ * already had.
  */
-function onShelf<T>(mode: IDBTransactionMode, use: (store: IDBObjectStore) => IDBRequest<T>): Promise<T | undefined> {
-  if (!globalThis.indexedDB)
-    return Promise.resolve(undefined)
-  shelf ??= new Promise((resolve, reject) => {
-    const open = indexedDB.open('ventic-subtitles', 1)
-    open.onupgradeneeded = () => open.result.createObjectStore('files')
-    open.onsuccess = () => resolve(open.result)
-    open.onerror = () => reject(open.error)
-  })
-  return shelf.then(db => new Promise<T | undefined>(resolve => {
-    const request = use(db.transaction('files', mode).objectStore('files'))
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () => resolve(undefined)
-  })).catch(() => undefined)
+function onShelf(s: Subtitle) {
+  return shelved<string>('files', fileKey(s))
 }
 
-const shelved = (s: Subtitle) => onShelf<string>('readonly', store => store.get(fileKey(s)))
+/**
+ * The file chosen for one film or episode, by its progress key: put back with
+ * no search the next time it plays, and the only subtitles there are with no
+ * network. Written at every pick and by an offline download (see utils/offline).
+ */
+export interface KeptSubtitle {
+  lang: string
+  name?: string
+  text: string
+}
+
+export function keptSubtitle(key: string) {
+  return shelved<KeptSubtitle>('chosen', key)
+}
+
+export function keepSubtitle(key: string, f: SubtitleFile) {
+  if (key && f.text && f.cues.length)
+    return shelve('chosen', key, { lang: f.lang, name: f.name, text: f.text } satisfies KeptSubtitle)
+}
 
 const SUBTITLE_FILE = /\.(?:srt|vtt|ass|ssa|sub)$/i
 
@@ -885,7 +1097,9 @@ async function unzip(zip: Uint8Array, episode = 0): Promise<Uint8Array | null> {
       entries.push({ name, method: view.getUint16(p + 10, true), size: view.getUint32(p + 20, true), at: view.getUint32(p + 42, true) })
     p += 46 + length + view.getUint16(p + 30, true) + view.getUint16(p + 32, true)
   }
-  const e = entries.length > 1 && episode ? entries.find(f => parseRelease(f.name).episode === episode) : entries[0]
+  // A lone file that names another episode isn't ours either: a release name
+  // that read as a season pack was sometimes one episode's archive.
+  const e = episode ? entries.find(f => parseRelease(f.name).episode === episode) ?? (entries.length === 1 && !parseRelease(entries[0]!.name).episode ? entries[0] : undefined) : entries[0]
   if (!e)
     return null
 
@@ -959,7 +1173,7 @@ export function probe(s: Subtitle): Promise<SubtitleFile> {
 
 async function read(s: Subtitle): Promise<SubtitleFile> {
   // A metered file read on an earlier launch costs nothing now.
-  const kept = s.metered ? await shelved(s) : undefined
+  const kept = s.metered ? await onShelf(s) : undefined
   let text = kept ?? ''
   let error: string | undefined
   if (kept === undefined) {
@@ -990,9 +1204,9 @@ async function read(s: Subtitle): Promise<SubtitleFile> {
   }
   const cues = parseCues(text)
   if (s.metered && kept === undefined && cues.length)
-    onShelf('readwrite', store => store.put(text, fileKey(s)))
+    shelve('files', fileKey(s), text)
   // What gets picked is often the unread row itself, which this now replaces.
-  const file: SubtitleFile = { ...s, cues, captions: isCaptions(cues), text: s.metered ? text : undefined, unread: undefined, error }
+  const file: SubtitleFile = { ...s, cues, captions: isCaptions(cues), text: text || undefined, unread: undefined, error }
   files.set(s.url, file)
   return file
 }
@@ -1006,7 +1220,9 @@ async function read(s: Subtitle): Promise<SubtitleFile> {
  * and a menu open and not on every frame.
  */
 export async function mpvSource(s: Subtitle) {
-  if (!s.metered)
+  // Only a url anybody can fetch: not one that costs a download, nor one that
+  // exists only here (a file a cast brought — see `download`).
+  if (!s.metered && !s.download)
     return s.url
   const { text } = await probe(s)
   return text ? `memory://${text}` : s.url
@@ -1073,9 +1289,12 @@ export function fileLabel(f: SubtitleFile) {
 
 /** The dim second line: the facts that tell two files of one language apart. */
 export function fileNote(f: SubtitleFile) {
-  // Unread, a file has only its provider's word to go on.
-  if (f.unread)
-    return [f.provider, f.captions ? $t('SDH') : ''].filter(Boolean).join(' · ')
+  // Unread, a file has only its provider's word to go on — and what picking it
+  // costs, which is the one thing worth knowing before the pick.
+  if (f.unread) {
+    const left = quota[f.provider ?? '']
+    return [f.provider, left === undefined ? '' : $t('{count} left today', { count: left }), f.captions ? $t('SDH') : ''].filter(Boolean).join(' · ')
+  }
   if (!f.cues.length)
     return f.error ?? $t('Unreadable')
   return [
@@ -1106,15 +1325,18 @@ export function fileNote(f: SubtitleFile) {
  * names, closest to the file playing first (`findSubtitles`), and only ever
  * chosen when nothing free fits — what "choose automatically" picks is what it
  * picked before there were any. The one picked is the one downloaded, and kept
- * (`onShelf`), so coming back to it is free. Of two that would cost, SubDL's
- * goes first: its 50 a day are the user's own, OpenSubtitles' 5 the household's.
+ * (`onShelf`), so coming back to it is free. Of two that would cost, the one
+ * with the most to spare goes first: SubSource's 7200 a day, then SubDL's 50 —
+ * both the user's own — and OpenSubtitles' 5 a household last (`SCARCITY`).
  */
+const SCARCITY: Record<string, number> = { SubSource: 0, SubDL: 1, OpenSubtitles: 2 }
+
 export async function probeLanguage(lang: SubtitleLanguage, duration = 0, limit = 12): Promise<SubtitleFile[]> {
   const free = lang.files.filter(f => !f.metered).slice(0, limit).map(probe)
   const metered = lang.files.filter(f => f.metered).map(async f =>
-    already(f) ?? (await shelved(f) !== undefined ? probe(f) : { ...f, cues: [], captions: !!f.captions, unread: true }))
+    already(f) ?? (await onShelf(f) !== undefined ? probe(f) : { ...f, cues: [], captions: !!f.captions, unread: true }))
   const dead = (f: SubtitleFile) => !f.cues.length && !f.unread
-  const scarce = (f: SubtitleFile) => Number(!!f.unread && f.provider === 'OpenSubtitles')
+  const scarce = (f: SubtitleFile) => f.unread ? SCARCITY[f.provider ?? ''] ?? 0 : 0
   return (await Promise.all([...free, ...metered])).sort((a, b) =>
     Number(dead(a)) - Number(dead(b))
     || Number(fitsRuntime(b, duration)) - Number(fitsRuntime(a, duration))

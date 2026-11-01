@@ -52,7 +52,8 @@ export const GROUP_DEFAULTS: Groups = { library: true, sources: true, preference
  * another screen they are at best meaningless and at worst point at nothing.
  *
  * Credentials don't need listing: `makeBackup` drops the SECRET set before this
- * file ever sees a key, which is also why the sync's own settings can't sync.
+ * file ever sees a key, which is also why the sync's own settings can't sync —
+ * all but the subtitle keys, which it hands over on purpose (`SYNCED`).
  */
 const NEVER = new Set(['cached', 'local', 'downloadDir', 'touched', 'peakUpload', 'ground', 'updateSkipped', 'castReceive', 'castName', 'castAsk', 'sync', 'profile', 'watchTime', 'airNotified'])
 
@@ -113,7 +114,7 @@ export const SYNC_GROUPS: { key: GroupKey, title: () => string, hint: () => stri
   {
     key: 'sources',
     title: () => $t('Sources'),
-    hint: () => $t('The servers Ventic searches, so a new screen can find something to play without adding them again.'),
+    hint: () => $t('The servers Ventic searches and your subtitle keys, so a new screen can find something to play, and its subtitles, without adding them again.'),
   },
   {
     key: 'preferences',
@@ -139,7 +140,9 @@ export function groupOf(key: string): GroupKey | null {
     return null
   if (LIBRARY.has(name))
     return 'library'
-  if (name === 'sources' || name === 'disabledSources')
+  // The subtitle keys ride with the sources: both are what this household
+  // searches, and a new screen wants both before it can play anything well.
+  if (name === 'sources' || name === 'disabledSources' || name === 'subdlKey' || name === 'subsourceKey')
     return 'sources'
   return 'preferences'
 }
@@ -355,7 +358,7 @@ export async function pull(config: SyncConfig): Promise<Backup | null> {
   if (!res.ok)
     throw new Error(problem(res.status))
   const text = await res.text()
-  return text.trim() ? readBackup(text) : null
+  return text.trim() ? readBackup(text, true) : null
 }
 
 export async function push(config: SyncConfig, text: string) {

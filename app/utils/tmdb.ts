@@ -1,6 +1,8 @@
 // TMDB v3 — https://developer.themoviedb.org/reference/intro/getting-started
 // The token in TMDB_API is the v4 "API Read Access Token" (sent as a Bearer).
 
+import { images, offlineTitles, shelve, shelved } from './shelf'
+
 export type MediaType = 'movie' | 'tv'
 
 export interface TmdbItem {
@@ -61,30 +63,53 @@ export interface Media {
   seasons?: { number: number, episodes: number }[]
 }
 
-export function tmdb<T>(path: string, params?: Record<string, unknown>) {
+export function tmdb<T>(path: string, params?: Record<string, unknown>): Promise<T> {
   // The user's own token wins when they have set one — see `tmdbKey` in the
   // settings store for why that escape hatch exists.
   const key = useSettingsStore().tmdbKey || useRuntimeConfig().public.TMDB_API
+  // Titles and overviews come back in whatever the app is set to, as the
+  // regional tag TMDB wants (`pt-BR` for the `pt` the URL carries) — see
+  // `tmdbLanguage`. TMDB falls back to English per field, so a language it
+  // has nothing in still returns a usable record.
+  const query = { language: tmdbLanguage(), ...params }
+  // Typed as it resolves, not as Nitro's route types would have it — `.then` on
+  // those is a type instantiation too deep for the checker.
+  const asked = $fetch<T>(path, { baseURL: 'https://api.themoviedb.org/3', params: query, headers: { Authorization: `Bearer ${key}` } }) as Promise<T>
 
-  return $fetch<T>(path, {
-    baseURL: 'https://api.themoviedb.org/3',
-    // Titles and overviews come back in whatever the app is set to, as the
-    // regional tag TMDB wants (`pt-BR` for the `pt` the URL carries) — see
-    // `tmdbLanguage`. TMDB falls back to English per field, so a language it
-    // has nothing in still returns a usable record.
-    params: { language: tmdbLanguage(), ...params },
-    headers: { Authorization: `Bearer ${key}` },
-  })
+  // A title downloaded to watch with no network keeps its pages: kept from what
+  // is fetched while there is one, answered from when there isn't (see
+  // utils/offline). Everything else is TMDB's to answer or not.
+  const title = /^\/(movie|tv)\/(\d+)(?:\/|$)/.exec(path)
+  if (!title)
+    return asked
+  const id = `${path}?${new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)]))}`
+  return asked.then(
+    data => {
+      if (offlineTitles.keeps(`${title[1]}:${title[2]}`))
+        shelve('tmdb', id, data)
+      return data
+    },
+    async e => (await shelved<T>('tmdb', id)) ?? Promise.reject(e),
+  )
 }
 
 const IMAGE_BASE = 'https://image.tmdb.org/t/p'
+
+/**
+ * A picture by its TMDB path: the copy saved with a download first (see
+ * `keepImage` and utils/offline), whatever size it was saved at — the one way
+ * a poster shows with no network — else TMDB's, at the size asked for.
+ */
+function picture(path: string, size: string) {
+  return images.get(path) ?? `${IMAGE_BASE}/${size}${path}`
+}
 
 const POSTER_SIZES = [92, 154, 185, 342, 500, 780] as const
 
 export type PosterSize = `w${typeof POSTER_SIZES[number]}`
 
 export function posterUrl(path?: string | null, size: PosterSize = 'w342') {
-  return path ? `${IMAGE_BASE}/${size}${path}` : null
+  return path ? picture(path, size) : null
 }
 
 /** Smallest bucket that still covers `width` device pixels — callers pass CSS px * dpr. */
@@ -93,7 +118,7 @@ export function posterFor(width: number): PosterSize {
 }
 
 export function backdropUrl(path?: string | null, size: 'w780' | 'w1280' | 'original' = 'w780') {
-  return path ? `${IMAGE_BASE}/${size}${path}` : null
+  return path ? picture(path, size) : null
 }
 
 /**
@@ -112,17 +137,22 @@ export function backdropFor(mode: 'art' | 'custom' | 'off', artPath: string | nu
 }
 
 export function profileUrl(path?: string | null, size: 'w45' | 'w185' | 'h632' = 'w185') {
-  return path ? `${IMAGE_BASE}/${size}${path}` : null
+  return path ? picture(path, size) : null
 }
 
 /** Episode thumbnails. */
 export function stillUrl(path?: string | null, size: 'w300' | 'w780' = 'w300') {
-  return path ? `${IMAGE_BASE}/${size}${path}` : null
+  return path ? picture(path, size) : null
 }
 
 /** Title treatments (transparent PNG) — used instead of text in the hero. */
 export function logoUrl(path?: string | null, size: 'w300' | 'w500' = 'w500') {
-  return path ? `${IMAGE_BASE}/${size}${path}` : null
+  return path ? picture(path, size) : null
+}
+
+/** A TMDB picture at a size, from TMDB — what `keepImage` saves for offline. */
+export function tmdbImage(path: string, size: string) {
+  return `${IMAGE_BASE}/${size}${path}`
 }
 
 /**
@@ -488,6 +518,20 @@ function toDetail(raw: RawDetail, type: MediaType): MediaDetail {
   }
 }
 
+/**
+ * A title's page — the one request `useMediaDetail` makes, and so the one an
+ * offline download fetches ahead (utils/offline): the same path and the same
+ * parameters, or `tmdb`'s offline copy is filed under another name.
+ */
+export function detailRequest(type: MediaType, id: string | number) {
+  return tmdb<RawDetail>(`/${type}/${id}`, { append_to_response: DETAIL_APPEND, include_image_language: 'en,null' })
+}
+
+/** As the page shows it. */
+export async function fetchDetail(type: MediaType, id: string | number) {
+  return toDetail(await detailRequest(type, id), type)
+}
+
 /** Never blocks navigation — the page renders its skeleton while this resolves. */
 export function useMediaDetail(type: MaybeRefOrGetter<MediaType>, id: MaybeRefOrGetter<string | number>) {
   return useAsyncData(
@@ -495,9 +539,7 @@ export function useMediaDetail(type: MaybeRefOrGetter<MediaType>, id: MaybeRefOr
     // No id is not a lookup that fails, it is a lookup there is nothing to make:
     // a live channel and a bare magnet both reach the player with no TMDB
     // identity at all, and `/movie/` is a 404 on the way to the same nothing.
-    async () => toValue(id)
-      ? await tmdb<RawDetail>(`/${toValue(type)}/${toValue(id)}`, { append_to_response: DETAIL_APPEND, include_image_language: 'en,null' })
-      : null,
+    async () => toValue(id) ? await detailRequest(toValue(type), toValue(id)) : null,
     {
       lazy: true,
       watch: [() => toValue(type), () => toValue(id)],

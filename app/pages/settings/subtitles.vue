@@ -69,16 +69,21 @@ const cue = computed(() => {
 })
 
 /**
- * Whether SubDL takes the key in the box — asked as it changes, because a
- * refused key otherwise looks exactly like SubDL having nothing to add.
+ * Whether a provider takes the key in its box — asked as it changes, because a
+ * refused key otherwise looks exactly like the provider having nothing to add.
  */
-const keyWorks = ref<boolean | null>(null)
-watchDebounced(() => settings.subdlKey, async key => {
-  keyWorks.value = null
-  const works = key ? await subdlKeyWorks(key) : null
-  if (key === settings.subdlKey)
-    keyWorks.value = works
-}, { debounce: 600, immediate: true })
+function keyCheck(key: () => string, works: (key: string) => Promise<boolean | null>) {
+  const answer = ref<boolean | null>(null)
+  watchDebounced(key, async now => {
+    answer.value = null
+    const said = now ? await works(now) : null
+    if (now === key())
+      answer.value = said
+  }, { debounce: 600, immediate: true })
+  return answer
+}
+const subsourceWorks = keyCheck(() => settings.subsourceKey, subsourceKeyWorks)
+const subdlWorks = keyCheck(() => settings.subdlKey, subdlKeyWorks)
 
 /** Two lines, like the subtitles it stands in for. */
 const SAMPLE = computed(() => $t('It was the fall that killed him.\nNot the drop — the sudden stop.'))
@@ -124,9 +129,24 @@ const SAMPLE = computed(() => $t('It was the fall that killed him.\nNot the drop
 
     <settings-section
       :title="$t('More subtitles')"
-      :hint="$t('The built-in search reaches only a small part of OpenSubtitles — for many films just a few languages. SubDL has far more: make a free account at subdl.com and paste the API key from its account settings here.')"
-      :keywords="$t('SubDL, API key, missing subtitles, more languages, subtitle provider')"
+      :hint="$t('OpenSubtitles is built in, with five downloads a day per household. A key of your own adds SubSource, with thousands a day, or SubDL, with 50: make a free account on subsource.net or subdl.com and paste the API key from its account settings here. Keys follow you to your other screens through the sync.')"
+      :keywords="$t('SubSource, SubDL, OpenSubtitles, API key, missing subtitles, more languages, subtitle provider, download limit')"
     >
+      <tv-field :label="$t('SubSource API key')">
+        <v-text-field
+          v-model.trim="settings.subsourceKey"
+          :label="$t('SubSource API key')"
+          variant="solo-filled"
+          density="comfortable"
+          rounded="lg"
+          flat
+          autocomplete="off"
+          spellcheck="false"
+          :append-inner-icon="subsourceWorks ? mdiCheck : undefined"
+          :error-messages="subsourceWorks === false ? $t('SubSource refused this key.') : undefined"
+          hide-details="auto"
+        />
+      </tv-field>
       <tv-field :label="$t('SubDL API key')">
         <v-text-field
           v-model.trim="settings.subdlKey"
@@ -137,8 +157,8 @@ const SAMPLE = computed(() => $t('It was the fall that killed him.\nNot the drop
           flat
           autocomplete="off"
           spellcheck="false"
-          :append-inner-icon="keyWorks ? mdiCheck : undefined"
-          :error-messages="keyWorks === false ? $t('SubDL refused this key.') : undefined"
+          :append-inner-icon="subdlWorks ? mdiCheck : undefined"
+          :error-messages="subdlWorks === false ? $t('SubDL refused this key.') : undefined"
           hide-details="auto"
         />
       </tv-field>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { MediaType } from '~/utils/tmdb'
-import { mdiEyeOff, mdiEyeOutline } from '@mdi/js'
+import { mdiDownloadOffOutline, mdiEyeOff, mdiEyeOutline } from '@mdi/js'
 
 /**
  * `anime` narrows every list to Japanese animation. TMDB has no anime endpoint —
@@ -81,6 +81,17 @@ const request = computed(() => {
 
 const { items, pending, error, done, loadMore } = useMediaFeed(request)
 
+/**
+ * With no network, what is on this device in place of TMDB's lists: every
+ * title of this kind a download is filed under, as the library remembers it
+ * (see `onDevice`, utils/offline). Its page opens from what the download kept.
+ */
+const downloads = useDownloadsStore()
+const offline = computed(() => !online.value)
+const kept = computed(() => [...downloads.onDevice]
+  .flatMap(title => library.media[title] ?? [])
+  .filter(m => m.type === props.type && (!props.anime || kindOf(m) === 'anime')))
+
 // Left out here rather than in the feed, so marking a title watched takes it
 // off the page without a refetch, and turning the switch off puts every one
 // back. A page that comes back all watched is a short grid, and a short grid
@@ -96,7 +107,8 @@ watch([() => shown.value.length, pending], () => {
 <template>
   <div class="flex h-full flex-col">
     <!-- The default, plus the 50px the watched toggle takes beside the layout. -->
-    <options-bar :active="genre !== null ? 1 : 0" :needs="790">
+    <!-- The filters are TMDB's to answer, so they go with the network. -->
+    <options-bar v-if="!offline" :active="genre !== null ? 1 : 0" :needs="790">
       <!-- Chips only from lg up, where the row has room for five of them beside
            the genre filter, poster slider and layout toggle. Below that — a
            phone, or a desktop window in the md–lg band — they'd crowd those
@@ -160,7 +172,20 @@ watch([() => shown.value.length, pending], () => {
     </options-bar>
 
     <div class="min-h-0 flex-1">
+      <v-empty-state
+        v-if="offline && !kept.length"
+        :icon="mdiDownloadOffOutline"
+        :title="$t('Nothing downloaded')"
+        :text="$t('What you download plays here without a network.')"
+      />
       <media-layout
+        v-else-if="offline"
+        :items="kept"
+        :pending="false"
+        :done="true"
+      />
+      <media-layout
+        v-else
         :items="shown"
         :pending="pending"
         :done="done"

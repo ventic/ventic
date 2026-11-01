@@ -43,12 +43,22 @@
         <option value="playlist">A TV playlist (M3U link)</option>
         <option value="xtream">An Xtream login</option>
         <option value="sync">A WebDAV folder to sync with</option>
+        <option value="subtitles">Subtitle keys (SubSource, SubDL)</option>
       </select>
     </label>
 
-    <label><span id="urlLabel">Source URL</span>
+    <label id="urlBox"><span id="urlLabel">Source URL</span>
       <input id="url" name="url" required inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://">
     </label>
+
+    <div id="keys" hidden>
+      <label>SubSource API key
+        <input id="subsource" name="subsource" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off">
+      </label>
+      <label>SubDL API key
+        <input id="subdl" name="subdl" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off">
+      </label>
+    </div>
 
     <div id="creds" hidden>
       <label>Username
@@ -86,7 +96,11 @@
   if (code) document.getElementById('code').value = code
 
   function shape() {
-    document.getElementById('urlLabel').textContent = LABELS[kind.value]
+    var keys = kind.value === 'subtitles'
+    document.getElementById('urlBox').hidden = keys
+    document.getElementById('url').required = !keys
+    document.getElementById('keys').hidden = !keys
+    if (!keys) document.getElementById('urlLabel').textContent = LABELS[kind.value]
     document.getElementById('creds').hidden = kind.value !== 'xtream' && kind.value !== 'sync'
   }
   kind.onchange = shape
@@ -105,7 +119,9 @@
         kind: kind.value,
         url: document.getElementById('url').value.trim(),
         user: document.getElementById('user').value.trim(),
-        pass: document.getElementById('pass').value
+        pass: document.getElementById('pass').value,
+        subsource: document.getElementById('subsource').value.trim(),
+        subdl: document.getElementById('subdl').value.trim()
       })
     }).then(function (res) {
       msg.className = res.ok ? 'good' : 'bad'

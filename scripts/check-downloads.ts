@@ -12,16 +12,19 @@ import assert from 'node:assert'
 import { createPinia, defineStore, setActivePinia } from 'pinia'
 import * as vue from 'vue'
 import * as library from '../app/utils/library'
+import * as shelf from '../app/utils/shelf'
 import * as torrents from '../app/utils/torrents'
 import './i18n-stub'
 
 /** The store's own intervals, in the order it sets them up — the first is the poll. */
 const intervals: Array<() => Promise<void>> = []
 const visibility = vue.ref('visible')
-const settings = vue.reactive({ playMode: 'auto', downloadDir: '', sources: [], activeSources: [], quality: '', wifiOnly: false, keepWatched: true, fetchNext: true, bufferAhead: 5, bufferBehind: 2, upLimit: 0, downLimit: 0 })
+const settings = vue.reactive({ playMode: 'auto', downloadDir: '', sources: [], activeSources: [], quality: '', wifiOnly: false, keepWatched: true, fetchNext: true, bufferAhead: 5, bufferBehind: 2, upLimit: 0, downLimit: 0, autoSubs: true, subLang: 'sl', subdlKey: '', subsourceKey: 'ss' })
+/** Every download made ready for offline, by key and with what it would fetch — see utils/offline. */
+const prepared: { key: string, lang?: string }[] = []
 let metered: boolean | null = null
 
-Object.assign(globalThis, vue, library, torrents, {
+Object.assign(globalThis, vue, library, torrents, shelf, {
   defineStore,
   useLocalStorage: (_key: string, init: unknown) => vue.ref(init),
   useIntervalFn: (fn: () => Promise<void>) => intervals.push(fn),
@@ -31,7 +34,13 @@ Object.assign(globalThis, vue, library, torrents, {
   meteredNetwork: () => metered,
   storageVolumes: () => null,
   useSettingsStore: () => settings,
-  useLibraryStore: () => ({ progress: {} }),
+  useLibraryStore: () => ({ progress: {}, remember: () => {} }),
+  useRuntimeConfig: () => ({ public: { OPENSUBTITLES_API: 'os' } }),
+  prepareOffline: async (job: { key: string, subtitles?: { lang: string } }) => {
+    prepared.push({ key: job.key, lang: job.subtitles?.lang })
+    return null
+  },
+  keptSubtitle: async () => undefined,
 })
 
 /** One torrent as the engine would list it: a file of 100 bytes per entry in `file_progress`. */
@@ -215,8 +224,16 @@ await poll()
 assert.equal(await nextUp(), true)
 assert.equal(engine.get(7)?.state, 'live', 'on the disk, so the next one starts coming down')
 assert.deepEqual(downloads.cachedFor('tv:9:1:2'), { hash: 'hash7', file: 0 }, 'filed under the episode, so Next plays it with no search')
+// A download is for watching later, perhaps with no network: its pages,
+// pictures and subtitles are fetched as it is added, in the language Ventic
+// picks subtitles in. A play is not a download and fetches none of it.
+assert.deepEqual(prepared, [{ key: 'tv:9:1:2', lang: 'sl' }])
+assert.ok(downloads.keeps('tv:9'), 'its TMDB pages are kept from now on')
+assert.ok(shelf.offlineTitles.keeps('tv:9'), 'which is what `tmdb` asks')
 await poll()
 assert.equal(await nextUp(), true, 'and asked again, it is already here')
+assert.ok(downloads.onDevice.has('tv:9'), 'on the device, so offline mode lists the show')
+assert.ok(!downloads.keeps('movie:404'), 'and nothing else is kept')
 await downloads.release()
 assert.deepEqual(states(), { 1: 'live', 7: 'live' }, 'leaving the player leaves it downloading')
 

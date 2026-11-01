@@ -34,7 +34,21 @@ const PREFIX = 'ventic.'
  * the sync in `utils/sync.ts` from ever syncing its own credentials outward:
  * this set is dropped before that file sees a key at all.
  */
-const SECRET = new Set([`${PREFIX}trakt`, `${PREFIX}tmdbKey`, `${PREFIX}subdlKey`, `${PREFIX}playlists`, `${PREFIX}castCode`, `${PREFIX}castTarget`, `${PREFIX}sync`])
+const SECRET = new Set([`${PREFIX}trakt`, `${PREFIX}tmdbKey`, `${PREFIX}subdlKey`, `${PREFIX}subsourceKey`, `${PREFIX}playlists`, `${PREFIX}castCode`, `${PREFIX}castTarget`, `${PREFIX}sync`])
+
+/**
+ * Secrets the sync carries all the same: the subtitle providers' API keys,
+ * which a household would rather type once, on the screen with a keyboard,
+ * than with a remote on every television. The sync's file sits on the user's
+ * own drive behind their own password, where a backup file is made to be
+ * copied anywhere — so these travel in the one and never in the other. The
+ * sync's own password is never one of them.
+ */
+const SYNCED = new Set([`${PREFIX}subdlKey`, `${PREFIX}subsourceKey`])
+
+function carried(key: string, sync: boolean) {
+  return !SECRET.has(key) || (sync && SYNCED.has(key))
+}
 
 export interface Backup {
   app: 'ventic'
@@ -54,13 +68,14 @@ export interface KeyStore {
   setItem: (key: string, value: string) => void
 }
 
-export function makeBackup(store: KeyStore, at = Date.now()): Backup {
+/** `sync` is the sync asking, which takes `SYNCED` along. */
+export function makeBackup(store: KeyStore, at = Date.now(), sync = false): Backup {
   const keys: Record<string, string> = {}
   for (let i = 0; i < store.length; i++) {
     const key = store.key(i)
     // Other things share this origin — Vuetify's theme cache, whatever a
     // devtool left behind. Ours are the only ones we can promise to restore.
-    if (key?.startsWith(PREFIX) && !SECRET.has(key))
+    if (key?.startsWith(PREFIX) && carried(key, sync))
       keys[key] = store.getItem(key) ?? ''
   }
   return { app: 'ventic', version: 1, at, keys }
@@ -70,7 +85,7 @@ export function makeBackup(store: KeyStore, at = Date.now()): Backup {
  * Vet a file someone handed us before any of it reaches storage. Throws with a
  * sentence the settings page can show as-is.
  */
-export function readBackup(text: string): Backup {
+export function readBackup(text: string, sync = false): Backup {
   let raw: unknown
   try {
     raw = JSON.parse(text)
@@ -90,7 +105,7 @@ export function readBackup(text: string): Backup {
   // backup has no business carrying is accepted just because it carries it.
   const keys = Object.fromEntries(
     Object.entries(b.keys)
-      .filter(([key, value]) => key.startsWith(PREFIX) && !SECRET.has(key) && typeof value === 'string'),
+      .filter(([key, value]) => key.startsWith(PREFIX) && carried(key, sync) && typeof value === 'string'),
   )
   if (!Object.keys(keys).length)
     return fail($t('That backup is empty.'))

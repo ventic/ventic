@@ -286,11 +286,15 @@ export const useSettingsStore = defineStore('settings', () => {
   /** ISO 639 code, as the player last chose or the settings page last set. */
   const subLang = useLocalStorage(scoped('ventic.subLang'), '')
   /**
-   * A SubDL API key of the user's own, which is what turns SubDL on — see
-   * `searchSubdl`. The machine's rather than a profile's, like `tmdbKey`, and
-   * like it kept out of backups: a key is a quota with somebody's name on it.
+   * API keys of the user's own, which are what turn SubDL and SubSource on —
+   * see `searchSubdl`, `searchSubSource`. The household's rather than a
+   * profile's, like `tmdbKey`. Kept out of backup files, since a key is a quota
+   * with somebody's name on it, but carried by the sync, which only ever writes
+   * to the user's own drive — set once, on whichever screen has a keyboard
+   * (see `SYNCED` in utils/backup.ts).
    */
   const subdlKey = useLocalStorage('ventic.subdlKey', '')
+  const subsourceKey = useLocalStorage('ventic.subsourceKey', '')
 
   // --- Audio ---
   /**
@@ -338,5 +342,5 @@ export const useSettingsStore = defineStore('settings', () => {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, disabledSources, activeSources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, closeToTray, castReceive, castName, castAsk, castCode, castTarget, downloadDir, playMode, keepWatched, fetchNext, airNotify, bufferAhead, bufferBehind, subs, autoSubs, subLang, subdlKey, audio, audioByTitle, audioFor, setAudioFor, audioTrack, fill, keys, resetSubs }
+  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, disabledSources, activeSources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, closeToTray, castReceive, castName, castAsk, castCode, castTarget, downloadDir, playMode, keepWatched, fetchNext, airNotify, bufferAhead, bufferBehind, subs, autoSubs, subLang, subdlKey, subsourceKey, audio, audioByTitle, audioFor, setAudioFor, audioTrack, fill, keys, resetSubs }
 })

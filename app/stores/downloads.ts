@@ -47,6 +47,7 @@ export function percentOf(t: EngineTorrent) {
 export const useDownloadsStore = defineStore('downloads', () => {
   /** Rate ceilings and the storage folder are the user's, not ours. */
   const settings = useSettingsStore()
+  const library = useLibraryStore()
   const torrents = ref<EngineTorrent[]>([])
   const offline = ref(false)
   const loaded = ref(false)
@@ -245,7 +246,62 @@ export const useDownloadsStore = defineStore('downloads', () => {
       if (options.magnet)
         picked.value[key] = started.hash
     }
+    // A download is for watching later, perhaps on a plane: its pages, pictures
+    // and subtitles come now, while there is a network to fetch them.
+    if (keep && key && started.hash)
+      readyOffline(key, started.torrent?.name)
     return started
+  }
+
+  /**
+   * Titles with a copy on this device to watch with no network, as `type:id` —
+   * every title a kept download (not a stream) is filed under. What offline
+   * mode lists in place of TMDB's pages.
+   */
+  const onDevice = computed(() => {
+    const kept = new Set(torrents.value.filter(t => !isStream(t.output_folder)).map(t => t.info_hash))
+    return new Set(Object.entries(cached.value).filter(([, c]) => kept.has(c.hash)).map(([key]) => parseKey(key).title))
+  })
+
+  /**
+   * Whether a title's TMDB pages are worth keeping for offline — see `tmdb`. A
+   * download's are, a stream's aren't (it is gone once watched), and one just
+   * added, which the engine hasn't listed yet, counts as a download.
+   */
+  function keeps(title: string) {
+    const streams = new Set(torrents.value.filter(t => isStream(t.output_folder)).map(t => t.info_hash))
+    return Object.entries(cached.value).some(([key, c]) => parseKey(key).title === title && !streams.has(c.hash))
+  }
+
+  offlineTitles.keeps = keeps
+
+  /** `prepareOffline` for one download, with this device's subtitle settings. */
+  function readyOffline(key: string, release?: string) {
+    const subtitles = settings.autoSubs && settings.subLang
+      ? { lang: settings.subLang, subdl: settings.subdlKey, subsource: settings.subsourceKey, opensubtitles: useRuntimeConfig().public.OPENSUBTITLES_API }
+      : undefined
+    return prepareOffline({ key, release, subtitles })
+      .then(detail => detail && library.remember(detail))
+      .catch(() => {})
+  }
+
+  /**
+   * Downloads still missing their subtitles — the ones a spent quota, a dead
+   * file or no network turned away when they were added, and any from before
+   * there was such a thing — asked for again when there is a network to ask
+   * with: at startup and on getting one back (plugins/offline.client.ts). Not
+   * oftener than every ten minutes, so a flapping Wi-Fi asks once.
+   */
+  let caughtUp = 0
+  async function catchUp() {
+    if (!settings.autoSubs || !settings.subLang || Date.now() - caughtUp < 10 * 60_000)
+      return
+    caughtUp = Date.now()
+    for (const [key, c] of Object.entries(cached.value)) {
+      const t = torrents.value.find(t => t.info_hash === c.hash)
+      if (t && !isStream(t.output_folder) && !(await keptSubtitle(key)))
+        await readyOffline(key)
+    }
   }
 
   /**
@@ -474,8 +530,6 @@ export const useDownloadsStore = defineStore('downloads', () => {
     await torrentAction(id, 'start').catch(() => {})
   }
 
-  const library = useLibraryStore()
-
   /** Every title this torrent has been played as, watched to the end. */
   function watched(hash: string) {
     const titles = Object.entries(cached.value).filter(([, c]) => c.hash === hash)
@@ -702,5 +756,8 @@ export const useDownloadsStore = defineStore('downloads', () => {
     localFor,
     setLocal,
     start,
+    onDevice,
+    keeps,
+    catchUp,
   }
 })

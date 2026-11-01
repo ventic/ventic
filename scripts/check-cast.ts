@@ -214,8 +214,8 @@ assert.ok(/\.route\("\/", get\(setup_page\)\)/.test(rust), 'and serves it at the
 assert.ok(!/<(?:script|link|img)[^>]+(?:src|href)=["']?http/i.test(form), 'the form may not fetch anything off this device')
 assert.ok(/fetch\('\/ventic\/setup'/.test(form) && /\.route\("\/ventic\/setup", post\(setup\)\)/.test(rust), 'the form posts where the receiver listens')
 assert.ok(
-  ['source', 'playlist', 'xtream', 'sync'].every(kind => form.includes(`value="${kind}"`) && rust.includes(`"${kind}"`)),
-  'both ends have to agree on the four kinds, and nothing checks that but this',
+  ['source', 'playlist', 'xtream', 'sync', 'subtitles'].every(kind => form.includes(`value="${kind}"`) && rust.includes(`"${kind}"`)),
+  'both ends have to agree on the kinds, and nothing checks that but this',
 )
 
 // The network is not a permission, here least of all: this is the route that
@@ -254,6 +254,27 @@ assert.ok(
 )
 for (const write of ['settings.sources = [...settings.sources, value.value]', 'settings.playlists = [...settings.playlists, value.value]', 'Object.assign(sync.config'])
   assert.ok(dialog.includes(write), `the dialog is where a pending ${write.split(/[.[]/)[1]} lands`)
+
+// The subtitles on screen ride with a cast: the sender asks the player, Rust
+// passes the value through untouched, the receiver stashes it for the player,
+// and the player takes it for that film alone — before its own choice. Four
+// files, and nothing but this connects them.
+assert.match(rust, /subtitle: Option<serde_json::Value>/, 'the receiver passes the subtitles through')
+assert.match(read('app/pages/watch.vue'), /subtitle: player\.value\?\.castSubtitle\(\)/, 'the sender sends what is on screen')
+const listener2 = read('app/plugins/cast.client.ts')
+assert.ok(listener2.indexOf('ui.castSubtitle = event.payload.subtitle') < listener2.indexOf('query: castRoute(event.payload)'), 'stashed before the player can ask for it')
+const mpv = read('app/components/MpvPlayer.vue')
+assert.match(mpv, /if \(cast && cast\.url === props\.src\) \{\n\s+uiStore\.castSubtitle = null\n\s+return applyHanded\(cast\.subtitle\)/, 'and taken by that film\'s player, once, ahead of its own choice')
+
+// Subtitle keys come instead of an address — the longest thing anybody types
+// into this app — and the dialog shows them as a room should see them: enough
+// to tell which, not enough to use. A phone that knew one leaves the other.
+assert.equal(setupValue({ kind: 'subtitles', url: '', subsource: ' sk_1234567890abcdef ', subdl: '' }), 'SubSource sk_1…cdef')
+assert.equal(setupValue({ kind: 'subtitles', url: '', subsource: 'sk_1234567890abcdef', subdl: 'subdl_abcdefghijkl' }), 'SubSource sk_1…cdef · SubDL subd…ijkl')
+assert.equal(setupValue({ kind: 'subtitles', url: '' }), '', 'with neither there is nothing to keep')
+assert.match(rust, /form\.kind == "subtitles" && !\(form\.subsource\.trim\(\)\.is_empty\(\) && form\.subdl\.trim\(\)\.is_empty\(\)\)/, 'the receiver takes keys without an address')
+assert.ok(/subsource: document\.getElementById\('subsource'\)/.test(form) && /subdl: document\.getElementById\('subdl'\)/.test(form), 'the form sends both')
+assert.ok(dialog.includes('settings.subsourceKey = setup.subsource.trim()') && dialog.includes('settings.subdlKey = setup.subdl.trim()'), 'and the dialog keeps them where Settings does')
 
 // The port is open for as long as the code is on screen and no longer: a
 // television nobody has set up yet has casting switched off, and this must not

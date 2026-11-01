@@ -104,6 +104,8 @@ export default defineNuxtPlugin(() => {
     // was. Leaving the player first makes every command a fresh start.
     if (useRouter().currentRoute.value.path === player)
       await navigateTo(localePath('/'))
+    // Too big for a route, and the player's to take once it has the film open.
+    ui.castSubtitle = event.payload.subtitle ? { url: event.payload.url, subtitle: event.payload.subtitle } : null
     await navigateTo({ path: player, query: castRoute(event.payload) })
   }).catch(() => {}) // no Tauri under `bun run dev`, and nothing to listen to
 

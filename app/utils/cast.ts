@@ -58,6 +58,25 @@ export interface CastPlay {
    * empty where it couldn't tell — which is never refused. See `cannotDecode`.
    */
   video?: string
+  subtitle?: CastSubtitle
+}
+
+/**
+ * The subtitles the sending player had on, so the film arrives with the same
+ * ones at the same timing rather than whatever this device's own search would
+ * pick — and a file that cost a download, without a second one. Absent from a
+ * sender older than this, which leaves the choice to the receiver as before.
+ */
+export interface CastSubtitle {
+  /** It had them off. */
+  off?: boolean
+  /** A track inside the video file, which is the same file on both ends. */
+  track?: { lang?: string, title?: string }
+  /** Or a file, by its text: the receiver neither searches for it nor fetches it. */
+  file?: { lang: string, name?: string, text: string }
+  /** mpv's sub-delay and sub-speed: an auto-sync done once is done for both. */
+  delay?: number
+  speed?: number
 }
 
 /**
@@ -149,10 +168,18 @@ export interface CastSetup {
   /** Only the two kinds that have a login carry these. */
   user?: string
   pass?: string
+  /** And only `subtitles` these: the user's own API keys, in place of an address. */
+  subsource?: string
+  subdl?: string
 }
 
-/** The four things worth typing on a phone, each landing somewhere different. */
-export type SetupKind = 'source' | 'playlist' | 'xtream' | 'sync'
+/** The things worth typing on a phone, each landing somewhere different. */
+export type SetupKind = 'source' | 'playlist' | 'xtream' | 'sync' | 'subtitles'
+
+/** A key as a dialog read across a room shows it: enough to tell which, not enough to use. */
+function masked(key: string) {
+  return key.length > 10 ? `${key.slice(0, 4)}…${key.slice(-4)}` : '…'
+}
 
 /**
  * What a submitted form actually turns into, or '' when it is nothing this app
@@ -166,6 +193,10 @@ export type SetupKind = 'source' | 'playlist' | 'xtream' | 'sync'
 export function setupValue(setup: CastSetup): string {
   const url = setup.url.trim()
   switch (setup.kind) {
+    case 'subtitles':
+      return [setup.subsource?.trim() && `SubSource ${masked(setup.subsource.trim())}`, setup.subdl?.trim() && `SubDL ${masked(setup.subdl.trim())}`]
+        .filter(Boolean)
+        .join(' · ')
     case 'source':
       return normalizeSource(url)
     case 'xtream':

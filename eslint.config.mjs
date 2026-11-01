@@ -4,7 +4,7 @@ import nuxtConfig from './.nuxt/eslint.config.mjs'
 // Components here that declare a `title` *prop* and render it as a heading. Any
 // other `title` lands on a DOM element as the browser's own tooltip — see the
 // vue/no-restricted-syntax rule below.
-const TITLE_PROP = 'cast-row|library-browser|media-slider|mpv-player|scroll-row|settings-section|v-card|v-expansion-panel|v-list-item'
+const TITLE_PROP = 'cast-row|library-browser|media-slider|mpv-player|scroll-row|settings-section|v-card|v-empty-state|v-expansion-panel|v-list-item'
 
 export default antfu({
   vue: true,

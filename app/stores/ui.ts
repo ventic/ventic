@@ -1,5 +1,5 @@
 import type { BackdropMode } from '~/theme/presets'
-import type { CastSetup } from '~/utils/cast'
+import type { CastSetup, CastSubtitle } from '~/utils/cast'
 import type { Media } from '~/utils/tmdb'
 import { mdiBookmarkOutline, mdiFormatListBulleted, mdiHeartOutline, mdiHistory, mdiViewGrid } from '@mdi/js'
 
@@ -75,6 +75,11 @@ export const useUiStore = defineStore('ui', () => {
    * what this app searches, plays or syncs with. `SetupDialog` is what asks.
    */
   const pending = ref<CastSetup | null>(null)
+  /**
+   * The subtitles a cast arrived with, until the player for that film takes
+   * them — see `CastSubtitle` and `applyHanded` in MpvPlayer.vue.
+   */
+  const castSubtitle = ref<{ url: string, subtitle: CastSubtitle } | null>(null)
 
   /**
    * The pairing code while the phone form is open, or null when it isn't — the
@@ -230,5 +235,5 @@ export const useUiStore = defineStore('ui', () => {
   // Sweeping the cursor across a grid would otherwise queue a crossfade per card.
   const preview = useDebounceFn(hover, 120)
 
-  return { layout, hideWatched, cardWidth, castWidth, gridColumns, rowCard, posterSize, profileSize, rail, drawer, menuFor, pending, pairing, blur, tint, backdropMode, backdropImage, backdropFollowsHover, artOverCustom, shownArt, selected, art, backdrop, isGrid, isDetailed, select, ambient, release, hover, preview }
+  return { layout, hideWatched, cardWidth, castWidth, gridColumns, rowCard, posterSize, profileSize, rail, drawer, menuFor, pending, castSubtitle, pairing, blur, tint, backdropMode, backdropImage, backdropFollowsHover, artOverCustom, shownArt, selected, art, backdrop, isGrid, isDetailed, select, ambient, release, hover, preview }
 })

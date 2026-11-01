@@ -164,6 +164,12 @@ pub struct Play {
 	/// empty where it couldn't tell. Checked against `Receiving::cannot`.
 	#[serde(default)]
 	video: String,
+	/// The subtitles the sending player had on — `CastSubtitle` in utils/cast.ts
+	/// — handed to the page as they came: what they say is the two players'
+	/// business. A file's whole text can ride in here, which is the one reason
+	/// a play command is ever more than a few hundred bytes.
+	#[serde(default)]
+	subtitle: Option<serde_json::Value>,
 }
 
 /// A stop command. Carries the code and nothing else — there is only one thing
@@ -196,7 +202,7 @@ struct Watching {
 }
 
 /// The form a phone fills in and posts back — see `setup_page`. `kind` says
-/// what the address is for, because the four things worth typing over there all
+/// what the address is for, because the things worth typing over there all
 /// land somewhere different over here and none of them can be told apart by
 /// looking at the URL.
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -204,8 +210,8 @@ pub struct Setup {
 	/// Matched against this device's own, then blanked — as on `Play`.
 	#[serde(default)]
 	code: String,
-	/// `source`, `playlist`, `xtream` or `sync`. Anything else is refused here
-	/// rather than sent to a page that would have to refuse it anyway.
+	/// `source`, `playlist`, `xtream`, `sync` or `subtitles`. Anything else is
+	/// refused here rather than sent to a page that would have to refuse it anyway.
 	kind: String,
 	/// The address itself: an addon, an M3U link, an Xtream server, a WebDAV
 	/// folder.
@@ -215,6 +221,12 @@ pub struct Setup {
 	user: String,
 	#[serde(default)]
 	pass: String,
+	/// The `subtitles` kind sends API keys instead of an address — the longest
+	/// strings anybody types into this app, and the reason it has a phone form.
+	#[serde(default)]
+	subsource: String,
+	#[serde(default)]
+	subdl: String,
 }
 
 /// What a device answers a probe with. `app` is what tells a Ventic apart from
@@ -580,7 +592,8 @@ async fn setup(State(state): State<Receiving>, Json(mut form): Json<Setup>) -> S
 
 	// The phone is told it was refused, so the person holding it can fix what
 	// they typed rather than looking at a television that never reacted.
-	if form.url.trim().is_empty() || !matches!(form.kind.as_str(), "source" | "playlist" | "xtream" | "sync") {
+	let keys = form.kind == "subtitles" && !(form.subsource.trim().is_empty() && form.subdl.trim().is_empty());
+	if !keys && (form.url.trim().is_empty() || !matches!(form.kind.as_str(), "source" | "playlist" | "xtream" | "sync")) {
 		return StatusCode::BAD_REQUEST;
 	}
 

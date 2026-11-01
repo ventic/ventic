@@ -274,6 +274,7 @@ function castPlay() {
     // So a device with no decoder for the picture says so here, not as sound
     // over black there — see `cannotDecode` in utils/cast.
     video: player.value?.videoCodec ?? '',
+    subtitle: player.value?.castSubtitle(),
   }
 }
 

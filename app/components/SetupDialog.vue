@@ -56,6 +56,12 @@ const COPY: Record<SetupKind, { title: () => string, lead: () => string, note: (
     note: () => $t('Its channels will appear under Live TV. The password is stored with the address and kept out of backups.'),
     action: () => $t('Add playlist'),
   },
+  subtitles: {
+    title: () => $t('Use these subtitle keys?'),
+    lead: () => $t('Something asked Ventic to search for subtitles with:'),
+    note: () => $t('A key replaces the one this device already has. Keys stay out of backup files, but your sync carries them to your other screens.'),
+    action: () => $t('Use keys'),
+  },
   sync: {
     title: () => $t('Sync with this folder?'),
     lead: () => $t('Something asked Ventic to keep your library in:'),
@@ -83,6 +89,13 @@ function confirm() {
   if (setup.kind === 'source') {
     if (!settings.sources.includes(value.value))
       settings.sources = [...settings.sources, value.value]
+  }
+  else if (setup.kind === 'subtitles') {
+    // Only what was sent: a phone that knew one key leaves the other alone.
+    if (setup.subsource?.trim())
+      settings.subsourceKey = setup.subsource.trim()
+    if (setup.subdl?.trim())
+      settings.subdlKey = setup.subdl.trim()
   }
   else if (setup.kind === 'sync') {
     // A different server is a different history, so the three-way merge starts

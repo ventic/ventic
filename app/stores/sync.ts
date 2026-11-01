@@ -51,7 +51,7 @@ export const useSyncStore = defineStore('sync', () => {
 
     try {
       const remote = await pull(config.value)
-      const merged = mergeKeys(makeBackup(localStorage).keys, remote?.keys ?? {}, config.value.base, config.value.groups)
+      const merged = mergeKeys(makeBackup(localStorage, Date.now(), true).keys, remote?.keys ?? {}, config.value.base, config.value.groups)
       write(merged.local)
       // A profile deleted on another screen. Nothing renders these, so nothing
       // has to hear about it — the registry's own write above is what does.

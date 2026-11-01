@@ -76,6 +76,11 @@ const lastPlayed = computed(() => library.history.find(m => m.title !== UNKNOWN_
 // Enough room for a poster row so v-lazy doesn't collapse before it mounts.
 const rowHeight = computed(() => Math.round(ui.cardWidth * 1.5) + 92)
 
+/** Every title downloaded to this device, for Home with no network — see `onDevice`. */
+const downloads = useDownloadsStore()
+const offline = computed(() => !online.value)
+const kept = computed(() => [...downloads.onDevice].flatMap(title => library.media[title] ?? []))
+
 /**
  * Each row mounts a row's height before it scrolls in. Mounted only once on
  * screen, the next row did not exist when a remote pressed down to it: the
@@ -90,7 +95,7 @@ const ahead = computed(() => ({ rootMargin: `0px 0px ${rowHeight.value}px 0px` }
     <!-- The panel is its own picture rather than a hole onto the app backdrop:
          that one is off entirely in two of the three backdrop modes, and a hero
          with nothing behind it is worse than no hero. -->
-    <section v-touch="{ left: () => step(1), right: () => step(-1) }" class="relative mx-4 mt-2 h-[42vh] min-h-64 overflow-hidden rounded-2xl bg-black/75 md:mx-6 md:h-[56vh]">
+    <section v-if="!offline" v-touch="{ left: () => step(1), right: () => step(-1) }" class="relative mx-4 mt-2 h-[42vh] min-h-64 overflow-hidden rounded-2xl bg-black/75 md:mx-6 md:h-[56vh]">
       <transition
         enter-active-class="transition-opacity duration-500"
         leave-active-class="transition-opacity duration-500"
@@ -205,7 +210,20 @@ const ahead = computed(() => ({ rootMargin: `0px 0px ${rowHeight.value}px 0px` }
       </div>
     </section>
 
-    <div class="flex flex-col gap-7 pt-7">
+    <div class="flex flex-col gap-7" :class="offline ? 'pt-2' : 'pt-7'">
+      <!-- With no network, what is on this device leads — what TMDB would have
+           filled the rest with isn't coming (see utils/offline). -->
+      <scroll-row v-if="offline && kept.length" :title="$t('On this device')">
+        <media-card
+          v-for="media in kept"
+          :key="`${media.type}-${media.id}`"
+          :media="media"
+          :detail="ui.isDetailed"
+          class="shrink-0"
+          :style="{ width: ui.rowCard }"
+        />
+      </scroll-row>
+
       <!-- To the thing itself, not straight into playback: an episode you are
            about to start deserves the page that says what it is, with Play on
            it. A film's card already goes to its own page, which is the same
@@ -236,7 +254,7 @@ const ahead = computed(() => ({ rootMargin: `0px 0px ${rowHeight.value}px 0px` }
         />
       </scroll-row>
 
-      <v-lazy v-if="lastPlayed" :min-height="rowHeight" :options="ahead" transition="fade-transition">
+      <v-lazy v-if="!offline && lastPlayed" :min-height="rowHeight" :options="ahead" transition="fade-transition">
         <media-slider
           :key="`${lastPlayed.type}-${lastPlayed.id}`"
           :title="$t('Because you watched {title}', { title: lastPlayed.title })"
@@ -246,7 +264,7 @@ const ahead = computed(() => ({ rootMargin: `0px 0px ${rowHeight.value}px 0px` }
 
       <!-- Only the rows in view fetch their page; the rest wait until scrolled to. -->
       <v-lazy
-        v-for="row in rows"
+        v-for="row in offline ? [] : rows"
         :key="row.title"
         :min-height="rowHeight"
         :options="ahead"
