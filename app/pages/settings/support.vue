@@ -89,6 +89,7 @@ function open(url: string) {
         >
           <v-icon :icon="mdiHeart" size="16" color="primary" />
           <span>{{ person.name }}</span>
+          <span v-if="person.amount" class="text-body-small opacity-60">{{ money.format(person.amount) }}</span>
           <span v-if="person.at" class="text-body-small opacity-60">{{ person.at }}</span>
         </div>
       </div>
