@@ -120,6 +120,9 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       TMDB_API: process.env.TMDB_API,
+      // OpenSubtitles' own API, for the depth its Stremio mirror lacks — see
+      // utils/subtitles.ts. Optional: a build without it leaves that one out.
+      OPENSUBTITLES_API: process.env.OPENSUBTITLES_API,
       // The language picker's flags, worked out at build time — see `flags`.
       flags,
     },

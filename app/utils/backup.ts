@@ -34,7 +34,7 @@ const PREFIX = 'ventic.'
  * the sync in `utils/sync.ts` from ever syncing its own credentials outward:
  * this set is dropped before that file sees a key at all.
  */
-const SECRET = new Set([`${PREFIX}trakt`, `${PREFIX}tmdbKey`, `${PREFIX}playlists`, `${PREFIX}castCode`, `${PREFIX}castTarget`, `${PREFIX}sync`])
+const SECRET = new Set([`${PREFIX}trakt`, `${PREFIX}tmdbKey`, `${PREFIX}subdlKey`, `${PREFIX}playlists`, `${PREFIX}castCode`, `${PREFIX}castTarget`, `${PREFIX}sync`])
 
 export interface Backup {
   app: 'ventic'

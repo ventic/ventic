@@ -12,6 +12,9 @@
 #   TMDB_API      the read token, same one release.yml uses
 #   FLATHUB_TOKEN a PAT with push access to flathub/io.github.ventic.Ventic,
 #                 which only exists once the first submission has been merged
+# and reads a third if it is there:
+#   OPENSUBTITLES_API  the app's OpenSubtitles key, same one release.yml uses;
+#                      without it that subtitle provider is left out
 name: Flathub
 
 on:
@@ -66,6 +69,7 @@ jobs:
       - name: Generate sources
         env:
           TMDB_API: ${{ secrets.TMDB_API }}
+          OPENSUBTITLES_API: ${{ secrets.OPENSUBTITLES_API }}
         run: |
           tag="${{ github.event.inputs.tag || github.event.release.tag_name }}"
           ./packaging/flatpak/generate-sources.sh "$tag"

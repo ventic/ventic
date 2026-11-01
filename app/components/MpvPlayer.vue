@@ -648,9 +648,19 @@ async function fetchExternals() {
   try {
     const { title, year, season, episode } = searchBy.value
     const id = props.imdbId || await findImdbId(title, season > 0, year)
-    if (!id)
+    // OpenSubtitles' own API and SubDL can go by TMDB's id or by the name, so
+    // no IMDb id leaves only the built-in addon out.
+    const by = {
+      subdl: settings.subdlKey,
+      opensubtitles: useRuntimeConfig().public.OPENSUBTITLES_API,
+      lang: subLang.value,
+      tmdbId: props.media?.id,
+      title,
+      year,
+    }
+    if (!id && !by.subdl && !by.opensubtitles)
       throw new Error($t('Couldn\'t match “{title}” to a title OpenSubtitles knows.', { title }))
-    const found = await findSubtitles(id, season, episode, videoName.value)
+    const found = await findSubtitles(id, season, episode, videoName.value, by)
     firstLang.value = langName(subLang.value)
     externals.value = found
     subsFetched = true
@@ -729,9 +739,24 @@ async function loadFile(file: Subtitle, lang: SubtitleLanguage) {
   const cues = probe(file)
   if (!native)
     await cues
+  // A metered file is listed unread and read for the first time here, so its
+  // row learns what it runs to now — and says so if it is another cut.
+  cues.then(read => {
+    const list = variants.value[lang.name]
+    if (list)
+      variants.value[lang.name] = list.map(f => f.url === read.url ? read : f)
+  })
+  // One that wouldn't download (five a day is easy to spend) has nothing to
+  // hand over, and its url is a page, or an archive with somebody's key in it.
+  const read = file.metered ? await cues : null
+  if (read && !read.cues.length) {
+    osd(read.error ?? $t('Unreadable'))
+    return
+  }
   // 'cached' re-selects this URL if it was added before, instead of stacking
-  // a duplicate track every time the file is picked.
-  await ipc(['sub-add', file.url, 'cached', lang.name, lang.code])
+  // a duplicate track every time the file is picked. A metered file reaches
+  // mpv as its text, and the shims only keep the URL as a name.
+  await ipc(['sub-add', native ? await mpvSource(file) : file.url, 'cached', lang.name, lang.code])
   activeUrl.value = file.url
   setDelay(0) // another file, its own timing
   setSubSpeed(1)
@@ -2827,7 +2852,7 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration), 
             </template>
 
             <p :class="MENU_GROUP">
-              OpenSubtitles
+              {{ settings.subdlKey ? 'OpenSubtitles · SubDL' : 'OpenSubtitles' }}
             </p>
             <p v-if="subLoading" :class="NOTE">
               {{ $t('Searching…') }}

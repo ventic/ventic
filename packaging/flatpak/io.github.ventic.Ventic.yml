@@ -223,6 +223,10 @@ modules:
         # who would rather use their own puts it in Settings → About, which wins
         # over this one.
         TMDB_API: __TMDB_READ_TOKEN__
+        # The same for OpenSubtitles' API, and public for the same reason. Its
+        # quota is per address, not per key, so sharing it shares nothing.
+        # Quoted: unset, it is an empty string rather than a YAML null.
+        OPENSUBTITLES_API: __OPENSUBTITLES_KEY__
     sources:
       - type: git
         url: https://github.com/ventic/ventic.git

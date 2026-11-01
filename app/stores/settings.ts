@@ -285,6 +285,12 @@ export const useSettingsStore = defineStore('settings', () => {
   const autoSubs = useLocalStorage(scoped('ventic.autoSubs'), true)
   /** ISO 639 code, as the player last chose or the settings page last set. */
   const subLang = useLocalStorage(scoped('ventic.subLang'), '')
+  /**
+   * A SubDL API key of the user's own, which is what turns SubDL on — see
+   * `searchSubdl`. The machine's rather than a profile's, like `tmdbKey`, and
+   * like it kept out of backups: a key is a quota with somebody's name on it.
+   */
+  const subdlKey = useLocalStorage('ventic.subdlKey', '')
 
   // --- Audio ---
   /**
@@ -332,5 +338,5 @@ export const useSettingsStore = defineStore('settings', () => {
     subs.value = { ...SUBTITLE_DEFAULTS }
   }
 
-  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, disabledSources, activeSources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, closeToTray, castReceive, castName, castAsk, castCode, castTarget, downloadDir, playMode, keepWatched, fetchNext, airNotify, bufferAhead, bufferBehind, subs, autoSubs, subLang, audio, audioByTitle, audioFor, setAudioFor, audioTrack, fill, keys, resetSubs }
+  return { locale, theme, source, themeFromArt, colourFromPicture, customCss, uiScale, reduceEffects, sources, disabledSources, activeSources, quality, playlists, tmdbKey, downLimit, upLimit, wifiOnly, closeToTray, castReceive, castName, castAsk, castCode, castTarget, downloadDir, playMode, keepWatched, fetchNext, airNotify, bufferAhead, bufferBehind, subs, autoSubs, subLang, subdlKey, audio, audioByTitle, audioFor, setAudioFor, audioTrack, fill, keys, resetSubs }
 })

@@ -3,12 +3,14 @@
 // The fixtures are trimmed real responses; pass --live to also hit the addons.
 
 import assert from 'node:assert'
+import { Buffer } from 'node:buffer'
 import { readFileSync } from 'node:fs'
 import process from 'node:process'
 import {
   bestSync,
   byLanguage,
   cueAt,
+  decodeSubtitle,
   fileLabel,
   fileNote,
   findImdbId,
@@ -17,10 +19,13 @@ import {
   isCaptions,
   langFlag,
   langName,
+  mpvSource,
   parseCues,
+  probe,
   probeLanguage,
   releaseSubtitle,
   stripCaptions,
+  subdlCode,
   subRuntime,
   SUBTITLE_DEFAULTS,
   SUBTITLE_FONTS,
@@ -461,6 +466,368 @@ assert.ok(
 )
 assert.match(player, /menu\.value = name\n\s+subTab\.value = 'language'/, 'the subtitle panel always opens on choosing')
 assert.ok(page.includes('subs.hideCaptions'), 'and the same toggle is on the settings page')
+
+// ---------------------------------------------------------------------------
+// SubDL, behind the user's own key. The built-in addon is a thin copy — nine
+// languages and no English for Philosopher's Stone — so this is where the depth
+// comes from, and everything below runs against a fake of its API.
+// ---------------------------------------------------------------------------
+
+// Its codes are ISO 639-1 upper-cased, and a language reaches the search as
+// whatever last named it: the settings list's "sl", OpenSubtitles' "slv", an
+// mkv's bibliographic "ger" (which Intl will not canonicalise), a locale tag.
+for (const [code, want] of [['sl', 'SL'], ['slv', 'SL'], ['ger', 'DE'], ['deu', 'DE'], ['cze', 'CS'], ['slo', 'SK'], ['en-US', 'EN'], ['pob', 'BR_PT'], ['zht', 'ZH_BG'], ['', '']])
+  assert.equal(subdlCode(code!), want, `${code} is ${want} to SubDL`)
+
+const realFetch = globalThis.fetch
+/** Every request the fake answered, and how: by the parameters SubDL reads. */
+let asked: URL[] = []
+function subdlFile(language: string, n: number, extra: Record<string, unknown> = {}) {
+  return { language, url: `/subtitle/${language}-${n}.zip`, release_name: `Film.2001.${language}.${n}`, ...extra }
+}
+
+function fakeSubdl(answer: (q: URLSearchParams) => Response) {
+  asked = []
+  globalThis.fetch = (async (input: string | URL) => {
+    const url = new URL(String(input))
+    asked.push(url)
+    if (url.host === 'opensubtitles-v3.strem.io')
+      return Response.json({ subtitles: [{ id: 'os', url: 'https://subs5.strem.io/slv', lang: 'slv' }] })
+    if (url.host === 'api.subdl.com')
+      return answer(url.searchParams)
+    throw new Error(`nothing fakes ${url}`)
+  }) as typeof fetch
+}
+const subdlAsks = () => asked.filter(u => u.host === 'api.subdl.com').map(u => u.searchParams)
+
+// A film with seven pages: the first five are read, and the preferred language
+// is asked for by itself besides, because those five pages may not reach it.
+fakeSubdl(q => Response.json({
+  status: true,
+  totalPages: 7,
+  subtitles: q.get('languages') === 'SL'
+    ? [subdlFile('SL', 1), subdlFile('SL', 2)]
+    : [subdlFile('EN', Number(q.get('page'))), subdlFile('BR_PT', Number(q.get('page'))), subdlFile('SL', 1)],
+}))
+const film = await findSubtitles('tt0241527', 0, 0, '', { subdl: 'k', lang: 'slv' })
+const filmAsks = subdlAsks()
+assert.deepEqual(filmAsks.map(q => q.get('page')).sort(), ['1', '1', '2', '3', '4', '5'], 'five pages and the language of choice')
+assert.ok(filmAsks.every(q => q.get('imdb_id') === 'tt0241527' && q.get('type') === 'movie' && q.get('api_key') === 'k'))
+assert.equal(filmAsks.filter(q => q.get('languages')).length, 1, 'only the language of choice is asked by language')
+assert.ok(asked.some(u => u.host === 'opensubtitles-v3.strem.io'), 'the built-in addon is still asked')
+const filmLangs = byLanguage(film)
+assert.deepEqual(filmLangs.map(l => l.name), ['English', 'Portuguese (Brazil)', 'Slovenian'])
+// One language, one row, whoever answered: OpenSubtitles' "slv" and SubDL's
+// "SL" are both Slovenian, and the same file twice is one file.
+const slovenian = filmLangs.find(l => l.name === 'Slovenian')!
+assert.equal(slovenian.files.length, 3, 'two from SubDL and one from the addon, the repeat dropped')
+const sl1 = slovenian.files.find(f => f.url === 'https://dl.subdl.com/subtitle/SL-1.zip')!
+assert.equal(sl1.name, 'Film.2001.SL.1', 'SubDL names its files, which is what tells two of them apart')
+assert.ok(sl1.metered, 'and counts every one of them handed out')
+
+// A refused key is SubDL failing, not the search: the addon's list still shows.
+fakeSubdl(() => Response.json({ status: false, error: 'Not Authorized' }, { status: 403 }))
+assert.deepEqual((await findSubtitles('tt0241527', 0, 0, '', { subdl: 'bad' })).map(s => s.lang), ['slv'])
+// With nothing else asked, it is the search failing, and says why.
+await assert.rejects(findSubtitles('', 0, 0, '', { subdl: 'bad', title: 'Film' }), /SubDL answered HTTP 403 — Not Authorized/)
+// And with no id and no key there is nothing to ask — an empty answer, not a
+// failure with "undefined" for a reason.
+assert.deepEqual(await findSubtitles(''), [])
+
+// No IMDb id is what a bare magnet usually has, and the addon can do nothing
+// with that. SubDL goes by TMDB's id, or else by the name — which it refuses
+// with an apostrophe in it, and indexes one as a space.
+fakeSubdl(() => Response.json({ status: true, subtitles: [] }))
+await findSubtitles('', 0, 0, '', { subdl: 'k', tmdbId: 671 })
+assert.ok(!asked.some(u => u.host === 'opensubtitles-v3.strem.io'), 'the addon is not asked without an id')
+assert.ok(subdlAsks().every(q => q.get('tmdb_id') === '671' && !q.has('film_name')))
+asked = []
+await findSubtitles('', 0, 0, '', { subdl: 'k', title: 'Harry Potter and the Philosopher\'s Stone', year: '2001' })
+assert.ok(subdlAsks().every(q => q.get('film_name') === 'Harry Potter and the Philosopher s Stone' && q.get('year') === '2001'))
+// "Can't find" is an answer rather than a failure.
+fakeSubdl(() => Response.json({ status: false, error: 'can\'t find movie or tv' }))
+assert.deepEqual(await findSubtitles('', 0, 0, '', { subdl: 'k', title: 'Nothing' }), [])
+
+// An episode: another episode's file is dropped, a range only if ours is
+// outside it, and one with no number at all is the whole season — kept, with
+// our episode on it so the archive gives up the right file.
+fakeSubdl(() => Response.json({
+  status: true,
+  subtitles: [
+    subdlFile('SL', 1, { episode: 3 }),
+    subdlFile('SL', 2, { episode: 4 }),
+    subdlFile('SL', 3, { episode_from: 1, episode_end: 10 }),
+    subdlFile('SL', 4, { episode_from: 5, episode_end: 8 }),
+    subdlFile('SL', 5, {}),
+  ],
+}))
+const episode = await findSubtitles('tt0944947', 1, 3, '', { subdl: 'k', lang: 'sl' })
+assert.ok(subdlAsks().every(q => q.get('type') === 'tv' && q.get('season_number') === '1' && q.get('episode_number') === '3'))
+assert.deepEqual(
+  [...new Set(episode.filter(s => s.metered).map(s => s.url.split('/').pop()))].sort(),
+  ['SL-1.zip', 'SL-3.zip', 'SL-5.zip'],
+)
+assert.ok(episode.filter(s => s.metered).every(s => s.episode === 3))
+
+// Within a language files are tried in order, so a release name sharing the
+// playing file's group, source and resolution goes first. SubDL's `hi` is the
+// hearing-impaired flag, which the row has to show before anything is read.
+fakeSubdl(() => Response.json({
+  status: true,
+  subtitles: [
+    subdlFile('SL', 1, { release_name: 'Film.2001.WEBRip.iTunes' }),
+    subdlFile('SL', 2, { release_name: 'Film.2001.1080p.BluRay.x264-GRP', hi: true }),
+    subdlFile('SL', 3, { release_name: 'Film.2001.1080p.BluRay.DTS.x264-hV', hi: false }),
+  ],
+}))
+const ranked = (await findSubtitles('tt0241527', 0, 0, 'Film.2001.1080p.BluRay.x264-GRP.mkv', { subdl: 'k' })).filter(s => s.metered)
+assert.deepEqual(ranked.map(s => s.name), ['Film.2001.1080p.BluRay.x264-GRP', 'Film.2001.1080p.BluRay.DTS.x264-hV', 'Film.2001.WEBRip.iTunes'])
+assert.deepEqual(ranked.map(s => !!s.captions), [true, false, false])
+
+// The archives themselves, written by Python's zipfile — a reference writer,
+// not this file's idea of the format:
+//   film: deflated, `film.srt` in Windows-1250 beside a macOS `__MACOSX/._film.srt`
+//   pack: written as a stream (sizes only after the data, as SubDL's packer may
+//         well do), S01E01 and S01E02
+const FILM_ZIP = 'UEsDBBQAAAAIAOKGYV19jgp3CgAAAAgAAAATAAAAX19NQUNPU1gvLl9maWxtLnNydGNgFWPPKs3LBgBQSwMEFAAAAAgA4oZhXVZawIY6AAAAVQAAAAgAAABmaWxtLnNydDPkMjCwAiFDHQMDAwVdXTsFqIAJSICrKz8nUeFFYlF+WV5mFheXEUi5CUgBsnKQgDFYuXd+XmoyFwBQSwECFAMUAAAACADihmFdfY4KdwoAAAAIAAAAEwAAAAAAAAAAAAAAgAEAAAAAX19NQUNPU1gvLl9maWxtLnNydFBLAQIUAxQAAAAIAOKGYV1WWsCGOgAAAFUAAAAIAAAAAAAAAAAAAACAATsAAABmaWxtLnNydFBLBQYAAAAAAgACAHcAAACbAAAAAAA='
+const PACK_ZIP = 'UEsDBBQACAAIAOKGYV0AAAAAAAAAAAAAAAAPAAAAU2hvdy5TMDFFMDEuc3J0M+QyMLACIUMdAwMDBV1dOwWogAlIgMu1ILMqPyVRwZCLywik1AQkiawUJGAMVuqdn5eazAUAUEsHCEFRJNs2AAAAUQAAAFBLAwQUAAgACADihmFdAAAAAAAAAAAAAAAADwAAAFNob3cuUzAxRTAyLnNydDPkMjCwAiFDHQMDAwVdXTsFqIAJSIDLtSCzKj8lUcGIi8sIpNQEJImsFCRgDFbqnZ+XmswFAFBLBwjj5m04NgAAAFEAAABQSwECFAMUAAgACADihmFdQVEk2zYAAABRAAAADwAAAAAAAAAAAAAAgAEAAAAAU2hvdy5TMDFFMDEuc3J0UEsBAhQDFAAIAAgA4oZhXePmbTg2AAAAUQAAAA8AAAAAAAAAAAAAAIABcwAAAFNob3cuUzAxRTAyLnNydFBLBQYAAAAAAgACAHoAAADmAAAAAAA='
+const served: Record<string, Uint8Array | string> = {
+  'https://dl.subdl.com/film.zip': Buffer.from(FILM_ZIP, 'base64'),
+  'https://dl.subdl.com/pack.zip': Buffer.from(PACK_ZIP, 'base64'),
+  'https://dl.subdl.com/pack-e2.zip': Buffer.from(PACK_ZIP, 'base64'),
+  'https://dl.subdl.com/pack-e5.zip': Buffer.from(PACK_ZIP, 'base64'),
+  'https://dl.subdl.com/bare.srt': '1\n00:00:01,000 --> 00:00:02,000\nNot in an archive\n',
+  'https://dl.subdl.com/pick.zip': Buffer.from(FILM_ZIP, 'base64'),
+  'https://dl.subdl.com/sdh.zip': Buffer.from(FILM_ZIP, 'base64'),
+  'https://subs5.strem.io/free.srt': '1\n00:00:01,000 --> 00:00:02,000\nZastonj\n',
+  // Windows-1250 bytes for "Žaba", served as they were uploaded.
+  'http://127.0.0.1:3030/torrents/1/stream/3': new Uint8Array([...Buffer.from('1\n00:00:01,000 --> 00:00:02,000\n'), 0x8E, 0x61, 0x62, 0x61, 0x0A]),
+}
+const downloads: string[] = []
+globalThis.fetch = (async (input: string | URL) => {
+  downloads.push(String(input))
+  const body = served[String(input)]
+  return body === undefined ? new Response('', { status: 404 }) : new Response(body)
+}) as typeof fetch
+
+const fromZip = await probe({ id: 'f', url: 'https://dl.subdl.com/film.zip', lang: 'sl', metered: true })
+assert.equal(fromZip.cues.length, 2, 'the subtitle comes out of the archive, not the macOS shadow beside it')
+assert.equal(fromZip.cues[0]!.text, 'Šola čarovnij', 'and a Slovenian file not in UTF-8 is read as Windows-1250')
+// mpv can't open a zip over http, so it gets the text through its own
+// `memory://` — checked by hand against mpv 0.41 over IPC, accents and all.
+assert.equal(await mpvSource(fromZip), `memory://${fromZip.text}`)
+assert.ok(fromZip.text!.startsWith('1\n00:00:01,000'))
+const plain = { id: 'p', url: 'https://subs5.strem.io/plain', lang: 'eng' }
+assert.equal(await mpvSource(plain), plain.url, 'a file mpv can read is handed over as a url, without a download first')
+
+assert.equal((await probe({ id: 'e2', url: 'https://dl.subdl.com/pack-e2.zip', lang: 'sl', metered: true, episode: 2 })).cues[0]!.text, 'Epizoda 2')
+// Any episode of the season would fit the runtime as well as ours does, so a
+// pack without ours in it gives up nothing rather than its first file.
+assert.equal((await probe({ id: 'e5', url: 'https://dl.subdl.com/pack-e5.zip', lang: 'sl', metered: true, episode: 5 })).cues.length, 0)
+assert.equal((await probe({ id: 'b', url: 'https://dl.subdl.com/bare.srt', lang: 'en', metered: true })).cues[0]!.text, 'Not in an archive', 'the odd bare file still reads')
+
+// Every metered file read is one of a day's downloads — SubDL's 50 a key,
+// OpenSubtitles' 5 a household — and picking a language used to read a dozen.
+// Now the free files are read and the metered ones listed on the provider's
+// word, behind every free file that fits, even the captioned cut: "choose
+// automatically" picks what it picked before there were any. Of the metered,
+// SubDL's go first. A file that won't read sinks below all.
+served['https://subs5.strem.io/free-sdh.srt'] = Array.from({ length: 10 }, (_, i) => `${i + 1}\n00:00:${10 + i},000 --> 00:00:${10 + i},900\n[GLASBA]\n`).join('\n')
+downloads.length = 0
+const shelf = await probeLanguage(byLanguage([
+  { id: 'gone', url: 'https://subs5.strem.io/gone', lang: 'slv' },
+  { id: 'os', url: 'https://www.opensubtitles.com/sl/subtitles/1', lang: 'sl', name: 'Film.720p', metered: true, provider: 'OpenSubtitles' },
+  { id: 'sdh', url: 'https://dl.subdl.com/sdh.zip', lang: 'sl', name: 'Film.SDH', metered: true, provider: 'SubDL', captions: true },
+  { id: 'pick', url: 'https://dl.subdl.com/pick.zip', lang: 'sl', name: 'Film.1080p', metered: true, provider: 'SubDL' },
+  { id: 'freeSdh', url: 'https://subs5.strem.io/free-sdh.srt', lang: 'slv' },
+  { id: 'free', url: 'https://subs5.strem.io/free.srt', lang: 'slv' },
+])[0]!)
+assert.deepEqual(downloads.sort(), ['https://subs5.strem.io/free-sdh.srt', 'https://subs5.strem.io/free.srt', 'https://subs5.strem.io/gone'], 'no metered file is downloaded to list them')
+assert.deepEqual(shelf.map(f => f.id), ['free', 'freeSdh', 'pick', 'sdh', 'os', 'gone'])
+assert.deepEqual(shelf.slice(2).map(fileNote), ['SubDL', 'SubDL · SDH', 'OpenSubtitles', 'Unreadable'])
+
+// The pick is the download, once: mpv's copy and the cues' copy are asked for
+// together, and the row it was picked from becomes what it turned out to be.
+downloads.length = 0
+const [picked, forMpv] = await Promise.all([probe(shelf[2]!), mpvSource(shelf[2]!)])
+assert.deepEqual(downloads, ['https://dl.subdl.com/pick.zip'], 'one download for both')
+assert.equal(forMpv, `memory://${picked.text}`)
+assert.equal(picked.cues.length, 2)
+assert.ok(!picked.unread && !fileNote(picked).startsWith('SubDL'), 'its row now says what it runs to')
+assert.equal((await probeLanguage(byLanguage([shelf[2]!])[0]!))[0]!.cues.length, 2, 'and stays read')
+assert.deepEqual(downloads, ['https://dl.subdl.com/pick.zip'])
+
+// A season's archive is one url for every episode in it, and each episode is
+// its own file: the second one played must not get the first one's lines.
+const e1 = await probe({ id: 's1', url: 'https://dl.subdl.com/pack.zip', lang: 'sl', metered: true, episode: 1 })
+const e2 = await probe({ id: 's2', url: 'https://dl.subdl.com/pack.zip', lang: 'sl', metered: true, episode: 2 })
+assert.deepEqual([e1.cues[0]!.text, e2.cues[0]!.text], ['Epizoda 1', 'Epizoda 2'])
+const [e3] = await probeLanguage(byLanguage([{ id: 's3', url: 'https://dl.subdl.com/pack.zip', lang: 'sl', metered: true, provider: 'SubDL', episode: 3 }])[0]!)
+assert.ok(e3!.unread, 'and a third episode of it is listed unread, not as the one read before')
+
+// One that didn't download is asked again at the next pick: a refused one
+// costs nothing, and a TV is left on past the midnight its quota renews at.
+served['https://dl.subdl.com/flaky.zip'] = Buffer.from(FILM_ZIP, 'base64')
+const servedFetch = globalThis.fetch
+let failedOnce = 0
+globalThis.fetch = (async (input: string | URL) => String(input).endsWith('/flaky.zip') && !failedOnce++ ? new Response('', { status: 500 }) : servedFetch(input)) as typeof fetch
+const flaky = { id: 'fl', url: 'https://dl.subdl.com/flaky.zip', lang: 'sl', metered: true }
+assert.equal((await probe(flaky)).cues.length, 0)
+assert.equal((await probe(flaky)).cues.length, 2, 'and reads the second time')
+globalThis.fetch = servedFetch
+// A release's own file arrives as it was written too, and on Android the page
+// draws it — so the same guess by language applies, by the code its name gave.
+assert.equal((await probe({ id: 'r', url: 'http://127.0.0.1:3030/torrents/1/stream/3', lang: 'slv' })).cues[0]!.text, 'Žaba')
+
+// Before any of this, every file was read as UTF-8 and a stray byte showed as
+// one �. That stays true: a file is only re-read in a codepage when it breaks
+// as UTF-8 nearly everywhere it isn't plain ASCII, the way a legacy file does.
+const strayByte = new Uint8Array([...Buffer.from('Šola čarovnij in žarkov, '.repeat(20)), 0xFF, ...Buffer.from(' konec')])
+assert.ok(decodeSubtitle(strayByte, 'sl').startsWith('Šola čarovnij'), 'one broken byte doesn\'t turn a UTF-8 file into mojibake')
+assert.equal(decodeSubtitle(new Uint8Array([0x48, 0x69, 0xA0, 0x74, 0x68, 0x65, 0x72, 0x65]), 'en'), 'Hi\u00A0there', 'an English Windows-1252 file still reads')
+
+// ---------------------------------------------------------------------------
+// OpenSubtitles' own API, with the app's key from the build: the catalogue the
+// built-in addon is a thin copy of. Faked as Bazarr's client and IINA's plugin
+// use it — a GET to search, a POST per file, and the file at the link it gives.
+// ---------------------------------------------------------------------------
+
+let osAsked: { url: URL, init?: RequestInit }[] = []
+let turnedAway = 0
+function osItem(language: string, id: number, extra: Record<string, unknown> = {}) {
+  return { attributes: { language, release: `Film.2001.${language}.${id}`, url: `https://www.opensubtitles.com/en/subtitles/${id}`, files: [{ file_id: id, file_name: `film-${id}.srt` }], ...extra } }
+}
+globalThis.fetch = (async (input: string | URL, init?: RequestInit) => {
+  const url = new URL(String(input))
+  osAsked.push({ url, init })
+  if (url.host === 'opensubtitles-v3.strem.io')
+    return Response.json({ subtitles: [] })
+  if (url.pathname === '/api/v1/subtitles') {
+    if ((init?.headers as Record<string, string>)['Api-Key'] === 'bad')
+      return Response.json({ message: 'You cannot consume this service' }, { status: 403 })
+    // Five requests a second, and a search is six: a burst loses one, once.
+    const page = url.searchParams.get('page')
+    if (page === '2' && !turnedAway++)
+      return new Response('', { status: 429, headers: { 'retry-after': '0' } })
+    return Response.json({
+      total_pages: 2,
+      data: url.searchParams.get('languages')
+        ? [osItem('sl', 1)]
+        : page === '2'
+          ? [osItem('fi', 7)]
+          : [osItem('en', 2), osItem('pt-BR', 3, { hearing_impaired: true }), osItem('sl', 1), osItem('sl', 4, { foreign_parts_only: true }), osItem('de', 9)],
+    })
+  }
+  if (url.pathname === '/api/v1/download') {
+    const { file_id } = JSON.parse(String(init?.body))
+    return file_id === 9
+      ? Response.json({ message: 'You have downloaded your allowed 5 subtitles for 24h.Your quota will be renewed in 5 hours and 13 minutes (2026-11-01 23:59:59 UTC) ts=1793558796 ', remaining: -1 }, { status: 406 })
+      : Response.json({ link: `https://dl.opensubtitles.com/file/${file_id}.srt`, remaining: 99 })
+  }
+  if (url.host === 'dl.opensubtitles.com')
+    return new Response('1\n00:00:01,000 --> 00:00:02,000\nČarovnik\n')
+  throw new Error(`nothing fakes ${url}`)
+}) as typeof fetch
+const osSearches = () => osAsked.filter(r => r.url.pathname === '/api/v1/subtitles').map(r => r.url.searchParams)
+
+// The search: the IMDb id as a bare number, the AI translations left out, the
+// language of choice by itself besides, the key in its header — and the
+// parameters sorted, since any other order is answered with a redirect.
+const fromOs = await findSubtitles('tt0241527', 0, 0, '', { opensubtitles: 'app-key', lang: 'slv' })
+assert.deepEqual(osSearches().map(q => q.get('page')).sort(), ['1', '1', '2', '2'], 'both pages, the language of choice, and the page turned away asked again')
+assert.ok(osSearches().every(q => q.get('imdb_id') === '241527' && q.get('ai_translated') === 'exclude'))
+assert.ok(osSearches().every(q => [...q.keys()].join() === [...q.keys()].sort().join()), 'in alphabetical order')
+assert.deepEqual(osSearches().flatMap(q => q.get('languages') ?? []), ['sl'])
+assert.ok(osAsked.filter(r => r.url.host === 'api.opensubtitles.com').every(r => (r.init?.headers as Record<string, string>)['Api-Key'] === 'app-key'))
+
+// Its language codes are 639-1, but Portuguese and Chinese always name the
+// variety — and the file that only translates the foreign parts is dropped.
+const osLangs = byLanguage(fromOs)
+assert.deepEqual(osLangs.map(l => l.name), ['English', 'Finnish', 'German', 'Portuguese (Brazil)', 'Slovenian'], 'the second page included, though it was turned away once')
+const osSl = osLangs.find(l => l.name === 'Slovenian')!
+assert.deepEqual(osSl.files.map(f => [f.name, f.provider, f.metered]), [['Film.2001.sl.1', 'OpenSubtitles', true]], 'one file however often it came, and no forced track')
+assert.equal(osLangs.find(l => l.name === 'Portuguese (Brazil)')!.files[0]!.captions, true)
+osAsked = []
+await findSubtitles('tt0241527', 0, 0, '', { opensubtitles: 'k', lang: 'pob' })
+assert.ok(osSearches().some(q => q.get('languages') === 'pt-br'), 'and asked for by the variety\'s name')
+
+// Listing costs nothing; the pick is one POST, for mpv and the cues together,
+// and mpv gets the text — the url is the subtitle's page, not its file.
+osAsked = []
+const [osRow] = await probeLanguage(osSl)
+assert.equal(fileNote(osRow!), 'OpenSubtitles')
+assert.equal(osAsked.length, 0, 'listing them downloads nothing')
+const [osRead, osMpv] = await Promise.all([probe(osRow!), mpvSource(osRow!)])
+const posts = osAsked.filter(r => r.url.pathname === '/api/v1/download')
+assert.equal(posts.length, 1, 'one download for both')
+assert.deepEqual(JSON.parse(String(posts[0]!.init!.body)), { file_id: 1 })
+assert.equal(osRead.cues[0]!.text, 'Čarovnik')
+assert.equal(osMpv, `memory://${osRead.text}`)
+// A spent quota is a refusal, not a link, and says when the five come back:
+// the row shows that, minus the stamp it carries for their own logs.
+const spent = await probe(osLangs.find(l => l.name === 'German')!.files[0]!)
+assert.equal(spent.cues.length, 0)
+assert.equal(fileNote(spent), 'You have downloaded your allowed 5 subtitles for 24h. Your quota will be renewed in 5 hours and 13 minutes (2026-11-01 23:59:59 UTC)')
+
+// No IMDb id: TMDB's, or the name — and a show by its own id, with the episode.
+osAsked = []
+await findSubtitles('', 0, 0, '', { opensubtitles: 'k', tmdbId: 671 })
+assert.ok(osSearches().every(q => q.get('tmdb_id') === '671' && !q.has('imdb_id') && !q.has('query')))
+osAsked = []
+await findSubtitles('', 0, 0, '', { opensubtitles: 'k', title: 'Harry Potter and the Philosopher\'s Stone', year: '2001' })
+assert.ok(osSearches().every(q => q.get('query') === 'harry potter and the philosopher\'s stone' && q.get('year') === '2001'))
+osAsked = []
+await findSubtitles('tt0944947', 1, 3, '', { opensubtitles: 'k' })
+assert.ok(osSearches().every(q => q.get('parent_imdb_id') === '944947' && q.get('season_number') === '1' && q.get('episode_number') === '3' && !q.has('imdb_id')))
+// A key it refuses is that provider failing, not the search.
+assert.deepEqual(await findSubtitles('tt0241527', 0, 0, '', { opensubtitles: 'bad' }), [])
+await assert.rejects(findSubtitles('', 0, 0, '', { opensubtitles: 'bad', title: 'Film' }), /OpenSubtitles answered HTTP 403 — You cannot consume this service/)
+
+// The key travels the way TMDB's does — `.env` here, a secret in CI, a
+// placeholder for Flathub — and nothing compiles that agreement.
+assert.match(read('../nuxt.config.ts'), /OPENSUBTITLES_API: process\.env\.OPENSUBTITLES_API/, 'the key reaches the bundle from the build')
+for (const workflow of ['release', 'flathub'])
+  assert.match(read(`../.github/workflows/${workflow}.yml`), /OPENSUBTITLES_API: \$\{\{ secrets\.OPENSUBTITLES_API \}\}/, `${workflow}.yml builds with it`)
+assert.ok(['../packaging/flatpak/io.github.ventic.Ventic.yml', '../packaging/flatpak/generate-sources.sh'].every(f => read(f).includes('__OPENSUBTITLES_KEY__')), 'and Flathub by the placeholder both files name')
+
+// The seams: the key reaches the search, the text reaches mpv, and the key
+// stays out of every backup file — it is a quota with someone's name on it.
+assert.match(player, /findSubtitles\(id, season, episode, videoName\.value, by\)/, 'the player hands the keys to the search')
+assert.match(player, /opensubtitles: useRuntimeConfig\(\)\.public\.OPENSUBTITLES_API/, 'the app\'s OpenSubtitles key among them')
+assert.match(player, /\['sub-add', native \? await mpvSource\(file\) : file\.url/, 'mpv is handed what it can open')
+assert.match(player, /variants\.value\[lang\.name\] = list\.map\(f => f\.url === read\.url \? read : f\)/, 'the row a pick came from learns what it was')
+assert.match(player, /const read = file\.metered \? await cues : null\n\s+if \(read && !read\.cues\.length\) \{\n\s+osd\(read\.error/, 'and one that wouldn\'t download is said so, not handed to mpv')
+assert.ok(store.includes('useLocalStorage(\'ventic.subdlKey\''), 'the key is one setting')
+assert.ok(page.includes('settings.subdlKey'), 'and the subtitle settings page edits it')
+assert.match(read('../app/utils/backup.ts'), /const SECRET = new Set\(\[[^\]]*\{PREFIX\}subdlKey`/, 'and no backup carries it')
+globalThis.fetch = realFetch
+
+if (process.argv.includes('--live') && process.env.SUBDL_KEY) {
+  const key = process.env.SUBDL_KEY
+  const both = byLanguage(await findSubtitles('tt0241527', 0, 0, 'Harry.Potter.and.the.Philosophers.Stone.2001.1080p.BluRay.x264.mkv', { subdl: key, lang: 'sl' }))
+  const addon = byLanguage(await findSubtitles('tt0241527'))
+  console.log(`live: Philosopher's Stone — ${addon.length} languages from the addon, ${both.length} with SubDL: ${both.map(l => `${l.name} ${l.files.length}`).join(', ')}`)
+  assert.ok(both.length > addon.length, 'SubDL adds languages')
+  // One download a run: the listing is free, the pick is not.
+  const sl = (await probeLanguage(both.find(l => l.name === 'Slovenian')!, 152 * 60)).filter(f => f.metered)
+  assert.ok(sl.length && sl.every(f => f.unread), 'SubDL\'s Slovenian files are listed without a download')
+  const one = await probe(sl[0]!)
+  console.log(`live: slovenian from SubDL → ${sl.map(f => f.name).join(' | ')}; the first reads as ${fileNote(one)}`)
+  assert.ok(one.cues.length > 500, 'and the one picked opens into a whole film\'s subtitles')
+}
+
+// One download a run, against the address's 100 a day. The key is the app's,
+// from `.env`: `bun --env-file=.env scripts/check-subtitles.ts --live`.
+if (process.argv.includes('--live') && process.env.OPENSUBTITLES_API) {
+  const all = await findSubtitles('tt0241527', 0, 0, 'Harry.Potter.and.the.Philosophers.Stone.2001.1080p.BluRay.x264.mkv', { opensubtitles: process.env.OPENSUBTITLES_API, lang: 'sl' })
+  const langs = byLanguage(all)
+  const sl = langs.find(l => l.name === 'Slovenian')!
+  console.log(`live: OpenSubtitles — ${all.length} files in ${langs.length} languages for Philosopher's Stone, ${sl?.files.length ?? 0} of them Slovenian`)
+  assert.ok(sl && sl.files.length > 10, 'OpenSubtitles itself has the Slovenian the addon is missing')
+  const one = await probe(sl.files[0]!)
+  console.log(`live: the first Slovenian one (${one.name}) reads as ${fileNote(one)}`)
+  assert.ok(one.cues.length > 500, 'and the one picked opens into a whole film\'s subtitles')
+}
 
 if (process.argv.includes('--live')) {
   const found = await findSubtitles('tt1375666')

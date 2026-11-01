@@ -67,6 +67,7 @@ echo "→ manifest"
 # Placeholders, not the `tag:`/`commit:` lines themselves — libplacebo's git
 # source sits at the same indentation and was getting Ventic's revision.
 sed -e "s|__TMDB_READ_TOKEN__|$TMDB_API|" \
+    -e "s|__OPENSUBTITLES_KEY__|${OPENSUBTITLES_API:-}|" \
     -e "s|__TAG__|$tag|" \
     -e "s|__COMMIT__|$commit|" \
     "$here/io.github.ventic.Ventic.yml" > io.github.ventic.Ventic.yml

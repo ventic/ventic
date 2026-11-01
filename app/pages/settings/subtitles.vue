@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { mdiEarHearing, mdiRestore } from '@mdi/js'
+import { mdiCheck, mdiEarHearing, mdiRestore } from '@mdi/js'
 
 const settings = useSettingsStore()
 
@@ -68,6 +68,18 @@ const cue = computed(() => {
   }
 })
 
+/**
+ * Whether SubDL takes the key in the box — asked as it changes, because a
+ * refused key otherwise looks exactly like SubDL having nothing to add.
+ */
+const keyWorks = ref<boolean | null>(null)
+watchDebounced(() => settings.subdlKey, async key => {
+  keyWorks.value = null
+  const works = key ? await subdlKeyWorks(key) : null
+  if (key === settings.subdlKey)
+    keyWorks.value = works
+}, { debounce: 600, immediate: true })
+
 /** Two lines, like the subtitles it stands in for. */
 const SAMPLE = computed(() => $t('It was the fall that killed him.\nNot the drop — the sudden stop.'))
 </script>
@@ -108,6 +120,28 @@ const SAMPLE = computed(() => $t('It was the fall that killed him.\nNot the drop
         density="compact"
         :description="$t('Drops “(electricity buzzing)” and “MAN:” from subtitles written for the hard of hearing.')"
       />
+    </settings-section>
+
+    <settings-section
+      :title="$t('More subtitles')"
+      :hint="$t('The built-in search reaches only a small part of OpenSubtitles — for many films just a few languages. SubDL has far more: make a free account at subdl.com and paste the API key from its account settings here.')"
+      :keywords="$t('SubDL, API key, missing subtitles, more languages, subtitle provider')"
+    >
+      <tv-field :label="$t('SubDL API key')">
+        <v-text-field
+          v-model.trim="settings.subdlKey"
+          :label="$t('SubDL API key')"
+          variant="solo-filled"
+          density="comfortable"
+          rounded="lg"
+          flat
+          autocomplete="off"
+          spellcheck="false"
+          :append-inner-icon="keyWorks ? mdiCheck : undefined"
+          :error-messages="keyWorks === false ? $t('SubDL refused this key.') : undefined"
+          hide-details="auto"
+        />
+      </tv-field>
     </settings-section>
 
     <settings-section
