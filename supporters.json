@@ -1,8 +1,13 @@
 {
   "goal": 300,
-  "raised": 33,
+  "raised": 43,
   "currency": "EUR",
-  "monthly": [],
+  "monthly": [
+    {
+      "name": "Krethaloshanan",
+      "amount": 10
+    }
+  ],
   "once": [
     {
       "name": "Hayley",
