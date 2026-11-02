@@ -42,13 +42,25 @@ export function shelve(shelf: Shelf, key: string, value: unknown) {
 }
 
 /**
- * Whether the device says it has a network — `navigator.onLine`, kept current.
- * It can say yes on a Wi-Fi with no way out; offline mode is for the plane and
- * the train, where it says no.
+ * Whether there is a network: `navigator.onLine`, kept current — and false
+ * besides from TMDB not answering at all (`tmdb`) until it does (`reachable`),
+ * because the device can say yes with no way out: a Wi-Fi with none, or an
+ * always-on VPN with nothing under it, which kept a phone with Wi-Fi and data
+ * off "online".
  */
 export const online = ref(globalThis.navigator?.onLine ?? true)
 globalThis.addEventListener?.('online', () => (online.value = true))
 globalThis.addEventListener?.('offline', () => (online.value = false))
+
+/**
+ * Back online once TMDB answers past the HTTP cache, which answers the pages
+ * seen before with no network at all — so `tmdb` succeeding proves nothing.
+ * Opaque, because any answer will do and that needs no key.
+ */
+export function reachable(get: typeof fetch = fetch) {
+  return get('https://api.themoviedb.org/3/configuration', { mode: 'no-cors', cache: 'no-store' })
+    .then(() => (online.value = true), () => {})
+}
 
 /**
  * Whether a title's TMDB pages are kept for offline, by `type:id` — the
@@ -73,7 +85,10 @@ export async function loadImages() {
 export async function keepImage(path: string, url: string, get: typeof fetch = fetch) {
   if (images.has(path))
     return
-  const res = await get(url).catch(() => null)
+  // Past the HTTP cache: TMDB sends its CORS header only to a request with an
+  // Origin, and without a `Vary`, so the copy an <img> on the title page just
+  // cached has none — and this fetch, of the same backdrop, failed on it.
+  const res = await get(url, { cache: 'reload' }).catch(() => null)
   if (!res?.ok)
     return
   const blob = await res.blob()

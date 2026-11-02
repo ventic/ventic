@@ -1,7 +1,7 @@
 // TMDB v3 — https://developer.themoviedb.org/reference/intro/getting-started
 // The token in TMDB_API is the v4 "API Read Access Token" (sent as a Bearer).
 
-import { images, offlineTitles, shelve, shelved } from './shelf'
+import { images, offlineTitles, online, shelve, shelved } from './shelf'
 
 export type MediaType = 'movie' | 'tv'
 
@@ -74,7 +74,15 @@ export function tmdb<T>(path: string, params?: Record<string, unknown>): Promise
   const query = { language: tmdbLanguage(), ...params }
   // Typed as it resolves, not as Nitro's route types would have it — `.then` on
   // those is a type instantiation too deep for the checker.
-  const asked = $fetch<T>(path, { baseURL: 'https://api.themoviedb.org/3', params: query, headers: { Authorization: `Bearer ${key}` } }) as Promise<T>
+  const asked = ($fetch<T>(path, { baseURL: 'https://api.themoviedb.org/3', params: query, headers: { Authorization: `Bearer ${key}` } }) as Promise<T>).catch(e => {
+    // No answer at all, where an HTTP error is an answer: offline, whatever
+    // `navigator.onLine` says — an always-on VPN with nothing under it keeps
+    // that true with Wi-Fi and data off. An answer is no proof of the
+    // opposite, since the HTTP cache gives one with no network; `reachable`.
+    if (!(e as { response?: unknown }).response)
+      online.value = false
+    throw e
+  })
 
   // A title downloaded to watch with no network keeps its pages: kept from what
   // is fetched while there is one, answered from when there isn't (see

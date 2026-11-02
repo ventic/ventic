@@ -232,9 +232,15 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   `keeps` says are downloads), its poster, backdrop, logo and the episode's
   still (which every image helper prefers, `images`), and subtitles in the
   "choose automatically" language. What a spent quota turned away is asked for
-  again by `catchUp` whenever there is a network. With `navigator.onLine` false
-  (`online`), Movies, Shows and Home list what `onDevice` holds and a banner
-  says so; the player puts the kept subtitles on with no search. A cast carries
+  again by `catchUp` whenever there is a network. Offline (`online`), Movies,
+  Shows and Home list what `onDevice` holds and a banner says so; the player
+  puts the kept subtitles on with no search. `online` is not just
+  `navigator.onLine`, which an always-on VPN keeps true with Wi-Fi and data
+  off: TMDB giving no answer at all also counts (`tmdb()`), and only
+  `reachable` — a `no-store` request — says it is back, because the HTTP cache
+  answers TMDB pages with no network. Pictures are kept past that cache too
+  (`keepImage`): TMDB's CORS header comes only with an `Origin` and no `Vary`,
+  so the copy the title page's `<img>` cached fails a `fetch`. A cast carries
   the subtitles on screen the same way (`CastSubtitle`) — the text, not a link,
   so the television neither searches nor spends a download.
 - **Chapters are mpv's alone.** The seek bar's marks, the chapter name in its

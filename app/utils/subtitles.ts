@@ -535,22 +535,36 @@ export async function subdlKeyWorks(key: string): Promise<boolean | null> {
 }
 
 /**
- * OpenSubtitles' codes that aren't plain ISO 639-1, and the codes they are here.
- * Its Portuguese and Chinese always name the variety.
+ * OpenSubtitles' codes that aren't plain ISO 639-1, and the codes they are here
+ * (its `/infos/languages`). Its Portuguese and Chinese always name the variety;
+ * Spanish is both `es` and an invented `sp`, which the list showed as "sp".
  */
 const OPENSUBTITLES_CODES: Record<string, string> = {
   'pt-br': 'pob',
   'pt-pt': 'pt',
+  'pm': 'pt-MZ',
   'zh-cn': 'zh',
   'zh-tw': 'zht',
   'ze': 'zhe',
+  'es': 'es',
+  'sp': 'es',
   'ea': 'es-419',
   'me': 'cnr',
+  'pr': 'prs',
+  'at': 'ast',
+  'ex': 'ext',
+  'ma': 'mni',
+  'sx': 'sat',
+  'sy': 'syr',
+  'tp': 'tok',
+  'tm-td': 'tet',
 }
 
+/** What to ask OpenSubtitles for: every code of its own that is this language. */
 function opensubtitlesCode(code: string) {
   const c = shortCode(code)
-  return Object.keys(OPENSUBTITLES_CODES).find(k => OPENSUBTITLES_CODES[k] === c) ?? c
+  const own = Object.keys(OPENSUBTITLES_CODES).filter(k => OPENSUBTITLES_CODES[k] === c)
+  return own.length ? own.sort().join(',') : c
 }
 
 /** The fields of one result that are read here; there are thirty-odd more. */

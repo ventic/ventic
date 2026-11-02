@@ -731,11 +731,13 @@ globalThis.fetch = (async (input: string | URL, init?: RequestInit) => {
       return new Response('', { status: 429, headers: { 'retry-after': '0' } })
     return Response.json({
       total_pages: 2,
-      data: url.searchParams.get('languages')
-        ? [osItem('sl', 1)]
-        : page === '2'
-          ? [osItem('fi', 7)]
-          : [osItem('en', 2), osItem('pt-BR', 3, { hearing_impaired: true }), osItem('sl', 1), osItem('sl', 4, { foreign_parts_only: true }), osItem('de', 9)],
+      data: url.searchParams.get('languages') === 'es,sp'
+        ? [osItem('es', 11), osItem('sp', 12)]
+        : url.searchParams.get('languages')
+          ? [osItem('sl', 1)]
+          : page === '2'
+            ? [osItem('fi', 7)]
+            : [osItem('en', 2), osItem('pt-BR', 3, { hearing_impaired: true }), osItem('sl', 1), osItem('sl', 4, { foreign_parts_only: true }), osItem('de', 9)],
     })
   }
   if (url.pathname === '/api/v1/download') {
@@ -770,6 +772,13 @@ assert.equal(osLangs.find(l => l.name === 'Portuguese (Brazil)')!.files[0]!.capt
 osAsked = []
 await findSubtitles('tt0241527', 0, 0, '', { opensubtitles: 'k', lang: 'pob' })
 assert.ok(osSearches().some(q => q.get('languages') === 'pt-br'), 'and asked for by the variety\'s name')
+// Its Spanish is two codes, one of them its own invention: asked for by both,
+// and listed as one language rather than as a bare "sp".
+osAsked = []
+const osEs = byLanguage(await findSubtitles('tt0241527', 0, 0, '', { opensubtitles: 'k', lang: 'es' }))
+assert.ok(osSearches().some(q => q.get('languages') === 'es,sp'))
+assert.deepEqual(osEs.find(l => l.name === 'Spanish')?.files.map(f => f.id), ['opensubtitles:11', 'opensubtitles:12'])
+assert.ok(!osEs.some(l => l.name === 'sp'))
 
 // Listing costs nothing; the pick is one POST, for mpv and the cues together,
 // and mpv gets the text — the url is the subtitle's page, not its file.

@@ -230,6 +230,41 @@ assert.deepEqual(downloads.cachedFor('tv:9:1:2'), { hash: 'hash7', file: 0 }, 'f
 assert.deepEqual(prepared, [{ key: 'tv:9:1:2', lang: 'sl' }])
 assert.ok(downloads.keeps('tv:9'), 'its TMDB pages are kept from now on')
 assert.ok(shelf.offlineTitles.keeps('tv:9'), 'which is what `tmdb` asks')
+// Its pictures come past the HTTP cache: the title page's <img> cached them
+// without TMDB's CORS header, and a fetch of that copy fails.
+let picture: RequestInit | undefined
+await shelf.keepImage('/backdrop.jpg', 'https://image.tmdb.org/t/p/w1280/backdrop.jpg', (async (_: unknown, init?: RequestInit) => {
+  picture = init
+  return new Response(null, { status: 404 })
+}) as typeof fetch)
+assert.equal(picture?.cache, 'reload', 'a picture kept for offline is fetched past the cache')
+// Offline is TMDB not answering at all, whatever `navigator.onLine` says — an
+// always-on VPN kept that true on a phone with Wi-Fi and data off — and back
+// is TMDB answering past the HTTP cache, which answered with no network and
+// flipped a phone's offline lists back to pages that couldn't load.
+const { tmdb } = await import('../app/utils/tmdb')
+let answer = (): Promise<unknown> => Promise.reject(Object.assign(new Error('Not Found'), { response: { status: 404 } }))
+Object.assign(globalThis, { tmdbLanguage: () => 'en-US', $fetch: () => answer() })
+await tmdb('/configuration').catch(() => {})
+assert.equal(shelf.online.value, true, 'a 404 is TMDB answering')
+answer = () => Promise.reject(new Error('<no response> Failed to fetch'))
+await tmdb('/configuration').catch(() => {})
+assert.equal(shelf.online.value, false, 'no answer at all is offline')
+answer = async () => ({})
+await tmdb('/configuration')
+assert.equal(shelf.online.value, false, 'an answer the cache could have given is not back')
+let probe: RequestInit | undefined
+function probing(ok: boolean) {
+  return (async (_: unknown, init?: RequestInit) => {
+    probe = init
+    return ok ? new Response() : Promise.reject(new TypeError('Failed to fetch'))
+  }) as typeof fetch
+}
+await shelf.reachable(probing(false))
+assert.equal(shelf.online.value, false)
+await shelf.reachable(probing(true))
+assert.equal(shelf.online.value, true, 'one past the cache is')
+assert.equal(probe?.cache, 'no-store')
 await poll()
 assert.equal(await nextUp(), true, 'and asked again, it is already here')
 assert.ok(downloads.onDevice.has('tv:9'), 'on the device, so offline mode lists the show')
