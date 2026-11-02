@@ -54,6 +54,11 @@ const current = computed({
   },
 })
 
+// Looked up, never derived: which flag a locale gets is worked out once at
+// build time, because the bundle inlines those exact icon names and nothing
+// else — see `flags` in nuxt.config.
+const { flags } = useRuntimeConfig().public
+
 /**
  * Native name first, English name after it — someone who has the app in a
  * language they can't read has to find their own in the list, and "Deutsch"
@@ -61,15 +66,9 @@ const current = computed({
  * searchable for everyone else — but only once `filter-keys` names it: the
  * default filter walks the *internal* item, where the whole original object is
  * one `raw` key it stringifies to "[object Object]", so "german" matched
- * nothing.
+ * nothing. `englishName`, because Android's ICU has no English for ten of
+ * these (Welsh was "cy").
  */
-const english = new Intl.DisplayNames(['en'], { type: 'language' })
-
-// Looked up, never derived: which flag a locale gets is worked out once at
-// build time, because the bundle inlines those exact icon names and nothing
-// else — see `flags` in nuxt.config.
-const { flags } = useRuntimeConfig().public
-
 const items = computed(() => {
   // The catalog is ordered by locale code, which is alphabetical in nothing
   // anyone reads — the labels are endonyms. Collate in the language the app is
@@ -79,7 +78,7 @@ const items = computed(() => {
   return locales.value.map(l => ({
     value: l.code,
     title: l.name ?? l.code,
-    subtitle: english.of(l.code) === l.name ? undefined : english.of(l.code),
+    subtitle: englishName(l.code) === l.name ? undefined : englishName(l.code),
     // Guarded because a language TMDB adds is in the picker before the next
     // build has drawn it a flag.
     flag: flags[l.code],

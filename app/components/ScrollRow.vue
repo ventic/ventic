@@ -25,7 +25,10 @@ const overflows = ref(false)
  */
 function measure() {
   const el = scroller.value
-  if (!el)
+  // Not laid out — hidden, or detached — is not a short row. Read as one, every
+  // page that arrived asked for the next: a phone's "More like this" fetched
+  // all twelve. The observer measures again once it has a size.
+  if (!el?.clientWidth)
     return
   const max = el.scrollWidth - el.clientWidth
   overflows.value = max > 1

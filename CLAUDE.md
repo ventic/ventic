@@ -822,6 +822,19 @@ keeps glued to a box in the page. Targets desktop **and Android TV**.
   is called in itself, and which four are right-to-left, so no table of language
   names is hand-kept. The full tag survives as `language` and is what `tmdb()`
   asks for, so film data arrives in the reader's language.
+- **Android's ICU can't name most languages, so the catalogs do.** Its WebView
+  (Chrome 156) has display names for 78 of the 216 a full ICU does, the same 78
+  in every UI language, so `Intl.DisplayNames` answers nothing for Bosnian,
+  Welsh or Kurdish there — ten of the app's own UI languages among them.
+  `SPARE_NAMES` in `utils/subtitles.ts` is each of those a subtitle provider or
+  Settings → Subtitles can show, as a `$t` key whose value in every catalog is
+  what a full ICU calls it in that language: fill new ones from node (V8, which
+  lowercases as the WebView does — bun's JSC capitalises "Alemán"), and by hand
+  where CLDR has none. `langName` asks the ICU, then that table, then English —
+  never stopping at a bare code — and `englishName` is the same in English, for
+  SubSource's names and the language picker. `check:subtitles` runs it against
+  an ICU trimmed to exactly what the devices lacked, so a new UI or provider
+  language the WebView can't name fails there.
 - **No language in the URL** (`strategy: 'no_prefix'`), so a path is just a
   path and `setLocale` swaps the catalog in place without navigating. Prefixed
   routes are for crawlers and shareable localised links; a bundle behind a Tauri

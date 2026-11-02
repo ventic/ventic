@@ -11,11 +11,13 @@ import {
   byLanguage,
   cueAt,
   decodeSubtitle,
+  englishName,
   fileLabel,
   fileNote,
   findImdbId,
   findSubtitles,
   fitsRuntime,
+  fromSubsourceName,
   isCaptions,
   langFlag,
   langName,
@@ -37,6 +39,7 @@ import {
   subtitleProps,
   synced,
 } from '../app/utils/subtitles'
+import { locales } from '../i18n/i18n.locales.json'
 import './i18n-stub'
 
 const subtitles = [
@@ -917,6 +920,43 @@ assert.ok(store.includes('useLocalStorage(\'ventic.subdlKey\''), 'the key is one
 assert.ok(page.includes('settings.subdlKey'), 'and the subtitle settings page edits it')
 assert.match(read('../app/utils/backup.ts'), /const SECRET = new Set\(\[[^\]]*\{PREFIX\}subdlKey`/, 'and no backup carries it')
 globalThis.fetch = realFetch
+
+// ---------------------------------------------------------------------------
+// Language names where the ICU has none. Android's WebView names 78 of the 216
+// languages a full ICU does — Chrome 156, on a phone and the TV alike, and the
+// same 138 missing in every UI language — so "bs" and "cy" reached the screen
+// as they were.
+// ---------------------------------------------------------------------------
+
+// Every language SubSource answered with for two films on 2026-11-02. Two it
+// spells its own way, and those were rows called "big_5_code" and
+// "spanish_latin_america" on every platform.
+const SUBSOURCE_SAID = 'albanian arabic bengali big_5_code brazilian_portuguese bulgarian burmese chinese_bg_code croatian czech danish dutch english estonian farsi_persian finnish french german greek hebrew hungarian icelandic indonesian italian japanese korean kurdish latvian lithuanian macedonian malay malayalam mongolian norwegian polish portuguese romanian russian serbian slovak slovenian spanish spanish_latin_america swedish thai turkish ukrainian urdu vietnamese'.split(' ')
+const unnamed = () => SUBSOURCE_SAID.filter(said => langName(fromSubsourceName(said)) === fromSubsourceName(said))
+assert.deepEqual(unnamed(), [], 'every language SubSource names is one this file can')
+assert.deepEqual(['big_5_code', 'spanish_latin_america', 'manipuri'].map(said => langName(fromSubsourceName(said))), ['Chinese (traditional)', 'Latin American Spanish', 'Manipuri'], 'three letters too, which no two-letter code reads back')
+
+// What that ICU lacked, measured: the full one is made to lack the same.
+const TRIMMED = 'aa ab ae ak an as av ay ba be bh bi bm bo br bs ce ch co cr cu cv cy dv dz ee eo ff fj fo fy ga gd gn gv ha ho ht hz ia ie ig ii ik io iu ji jv jw kg ki kj kl kr ks ku kv kw la lb lg li ln lu mg mh mi mt na nd ng nn nr nv ny oc oj om or os pi ps qu rm rn rw sa sc sd se sg sm sn so ss st su tg ti tk tn to ts tt tw ty ug ve vo wa wo xh yi yo za ast ext mni sat syr tok tet haw yue chr ckb kab kok mai nds sco gsw hsb dsb szl fur bho doi'.split(' ')
+const fullOf = Intl.DisplayNames.prototype.of
+const inEnglish = new Intl.DisplayNames(['en'], { type: 'language', fallback: 'none' })
+const gone = new Set(TRIMMED.map(code => inEnglish.of(code)))
+Intl.DisplayNames.prototype.of = function (this: Intl.DisplayNames, code: string) {
+  return gone.has(fullOf.call(inEnglish, code)) ? undefined : fullOf.call(this, code)
+}
+assert.equal(new Intl.DisplayNames(['en'], { type: 'language', fallback: 'none' }).of('bs'), undefined, 'the stand-in lacks what the WebView did')
+assert.deepEqual(['bs', 'bos', 'wel', 'cym', 'mni', 'de'].map(langName), ['Bosnian', 'Bosnian', 'Welsh', 'Welsh', 'Manipuri', 'German'], 'named however the code arrives, and what the ICU has is its own')
+assert.deepEqual(byLanguage([{ id: 'a', url: 'a', lang: 'bs' }, { id: 'b', url: 'b', lang: 'bos' }]).map(l => l.name), ['Bosnian'], 'one row, as with a full ICU')
+// Settings → Subtitles lists the app's own languages by these names.
+assert.deepEqual(locales.map(l => l.code).filter(code => langName(code) === code), [], 'no UI language reaches that list as a code')
+assert.deepEqual([englishName('cy'), subsourceName('bs')], ['Welsh', 'bosnian'], 'and the English SubSource is searched by survives too')
+Intl.DisplayNames.prototype.of = fullOf
+
+// A UI language CLDR barely names others in says the rest in English, as
+// anything untranslated is: in Occitan it has "anglés" and almost nothing else.
+Object.assign(globalThis, { document: { documentElement: { lang: 'oc' } } })
+assert.deepEqual(['en', 'de'].map(langName), ['anglés', 'German'], 'not "de"')
+delete (globalThis as { document?: unknown }).document
 
 if (process.argv.includes('--live') && process.env.SUBDL_KEY) {
   const key = process.env.SUBDL_KEY

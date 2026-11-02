@@ -102,6 +102,55 @@ const EXTRA_NAMES: Record<string, () => string> = {
 }
 
 /**
+ * The languages a trimmed ICU can't name, through the catalogs instead.
+ * Android's WebView names 78 of the 216 a full ICU does (Chrome 156, the same
+ * 138 missing in every UI language), so Bosnian was "bs" on a phone and on the
+ * TV, and Welsh a bare "cy" in Settings → Subtitles. These are the ones the
+ * subtitle providers or that list can show; `bun run i18n` writes each one as
+ * a full ICU would, so Android and the desktop say the same thing.
+ *
+ * Handed the translator rather than calling it, because the identity gives the
+ * English name (value-as-key) — which is how SubSource spells a language.
+ */
+const SPARE_NAMES: Record<string, (t: (key: string) => string) => string> = {
+  ab: $t => $t('Abkhazian'),
+  an: $t => $t('Aragonese'),
+  as: $t => $t('Assamese'),
+  ast: $t => $t('Asturian'),
+  be: $t => $t('Belarusian'),
+  br: $t => $t('Breton'),
+  bs: $t => $t('Bosnian'),
+  ch: $t => $t('Chamorro'),
+  cy: $t => $t('Welsh'),
+  eo: $t => $t('Esperanto'),
+  ext: $t => $t('Extremaduran'),
+  ga: $t => $t('Irish'),
+  gd: $t => $t('Scottish Gaelic'),
+  ia: $t => $t('Interlingua'),
+  ig: $t => $t('Igbo'),
+  kl: $t => $t('Kalaallisut'),
+  ku: $t => $t('Kurdish'),
+  lb: $t => $t('Luxembourgish'),
+  mni: $t => $t('Manipuri'),
+  nv: $t => $t('Navajo'),
+  oc: $t => $t('Occitan'),
+  or: $t => $t('Odia'),
+  ps: $t => $t('Pashto'),
+  rw: $t => $t('Kinyarwanda'),
+  sat: $t => $t('Santali'),
+  sd: $t => $t('Sindhi'),
+  se: $t => $t('Northern Sami'),
+  so: $t => $t('Somali'),
+  su: $t => $t('Sundanese'),
+  syr: $t => $t('Syriac'),
+  tet: $t => $t('Tetum'),
+  tk: $t => $t('Turkmen'),
+  tok: $t => $t('Toki Pona'),
+  tt: $t => $t('Tatar'),
+  yo: $t => $t('Yoruba'),
+}
+
+/**
  * One `Intl.DisplayNames` per UI language, built on first use.
  *
  * The locale comes off `<html lang>` rather than from `useI18n`, because this
@@ -116,7 +165,8 @@ function displayNames() {
   const locale = globalThis.document?.documentElement.lang || 'en'
   let names = NAMES.get(locale)
   if (!names) {
-    names = new Intl.DisplayNames([locale], { type: 'language' })
+    // No fallback, so a name the ICU lacks is missing rather than the code.
+    names = new Intl.DisplayNames([locale], { type: 'language', fallback: 'none' })
     NAMES.set(locale, names)
   }
   return names
@@ -132,11 +182,25 @@ export function langName(code: string) {
   if (EXTRA_NAMES[c])
     return EXTRA_NAMES[c]()
   try {
-    const name = displayNames().of(c)
-    return name && name !== c ? name : code
+    // Then English, as anything untranslated is: CLDR names 2 of the 91
+    // languages OpenSubtitles carries in Occitan, which listed the rest as codes.
+    return displayNames().of(c) ?? SPARE_NAMES[shortCode(c)]?.($t) ?? englishName(c) ?? code
   }
   catch {
     return code // not a language tag at all
+  }
+}
+
+let english: Intl.DisplayNames | undefined
+
+/** "bs" -> "Bosnian", in English whatever the app is in: SubSource's names, and the language picker's search. */
+export function englishName(code: string) {
+  english ??= new Intl.DisplayNames(['en'], { type: 'language', fallback: 'none' })
+  try {
+    return english.of(code) ?? SPARE_NAMES[shortCode(code)]?.(key => key)
+  }
+  catch {
+    return undefined
   }
 }
 
@@ -697,6 +761,8 @@ const SUBSOURCE_NAMES: Record<string, string> = {
   farsi_persian: 'fa',
   brazilian_portuguese: 'pob',
   chinese_bg_code: 'zh',
+  big_5_code: 'zht',
+  spanish_latin_america: 'es-419',
   bengali: 'bn',
   espranto: 'eo',
   northen_sami: 'se',
@@ -706,18 +772,22 @@ const SUBSOURCE_NAMES: Record<string, string> = {
 
 let englishNames: Map<string, string> | undefined
 
-/** `slovenian` -> `sl`: every two-letter code's English name, read backwards. */
-function fromSubsourceName(name: string) {
+/**
+ * `slovenian` -> `sl`: every two-letter code's English name read backwards,
+ * and the spare ones' — which is what finds Manipuri (`mni`), and anything at
+ * all a trimmed ICU has no English for.
+ */
+export function fromSubsourceName(name: string) {
   const n = name.toLowerCase().replace(/ /g, '_')
   if (SUBSOURCE_NAMES[n])
     return SUBSOURCE_NAMES[n]
   if (!englishNames) {
-    const names = new Intl.DisplayNames(['en'], { type: 'language', fallback: 'none' })
     const letters = 'abcdefghijklmnopqrstuvwxyz'
-    englishNames = new Map([...letters].flatMap(a => [...letters].flatMap(b => {
-      const said = names.of(a + b)
-      return said ? [[said.toLowerCase().replace(/ /g, '_'), a + b] as const] : []
-    })))
+    const codes = [...[...letters].flatMap(a => [...letters].map(b => a + b)), ...Object.keys(SPARE_NAMES)]
+    englishNames = new Map(codes.flatMap(code => {
+      const said = englishName(code)
+      return said ? [[said.toLowerCase().replace(/ /g, '_'), code] as const] : []
+    }))
   }
   return englishNames.get(n) ?? n
 }
@@ -728,12 +798,7 @@ export function subsourceName(code: string) {
   const own = Object.keys(SUBSOURCE_NAMES).find(k => SUBSOURCE_NAMES[k] === c)
   if (own || !c)
     return own ?? ''
-  try {
-    return new Intl.DisplayNames(['en'], { type: 'language', fallback: 'none' }).of(c)?.toLowerCase().replace(/ /g, '_') ?? ''
-  }
-  catch {
-    return ''
-  }
+  return englishName(c)?.toLowerCase().replace(/ /g, '_') ?? ''
 }
 
 /** The fields of one result that are read here. */
