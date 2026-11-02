@@ -360,7 +360,7 @@ export async function sendPlay(device: CastDevice, code: string, play: CastPlay)
     if (res.status === 502) {
       return mirrored(play.url)
         ? {
-            message: $t('{device} couldn\'t reach this device — a firewall here is blocking port {port}.', { device: device.name, port: MIRROR_PORT }),
+            message: $t('{device} couldn\'t reach this device. A firewall here is blocking port {port}.', { device: device.name, port: MIRROR_PORT }),
             command: await firewallHint(),
           }
         : { message: $t('{device} couldn\'t open that link. It may have expired, or that device may have no connection of its own.', { device: device.name }) }

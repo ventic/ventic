@@ -8,7 +8,7 @@ const updates = useUpdatesStore()
 // mpv.exe, which makes handing one out redistribution of GPL software — the
 // notice and offer of source ride along beside it (see scripts/build/mpv.ts).
 const credits = computed(() => [
-  { title: 'mpv', text: $t('The player itself — decoding, subtitles and audio. GPLv2 or later.'), url: 'https://mpv.io' },
+  { title: 'mpv', text: $t('The player itself: decoding, subtitles and audio. GPLv2 or later.'), url: 'https://mpv.io' },
   { title: 'librqbit', text: $t('The torrent engine, embedded in the app. MIT licensed.'), url: 'https://github.com/ikatson/rqbit' },
   { title: 'OpenSubtitles', text: $t('Subtitles, reached through public addons Stremio operates.'), url: 'https://www.opensubtitles.org' },
 ])
@@ -78,7 +78,7 @@ function open(url: string) {
       </template>
 
       <p class="text-body-small opacity-70">
-        {{ $t('Checked once each time Ventic starts, against this project\'s GitHub releases. Nothing else is sent — there is no account and no telemetry behind it.') }}
+        {{ $t('Checked against this project\'s GitHub releases each time Ventic starts. Nothing else is sent: there is no account and no telemetry behind it.') }}
       </p>
     </settings-section>
 
@@ -137,7 +137,7 @@ function open(url: string) {
         {{ $t('Ventic hosts no content, indexes no content, and ships with no sources configured. It is a BitTorrent client with a player attached: it fetches only what you point it at, from servers you added yourself.') }}
       </p>
       <p class="text-body-small opacity-70">
-        {{ $t('Copyright in what you play is unaffected by the tool you play it with. Whether you have the right to download a given title is yours to answer, under the law where you are. Reports about a source belong with whoever operates it — the project has no control over, and no relationship with, any of them.') }}
+        {{ $t('Copyright in what you play is unaffected by the tool you play it with. Whether you have the right to download a given title is yours to answer, under the law where you are. Reports about a source belong with whoever operates it. The project has no control over, and no relationship with, any of them.') }}
       </p>
       <p class="text-body-small opacity-70">
         {{ $t('Ventic is MIT licensed. The components it is built on keep their own terms, listed above; on Windows the bundled mpv is GPL software and its licence and offer of source sit next to the application\'s executable.') }}

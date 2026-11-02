@@ -120,7 +120,7 @@ const translated = computed(() =>
         </template>
       </component>
       <p class="text-body-medium opacity-70">
-        {{ $t('Descriptions, titles and artwork come from TMDB in {language} — the language list is TMDB\'s own, so anything offered here is a language it can answer in.', { language: translated }) }}
+        {{ $t('Descriptions, titles and artwork come from TMDB in {language}. The list is TMDB\'s own, so every language here is one it has.', { language: translated }) }}
       </p>
       <p class="text-body-medium opacity-70">
         {{ $t('A language nobody has finished translating falls back to English one line at a time, so nothing is ever blank.') }}

@@ -1461,7 +1461,7 @@ async function startPlayer() {
         // saying only "HTTP 500" is a report nobody can act on.
         const said = await engineReason(props.src) || probe.reason
         errorMsg.value = said === STALLED
-          ? $t('Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.')
+          ? $t('Nothing arrived from the swarm. This release has no seeders that will talk to this device, so try a different one.')
           : said
             ? $t('Torrent engine said {status}: {reason}', { status: probe.status, reason: said })
             : probe.status
@@ -1481,7 +1481,7 @@ async function startPlayer() {
         // Debrid links are minted per request and go stale; searching again is
         // what mints a fresh one, so that's what the message has to ask for.
         errorMsg.value = probe.status
-          ? $t('The link this source gave answered HTTP {status}. It may have expired — search the sources again for a fresh one.', { status: probe.status })
+          ? $t('The link this source gave answered HTTP {status}. It may have expired, so search the sources again for a fresh one.', { status: probe.status })
           : $t('The link this source gave could not be reached.')
       }
       return
@@ -1618,7 +1618,7 @@ async function poll() {
     if (!native && !exo && !silentSaid && position.value > 5) {
       silentSaid = !!(await readProps<{ silent: boolean }>(['silent']))?.silent
       if (silentSaid) {
-        osd($t('No sound — this device can\'t decode this release\'s audio (Dolby or DTS). A release with AAC audio will play.'), 7000)
+        osd($t('No sound: this device can\'t decode this release\'s audio (Dolby or DTS). A release with AAC audio will play.'), 7000)
       }
     }
   }
@@ -2535,8 +2535,8 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration), 
              with a button to pick another one on it. -->
         <div class="text-body-medium">
           {{ fromCast
-            ? $t('Nothing is arriving on the device this was cast from — its release has no seeders that will talk to it. Pick a different one over there.')
-            : $t('Nothing arrived from the swarm. This release has no seeders that will talk to this device — try a different one.') }}
+            ? $t('Nothing is arriving on the device this was cast from, because its release has no seeders that will talk to it. Pick a different one over there.')
+            : $t('Nothing arrived from the swarm. This release has no seeders that will talk to this device, so try a different one.') }}
         </div>
         <button v-if="pickable" :class="BTN" @click="emit('another')">
           <v-icon :icon="mdiSwapHorizontal" size="18" /> {{ $t('Try a different release') }}
@@ -2849,7 +2849,7 @@ defineExpose({ osd, position: readonly(position), duration: readonly(duration), 
                 <v-progress-circular v-if="syncing" indeterminate size="13" width="2" />
               </button>
               <p v-if="syncing" :class="NOTE">
-                {{ syncWide ? $t('Nothing certain in the last twenty minutes — listening to the whole film…') : $t('Listening to what has played…') }}
+                {{ syncWide ? $t('Nothing certain in the last twenty minutes. Listening to the whole film…') : $t('Listening to what has played…') }}
               </p>
               <template v-else-if="syncNote">
                 <p :class="NOTE">

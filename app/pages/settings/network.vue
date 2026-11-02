@@ -124,7 +124,7 @@ async function bindTo(name: string | null) {
   <div class="flex flex-col gap-8">
     <settings-section
       :title="$t('Speed limits')"
-      :hint="$t('Applied to peer traffic across every torrent. Zero hands the decision back to the app, which leaves downloads unlimited and works the seeding ceiling out from the fastest upload this connection has managed.')"
+      :hint="$t('Applies to all torrent traffic. At zero, downloads are unlimited and the app sets the seeding limit from the fastest upload this connection has managed.')"
       :keywords="$t('bandwidth, throttle, rate limit, download speed, upload speed, seeding, cap, slow internet')"
     >
       <settings-row :label="$t('Download')">
@@ -135,7 +135,7 @@ async function bindTo(name: string | null) {
       </settings-row>
 
       <p class="text-body-small opacity-70">
-        {{ $t('A limit you set here holds during playback too, where the automatic ceiling would otherwise drop seeding to a quarter of the line so the stream keeps up.') }}
+        {{ $t('A limit you set here also applies during playback. Without one, seeding drops to a quarter of your connection while a film streams, so playback keeps up.') }}
       </p>
     </settings-section>
 
@@ -160,7 +160,7 @@ async function bindTo(name: string | null) {
         {{ $t('{name} is not connected, so torrents are stopped. They start again on their own when it is back.', { name: vpn.bound }) }}
       </p>
       <p class="text-body-small opacity-70">
-        {{ $t('Pick the one your VPN creates — usually named tun, wg or utun, with the address your VPN gave you. Only torrent traffic is tied to it: searching sources, film details and subtitles use the normal connection.') }}
+        {{ $t('Pick the one your VPN creates, usually named tun, wg or utun, with the address your VPN gave you. Only torrent traffic is tied to it: searching sources, film details and subtitles use the normal connection.') }}
       </p>
       <p v-if="vpnError" class="text-body-small text-error">
         {{ vpnError }}
@@ -180,7 +180,7 @@ async function bindTo(name: string | null) {
     <settings-section
       v-if="canMeter"
       :title="$t('Mobile data')"
-      :hint="$t('Downloads keep running when the app is off screen, which is worth knowing about on a connection that charges for bytes.')"
+      :hint="$t('Downloads keep running when the app is off screen, which matters on a connection that charges for data.')"
       :keywords="$t('cellular, metered connection, data saver, data usage, hotspot, 4G, 5G, LTE')"
     >
       <v-switch
@@ -189,7 +189,7 @@ async function bindTo(name: string | null) {
         density="comfortable"
         hide-details
         :label="$t('Only download on Wi-Fi')"
-        :description="$t('Downloads pause on mobile data or a metered hotspot, and start again on Wi-Fi. A film you pressed play on keeps streaming either way — that is data you asked for. On Wi-Fi again with the app closed, downloads resume the next time you open it.')"
+        :description="$t('Downloads pause on mobile data or a metered hotspot, and start again on Wi-Fi. A film you pressed play on keeps streaming either way, because that is data you asked for. If you are back on Wi-Fi with the app closed, downloads resume the next time you open it.')"
       />
       <p class="text-body-medium">
         {{ downloads.metered
@@ -201,7 +201,7 @@ async function bindTo(name: string | null) {
     <settings-section
       v-if="canHide"
       :title="$t('Closing the window')"
-      :hint="$t('The torrent engine runs inside the app, so closing the window is what stops a download. There is nothing left running behind it.')"
+      :hint="$t('The torrent engine runs inside the app, so closing the window stops downloads.')"
       :keywords="$t('system tray, tray icon, minimise, minimize, run in background, quit, exit, close button')"
     >
       <v-switch
@@ -210,7 +210,7 @@ async function bindTo(name: string | null) {
         density="comfortable"
         hide-details
         :label="$t('Keep downloading in the background when the window is closed')"
-        :description="$t('The window is hidden instead of the app quitting, and downloads carry on. Open it again from the tray icon — or by launching Ventic, which brings the window back rather than starting a second copy. Quit from the tray icon when you actually want it to stop.')"
+        :description="$t('The window is hidden instead of the app quitting, and downloads carry on. Open it again from the tray icon, or by launching Ventic, which brings the window back instead of starting a second copy. Quit from the tray icon when you want it to stop.')"
       />
     </settings-section>
 
@@ -281,16 +281,16 @@ async function bindTo(name: string | null) {
         </div>
 
         <p v-if="settings.castAsk" class="text-body-medium opacity-70">
-          {{ $t('Type these into the other device when it asks. The code is what stops anyone else on this network putting something on your screen, so it never travels in a backup.') }}
+          {{ $t('Type these into the other device when it asks. The code stops anyone else on this network from putting something on your screen, so it never travels in a backup.') }}
         </p>
         <p v-else class="text-body-medium text-warning">
-          {{ $t('Without a code, anything on this network can play a film on this screen — fine at home, worth switching back on anywhere else.') }}
+          {{ $t('Without a code, anything on this network can play a film on this screen. That is fine at home, but worth switching back on anywhere else.') }}
         </p>
 
         <!-- An empty code with the switch on answers nothing and looks like a
              device that has simply stopped working. -->
         <p v-if="settings.castAsk && !settings.castCode" class="text-body-small text-error">
-          {{ $t('Set a code, or turn the code off — this device answers nothing until one of the two is true.') }}
+          {{ $t('Set a code, or turn the code off. Until you do one of the two, this device answers nothing.') }}
         </p>
       </template>
 

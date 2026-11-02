@@ -59,7 +59,7 @@ const qr = computed(() => {
   <div class="flex flex-col gap-8">
     <settings-section
       :title="$t('Use your phone')"
-      :hint="$t('Typing an address with a remote is the worst part of setting this up. Point a phone\'s camera at the code and a small page opens on it — what you type there arrives here, and this screen asks before it keeps any of it.')"
+      :hint="$t('Typing an address with a remote is the worst part of setting this up. Point a phone\'s camera at the code and a small page opens on it. What you type there arrives here, and this screen asks before it keeps any of it.')"
       :keywords="$t('QR code, scan, pair, phone keyboard, type on phone, onboarding, remote, setup')"
     >
       <v-alert v-if="failed" type="warning" variant="tonal" density="comfortable" rounded="lg" :text="$t('Ventic couldn\'t open the port this needs. Something else on this device may already be using it.')" />
@@ -101,7 +101,7 @@ const qr = computed(() => {
       </div>
 
       <p class="text-body-small opacity-70">
-        {{ $t('Both devices have to be on the same network. The page is only served while this screen is open, and the code is what stops anyone else on the Wi-Fi from sending anything.') }}
+        {{ $t('Both devices have to be on the same network. The page is only served while this screen is open, and the code stops anyone else on the Wi-Fi from sending anything.') }}
       </p>
       <p class="text-body-small opacity-70">
         {{ $t('You can send a source, a Live TV playlist, an Xtream login, the WebDAV folder to sync your library with, or your SubSource and SubDL keys.') }}

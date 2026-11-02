@@ -213,7 +213,7 @@ onBeforeUnmount(() => hunt?.abort())
                on. Said as an alert rather than a grey line, because it is the
                first thing to check and the fix is on the other screen. -->
           <v-alert v-else-if="!scanning" type="info" variant="tonal" density="compact" class="text-body-small">
-            {{ $t('Nothing answered. On the other device, switch on Settings → Network → “Let other devices play films on this one”, then search again — or type its address below.') }}
+            {{ $t('Nothing answered. On the other device, switch on Settings → Network → “Let other devices play films on this one”, then search again, or type its address below.') }}
           </v-alert>
         </div>
 

@@ -125,7 +125,7 @@ async function changePin() {
 
     <settings-section
       :title="$t('Parental controls')"
-      :hint="$t('Turned on for a profile, it shows and plays only titles up to that profile\'s age rating, can stop after a daily amount of watching, and keeps Live TV, Downloads and Settings out of reach. Leaving it, or opening a grown-up\'s profile, takes the parental PIN.')"
+      :hint="$t('A profile with this on shows only titles up to its age rating, can stop after a daily watch time, and keeps Live TV, Downloads and Settings out of reach. Leaving it, or opening a grown-up\'s profile, needs the parental PIN.')"
       :keywords="$t('PIN, kids, children, child lock, age rating, maturity rating, screen time, time limit, family')"
     >
       <v-btn :prepend-icon="mdiLockOutline" variant="tonal" class="self-start" @click="changePin">

@@ -145,7 +145,7 @@ async function start() {
       if (problem)
         throw new Error(problem.message)
       await new Promise(resolve => setTimeout(resolve, 90_000))
-      throw new Error($t('The other device didn\'t send the episode — its screen says why.'))
+      throw new Error($t('The other device didn\'t send the episode. Its screen says why.'))
     }
 
     // ?magnet=… hand-picks the release and skips the lookup — that's how the
@@ -571,7 +571,7 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
               {{ $t('Playing on {device}', { device: castTo.name }) }}
             </div>
             <p class="text-body-medium opacity-70">
-              {{ $t('This device is streaming the film to it. Leave Ventic running until you\'re done — closing it stops the stream.') }}
+              {{ $t('This device is streaming the film to it. Leave Ventic running until you\'re done, because closing it stops the stream.') }}
             </p>
             <!-- The swarm this screen is now the only witness to: cast before a
                  film has a head start, the other device simply waits, and both

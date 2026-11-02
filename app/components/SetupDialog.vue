@@ -41,7 +41,7 @@ const COPY: Record<SetupKind, { title: () => string, lead: () => string, note: (
   source: {
     title: () => $t('Add this source?'),
     lead: () => $t('Something asked Ventic to start searching:'),
-    note: () => $t('Ventic will send it the title you\'re looking for and play what it hands back. Only add servers you trust — this one is not run by, or checked by, this app.'),
+    note: () => $t('Ventic will send it the title you\'re looking for and play what it hands back. Only add servers you trust. This one is not run or checked by Ventic.'),
     action: () => $t('Add source'),
   },
   playlist: {

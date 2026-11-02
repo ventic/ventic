@@ -113,7 +113,7 @@ export function useSubtitleSync(ctx: {
     if (fit.speed !== 1) {
       // A rate error is global, so this one holds for the whole film rather than
       // just the scene it was measured on.
-      syncNote.value = $t('This file was cut for a different framerate — stretched to fit, delay {delay}.', { delay: delayText.value })
+      syncNote.value = $t('This file was cut for a different frame rate, so it was stretched to fit. Delay {delay}.', { delay: delayText.value })
       osd($t('Subtitles synced ({delay}, rate fixed)', { delay: delayText.value }), 2500)
     }
     else if (!moved) {
@@ -153,7 +153,7 @@ export function useSubtitleSync(ctx: {
       }
 
       if (!fit) {
-        syncNote.value = $t('Not enough has played yet — auto-sync needs about {minutes} minutes of audio to be sure. Nudge the delay for now.', { minutes: Math.round(SYNC_MIN_WINDOW / 60) })
+        syncNote.value = $t('Not enough has played yet. Auto-sync needs about {minutes} minutes of audio to be sure, so nudge the delay for now.', { minutes: Math.round(SYNC_MIN_WINDOW / 60) })
         return
       }
 
@@ -162,7 +162,7 @@ export function useSubtitleSync(ctx: {
         // still worth offering though: a file a minute out is unwatchable, and
         // one wrong button is cheaper than six hundred taps of the nudge.
         guess.value = fit.score > 0.05 ? fit : null
-        syncNote.value = $t('Couldn\'t tell — the audio doesn\'t line up clearly with this file. Try a different subtitle file, or nudge the delay by hand.')
+        syncNote.value = $t('Couldn\'t tell: the audio doesn\'t line up clearly with this file. Try a different subtitle file, or nudge the delay by hand.')
         return
       }
 

@@ -57,7 +57,7 @@ const waiting = computed(() => calendar.loading && !sections.value.length)
           {{ $t('Nothing to follow yet') }}
         </h2>
         <p class="text-body-medium opacity-70">
-          {{ $t('Shows in your favourites and your watchlist, and any you have been watching lately, are listed here with their new and upcoming episodes.') }}
+          {{ $t('Shows in your favourites and watchlist, and any you have watched lately, are listed here with their new and upcoming episodes.') }}
         </p>
         <v-btn variant="tonal" :prepend-icon="mdiTelevisionClassic" :to="localePath('/tv')">
           {{ $t('Browse TV shows') }}

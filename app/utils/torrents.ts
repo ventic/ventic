@@ -550,7 +550,7 @@ export async function findReleases(imdbId: string, season = 0, episode = 0): Pro
   // One source down out of several is not worth an error. All of them is — and
   // it reads the same as "nothing found" unless we say so.
   if (failed.length === results.length)
-    throw new Error($t('No source answered — {reason}', { reason: failed[0]! }))
+    throw new Error($t('No source answered: {reason}', { reason: failed[0]! }))
 
   // Two sources drawing on the same origins hand back the same release twice;
   // first one wins, so the order sources were added in is the preference order.

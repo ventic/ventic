@@ -84,7 +84,7 @@ export const useProfilesStore = defineStore('profiles', () => {
   }
 
   async function choosePin() {
-    const ok = await pad($t('Choose a parental PIN'), $t('Four digits. They lock the profiles with parental controls, and opening a grown-up\'s profile.'), true)
+    const ok = await pad($t('Choose a parental PIN'), $t('Four digits, needed to leave a profile with parental controls and to open a grown-up\'s profile.'), true)
     trusted.value ||= ok
     return ok
   }

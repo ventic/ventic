@@ -238,8 +238,8 @@ async function download(t: Release) {
                    release is usually also the oversized one. -->
               <span
                 v-tooltip="tooBig(t)
-                  ? $t('Over the {limit} single-file limit of the drive downloads go to, so it streams instead of downloading — reformat the drive in Settings → Storage to keep releases this big', { limit: bytesText(downloads.fileLimit) })
-                  : isBloated(t) ? $t('Bigger than this quality needs — may not keep up while streaming') : false"
+                  ? $t('Over the {limit} file size limit of your download drive, so it streams instead of downloading. Reformat the drive in Settings → Storage to keep releases this big', { limit: bytesText(downloads.fileLimit) })
+                  : isBloated(t) ? $t('Bigger than this quality needs, so it may not keep up while streaming') : false"
                 class="shrink-0 text-body-small sm:w-20 sm:text-right"
                 :class="tooBig(t) ? 'text-error' : isBloated(t) ? 'text-warning' : 'opacity-70'"
               >
@@ -248,7 +248,7 @@ async function download(t: Release) {
 
               <!-- A link has no swarm, so this column says what it is instead. -->
               <span
-                v-tooltip="t.url ? $t('The source fetched this already — it plays at once and keeps nothing on this device') : false"
+                v-tooltip="t.url ? $t('The source fetched this already, so it plays at once and keeps nothing on this device') : false"
                 class="flex shrink-0 items-center gap-1 text-body-small sm:w-16 sm:justify-end"
                 :class="t.url ? 'text-primary' : 'opacity-70'"
               >
@@ -267,7 +267,7 @@ async function download(t: Release) {
                      device's own storage, where the drive's limit doesn't reach.
                      Only Download is out. -->
                 <v-btn
-                  v-tooltip="tooBig(t) ? $t('Play this source — streamed, as it is too big to keep') : $t('Play this source')"
+                  v-tooltip="tooBig(t) ? $t('Play this source (it streams, because it is too big to keep)') : $t('Play this source')"
                   icon
                   size="small"
                   variant="text"
@@ -302,7 +302,7 @@ async function download(t: Release) {
                greyed out with no reason given reads as the app being broken. -->
           <span v-if="list.some(tooBig)" class="flex items-center gap-1 pl-2 text-body-small text-error">
             <v-icon :icon="mdiAlertCircleOutline" size="14" />
-            {{ $t('Sizes in red are over the {limit} file limit of the download drive — those stream instead of downloading.', { limit: bytesText(downloads.fileLimit) }) }}
+            {{ $t('Sizes in red are over the {limit} file limit of the download drive, so those stream instead of downloading.', { limit: bytesText(downloads.fileLimit) }) }}
           </span>
           <!-- The legend is the first thing to go when the row gets tight; the
                amber itself still carries a tooltip. -->

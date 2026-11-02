@@ -68,13 +68,13 @@ function open(url: string) {
       {{ $t('Ventic downloads the new package and Android asks you to confirm the install. It is signed with the same key as the copy you have, so it upgrades in place and keeps your library.') }}
     </p>
     <p v-else-if="updates.play" class="text-body-medium opacity-70">
-      {{ $t('Google Play installed this copy, so Google Play updates it — usually on its own, in the background. Open the listing to do it now.') }}
+      {{ $t('Google Play installed this copy, so Google Play updates it, usually on its own in the background. Open the listing to do it now.') }}
     </p>
     <p v-else-if="!updates.canUpdate && android" class="text-body-medium opacity-70">
-      {{ $t('Android installs from the package itself — download it and open it. It is signed with the same key as the copy you have, so it upgrades in place and keeps your library.') }}
+      {{ $t('Download the package and open it to install. It is signed with the same key as the copy you have, so it upgrades in place and keeps your library.') }}
     </p>
     <p v-else-if="!updates.canUpdate" class="text-body-medium opacity-70">
-      {{ $t('This copy wasn\'t installed by Ventic\'s own installer — a package manager, or a build from source — so whatever put it there is what updates it. Replacing the files from in here would only confuse it.') }}
+      {{ $t('This copy came from a package manager or a build from source, so update it the same way you installed it.') }}
     </p>
 
     <!-- Failing over to the download link rather than dead-ending: the manifest
@@ -138,7 +138,7 @@ function open(url: string) {
       {{ $t('Installed. It takes effect the next time Ventic starts.') }}
     </p>
     <p v-else-if="updates.status === 'installing'" class="text-body-small opacity-70">
-      {{ $t('Downloaded. Confirm the install when Android asks — Ventic closes while it happens.') }}
+      {{ $t('Downloaded. Confirm the install when Android asks. Ventic closes while it installs.') }}
     </p>
 
     <!-- Everything missed, newest first, and two decisions about how a remote

@@ -131,7 +131,7 @@ function apply() {
       :keywords="$t('cloud, WebDAV, Nextcloud, ownCloud, across devices, synchronise, synchronize, multiple devices')"
     >
       <p class="text-body-medium max-w-prose opacity-70">
-        {{ $t('Anything that speaks WebDAV works — a hosted drive, a Nextcloud or ownCloud, a NAS, or any server of your own that accepts a file. Paste the address of a folder there and Ventic keeps a {file} inside it. Nothing is uploaded until you do.', { file: 'ventic-sync.json' }) }}
+        {{ $t('Anything that speaks WebDAV works: a hosted drive, a Nextcloud or ownCloud, a NAS, or any server of your own that accepts a file. Paste the address of a folder there and Ventic keeps a {file} inside it. Nothing is uploaded until you do.', { file: 'ventic-sync.json' }) }}
       </p>
 
       <!-- One address that works as typed, because "anything that speaks
@@ -193,7 +193,7 @@ function apply() {
       />
 
       <p class="text-body-small max-w-prose opacity-70">
-        {{ $t('Most servers let you make a password that only works for one app — use one of those here rather than the password to your whole account. It is stored on this device and is the one thing a backup file never carries.') }}
+        {{ $t('Most servers let you make a password that only works for one app. Use one of those here instead of your account password. It is stored on this device, and a backup file never carries it.') }}
       </p>
 
       <div class="text-title-small mt-2">
@@ -240,11 +240,11 @@ function apply() {
         {{ $t('Last synced {at}.', { at: lastSynced }) }}
       </p>
       <p v-else-if="sync.on" class="text-body-medium opacity-70">
-        {{ $t('Not synced yet. Press Sync now, or wait — Ventic syncs on its own every few minutes and whenever a film ends.') }}
+        {{ $t('Not synced yet. Press Sync now, or wait: Ventic syncs on its own every few minutes and whenever a film ends.') }}
       </p>
 
       <p class="text-body-small max-w-prose opacity-70">
-        {{ $t('Two screens are merged rather than one overwriting the other, so watching something on one and something else on the other keeps both. Removing a film from a list removes it everywhere.') }}
+        {{ $t('Two screens are merged, so if you watch one thing here and another there, both are kept. Removing a film from a list removes it everywhere.') }}
       </p>
     </settings-section>
 
@@ -300,7 +300,7 @@ function apply() {
               {{ $t('Everything it holds replaces what is on this device: {titles} titles, {watched} watch positions, {favourites} favourites, {watchlist} on the watchlist and {sources} sources. Downloads on the disk are untouched.', summary) }}
             </p>
             <p v-if="summary.sources" class="text-body-small opacity-60">
-              {{ $t('Restoring changes which servers Ventic searches — a backup carries its own source list, and it wins.') }}
+              {{ $t('Restoring changes which servers Ventic searches, because a backup carries its own source list and that list wins.') }}
             </p>
             <p v-if="pending?.at" class="text-body-small opacity-60">
               {{ $t('Written {at}.', { at: new Date(pending.at).toLocaleString(uiLocale()) }) }}

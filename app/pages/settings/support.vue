@@ -45,7 +45,7 @@ function open(url: string) {
   <div class="flex flex-col gap-8">
     <settings-section
       :title="$t('Ko-fi')"
-      :hint="$t('Ventic is free, has no ads, no account and nothing to sell. It costs money to sign, host and keep running — a donation is what covers that, and nothing in the app changes whether you give one or not.')"
+      :hint="$t('Ventic is free, with no ads, no account and nothing to sell. Signing, hosting and running it still cost money, and donations cover that. Nothing in the app changes whether you give or not.')"
       :keywords="$t('donate, donation, tip, sponsor, support the project, pay, contribute, coffee')"
     >
       <v-card rounded="xl" class="panel flex flex-col gap-4 p-6">
@@ -78,7 +78,7 @@ function open(url: string) {
     <settings-section
       v-if="supporters?.monthly.length"
       :title="$t('Monthly supporters')"
-      :hint="$t('Paying for this every month, which is the part that makes it predictable.')"
+      :hint="$t('They give every month, which is what makes the running costs predictable.')"
     >
       <!-- Text only: nothing here is a target, so the d-pad scrolls past it. -->
       <div class="flex flex-wrap gap-2">
@@ -116,12 +116,12 @@ function open(url: string) {
       {{ $t('Loading…') }}
     </p>
     <p v-else-if="!supporters" class="text-body-medium opacity-60">
-      {{ $t('The supporter list couldn\'t be loaded — the Ko-fi page above has the current one.') }}
+      {{ $t('The supporter list couldn\'t be loaded. The Ko-fi page above has the current one.') }}
     </p>
 
     <settings-section :title="$t('Other ways to help')" :keywords="$t('contribute, bug report, translate, GitHub, feedback, issue')">
       <p class="text-body-medium">
-        {{ $t('Money is the least of it. Reporting a bug with what you did before it happened, translating the app into a language you actually speak, or telling somebody it exists are all worth more than a coffee.') }}
+        {{ $t('Money is the least of it. A bug report that says what you did before it happened, a translation into a language you speak, or telling somebody about Ventic are all worth more than a coffee.') }}
       </p>
       <div>
         <v-btn :append-icon="mdiOpenInNew" variant="tonal" size="small" @click="open(GITHUB_URL)">

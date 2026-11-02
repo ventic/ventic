@@ -101,8 +101,8 @@ const verdict = computed(() => {
   // Free space, not `drive`: that is what is left once the device's own reserve
   // is set aside, and on a TV box it reads "room for 0 B" — true, and no use.
   if (drive < MIN_LIBRARY)
-    return $t('This drive has {free} free, which is too little to keep films on — so films stream instead: only a few minutes of one are on the device at a time, and it is deleted when you stop watching.', { free: bytesText(downloads.disk?.free ?? 0) })
-  return $t('Room for {size} of films here. A film that fits is downloaded whole, making space by deleting what was watched longest ago; one that won\'t fit even then streams instead.', { size: bytesText(budget) })
+    return $t('This drive has {free} free, which is too little to keep films on, so films stream instead. Only a few minutes of one are on the device at a time, and it is deleted when you stop watching.', { free: bytesText(downloads.disk?.free ?? 0) })
+  return $t('Room for {size} of films here. A film that fits is downloaded whole, deleting what was watched longest ago to make space. One that still won\'t fit streams instead.', { size: bytesText(budget) })
 })
 
 /** Minutes of buffer on offer — stops, like every stepper here (see utils/steps). */
@@ -159,7 +159,7 @@ async function openFolder() {
     <settings-section
       :title="volumes ? $t('Where downloads go') : $t('Download folder')"
       :hint="volumes
-        ? $t('Which drive films and episodes are written to — a plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.')
+        ? $t('Which drive films and episodes are written to. A plugged-in stick usually holds far more than the box itself. Uninstalling the app still removes them. Torrents already downloaded stay where they are.')
         : $t('Where films and episodes are written. Torrents already downloaded stay where they are.')"
       :keywords="$t('download location, save location, saved, directory, path, USB drive, SD card, external storage')"
     >
@@ -198,7 +198,7 @@ async function openFolder() {
         type="info"
         variant="tonal"
         density="compact"
-        :text="$t('{drive} is formatted FAT32, which can\'t hold a single file over {limit}. Bigger releases stream from the device\'s own storage instead of downloading — everything smaller downloads normally.', { drive: target.name, limit: bytesText(target.maxFile) })"
+        :text="$t('{drive} is formatted FAT32, which can\'t hold a single file over {limit}. Bigger releases stream from the device\'s own storage instead of downloading, and everything smaller downloads normally.', { drive: target.name, limit: bytesText(target.maxFile) })"
       />
 
       <!-- The fix is one screen away, so the alert carries the way to it rather
@@ -210,7 +210,7 @@ async function openFolder() {
         variant="tonal"
         density="compact"
       >
-        {{ $t('{drive} is plugged in, but nothing can be written to it — this device doesn\'t support the format the drive is in. Formatting it here fixes that, and erases whatever is on the drive.', { drive: volume.name }) }}
+        {{ $t('{drive} is plugged in, but nothing can be written to it, because this device doesn\'t support the drive\'s format. Formatting it here fixes that, and erases whatever is on the drive.', { drive: volume.name }) }}
 
         <template #append>
           <v-btn v-if="canFormat" :prepend-icon="mdiUsbFlashDrive" variant="tonal" @click="format">
@@ -234,7 +234,7 @@ async function openFolder() {
         type="info"
         variant="tonal"
         density="compact"
-        :text="$t('There is barely room for one film here, so films stream rather than download. Plug a USB drive into the box — formatted FAT32, which every Android box accepts — and it appears above to keep films on.')"
+        :text="$t('There is barely room for one film here, so films stream instead of downloading. Plug a USB drive formatted FAT32, which every Android box accepts, into the box and it appears above to keep films on.')"
       />
 
       <div class="flex flex-wrap items-center gap-2">
@@ -282,7 +282,7 @@ async function openFolder() {
           :label="$t('Keep films after watching them')"
           :description="settings.keepWatched
             ? $t('A film watched to the end stays on the drive, seeding, until its space is needed for another.')
-            : $t('A film is deleted as the player closes on it, once you have watched it to the end. One stopped half-way is kept, to carry on from.')"
+            : $t('A film is deleted when you close the player after watching it to the end. One stopped half-way is kept so you can carry on.')"
         />
         <v-switch
           v-model="settings.fetchNext"
@@ -290,14 +290,14 @@ async function openFolder() {
           density="comfortable"
           hide-details
           :label="$t('Download the next episode while you watch')"
-          :description="$t('Most of the way through an episode, the next one starts downloading — once this one is on the device, so it never slows what is playing — and plays from the disk when you get to it.')"
+          :description="$t('Near the end of an episode, the next one starts downloading once this one is on the device, so it never slows what is playing. When you get to it, it plays from the disk.')"
         />
       </template>
     </settings-section>
 
     <settings-section
       :title="$t('Streaming buffer')"
-      :hint="$t('How much of a streamed film is kept on the device around what is playing. More ahead rides out a swarm that slows down; more behind is a rewind that doesn\'t have to be fetched again. Both are cut down to fit when the device is short of space.')"
+      :hint="$t('How much of a streamed film is kept on the device around what is playing. More ahead rides out a swarm that slows down, and more behind lets you rewind without fetching it again. Both shrink when the device is short of space.')"
       :keywords="$t('buffering, preload, rewind, seek, cache ahead')"
     >
       <settings-row :label="$t('Ahead')">
@@ -310,7 +310,7 @@ async function openFolder() {
 
     <settings-section
       :title="$t('Cache limit')"
-      :hint="$t('Films downloaded whole stay on disk until the space is needed, then the least recently played are deleted — and a film that won\'t fit even then streams instead. Zero lets that grow into whatever the drive has spare.')"
+      :hint="$t('Downloaded films stay on disk until the space is needed, then the least recently played are deleted. A film that still won\'t fit streams instead. At zero, films can use whatever space the drive has spare.')"
       :keywords="$t('disk space, storage full, free up space, quota, clean up, maximum size')"
     >
       <settings-stepper v-model="capGb" :values="CAPS" :format="cap" />
@@ -359,7 +359,7 @@ async function openFolder() {
 
     <settings-section
       :title="$t('Watch history')"
-      :hint="$t('Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good — Account has a backup file if you want one first.')"
+      :hint="$t('Progress, watched marks, favourites and the watchlist, kept on this device only. Clearing them here clears them for good, so make a backup under Account first if you want one.')"
       :keywords="$t('clear history, reset progress, continue watching, favourites, favorites, watchlist, watched, privacy')"
     >
       <div class="text-body-small opacity-70">

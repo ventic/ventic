@@ -7,9 +7,9 @@
 
 <h3>A media library and BitTorrent player for the desktop and Android TV</h3>
 
-Keeps track of what you're watching, and plays torrents in a real mpv window rather than a
-browser `<video>` tag — so half-downloaded MKVs, HEVC, AV1 and DTS all just play. Built with
-Nuxt and Tauri, driven as happily by a TV remote as by a mouse.
+Keeps track of what you're watching, and plays torrents in a real mpv window instead of a
+browser `<video>` tag, so half-downloaded MKVs, HEVC, AV1 and DTS all just play. Built with
+Nuxt and Tauri, and as easy to drive with a TV remote as with a mouse.
 
 <br/>
 
@@ -43,8 +43,8 @@ https://github.com/user-attachments/assets/2d0bd58f-c838-43e2-a0ce-e503f9317aa8
 
 > [!IMPORTANT]
 > **Ventic hosts no content and indexes no content.** It ships with **no sources**, searches
-> nothing on its own, and will not suggest anywhere to look. A source is a URL *you* add — see
-> [Sources](#sources). With none configured, Ventic is a general-purpose torrent client with a
+> nothing on its own, and will not suggest anywhere to look. A source is a URL *you* add (see
+> [Sources](#sources)). With none configured, Ventic is a general-purpose torrent client with a
 > very good player attached.
 
 <br/>
@@ -86,26 +86,26 @@ https://github.com/user-attachments/assets/2d0bd58f-c838-43e2-a0ce-e503f9317aa8
 
 ## Why Ventic
 
-Most torrent-backed players are a browser `<video>` tag in a trench coat, and the codec support
-shows. Ventic embeds the real thing and keeps the library around it honest and local.
+Most torrent-backed players are a browser `<video>` tag in a trench coat, and you can tell by
+what they fail to play. Ventic embeds mpv itself and keeps your library on your own device.
 
-- **A real mpv window, not a video tag.** On Linux and Windows the Rust side parents an actual
-  mpv window into the page and keeps it glued to a box in the layout. mpv carries its own
+- **A real mpv window.** On Linux and Windows the Rust side embeds an actual mpv window in the
+  page and keeps it glued to a box in the layout. mpv carries its own
   ffmpeg, so HEVC, AV1, 10-bit, E-AC-3, DTS and half-downloaded MKVs play with no codec packs.
-- **The engine is in the app.** [librqbit][librqbit] runs in-process — a full downloads UI with
-  file pickers, seeding, speed limits and a disk budget, not a hidden cache.
+- **The engine is in the app.** [librqbit][librqbit] runs in-process, with a full downloads UI
+  for picking files, seeding, speed limits and a disk budget.
 - **Streaming while it downloads.** Playback starts on the first bytes; already-downloaded
   titles replay with no TMDB lookup, no source search and no peers.
 - **One player, three backends.** Where mpv can't be embedded, ExoPlayer (Android) or the
   webview's `<video>` answers the *same* command protocol, so there is one player component and
-  one set of controls rather than three.
+  one set of controls.
 - **Your library stays yours.** History, progress, favourites and the watchlist live in this
-  device's storage. No Ventic account and no Ventic server — one file carries the lot, and sync
-  goes through a WebDAV folder you already have.
-- **Usable from the sofa.** Full d-pad navigation, focus-first styling and an Android TV build —
-  a remote reaches everything a mouse does.
-- **No sources, ever.** The empty source list is a deliberate feature, not an oversight. It is
-  the whole reason this project can be published.
+  device's storage. There is no Ventic account and no Ventic server: one file carries the lot,
+  and sync goes through a WebDAV folder you already have.
+- **Usable from the sofa.** Full d-pad navigation, focus-first styling and an Android TV build,
+  so a remote reaches everything a mouse does.
+- **No sources, ever.** The empty source list is deliberate, not an oversight, and it is the
+  reason this project can be published at all.
 
 <p align="right"><a href="#readme-top">&#9650; back to top</a></p>
 
@@ -930,32 +930,31 @@ No. It hosts nothing, indexes nothing, and ships with no sources configured. Wha
 depends entirely on the URLs you add yourself.
 
 **Why won't you bundle a default source?**
-Because the empty list is the feature. A player that arrives pointed at somewhere is a
-distribution channel for that somewhere; a player that arrives pointed at nothing is a player.
-That line is what makes this publishable, and it isn't up for negotiation — see
-[`CLAUDE.md`](CLAUDE.md).
+Because a player that comes with sources built in is a distribution channel for them. With an
+empty list, Ventic is just a player. That line is what makes this publishable, and it isn't up
+for negotiation (see [`CLAUDE.md`](CLAUDE.md)).
 
 **Do I need a source at all?**
 No. The engine, the magnet box and the downloads UI are a complete torrent client on their own.
 
 **Is Ventic affiliated with Stremio?**
-No. It speaks the same open addon protocol, which is a documented HTTP+JSON API with several
-independent implementations. Nothing more.
+No. It only speaks the same open addon protocol, a documented HTTP+JSON API with several
+independent implementations.
 
 **Why is there no plugin system?**
-A source is a URL that returns JSON. Growing that into a runtime that executes third-party code
-buys nothing and adds an RCE surface.
+A source is a URL that returns JSON. Running third-party code from one would add an RCE surface
+and nothing else.
 
 **Why Tauri instead of Electron?**
-The system webview and a Rust backend, which is also what makes it possible to parent a real mpv
-window into the page — and to run a BitTorrent engine in-process instead of shipping a sidecar.
+The system webview and a Rust backend. The Rust side is what lets a real mpv window sit inside
+the page, and the BitTorrent engine run in-process instead of as a sidecar.
 
 **Does it work on a TV?**
-That's the point. There's an Android TV build, and every screen is reachable with a d-pad.
+Yes. There's an Android TV build, and every screen is reachable with a d-pad.
 
 **macOS says Ventic is damaged. Is it?**
-No — it's unsigned, which is what macOS says about any downloaded app no paid certificate vouches
-for. One command clears it: see [Opening it on macOS](#opening-it-on-macos).
+No. It's unsigned, and macOS says that about any downloaded app without a paid certificate. One
+command clears it: see [Opening it on macOS](#opening-it-on-macos).
 
 <p align="right"><a href="#readme-top">&#9650; back to top</a></p>
 

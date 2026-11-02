@@ -104,7 +104,7 @@ async function choose(event: Event) {
           density="comfortable"
           hide-details
           :label="$t('Change as you browse')"
-          :description="$t('On, the background follows whichever card you\'re pointing at or have selected. Off, it only changes when you actually open something — steadier on a long list, where sweeping across a row otherwise repaints the whole window card by card.')"
+          :description="$t('On, the background follows whichever card you\'re pointing at or have selected. Off, it only changes when you open something, which is steadier on a long list, where sweeping across a row would repaint the whole window card by card.')"
         />
       </template>
     </settings-section>
