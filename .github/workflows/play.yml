@@ -69,7 +69,9 @@ jobs:
           cat whatsnew/whatsnew-en-US
 
       - name: Publish to Google Play
+        id: publish
         if: env.PLAY_JSON != ''
+        continue-on-error: true
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
@@ -78,3 +80,22 @@ jobs:
           track: production
           status: completed
           whatsNewDirectory: whatsnew
+
+      # While an earlier submission is still in review or was rejected (0.8.0's
+      # banner), Play refuses to send a new one for review from the API, and
+      # v0.8.1 had to be uploaded by hand. Committed without sending, it waits in
+      # the console for one "Send for review" click. That edit was never
+      # committed, so the version code is still free.
+      - name: Publish to Google Play, review sent from the console
+        if: steps.publish.outcome == 'failure'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
+          packageName: com.ventic.app
+          releaseFiles: bundle/**/*.aab
+          track: production
+          status: completed
+          whatsNewDirectory: whatsnew
+          changesNotSentForReview: true
+      - if: steps.publish.outcome == 'failure'
+        run: echo "::warning::Uploaded to Google Play but not sent for review — open Publishing overview in the Play Console and press Send for review."
