@@ -76,13 +76,31 @@ export const useLibraryStore = defineStore('library', () => {
     const key = titleKey(m.type, m.id)
     const known = media.value[key]
     // The language clause backfills snapshots stored before it was kept — it is
-    // what tells an anime apart from any other cartoon (see `kindOf`); the
-    // seasons one does the same for the episode counts "Continue watching"
-    // rolls over on, which only a detail response ever carries.
+    // what tells an anime apart from any other cartoon (see `kindOf`). The
+    // seasons one keeps the episode counts "Continue watching" rolls over on
+    // and a card's bar measures, which only a detail response ever carries —
+    // and keeps them *current*: a show still airing gains an episode a week,
+    // and counts frozen at the first visit read every one of them watched as
+    // the whole show done.
     if (known?.title !== m.title || known?.poster !== m.poster
-      || (!known?.lang && m.lang) || (!known?.seasons?.length && m.seasons?.length)) {
+      || (!known?.lang && m.lang) || (m.seasons?.length && !sameSeasons(known?.seasons, m.seasons))) {
       media.value[key] = slim(m)
     }
+  }
+
+  /**
+   * Newer episode counts for a show already in the library, from a fetch that
+   * wasn't a page visit — the calendar asks TMDB about every followed show
+   * anyway, and its answer carries the season list. Without this a show was
+   * only ever recounted by opening it, so the shows watched every week (from
+   * Continue watching, never from their page) were exactly the ones whose
+   * cards went blank.
+   */
+  function updateSeasons(showId: number | string, seasons: { number: number, episodes: number }[]) {
+    const key = titleKey('tv', showId)
+    const known = media.value[key]
+    if (known && seasons.length && !sameSeasons(known.seasons, seasons))
+      media.value[key] = { ...known, seasons }
   }
 
   // --- Reads -----------------------------------------------------------------
@@ -318,6 +336,7 @@ export const useLibraryStore = defineStore('library', () => {
     favouriteChannels,
     deleted,
     remember,
+    updateSeasons,
     resumeRow,
     history,
     favouriteList,

@@ -23,6 +23,12 @@ export interface Schedule {
   show: number
   last: Airing | null
   next: Airing | null
+  /**
+   * Episodes per season, as the same answer counts them. Not the calendar's
+   * own business: the library's snapshot of the show goes stale without it
+   * (see `updateSeasons`), and this is a request already made.
+   */
+  seasons?: { number: number, episodes: number }[]
 }
 
 /** An episode played longer ago than this no longer makes a show one being watched. */
@@ -149,6 +155,7 @@ export interface RawSchedule {
   poster_path?: string | null
   last_episode_to_air?: RawAiring | null
   next_episode_to_air?: RawAiring | null
+  seasons?: { season_number: number, episode_count: number }[]
 }
 
 export function toSchedule(raw: RawSchedule): Schedule {
@@ -164,7 +171,16 @@ export function toSchedule(raw: RawSchedule): Schedule {
         still: e.still_path ?? null,
       }
     : null
-  return { show: raw.id, last: airing(raw.last_episode_to_air), next: airing(raw.next_episode_to_air) }
+  return {
+    show: raw.id,
+    last: airing(raw.last_episode_to_air),
+    next: airing(raw.next_episode_to_air),
+    // The same filter a title page applies: season 0 is specials, and an
+    // announced season with nothing in it yet has no episode to count.
+    seasons: (raw.seasons ?? [])
+      .filter(s => s.season_number > 0 && s.episode_count > 0)
+      .map(s => ({ number: s.season_number, episodes: s.episode_count })),
+  }
 }
 
 /** The key an air-day notification is remembered by, so it is said once. */

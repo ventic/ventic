@@ -37,8 +37,14 @@ export const useCalendarStore = defineStore('calendar', () => {
       await Promise.all(Array.from({ length: PARALLEL }, async () => {
         for (let id = queue.shift(); id !== undefined; id = queue.shift()) {
           const raw = await tmdb<RawSchedule>(`/tv/${id}`).catch(() => null)
-          if (raw)
-            schedules.value[id] = { ...toSchedule(raw), at: Date.now() }
+          if (raw) {
+            const schedule = toSchedule(raw)
+            schedules.value[id] = { ...schedule, at: Date.now() }
+            // Not from the shelf: offline, `tmdb()` answers with whatever copy
+            // it kept, which may be older than the counts already stored.
+            if (online.value)
+              library.updateSeasons(id, schedule.seasons ?? [])
+          }
         }
       }))
     }

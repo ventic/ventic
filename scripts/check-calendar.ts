@@ -73,9 +73,18 @@ const schedule = toSchedule({
   poster_path: '/p.jpg',
   last_episode_to_air: { air_date: '2026-10-01', season_number: 2, episode_number: 3, name: 'Pilot' },
   next_episode_to_air: { air_date: null, season_number: 2, episode_number: 4 },
+  seasons: [
+    { season_number: 0, episode_count: 4 },
+    { season_number: 1, episode_count: 10 },
+    { season_number: 2, episode_count: 8 },
+    { season_number: 3, episode_count: 0 },
+  ],
 })
 assert.equal(schedule.last?.showName, 'Show')
 assert.equal(schedule.last?.episode, 3)
 assert.equal(schedule.next, null, 'an episode with no date is not on a calendar')
+// What the library refreshes a show's snapshot from: real seasons with
+// something in them, exactly as a title page counts them.
+assert.deepEqual(schedule.seasons, [{ number: 1, episodes: 10 }, { number: 2, episodes: 8 }])
 
 console.warn('calendar: ok')

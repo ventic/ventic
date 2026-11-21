@@ -5,7 +5,7 @@ import type { KeyStore } from '../app/utils/backup'
 import type { Media } from '../app/utils/tmdb'
 import assert from 'node:assert'
 import { applyBackup, backupSummary, makeBackup, readBackup } from '../app/utils/backup'
-import { arrange, continuing, finished, fraction, kindOf, nextEpisode, parseKey, placeholder, playedTitles, progressKey, randomEpisode, remainingText, resumable, showEntries, showIndex, slim, UNKNOWN_TITLE, watchBar, watchedInSeason } from '../app/utils/library'
+import { arrange, continuing, finished, fraction, kindOf, nextEpisode, parseKey, placeholder, playedTitles, progressKey, randomEpisode, remainingText, resumable, sameSeasons, showEntries, showIndex, slim, UNKNOWN_TITLE, watchBar, watchedInSeason } from '../app/utils/library'
 import { mediaLink } from '../app/utils/tmdb'
 
 // `mediaLink` runs its path through Nuxt's auto-imported `localePath`, which
@@ -267,8 +267,17 @@ assert.deepEqual(
   watchBar({ 'tv:1396:1:7': entry(HOUR, HOUR, 900, true) }, show),
   { fraction: 1 / TOTAL, label: 'S2 E1 · 1/33' },
 )
-// Every episode there is — a full bar would only repeat the tick.
-assert.equal(watchBar(whole, show), null)
+// Every episode there is, and nothing newer yet: a full bar that still says
+// where the show got to. Blank, a show watched every week looked forgotten.
+assert.deepEqual(watchBar(whole, show), { fraction: 1, label: 'S3 E13 · 33/33' })
+// Marked watched by hand as well — the tick says it, and a bar would repeat it.
+assert.equal(watchBar({ ...whole, 'tv:1396': entry(0, 0, 1000, true) }, show), null)
+// A new season TMDB has since counted is the bar coming back, not staying full.
+const renewed: Media = { ...show, seasons: [...seasons, { number: 4, episodes: 13 }] }
+assert.deepEqual(watchBar(whole, renewed), { fraction: 33 / 46, label: 'S4 E1 · 33/46' })
+assert.ok(sameSeasons(show.seasons, seasons.map(s => ({ ...s, name: 'ignored' }))), 'a detail\'s richer seasons match their snapshot')
+assert.ok(!sameSeasons(show.seasons, renewed.seasons), 'a season more is a change')
+assert.ok(!sameSeasons(show.seasons, seasons.map(s => ({ ...s, episodes: s.episodes + 1 }))), 'an episode more is a change')
 // No season list stored, so there is nothing to count: the position inside the
 // last episode played, exactly as it was before the counts were kept.
 assert.deepEqual(

@@ -257,7 +257,11 @@ export interface WatchBar {
  * season list, and with no counts this falls back to the position in the last
  * episode played, which is what it always did.
  *
- * Null when there is nothing to draw — never played, or played right out.
+ * Null when there is nothing to draw — never played, a film played right out,
+ * or a show marked watched by hand. The counts are only as fresh as the
+ * snapshot, which is why the calendar's fetch refreshes them (`updateSeasons`):
+ * a snapshot that stopped at the episodes out when it was taken read every new
+ * one watched since as "all of them" and drew nothing at all.
  *
  * `episodes` is the show's own `showEntries`, for a caller already holding them
  * (the store's `showIndex`); left out, they are looked up here.
@@ -283,8 +287,16 @@ export function watchBar(progress: Record<string, Progress>, m: Media, episodes?
     return part > 0 ? { fraction: part, label } : null
 
   const seen = entries.filter(([, p]) => p.watched).length
-  if (seen >= total)
-    return null // every episode there is — the tick says that, not a full bar
+  if (seen >= total) {
+    // Every episode there is. A show marked watched by hand says so with the
+    // tick; one that is simply up to date still says where it got to, or the
+    // card of a show watched every week is a bare poster with nothing on it —
+    // which reads as the history having been lost.
+    if (progress[titleKey('tv', m.id)]?.watched || !key)
+      return null
+    const last = parseKey(key)
+    return { fraction: 1, label: `${label || `S${last.season} E${last.episode}`} · ${total}/${total}` }
+  }
   const done = Math.min(seen + part, total)
   return done > 0
     ? { fraction: done / total, label: label && `${label} · ${seen}/${total}` }
@@ -348,6 +360,15 @@ export function remainingText(p?: Progress | null) {
  * Only the fields a card needs. Detail responses carry cast, crew and images,
  * and every one of them would be copied into localStorage forever.
  */
+/**
+ * Do two season lists count the same episodes? Only the number and the count
+ * are compared — that is all a snapshot keeps — so a detail's richer seasons
+ * match the snapshot slimmed from them.
+ */
+export function sameSeasons(a: { number: number, episodes: number }[] = [], b: { number: number, episodes: number }[] = []) {
+  return a.length === b.length && a.every((s, i) => s.number === b[i]!.number && s.episodes === b[i]!.episodes)
+}
+
 export function slim(m: Media): Media {
   return {
     id: m.id,
