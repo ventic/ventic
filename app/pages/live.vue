@@ -53,13 +53,32 @@ function reload() {
   return refresh()
 }
 
-const groups = computed(() => channelGroups(data.value))
+/**
+ * The category filter's first choice once anything is starred. Not a playlist
+ * group, so a value no playlist can name: a group is a line of text out of an
+ * M3U, and NUL is the one character none carries.
+ */
+const FAVOURITES = '\u0000favourites'
+const starred = computed(() => Object.keys(library.favouriteChannels).length > 0)
+
+const groups = computed(() => [
+  ...starred.value ? [{ title: $t('Favourites'), value: FAVOURITES }] : [],
+  ...channelGroups(data.value).map(g => ({ title: g, value: g })),
+])
+
+// Unstarring the last one takes the choice away, so it lets go of the list too.
+watch(starred, any => {
+  if (!any && group.value === FAVOURITES)
+    group.value = null
+})
 
 const matches = computed(() => {
+  if (group.value === FAVOURITES)
+    return filterChannels(data.value, query.value, '').filter(c => library.isChannelFavourite(c.name))
   const found = filterChannels(data.value, query.value, group.value ?? '')
   // Nothing starred is the common case, and it is also the case that must not
   // pay for a sort of ten thousand channels on every keystroke.
-  if (!Object.keys(library.favouriteChannels).length)
+  if (!starred.value)
     return found
   // Favourites first, everything else in playlist order — Array#sort is stable,
   // so neither group is shuffled within itself.

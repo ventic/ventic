@@ -9,6 +9,8 @@ import {
   mdiArrowLeft,
   mdiCastConnected,
   mdiDownload,
+  mdiHeart,
+  mdiHeartOutline,
   mdiPowerPlugOutline,
   mdiReload,
   mdiStop,
@@ -39,6 +41,8 @@ const link = computed(() => String(route.query.url ?? ''))
  * usable duration for one often enough that guessing is worse than being told.
  */
 const live = computed(() => route.query.live === '1')
+/** The channel's name, which is what a favourite is kept under (`channelKey`). */
+const channel = computed(() => live.value ? String(route.query.title ?? '').trim() : '')
 
 /**
  * Seconds to open at, overriding whatever this device remembers. Only a cast
@@ -693,6 +697,21 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
                 {{ torrent.quality }} · {{ torrent.size }} · {{ torrent.source }}
               </div>
             </div>
+
+            <!-- Starring a channel from the player: a playlist names thousands
+                 that are dead, and playing one is the only way to find out
+                 which aren't — so this is the moment the choice is made. -->
+            <v-btn
+              v-if="live && channel"
+              icon
+              variant="text"
+              density="comfortable"
+              class="shrink-0"
+              @click="library.toggleChannelFavourite(channel)"
+            >
+              <v-icon :icon="library.isChannelFavourite(channel) ? mdiHeart : mdiHeartOutline" :color="library.isChannelFavourite(channel) ? 'primary' : undefined" />
+              <v-tooltip activator="parent" :text="library.isChannelFavourite(channel) ? $t('Remove from favourites') : $t('Favourite')" />
+            </v-btn>
 
             <v-spacer />
 

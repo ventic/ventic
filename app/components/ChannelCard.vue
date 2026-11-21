@@ -97,7 +97,7 @@ const reserve = computed(() => `${ui.cardWidth}px ${Math.round(ui.cardWidth * 0.
         {{ channel.name }}
       </div>
       <div class="truncate text-body-small opacity-55">
-        {{ channel.group || $t('Live TV') }}
+        {{ groupsOf(channel).join(', ') || $t('Live TV') }}
       </div>
     </div>
   </nuxt-link>

@@ -178,9 +178,22 @@ export function channelKey(name: string) {
   return name.trim().toLowerCase()
 }
 
-/** Every group a channel named, for the filter. */
+/**
+ * The categories one channel is in. A `group-title` is usually one, but the
+ * large public indexes write several into it separated by `;` —
+ * `Animation;Family;Kids` — and read whole, the filter offered every
+ * combination that occurred (hundreds of them) while "Animation" found only
+ * the channels that were nothing else.
+ */
+export function groupsOf(channel: Pick<Channel, 'group'>) {
+  return channel.group.includes(';')
+    ? channel.group.split(';').map(g => g.trim()).filter(Boolean)
+    : channel.group ? [channel.group] : []
+}
+
+/** Every category any channel is in, for the filter. */
 export function channelGroups(channels: Channel[]) {
-  return [...new Set(channels.map(c => c.group).filter(Boolean))].sort((a, b) => a.localeCompare(b))
+  return [...new Set(channels.flatMap(groupsOf))].sort((a, b) => a.localeCompare(b))
 }
 
 export function filterChannels(channels: Channel[], query: string, group: string) {
@@ -188,7 +201,7 @@ export function filterChannels(channels: Channel[], query: string, group: string
   if (!q && !group)
     return channels
   return channels.filter(c =>
-    (!group || c.group === group)
+    (!group || groupsOf(c).includes(group))
     && (!q || c.name.toLowerCase().includes(q)))
 }
 

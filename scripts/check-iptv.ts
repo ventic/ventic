@@ -9,7 +9,7 @@
 import assert from 'node:assert'
 import { readFileSync } from 'node:fs'
 import process from 'node:process'
-import { channelGroups, channelKey, fetchChannels, filterChannels, isXtream, parseM3u, parseXtream, playlistName, xtreamChannels, xtreamUrl } from '../app/utils/iptv'
+import { channelGroups, channelKey, fetchChannels, filterChannels, groupsOf, isXtream, parseM3u, parseXtream, playlistName, xtreamChannels, xtreamUrl } from '../app/utils/iptv'
 import './i18n-stub'
 
 const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
@@ -72,6 +72,25 @@ assert.equal(filterChannels(channels, 'channel', '').length, 2)
 assert.equal(filterChannels(channels, '', 'Sports').length, 1)
 assert.equal(filterChannels(channels, 'CHANNEL', 'News').length, 1, 'search is case-insensitive')
 assert.equal(filterChannels(channels, '', '').length, 3, 'no filter is every channel')
+
+// A public index writes several categories into one group-title. Each is a
+// category of its own: the filter lists the parts, never the combinations, and
+// a channel is found under every one of them.
+const multi = parseM3u(`#EXTM3U
+#EXTINF:-1 group-title="Animation;Family;Kids",Cartoons
+http://example.invalid/a.m3u8
+#EXTINF:-1 group-title="Animation",More cartoons
+http://example.invalid/b.m3u8
+#EXTINF:-1 group-title="Kids; News ;",Kids news
+http://example.invalid/c.m3u8
+#EXTINF:-1,Nothing
+http://example.invalid/d.m3u8
+`)
+assert.deepEqual(channelGroups(multi), ['Animation', 'Family', 'Kids', 'News'])
+assert.deepEqual(filterChannels(multi, '', 'Animation').map(c => c.name), ['Cartoons', 'More cartoons'])
+assert.deepEqual(filterChannels(multi, '', 'Kids').map(c => c.name), ['Cartoons', 'Kids news'])
+assert.deepEqual(groupsOf(multi[2]!), ['Kids', 'News'], 'spaces and an empty last part are trimmed away')
+assert.deepEqual(groupsOf(multi[3]!), [], 'no group is no category')
 
 // --- The credential that must not be on screen ---------------------------------
 
