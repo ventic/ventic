@@ -5,7 +5,7 @@ import type { Box } from '../app/utils/dpad'
 // half of the remote — BACK, which is Kotlin's to catch and the page's to answer.
 import assert from 'node:assert'
 import { readdirSync, readFileSync } from 'node:fs'
-import { arrived, clipped, eased, nearest, pickDirection, shift, within } from '../app/utils/dpad'
+import { arrived, backTarget, clipped, eased, nearest, pickDirection, shift, TOP_LEVEL, within } from '../app/utils/dpad'
 
 function box(left: number, top: number, width: number, height: number): Box {
   return { left, top, right: left + width, bottom: top + height }
@@ -350,6 +350,33 @@ for (const hook of ['__tvBack', '__tvOk', '__tvHold']) {
 assert.ok(plugin.includes(`addPluginListener('app', 'back-button'`), 'the page listens for tauri\'s back-button event')
 assert.ok(activity.includes('fun leave()') && activity.includes('@JavascriptInterface'), 'and MainActivity exposes leave() on the bridge for the root case')
 assert.ok(readFileSync(new URL('../app/utils/platform.ts', import.meta.url), 'utf8').includes('leave?.()'), 'through platform.ts')
+
+// Where BACK goes on Android once nothing on screen claims it: up a level, not
+// back a page. Before this it retraced every screen opened, sideways moves
+// through the sidebar included, so leaving the app after browsing Settings was
+// one press per section visited (issue #32).
+assert.equal(backTarget('/', true, true), 'leave', 'Home leaves the app, whatever lies behind it')
+assert.equal(backTarget('/', false, false), 'leave')
+assert.equal(backTarget('/movies', true, true), 'home', 'a screen the navigation lists goes home, not to the last one')
+assert.equal(backTarget('/settings/audio', true, true), 'home', 'a Settings section beside a sidebar is a sibling of the others')
+assert.equal(backTarget('/settings/appearance/background', true, true), 'home', 'tabs inside a section too')
+assert.equal(backTarget('/settings/audio', true, false), 'back', 'on a phone it steps back to the list it was opened from')
+assert.equal(backTarget('/settings', true, false), 'home', 'and the list itself is a navigation screen')
+assert.equal(backTarget('/movie/603', true, true), 'back', 'a title is a step into something, and BACK retraces it')
+assert.equal(backTarget('/tv/1396/season/2', true, false), 'back')
+assert.equal(backTarget('/tv/1396', true, true), 'back', 'a show is not the TV Shows screen')
+assert.equal(backTarget('/movie/603', false, true), 'home', 'nothing behind a deep link: home, never straight out')
+assert.equal(backTarget('/movies/', true, true), 'home', 'a trailing slash is the same screen')
+// Every screen the bars link to is one BACK takes home — a new destination
+// added to a bar and not here would retrace history again.
+for (const nav of ['AppDrawer.vue', 'AppNav.vue']) {
+  const source = readFileSync(new URL(`../app/components/${nav}`, import.meta.url), 'utf8')
+  for (const [, path] of source.matchAll(/localePath\('(\/[^'`]*)'\)/g)) {
+    if (path !== '/' && path !== '/profiles' && !path.startsWith('/settings/'))
+      assert.ok(TOP_LEVEL.includes(path!), `${nav} links to ${path}, which is not in TOP_LEVEL`)
+  }
+}
+assert.ok(plugin.includes('backTarget('), 'and the plugin asks it')
 
 // Nothing gives the webview focus at launch, and the remote's first press was
 // spent by Android moving it there: no keydown reached the page, every launch.

@@ -197,3 +197,31 @@ export function nearest(from: number, to: number, near: number, far: number) {
 export function shift(box: Box, dx: number, dy: number): Box {
   return { left: box.left + dx, top: box.top + dy, right: box.right + dx, bottom: box.bottom + dy }
 }
+
+/**
+ * The screens the navigation itself lists — the sidebar, the phone's bottom bar
+ * and its More sheet. Siblings, not steps: nobody walked from Movies *into*
+ * Downloads, they went sideways, and BACK retracing every sideways move is what
+ * made leaving the app thirty presses after a browse.
+ */
+export const TOP_LEVEL = ['/movies', '/tv', '/anime', '/live', '/downloads', '/favourites', '/watchlist', '/history', '/calendar', '/search', '/settings']
+
+/**
+ * Where an Android BACK goes once nothing on screen claimed it — the
+ * convention every TV and phone app with a navigation bar keeps. Home leaves
+ * the app, whatever history lies behind it. A screen the navigation lists goes
+ * home, and so does a Settings section where a sidebar lists them as siblings
+ * (`sidebar`); on a phone `/settings` is the list a section was opened *from*,
+ * so there a section steps back to it like any page. Everything else — a
+ * title, a season, a person — is a step into something, and BACK retraces it.
+ * A page opened with nothing behind it (a deep link, a cast) goes home rather
+ * than out, so there is always one more press before the app is gone.
+ */
+export function backTarget(path: string, hasHistory: boolean, sidebar: boolean): 'leave' | 'home' | 'back' {
+  const at = path.replace(/\/+$/, '') || '/'
+  if (at === '/')
+    return 'leave'
+  if (TOP_LEVEL.includes(at) || (sidebar && at.startsWith('/settings/')))
+    return 'home'
+  return hasHistory ? 'back' : 'home'
+}

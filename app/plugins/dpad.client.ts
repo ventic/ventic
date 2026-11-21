@@ -40,7 +40,7 @@ const MODAL = '.v-overlay--active:not(.v-tooltip)'
 /** A sidebar — the app's, or a section list like Settings' — which sits beside the page. */
 const DRAWER = '.v-navigation-drawer'
 
-export default defineNuxtPlugin(() => {
+export default defineNuxtPlugin(nuxtApp => {
   const router = useRouter()
   const html = document.documentElement
   let dpad = false
@@ -511,6 +511,12 @@ export default defineNuxtPlugin(() => {
    * Back, in the order a remote user expects: close what's open, else leave the
    * screen. `false` means there was nothing left to go back to — Android takes
    * that as its cue to quit (see MainActivity.kt).
+   *
+   * On Android "leave the screen" is up a level rather than back a page
+   * (`backTarget`): sideways moves between the navigation's own screens are not
+   * history, so Home is never more than one press from any of them and the app
+   * one press from Home. A desktop's BrowserBack key is a browser's, and only
+   * ever steps back.
    */
   function back() {
     // Vuetify's dialogs, menus and selects all close themselves on Escape.
@@ -521,7 +527,15 @@ export default defineNuxtPlugin(() => {
     // The player claims Escape for its own menus, then for leaving playback.
     if (escapeConsumed())
       return true
-    if (window.history.state?.back) {
+    const behind = !!window.history.state?.back
+    let where: ReturnType<typeof backTarget> = behind ? 'back' : 'leave'
+    if (onAndroid())
+      where = backTarget(router.currentRoute.value.path, behind, !nuxtApp.$vuetify.display.mobile.value)
+    if (where === 'home') {
+      router.replace(localePath('/'))
+      return true
+    }
+    if (where === 'back') {
       router.back()
       return true
     }
