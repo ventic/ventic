@@ -17,6 +17,17 @@ const atEnd = ref(true)
 const overflows = ref(false)
 
 /**
+ * A right-to-left row starts at its right edge, and the browser counts its
+ * `scrollLeft` down from 0 into negative numbers as it goes. Read as left to
+ * right, the row sat "at the start" however far it was scrolled and the back
+ * arrow never came alive, and each arrow paged the wrong way. Read off `<html
+ * dir>` rather than the computed style: it is an attribute read, not a style
+ * recalculation per row, and app.vue keeps it in step with the language.
+ */
+const rtl = ref(false)
+const sense = () => (rtl.value ? -1 : 1)
+
+/**
  * Where the row is sitting. Measured here rather than by `useScroll`, which
  * looks on mount and on scroll and nothing else: a row is empty when it mounts,
  * so both arrows came up disabled and stayed that way until it was dragged by
@@ -30,21 +41,26 @@ function measure() {
   // all twelve. The observer measures again once it has a size.
   if (!el?.clientWidth)
     return
+  rtl.value = document.documentElement.dir === 'rtl'
   const max = el.scrollWidth - el.clientWidth
+  // How far from the start, whichever way the start is.
+  const along = el.scrollLeft * sense()
   overflows.value = max > 1
-  atStart.value = el.scrollLeft < 1
-  atEnd.value = el.scrollLeft > max - 1
+  atStart.value = along < 1
+  atEnd.value = along > max - 1
   // Within a few cards of the end of a row that pages — or a row too short to
   // scroll at all — ask for the next page. Here rather than `useInfiniteScroll`,
   // whose `useScroll` measures on mount with a getComputedStyle, a layout forced
   // while the page around it is still being built: one per row, and on the test
   // TV most of a second of a long show's page. Distance from the start either
   // way, since a right-to-left row scrolls into negative numbers.
-  if (props.canLoad && Math.abs(el.scrollLeft) > max - 600)
+  if (props.canLoad && along > max - 600)
     emit('end')
 }
 
 useResizeObserver([scroller, track], measure)
+// A language switched under a row flips it without resizing it.
+useMutationObserver(() => document.documentElement, measure, { attributeFilter: ['dir'] })
 // A page that has just landed may leave the row as short as it was.
 watch(() => props.canLoad, measure, { flush: 'post' })
 
@@ -79,7 +95,7 @@ function page(direction: 1 | -1) {
   const gap = 16 // gap-4
   const card = (track.value?.firstElementChild as HTMLElement | null)?.offsetWidth ?? el.clientWidth
   const cards = Math.max(1, Math.floor(el.clientWidth / (card + gap)))
-  el.scrollBy({ left: direction * cards * (card + gap), behavior: 'smooth' })
+  el.scrollBy({ left: direction * sense() * cards * (card + gap), behavior: 'smooth' })
 }
 </script>
 
@@ -94,11 +110,13 @@ function page(direction: 1 | -1) {
            far the row goes. tabindex="-1" keeps them out of the d-pad's way:
            arrowing along the row already scrolls it. -->
       <div v-if="overflows" class="flex gap-1 opacity-0 transition-opacity group-hover/row:opacity-100 group-focus-within/row:opacity-100">
+        <!-- Back, then on: the flex row puts them on the reader's side either
+             way, and each chevron points toward where it pages. -->
         <v-btn icon size="small" variant="text" color="on-surface" tabindex="-1" :disabled="atStart" @click="page(-1)">
-          <v-icon :icon="mdiChevronLeft" />
+          <v-icon :icon="rtl ? mdiChevronRight : mdiChevronLeft" />
         </v-btn>
         <v-btn icon size="small" variant="text" color="on-surface" tabindex="-1" :disabled="atEnd" @click="page(1)">
-          <v-icon :icon="mdiChevronRight" />
+          <v-icon :icon="rtl ? mdiChevronLeft : mdiChevronRight" />
         </v-btn>
       </div>
     </div>
