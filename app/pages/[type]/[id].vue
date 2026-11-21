@@ -17,6 +17,8 @@ const id = computed(() => String(route.params.id))
 
 const { data: media, status, error } = useMediaDetail(type, id)
 const { data: collection } = useCollection(() => media.value?.collection?.id)
+/** The series' own page — its art, its overview and the next film in it. */
+const collectionLink = computed(() => media.value?.collection ? localePath(`/collection/${media.value.collection.id}`) : undefined)
 
 // This page's art is the app backdrop, for exactly as long as the page is up.
 let mine = 0
@@ -366,7 +368,7 @@ const playLabel = computed(() => [
 
         <!-- The rest of the series, before the cast: which one comes next is
              the question a film's page is asked most after "is it any good". -->
-        <scroll-row v-if="collection && collection.parts.length > 1" :title="collection.name">
+        <scroll-row v-if="collection && collection.parts.length > 1" :title="collection.name" :to="collectionLink">
           <media-card
             v-for="part in collection.parts"
             :key="part.id"

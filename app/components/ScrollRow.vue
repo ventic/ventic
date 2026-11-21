@@ -4,8 +4,12 @@ import { mdiChevronLeft, mdiChevronRight } from '@mdi/js'
 /**
  * A titled horizontal strip. The arrows page it; a wheel with Shift held, or a
  * trackpad sideways, scrolls it natively — there is no scrollbar to grab.
+ *
+ * `to` makes the title a link, for a row that is a glimpse of a page of its own
+ * (a film's series). A real link rather than a button in the header, so a
+ * remote walking down the page meets it as the row's first stop.
  */
-const props = defineProps<{ title: string, canLoad?: boolean }>()
+const props = defineProps<{ title: string, canLoad?: boolean, to?: string }>()
 
 const emit = defineEmits<{ end: [] }>()
 
@@ -103,7 +107,17 @@ function page(direction: 1 | -1) {
   <section class="group/row">
     <div class="flex items-center gap-2 px-4 md:px-6">
       <h2 class="text-title-large">
-        {{ title }}
+        <nuxt-link
+          v-if="to"
+          :to="to"
+          class="-mx-1 inline-flex items-center gap-1 rounded-lg px-1 hover:text-primary focus-visible:text-primary"
+        >
+          {{ title }}
+          <v-icon :icon="rtl ? mdiChevronLeft : mdiChevronRight" size="24" />
+        </nuxt-link>
+        <template v-else>
+          {{ title }}
+        </template>
       </h2>
       <v-spacer />
       <!-- Shown while anything in the row has focus too, so a remote can see how

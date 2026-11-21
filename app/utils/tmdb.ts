@@ -581,12 +581,18 @@ export function useCollection(id: MaybeRefOrGetter<number | null | undefined>) {
       const at = toValue(id)
       if (!at)
         return null
-      const raw = await tmdb<{ name: string, parts?: TmdbItem[] }>(`/collection/${at}`)
+      const raw = await tmdb<{ name: string, overview?: string, poster_path?: string | null, backdrop_path?: string | null, parts?: TmdbItem[] }>(`/collection/${at}`)
       const parts = (raw.parts ?? [])
         .flatMap(item => toMedia(item, 'movie') ?? [])
         // A part still unannounced has no date, and goes last.
         .sort((a, b) => (a.year || '9999').localeCompare(b.year || '9999'))
-      return { name: raw.name, parts: await useProfilesStore().allowedOnly(parts) }
+      return {
+        name: raw.name,
+        overview: raw.overview ?? '',
+        poster: raw.poster_path ?? null,
+        backdrop: raw.backdrop_path ?? null,
+        parts: await useProfilesStore().allowedOnly(parts),
+      }
     },
     { lazy: true, watch: [() => toValue(id)] },
   )
