@@ -39,11 +39,31 @@ const meta = computed(() => {
   ].filter(Boolean)
 })
 
+/**
+ * The name it was released under, when the app's language calls it something
+ * else — a Spanish film read in English, an anime in anything but Japanese. It
+ * is what the film is known by where it came from, what a release is usually
+ * named after, and the one line that says subtitles will be wanted. Left out
+ * where it would only repeat the heading: the same words, or an English logo
+ * standing in for an English original.
+ */
+const originalTitle = computed(() => {
+  const m = media.value
+  if (!m?.originalTitle)
+    return ''
+  const same = (a: string, b: string) => a.trim().toLocaleLowerCase() === b.trim().toLocaleLowerCase()
+  if (same(m.originalTitle, m.title) || (m.logo && m.lang === 'en'))
+    return ''
+  return m.originalTitle
+})
+
 const credits = computed(() => {
   const m = media.value
   if (!m)
     return []
   return [
+    // TMDB's "xx" is "no language" — a silent film, a music video.
+    { label: $t('Original language'), value: m.lang && m.lang !== 'xx' ? langName(m.lang) : '' },
     { label: m.directors.length > 1 ? $t('Directors') : $t('Director'), value: m.directors.join(', ') },
     { label: m.writers.length > 1 ? $t('Writers') : $t('Writer'), value: m.writers.slice(0, 3).join(', ') },
     { label: $t('Budget'), value: moneyText(m.budget) },
@@ -186,6 +206,16 @@ const playLabel = computed(() => [
               {{ media.title }}
             </h1>
 
+            <!-- `lang`, so a screen reader says it in its own language and the
+                 browser picks the right glyphs for a CJK title. -->
+            <p
+              v-if="originalTitle"
+              :lang="media.lang || undefined"
+              class="text-title-medium opacity-70 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]"
+            >
+              {{ originalTitle }}
+            </p>
+
             <p v-if="media.tagline" class="text-body-medium italic opacity-60">
               {{ media.tagline }}
             </p>
@@ -214,7 +244,8 @@ const playLabel = computed(() => [
 
             <dl v-if="credits.length" class="grid grid-cols-1 gap-x-6 gap-y-1 text-body-small sm:grid-cols-2 lg:max-w-2xl">
               <div v-for="row in credits" :key="row.label" class="flex gap-2">
-                <dt class="w-20 shrink-0 opacity-50">
+                <!-- Wide enough for "Original language" on one line. -->
+                <dt class="w-28 shrink-0 opacity-50">
                   {{ row.label }}
                 </dt>
                 <!-- Two lines before it gives up: a film written by three

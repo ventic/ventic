@@ -19,6 +19,8 @@ export interface TmdbItem {
   vote_count?: number
   genre_ids?: number[]
   original_language?: string
+  original_title?: string
+  original_name?: string
 }
 
 export interface TmdbPage<T = TmdbItem> {
@@ -364,6 +366,8 @@ export interface EpisodeDetail extends Episode {
 }
 
 export interface MediaDetail extends Media {
+  /** What it was released as, in its own language and script — `lang`'s title. */
+  originalTitle: string
   tagline: string
   status: string
   /** Movie length, or the average episode length for a show. */
@@ -489,6 +493,7 @@ function toDetail(raw: RawDetail, type: MediaType): MediaDetail {
 
   return {
     ...base,
+    originalTitle: raw.original_title ?? raw.original_name ?? '',
     tagline: raw.tagline ?? '',
     status: raw.status ?? '',
     runtime: raw.runtime ?? raw.episode_run_time?.[0] ?? raw.last_episode_to_air?.runtime ?? 0,
