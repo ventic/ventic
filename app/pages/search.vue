@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { FeedRequest } from '~/composables/useMediaFeed'
 import { mdiMagnify } from '@mdi/js'
 
 definePageMeta({ keepalive: true })
@@ -11,17 +12,24 @@ const scopes = computed(() => [
   { value: 'multi', title: $t('All') },
   { value: 'movie', title: $t('Movies') },
   { value: 'tv', title: $t('TV Shows') },
+  { value: 'anime', title: $t('Anime') },
 ])
 
 const scope = ref('multi')
 
-const request = computed(() => {
+const request = computed<FeedRequest | null>(() => {
   if (!query.value)
     return null
 
+  // Anime is the app's bucket, not TMDB's: search has no language or genre
+  // filter, so it is every film and show the query finds, narrowed to what the
+  // Anime page would list. A short page is no problem — the grid pulls the next
+  // until it fills or runs out, exactly as a genre on Trending does.
+  const anime = scope.value === 'anime'
   return {
-    path: `/search/${scope.value}`,
-    type: scope.value === 'multi' ? undefined : scope.value as 'movie' | 'tv',
+    path: `/search/${anime ? 'multi' : scope.value}`,
+    type: scope.value === 'movie' || scope.value === 'tv' ? scope.value : undefined,
+    keepKind: anime ? 'anime' : undefined,
     params: {
       query: query.value,
       include_adult: false,

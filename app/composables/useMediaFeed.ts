@@ -13,6 +13,12 @@ export interface FeedRequest {
    * Not a query param, so it never reaches TMDB.
    */
   keepGenre?: number
+  /**
+   * Which of the app's own buckets to keep (see `kindOf`), client-side for the
+   * same reason as `keepGenre`: TMDB's search takes a query and nothing else,
+   * so "anime" there is every result that turns out to be one.
+   */
+  keepKind?: 'anime'
 }
 
 /**
@@ -35,6 +41,16 @@ export function useMediaFeed(request: MaybeRefOrGetter<FeedRequest | null>) {
   // and a mixed feed (search) would otherwise drop whichever of a pair came second.
   let generation = 0
   const seen = new Set<string>()
+
+  /**
+   * Pages in a row that a client-side filter left nothing of. The grid asks for
+   * another page only when its scroll position moves, and a page that added
+   * nothing moves nothing — so a search for anime whose first page of TMDB's
+   * results held none sat on "no results" with pages still unread. The feed asks
+   * on its own instead, up to this many times before it waits to be scrolled.
+   */
+  let misses = 0
+  const MAX_MISSES = 8
 
   async function loadMore() {
     if (pending.value || done.value)
@@ -65,6 +81,8 @@ export function useMediaFeed(request: MaybeRefOrGetter<FeedRequest | null>) {
         seen.add(titleKey(media.type, media.id))
         if (request_.keepGenre != null && !media.genreIds.includes(request_.keepGenre))
           continue
+        if (request_.keepKind && kindOf(media) !== request_.keepKind)
+          continue
         fresh.push(media)
       }
 
@@ -76,8 +94,11 @@ export function useMediaFeed(request: MaybeRefOrGetter<FeedRequest | null>) {
       if (mine !== generation)
         return
       items.value.push(...fresh)
+      const filtered = request_.keepGenre != null || !!request_.keepKind
+      misses = fresh.length || !filtered ? 0 : misses + 1
     }
     catch (e) {
+      misses = 0
       if (mine === generation)
         error.value = e instanceof Error ? e.message : String(e)
     }
@@ -85,10 +106,13 @@ export function useMediaFeed(request: MaybeRefOrGetter<FeedRequest | null>) {
       if (mine === generation)
         pending.value = false
     }
+    if (mine === generation && misses && misses < MAX_MISSES)
+      await loadMore()
   }
 
   function reset() {
     generation++
+    misses = 0
     seen.clear()
     items.value = []
     page.value = 0
