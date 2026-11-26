@@ -35,11 +35,10 @@ const seen = computed(() => parts.value.filter(m => library.isWatched(m)).length
 
 /**
  * What Play starts: the first film not yet seen, in release order. One with no
- * date, or a year still ahead, isn't out — a Play that finds no release is
+ * date, or a date still ahead, isn't out — a Play that finds no release is
  * worse than no button.
  */
-const thisYear = new Date().getFullYear()
-const next = computed(() => parts.value.find(m => !library.isWatched(m) && m.year && Number(m.year) <= thisYear))
+const next = computed(() => parts.value.find(m => !library.isWatched(m) && collection.value?.released.includes(m.id)))
 
 const meta = computed(() => {
   const list = parts.value

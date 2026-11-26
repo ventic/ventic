@@ -586,12 +586,16 @@ export function useCollection(id: MaybeRefOrGetter<number | null | undefined>) {
         .flatMap(item => toMedia(item, 'movie') ?? [])
         // A part still unannounced has no date, and goes last.
         .sort((a, b) => (a.year || '9999').localeCompare(b.year || '9999'))
+      // A card keeps only the year, and a film due next month is "this year"
+      // too: the series page's Play must not land on one that isn't out.
+      const today = new Date().toISOString().slice(0, 10)
       return {
         name: raw.name,
         overview: raw.overview ?? '',
         poster: raw.poster_path ?? null,
         backdrop: raw.backdrop_path ?? null,
         parts: await useProfilesStore().allowedOnly(parts),
+        released: (raw.parts ?? []).filter(p => p.release_date && p.release_date <= today).map(p => p.id),
       }
     },
     { lazy: true, watch: [() => toValue(id)] },
